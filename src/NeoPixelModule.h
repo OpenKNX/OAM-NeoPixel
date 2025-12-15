@@ -72,6 +72,10 @@ public:
   void loop(bool configured) override;
   void processInputKo(GroupObject& ko) override;
 
+  // Console integration: delegate help and commands to core NeoPixel module
+  void showHelp() override;
+  bool processCommand(const std::string command, bool diagnose) override;
+
   // Access to unified virtual strip (if created)
   VirtualStrip* getVirtualStrip() const { return _virtualStrip; }
   

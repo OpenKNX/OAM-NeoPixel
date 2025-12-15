@@ -950,6 +950,20 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
   }
 }
 
+// Console: show help entries by delegating to core NeoPixel module
+void NeoPixelBusModule::showHelp()
+{
+  // Print the 'neo' command group header via core module
+  neoPixelModule.showHelp();
+}
+
+// Console: process commands by delegating 'neo' prefixed commands
+bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
+{
+  // Forward to core module's console handler
+  return neoPixelModule.processCommand(command, diagnose);
+}
+
 void NeoPixelBusModule::configureFromETS()
 {
   // Initialize the OFM-NeoPixel module first
