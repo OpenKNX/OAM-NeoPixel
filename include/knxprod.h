@@ -18,7 +18,7 @@
 #define MAIN_FirmwareName "NeoPixel KNX Adapter (Dev)"
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 1
-#define MAIN_ApplicationVersion 22
+#define MAIN_ApplicationVersion 23
 #define MAIN_ApplicationEncoding iso-8859-15
 #define MAIN_ParameterSize 5525
 #define MAIN_MaxKoNumber 1223
@@ -3058,6 +3058,9 @@
 #define NEOSTRIP_NEOpowerLimitType                   10      // 3 Bits, Bit 6-4
 #define     NEOSTRIP_NEOpowerLimitTypeMask 0x70
 #define     NEOSTRIP_NEOpowerLimitTypeShift 4
+#define NEOSTRIP_NEOTiming                           10      // 4 Bits, Bit 5-2
+#define     NEOSTRIP_NEOTimingMask 0x3C
+#define     NEOSTRIP_NEOTimingShift 2
 #define NEOSTRIP_NEOpowerLimitGlobal                 11      // uint16_t
 #define NEOSTRIP_NEOcurrentPerLED                    13      // 7 Bits, Bit 7-1
 #define     NEOSTRIP_NEOcurrentPerLEDMask 0xFE
@@ -3117,6 +3120,8 @@
 #define ParamNEOSTRIP_NEOpowerLimitEnabled                ((bool)(knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitEnabled)) & NEOSTRIP_NEOpowerLimitEnabledMask))
 // Strombegrenzung Typ
 #define ParamNEOSTRIP_NEOpowerLimitType                   ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitType)) & NEOSTRIP_NEOpowerLimitTypeMask) >> NEOSTRIP_NEOpowerLimitTypeShift)
+// Timing
+#define ParamNEOSTRIP_NEOTiming                           ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOTiming)) & NEOSTRIP_NEOTimingMask) >> NEOSTRIP_NEOTimingShift)
 // Globale Strombegrenzung (mA)
 #define ParamNEOSTRIP_NEOpowerLimitGlobal                 (knx.paramWord(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitGlobal)))
 // Strom pro LED (mA)

@@ -152,6 +152,22 @@
                   <Enumeration Text="WW and CW" Value="4" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
+              <!-- Timing -->
+              <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Text="AUTO"        Value="0"   Id="%ENID%" />
+                  <Enumeration Text="AUTO_LEGACY" Value="1"   Id="%ENID%" />
+                  <Enumeration Text="SLOW_20PCT"  Value="2"   Id="%ENID%" />
+                  <Enumeration Text="SLOW_15PCT"  Value="3"   Id="%ENID%" />
+                  <Enumeration Text="SLOW_10PCT"  Value="4"   Id="%ENID%" />
+                  <Enumeration Text="SLOW_5PCT"   Value="5"   Id="%ENID%" />
+                  <Enumeration Text="FAST_5PCT"   Value="6"   Id="%ENID%" />
+                  <Enumeration Text="FAST_10PCT"  Value="7"   Id="%ENID%" />
+                  <Enumeration Text="FAST_15PCT"  Value="8"   Id="%ENID%" />
+                  <Enumeration Text="FAST_20PCT"  Value="9"   Id="%ENID%" />
+                  <Enumeration Text="FAST_25PCT"  Value="10"  Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <!-- Power Limit Types --> 
               <ParameterType Id="%AID%_PT-NEOPowerLimitType" Name="NEOPowerLimitType">
                 <TypeRestriction Base="Value" SizeInBit="3">

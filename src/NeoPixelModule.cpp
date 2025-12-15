@@ -1152,6 +1152,22 @@ void NeoPixelBusModule::configureFromETS()
       _totalLeds += pixels;
       _physicalStrips.push_back(phys);
 
+      // Configure timing for this physical strip
+      uint8_t timingMode = (uint8_t)ParamNEOSTRIP_NEOTiming;
+      if (timingMode <= 10) {
+        // Map timing mode parameter (0-10) to TimingMode enum
+        TimingMode mode = static_cast<TimingMode>(timingMode);
+        phys->setTimingMode(mode);
+        
+        const char* timingModes[] = {
+          "AUTO", "AUTO_LEGACY", 
+          "SLOW_20%", "SLOW_15%", "SLOW_10%", "SLOW_5%",
+          "FAST_5%", "FAST_10%", "FAST_15%", "FAST_20%", "FAST_25%"
+        };
+        const char* timingName = (timingMode < 11) ? timingModes[timingMode] : "UNKNOWN";
+        logInfoP("Strip %d: Timing mode=%d (%s)", i, timingMode, timingName);
+      }
+
       // Configure color correction for this strip
       if ((bool)ParamNEOSTRIP_NEOGammaCorrection || (bool)ParamNEOSTRIP_NEOWhiteBalanceCorrection) {
         configureColorCorrection();
