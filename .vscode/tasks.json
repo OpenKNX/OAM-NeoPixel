@@ -1,0 +1,53 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "OpenKNXproducer",
+            "type": "shell",
+            "command": "~/bin/OpenKNXproducer.exe",
+            "args": [
+                "create",
+                "--Debug",
+                "-h",
+                "include/knxprod.h",
+                "src/NeoPixel"
+            ],
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Gen. Dependencies.txt",
+            "type": "shell",
+            "command": "lib/OGM-Common/scripts/setup/reusable/Build-Dependencies.ps1",
+            "args": [
+            ],
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Pull",
+            "type": "shell",
+            "command": "git pull --ff-only",
+            "args": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Pull & Restore",
+            "type": "shell",
+            "command": "${workspaceFolder}/restore/Restore-Checkout-Branch.ps1",
+            "args": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/restore/"
+            },
+            "problemMatcher": [],
+            "group": "test",
+            "dependsOn": ["Pull"]
+        },
+	]
+}
