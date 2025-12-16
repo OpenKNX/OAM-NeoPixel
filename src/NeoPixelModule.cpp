@@ -255,28 +255,38 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
       }
       
       case NEO_KoH: {
-        uint16_t hue = ko.value(DPT_Angle);
-        logInfoP("Segment %d Hue: %d°", channel, hue);
+        // DPT 5.003 is 1 byte on the wire: 0..255  <->  0..360°
+        uint8_t raw = ko.value(DPT_Value_1_Ucount);   // read raw byte (no scaling)
+
+        // optional: treat 360° (=255) as 0° for hue wrap
+        uint8_t hue = (raw == 255) ? 0 : raw;
+
+        // log degrees (use >=16-bit!)
+        uint16_t deg = (uint32_t(raw) * 360u + 127u) / 255u;
+        logInfoP("Hue: %u° (raw=%u) -> HSV hue=%u", (unsigned)deg, (unsigned)raw, (unsigned)hue);
+
         
-        // Apply hue to HSV on segment - convert angle to 0-255 range
-        // DPT_Angle uses 0-360° as 0-65535, so scale to 0-255 for HSV
-        uint8_t h = (hue * 255) / 360;
+        // Use persistent S and V from config
+        SegmentConfig& cfg = _segments[channel];
+        uint8_t s = cfg.currentS;
+        uint8_t v = cfg.currentV;
+        // Preserve S and V - don't reset them when H changes
+        // If V is 0, default to full brightness to make color visible
+        if (v == 0) { v = 255; }
         
-        // Use full saturation and current brightness or default
-        uint8_t s = 255;  // Full saturation
-        uint8_t v = targetSegment->getBrightness();
-        if (v == 0) v = 255;  // Default brightness if not set
-        
+        // Apply and store
         uint8_t r, g, b;
-        ColorHelper::hsvToRGB(h, s, v, r, g, b);
+        ColorHelper::hsvToRGB(hue, s, v, r, g, b);
         targetSegment->setAll(r, g, b);
+        cfg.currentH = hue;
+        cfg.currentS = s;
+        cfg.currentV = v;
         
-        // Send HSV status feedback with all current HSV values
+        // Send HSV status feedback - convert to RGB using actual V value
         _channelIndex = channel;
-        targetSegment->getPixel(0, r, g, b);
-        ColorHelper::rgbToHSV(r, g, b, h, s, v);
-        uint32_t hsv = ((uint32_t)h << 16) | ((uint32_t)s << 8) | v;
-        bool changed = KoNEO_HSVState.valueNoSendCompare(hsv, DPT_Colour_RGB);
+        ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
+        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+        bool changed = KoNEO_HSVState.valueNoSendCompare(rgb, DPT_Colour_RGB);
         if (changed) KoNEO_HSVState.objectWritten();
         _channelIndex = oldChannelIndex;
         break;
@@ -288,25 +298,27 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         uint8_t saturation = (saturationPercent * 255) / 100;
         logInfoP("Segment %d Saturation: %d%% (scaled to %d/255)", channel, saturationPercent, saturation);
         
-        // Apply saturation to HSV on segment
-        // For HSV control, we need to maintain current hue and value
-        // This is a simplified implementation - in practice you might want to 
-        // store HSV values in the segment configuration
-        uint8_t h = 0;    // Default hue (red)
-        uint8_t s = saturation;
-        uint8_t v = targetSegment->getBrightness();
-        if (v == 0) v = 255;  // Default brightness if not set
+        // Use persistent H and V from config
+        SegmentConfig& cfg = _segments[channel];
+        uint8_t h = cfg.currentH;
+        uint8_t v = cfg.currentV;
+        // Preserve H and V - don't reset them when S changes
+        // If V is 0, default to full brightness to make color visible
+        if (v == 0) { v = 255; }
         
+        // Apply and store
         uint8_t r, g, b;
-        ColorHelper::hsvToRGB(h, s, v, r, g, b);
+        ColorHelper::hsvToRGB(h, saturation, v, r, g, b);
         targetSegment->setAll(r, g, b);
+        cfg.currentH = h;
+        cfg.currentS = saturation;
+        cfg.currentV = v;
         
-        // Send HSV status feedback with all current HSV values
+        // Send HSV status feedback - convert to RGB using actual V value
         _channelIndex = channel;
-        targetSegment->getPixel(0, r, g, b);
-        ColorHelper::rgbToHSV(r, g, b, h, s, v);
-        uint32_t hsv = ((uint32_t)h << 16) | ((uint32_t)s << 8) | v;
-        bool changed = KoNEO_HSVState.valueNoSendCompare(hsv, DPT_Colour_RGB);
+        ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
+        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+        bool changed = KoNEO_HSVState.valueNoSendCompare(rgb, DPT_Colour_RGB);
         if (changed) KoNEO_HSVState.objectWritten();
         _channelIndex = oldChannelIndex;
         break;
@@ -318,27 +330,25 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         uint8_t value = (valuePercent * 255) / 100;
         logInfoP("Segment %d Value: %d%% (scaled to %d/255)", channel, valuePercent, value);
         
-        // Apply value/brightness to HSV on segment
-        // Set brightness and scale current colors accordingly
-        targetSegment->setBrightness(value);
+        // Use persistent H and S from config
+        SegmentConfig& cfg = _segments[channel];
+        uint8_t h = cfg.currentH;
+        uint8_t s = cfg.currentS;
+        // Preserve H and S - don't reset them when V changes
         
-        // For immediate effect, also scale current pixel colors
+        // Apply and store
         uint8_t r, g, b;
-        if (targetSegment->getPixel(0, r, g, b)) {
-          // Scale current colors by new brightness
-          r = (r * value) / 255;
-          g = (g * value) / 255;
-          b = (b * value) / 255;
-          targetSegment->setAll(r, g, b);
-        }
+        ColorHelper::hsvToRGB(h, s, value, r, g, b);
+        targetSegment->setAll(r, g, b);
+        cfg.currentH = h;
+        cfg.currentS = s;
+        cfg.currentV = value;
         
-        // Send HSV status feedback with all current HSV values
+        // Send HSV status feedback - convert to RGB using actual V value
         _channelIndex = channel;
-        targetSegment->getPixel(0, r, g, b);
-        uint8_t h, s, v;
-        ColorHelper::rgbToHSV(r, g, b, h, s, v);
-        uint32_t hsv = ((uint32_t)h << 16) | ((uint32_t)s << 8) | v;
-        bool changed = KoNEO_HSVState.valueNoSendCompare(hsv, DPT_Colour_RGB);
+        ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
+        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+        bool changed = KoNEO_HSVState.valueNoSendCompare(rgb, DPT_Colour_RGB);
         if (changed) KoNEO_HSVState.objectWritten();
         _channelIndex = oldChannelIndex;
         break;

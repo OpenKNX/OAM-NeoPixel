@@ -68,6 +68,11 @@ public:
 
     // Which rendering mode was active before power-off
     bool savedLastWasEffect = false;
+
+    // Persistent HSV values for independent H/S/V control
+    uint8_t currentH = 0;                // Current Hue (0-255)
+    uint8_t currentS = 255;              // Current Saturation (0-255)
+    uint8_t currentV = 0;                // Current Value (0-255)
   };
 
   // Virtual Strip Configuration Structure  
