@@ -47,6 +47,27 @@ public:
     bool reverseDirection;               // Reverse direction flag
     bool mirrorEffect;                   // Mirror effect flag
     Segment* segment = nullptr;          // Pointer to actual segment
+
+    // Saved state for power toggle
+    bool savedValid = false;
+    uint8_t savedR = 0;
+    uint8_t savedG = 0;
+    uint8_t savedB = 0;
+    uint8_t savedW = 0;
+    uint8_t savedBrightness = 0;
+
+    // Saved effect information
+    bool savedEffectValid = false;
+    uint8_t savedEffectType = 0; // 0 = none
+    uint8_t savedEffectSpeed = 0;
+    uint8_t savedEffectIntensity = 0;
+    uint8_t savedEffectOption1 = 0;
+    uint8_t savedEffectOption2 = 0;
+    uint8_t savedEffectMode = 0;
+    uint8_t savedEffectReverse = 0;
+
+    // Which rendering mode was active before power-off
+    bool savedLastWasEffect = false;
   };
 
   // Virtual Strip Configuration Structure  

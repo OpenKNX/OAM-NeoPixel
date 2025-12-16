@@ -353,6 +353,16 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         
         // Apply RGB to the target segment
         targetSegment->setAll(r, g, b);
+
+        // Persist desired static color for power-restore
+        SegmentConfig& cfg = _segments[channel];
+        cfg.savedR = r;
+        cfg.savedG = g;
+        cfg.savedB = b;
+        cfg.savedW = 0;
+        cfg.savedBrightness = targetSegment->getBrightness();
+        cfg.savedValid = true;
+        cfg.savedLastWasEffect = false;
         
         // Send status feedback
         _channelIndex = channel;
@@ -391,6 +401,21 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         
         // Apply effect to segment dynamically
         applyEffectToSegment(targetSegment, effect);
+
+        // Remember selected effect for restore
+        SegmentConfig& cfg = _segments[channel];
+        cfg.savedEffectType = effect;
+        // Snapshot current effect configuration
+        {
+          auto& ec = targetSegment->getConfig();
+          cfg.savedEffectSpeed = ec.speed;
+          cfg.savedEffectIntensity = ec.intensity;
+          cfg.savedEffectOption1 = ec.option1;
+          cfg.savedEffectOption2 = ec.option2;
+          cfg.savedEffectMode = ec.mode;
+          cfg.savedEffectReverse = ec.reverse;
+          cfg.savedEffectValid = (effect > 0);
+        }
         
         // Send status feedback
         _channelIndex = channel;
@@ -465,20 +490,75 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
       case NEO_KoSegmentPower: {
         bool power = ko.value(DPT_Switch);
         logDebugP("Segment %d Power: %s", channel, power ? "ON" : "OFF");
-        
+
+        SegmentConfig& cfg = _segments[channel];
+
         if (power) {
-          // Turn segment on - restore previous brightness or set to full
-          uint8_t brightness = targetSegment->getBrightness();
-          if (brightness == 0) {
-            targetSegment->setBrightness(255);  // Default to full brightness if was off
+          logDebugP("Segment %d Power ON: savedValid=%d, savedLastWasEffect=%d, savedEffectValid=%d, type=%d, savedRGB=(%d,%d,%d), savedBri=%d",
+                    channel, cfg.savedValid, cfg.savedLastWasEffect, cfg.savedEffectValid, cfg.savedEffectType,
+                    cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedBrightness);
+          if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0) {
+            // Restore effect with its configuration
+            applyEffectToSegment(targetSegment, cfg.savedEffectType);
+            auto& ec = targetSegment->getConfig();
+            ec.speed = cfg.savedEffectSpeed;
+            ec.intensity = cfg.savedEffectIntensity;
+            ec.option1 = cfg.savedEffectOption1;
+            ec.option2 = cfg.savedEffectOption2;
+            ec.mode = cfg.savedEffectMode;
+            ec.reverse = cfg.savedEffectReverse;
+            targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
+          } else if (cfg.savedValid) {
+            // IMPORTANT: Set brightness FIRST before setAll() to ensure pixels are visible
+            targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
+            if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4) {
+              targetSegment->setAll(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+            } else {
+              targetSegment->setAll(cfg.savedR, cfg.savedG, cfg.savedB);
+            }
+          } else {
+            if (targetSegment->getBrightness() == 0) {
+              targetSegment->setBrightness(255);
+            }
           }
         } else {
-          // Turn segment off - set brightness to 0
+          // Snapshot BEFORE clearing
+          uint8_t r = 0, g = 0, b = 0;
+          if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4) {
+            uint8_t w = 0;
+            targetSegment->getPixel(0, r, g, b, w);
+            cfg.savedW = w;
+          } else {
+            targetSegment->getPixel(0, r, g, b);
+          }
+          cfg.savedR = r;
+          cfg.savedG = g;
+          cfg.savedB = b;
+          cfg.savedBrightness = targetSegment->getBrightness();
+          cfg.savedValid = true;
+
+          // Snapshot effect configuration on power off
+          // Note: We track last commanded effect type in cfg.savedEffectType
+          auto& ec = targetSegment->getConfig();
+          cfg.savedEffectSpeed = ec.speed;
+          cfg.savedEffectIntensity = ec.intensity;
+          cfg.savedEffectOption1 = ec.option1;
+          cfg.savedEffectOption2 = ec.option2;
+          cfg.savedEffectMode = ec.mode;
+          cfg.savedEffectReverse = ec.reverse;
+          cfg.savedLastWasEffect = (targetSegment->getEffect() != nullptr);
+
+          logDebugP("Segment %d Power OFF: snapshot RGB=(%d,%d,%d), W=%d, Bri=%d, effectType=%d",
+                    channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness, cfg.savedEffectType);
+
           targetSegment->setBrightness(0);
-          targetSegment->setAll(0, 0, 0);  // Also clear pixels immediately
+          if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4) {
+            targetSegment->setAll(0, 0, 0, 0);
+          } else {
+            targetSegment->setAll(0, 0, 0);
+          }
         }
-        
-        // Send status feedback
+
         _channelIndex = channel;
         bool changed = KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch);
         if (changed) KoNEO_SegmentPowerState.objectWritten();
@@ -494,6 +574,21 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         
         // Set segment brightness
         targetSegment->setBrightness(brightness);
+
+        // Reapply current pixels with new brightness scaling by updating entire segment
+        uint8_t r = 0, g = 0, b = 0;
+        if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4) {
+          uint8_t w = 0;
+          targetSegment->getPixel(0, r, g, b, w);
+          targetSegment->setAll(r, g, b, w);
+        } else {
+          targetSegment->getPixel(0, r, g, b);
+          targetSegment->setAll(r, g, b);
+        }
+
+        // Persist desired brightness for power-restore
+        SegmentConfig& cfgB = _segments[channel];
+        cfgB.savedBrightness = brightness;
         
         // Send status feedback (send back percentage)
         _channelIndex = channel;
@@ -537,12 +632,23 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         uint8_t g = (rgbw >> 16) & 0xFF;
         uint8_t b = (rgbw >> 8) & 0xFF;
         uint8_t w = rgbw & 0xFF;
-        
         logInfoP("Segment %d RGBW: R=%d G=%d B=%d W=%d", channel, r, g, b, w);
         
         // Store in config and apply
         targetSegment->setPrimaryColor(r, g, b, w);
         targetSegment->setAll(r, g, b, w);
+
+        // Persist desired static color for power-restore
+        {
+          SegmentConfig& cfg = _segments[channel];
+          cfg.savedR = r;
+          cfg.savedG = g;
+          cfg.savedB = b;
+          cfg.savedW = w;
+          cfg.savedBrightness = targetSegment->getBrightness();
+          cfg.savedValid = true;
+          cfg.savedLastWasEffect = false;
+        }
         
         // Send status feedback
         _channelIndex = channel;
@@ -2126,6 +2232,16 @@ void NeoPixelBusModule::configureEffects()
         hasEffects = true;
         applyEffectToSegment(_segments[i].segment, effectType);
         setupEffectConfiguration(_segments[i].segment);
+        // Initialize saved effect state from ETS defaults
+        _segments[i].savedEffectType = effectType;
+        auto& ec = _segments[i].segment->getConfig();
+        _segments[i].savedEffectSpeed = ec.speed;
+        _segments[i].savedEffectIntensity = ec.intensity;
+        _segments[i].savedEffectOption1 = ec.option1;
+        _segments[i].savedEffectOption2 = ec.option2;
+        _segments[i].savedEffectMode = ec.mode;
+        _segments[i].savedEffectReverse = ec.reverse;
+        _segments[i].savedEffectValid = true;
         
         logInfoP("Segment %zu: Applied effect type %d", i, effectType);
       }
