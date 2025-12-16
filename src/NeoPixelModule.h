@@ -74,6 +74,13 @@ public:
     uint8_t currentS = 255;              // Current Saturation (0-255)
     uint8_t currentV = 0;                // Current Value (0-255)
 
+    // Pending solid color when effect is stopped
+    // User can set these while effect is running, they're applied when effect=0
+    uint8_t pendingSolidR = 0;
+    uint8_t pendingSolidG = 0;
+    uint8_t pendingSolidB = 0;
+    uint8_t pendingSolidW = 0;
+
     // DPT 3.007 Start/Stop dimming state
     enum DimmingChannel { NONE, BRIGHTNESS, RED, GREEN, BLUE, WHITE, WARM_WHITE, COOL_WHITE, HUE, SATURATION, VALUE };
     DimmingChannel activeDimming = NONE; // Which channel is currently dimming
@@ -124,7 +131,6 @@ public:
 
   // Effects status
   bool areEffectsEnabled() const { return _effectsEnabled; }
-  bool isAutoUpdateEnabled() const { return _autoUpdateEnabled; }
 
   // Color Correction
   void updateColorCorrection();
@@ -181,10 +187,8 @@ private:
   // Segment Configuration
   std::vector<SegmentConfig> _segments;  // Configured segments
   uint8_t _numberOfSegments = 0;         // Number of segments from ETS
-
   // Effect Configuration  
   bool _effectsEnabled = false;          // Whether effects are enabled
-  bool _autoUpdateEnabled = false;       // Whether auto-update is enabled for effects
   
   // Global Brightness Control
   uint8_t _globalBrightness = 255;       // Global brightness multiplier (0-255, default full)
