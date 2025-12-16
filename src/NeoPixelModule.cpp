@@ -423,13 +423,28 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         if (changed) KoNEO_FxState.objectWritten();
         _channelIndex = oldChannelIndex;
         
-        // Enable auto-update if effects are being used
-        if (effect > 0 && !_autoUpdateEnabled) {
+        // Manage auto-update: enable if ANY segment has an ACTIVE effect, disable if NONE do
+        // Check actual current effect, not saved state
+        bool anyEffectActive = false;
+        for (size_t i = 0; i < _segments.size(); i++) {
+          Segment* seg = _segments[i].segment;
+          if (seg && seg->getEffect() != nullptr) {
+            // Segment has an active effect
+            anyEffectActive = true;
+            break;
+          }
+        }
+        
+        if (anyEffectActive && !_autoUpdateEnabled) {
           neoPixelModule.setAutoUpdate(true);
           neoPixelModule.setUpdateSpeed(UpdateSpeed::NORMAL);
           _autoUpdateEnabled = true;
           _effectsEnabled = true;
-          logInfoP("Auto-update enabled for effects");
+          logInfoP("Auto-update enabled (effect active)");
+        } else if (!anyEffectActive && _autoUpdateEnabled) {
+          neoPixelModule.setAutoUpdate(false);
+          _autoUpdateEnabled = false;
+          logInfoP("Auto-update disabled (no effects active)");
         }
         break;
       }
@@ -2329,9 +2344,13 @@ void NeoPixelBusModule::applyEffectToSegment(Segment* segment, uint8_t effectTyp
   if (!segment) return;
   
   Effect* effect = getEffectFromType(effectType);
-  if (effect) {
+  if (effect != nullptr) {
     segment->setEffect(effect);
     logInfoP("Applied effect '%s' to segment", effect->getName());
+  } else if (effectType == 0) {
+    // Effect 0 means "no effect" - explicitly clear the effect
+    segment->setEffect(nullptr);
+    logDebugP("Cleared effect from segment");
   } else {
     logWarningP("Unknown effect type: %d", effectType);
   }
