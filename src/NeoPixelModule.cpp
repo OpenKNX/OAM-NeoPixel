@@ -572,18 +572,39 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         uint8_t brightness = (brightnessPercent * 255) / 100;
         logInfoP("Segment %d Brightness: %d%% (scaled to %d/255)", channel, brightnessPercent, brightness);
         
-        // Set segment brightness
-        targetSegment->setBrightness(brightness);
-
-        // Reapply current pixels with new brightness scaling by updating entire segment
-        uint8_t r = 0, g = 0, b = 0;
-        if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4) {
-          uint8_t w = 0;
+        // Get the ACTUAL current pixel color from the first LED (this has old brightness baked in)
+        uint8_t r = 0, g = 0, b = 0, w = 0;
+        bool isRgbw = _virtualStrip && _virtualStrip->getBytesPerLed() == 4;
+        if (isRgbw) {
           targetSegment->getPixel(0, r, g, b, w);
-          targetSegment->setAll(r, g, b, w);
         } else {
           targetSegment->getPixel(0, r, g, b);
-          targetSegment->setAll(r, g, b);
+        }
+        
+        // Get OLD brightness to scale the current RGB values back to "undimmed"
+        uint8_t oldBrightness = targetSegment->getBrightness();
+        
+        // Scale current colors back to full brightness
+        // This gives us the "desired" color independent of brightness
+        uint8_t desiredR = r, desiredG = g, desiredB = b, desiredW = w;
+        if (oldBrightness > 0 && oldBrightness < 255) {
+          // Inverse scaling: currentValue = desiredValue * (brightness/255), so desiredValue = currentValue * (255/brightness)
+          desiredR = (r * 255) / oldBrightness;
+          desiredG = (g * 255) / oldBrightness;
+          desiredB = (b * 255) / oldBrightness;
+          if (isRgbw) {
+            desiredW = (w * 255) / oldBrightness;
+          }
+        }
+        
+        // Set segment brightness FIRST
+        targetSegment->setBrightness(brightness);
+
+        // Reapply desired color with NEW brightness scaling
+        if (isRgbw) {
+          targetSegment->setAll(desiredR, desiredG, desiredB, desiredW);
+        } else {
+          targetSegment->setAll(desiredR, desiredG, desiredB);
         }
 
         // Persist desired brightness for power-restore
