@@ -5,6 +5,42 @@
 #include <algorithm>
 #include <vector>
 
+// DPT 3.007 step code to delta mapping (exponential)
+// Standard KNX/ETS: stepCode 1 = largest (100%), 7 = smallest (~2%), 0 = stop
+static inline int16_t dpt3_007_delta(uint8_t stepCode) {
+  static const uint8_t factors[8] = {0, 64, 32, 16, 8, 4, 2, 1};
+  return (int16_t)((factors[stepCode & 0x07] * 255u + 32u) / 64u);
+}
+
+// Helper: Start/stop dimming for a segment channel
+static void startStopDimming(NeoPixelBusModule::SegmentConfig& config, 
+                            NeoPixelBusModule::SegmentConfig::DimmingChannel channel,
+                            uint8_t rel, uint8_t segmentIndex) {
+  // Decode ETS values: 1-7=start decreasing, 8-9=stop, 10-16=start increasing
+  if (rel >= 1 && rel <= 16) {
+    if (rel == 8 || rel == 9) {
+      // Stop: stepCode 0
+      config.activeDimming = NeoPixelBusModule::SegmentConfig::NONE;
+      config.dimmingStepCode = 0;
+    } else if (rel >= 10 && rel <= 16) {
+      // Start/continue increasing
+      uint8_t stepCode = rel - 9; // 10→1, 11→2, ..., 16→7
+      config.activeDimming = channel;
+      config.dimmingIncrease = true;
+      config.dimmingStepCode = stepCode;
+      config.dimmingLastUpdate = millis();
+      config.dimmingNextStep = millis();
+    } else { // 1-7
+      // Start/continue decreasing
+      config.activeDimming = channel;
+      config.dimmingIncrease = false;
+      config.dimmingStepCode = rel; // 1→100%, 7→~2%
+      config.dimmingLastUpdate = millis();
+      config.dimmingNextStep = millis();
+    }
+  }
+}
+
 NeoPixelBusModule openknxNeoPixelModule;
 extern NeoPixel neoPixelModule;
 
@@ -21,7 +57,128 @@ void NeoPixelBusModule::setup(bool configured)
 void NeoPixelBusModule::loop(bool configured)
 {
   if (!configured || !_initialized) return;
+  
+  // Process active DPT 3.007 start/stop dimming
+  processActiveDimming();
+  
   neoPixelModule.loop(configured);
+}
+
+// Process active start/stop dimming for all segments
+void NeoPixelBusModule::processActiveDimming()
+{
+  uint32_t now = millis();
+  const uint32_t DIMMING_TIMEOUT = 2000; // Stop if no telegram for 2 seconds
+  
+  for (auto& segConfig : _segments) {
+    if (segConfig.activeDimming == SegmentConfig::NONE) continue;
+    
+    Segment* seg = segConfig.segment;
+    if (!seg) continue;
+    
+    // Check for timeout
+    if (now - segConfig.dimmingLastUpdate > DIMMING_TIMEOUT) {
+      segConfig.activeDimming = SegmentConfig::NONE;
+      segConfig.dimmingStepCode = 0;
+      continue;
+    }
+    
+    // Check if it's time for next step
+    if (now < segConfig.dimmingNextStep) continue;
+    
+    // Calculate step interval based on stepCode (faster = more frequent updates)
+    // stepCode 1 (100%) = ~40ms, stepCode 7 (~2%) = ~250ms
+    uint32_t interval = 40 + (segConfig.dimmingStepCode - 1) * 35;
+    segConfig.dimmingNextStep = now + interval;
+    
+    // Calculate delta for this step
+    int16_t delta = dpt3_007_delta(segConfig.dimmingStepCode);
+    delta = delta / 6; // Divide by ~6 to make continuous dimming smoother
+    if (!segConfig.dimmingIncrease) delta = -delta;
+    
+    // Apply dimming based on active channel
+    uint8_t r, g, b;
+    switch (segConfig.activeDimming) {
+      case SegmentConfig::BRIGHTNESS: {
+        uint8_t bri = seg->getBrightness();
+        int16_t newBri = bri + delta;
+        newBri = constrain(newBri, 0, 255);
+        seg->setBrightness((uint8_t)newBri);
+        break;
+      }
+      
+      case SegmentConfig::RED:
+        if (seg->getPixel(0, r, g, b)) {
+          int16_t newR = r + delta;
+          newR = constrain(newR, 0, 255);
+          seg->setAll((uint8_t)newR, g, b);
+        }
+        break;
+        
+      case SegmentConfig::GREEN:
+        if (seg->getPixel(0, r, g, b)) {
+          int16_t newG = g + delta;
+          newG = constrain(newG, 0, 255);
+          seg->setAll(r, (uint8_t)newG, b);
+        }
+        break;
+        
+      case SegmentConfig::BLUE:
+        if (seg->getPixel(0, r, g, b)) {
+          int16_t newB = b + delta;
+          newB = constrain(newB, 0, 255);
+          seg->setAll(r, g, (uint8_t)newB);
+        }
+        break;
+        
+      case SegmentConfig::WHITE:
+      case SegmentConfig::WARM_WHITE:
+      case SegmentConfig::COOL_WHITE:
+        if (seg->getVirtualStrip()->getBytesPerLed() == 4) {
+          uint8_t w;
+          if (seg->getPixel(0, r, g, b, w)) {
+            int16_t newW = w + delta;
+            newW = constrain(newW, 0, 255);
+            seg->setPrimaryColor(r, g, b, (uint8_t)newW);
+            seg->setAll(r, g, b, (uint8_t)newW);
+          }
+        }
+        break;
+        
+      case SegmentConfig::HUE:
+      case SegmentConfig::SATURATION:
+      case SegmentConfig::VALUE: {
+        if (seg->getPixel(0, r, g, b)) {
+          uint8_t h, s, v;
+          ColorHelper::rgbToHSV(r, g, b, h, s, v);
+          
+          if (segConfig.activeDimming == SegmentConfig::HUE) {
+            h = (uint8_t)(h + delta); // Wraps automatically
+          } else if (segConfig.activeDimming == SegmentConfig::SATURATION) {
+            int16_t newS = s + delta;
+            s = (uint8_t)constrain(newS, 0, 255);
+          } else { // VALUE
+            int16_t newV = v + delta;
+            v = (uint8_t)constrain(newV, 0, 255);
+          }
+          
+          uint8_t newR, newG, newB;
+          ColorHelper::hsvToRGB(h, s, v, newR, newG, newB);
+          seg->setAll(newR, newG, newB);
+          
+          if (seg->getVirtualStrip()->getBytesPerLed() == 4) {
+            uint8_t w;
+            seg->getPixel(0, r, g, b, w);
+            seg->setPrimaryColor(newR, newG, newB, w);
+          }
+        }
+        break;
+      }
+      
+      default:
+        break;
+    }
+  }
 }
 
 void NeoPixelBusModule::processInputKo(GroupObject& ko)
@@ -706,269 +863,62 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
       // Relative controls (DPT 3.007 - relative dimming)
       case NEO_KoBriRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3; // 0 = decrease, 1 = increase
-        uint8_t stepCode = rel & 0x07;
-        
-        // Calculate step size based on stepCode (0 = stop, 1-7 = different step sizes)
-        if (stepCode > 0) {
-          uint8_t currentBrightness = targetSegment->getBrightness();
-          int16_t step = (stepCode * 255) / 64; // Scale step to 0-255 range
-          int16_t newBrightness = direction ? (currentBrightness + step) : (currentBrightness - step);
-          newBrightness = constrain(newBrightness, 0, 255);
-          
-          logInfoP("Segment %d Brightness Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentBrightness, newBrightness);
-          
-          targetSegment->setBrightness((uint8_t)newBrightness);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::BRIGHTNESS, rel, channel);
         break;
       }
 
       case NEO_KoRRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          uint8_t currentRed = targetSegment->getConfig().r();
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newRed = direction ? (currentRed + step) : (currentRed - step);
-          newRed = constrain(newRed, 0, 255);
-          
-          logInfoP("Segment %d Red Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentRed, newRed);
-          
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          uint8_t w = targetSegment->getConfig().w();
-          targetSegment->setPrimaryColor((uint8_t)newRed, g, b, w);
-          targetSegment->setAll((uint8_t)newRed, g, b, w);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::RED, rel, channel);
         break;
       }
 
       case NEO_KoGRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          uint8_t currentGreen = targetSegment->getConfig().g();
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newGreen = direction ? (currentGreen + step) : (currentGreen - step);
-          newGreen = constrain(newGreen, 0, 255);
-          
-          logInfoP("Segment %d Green Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentGreen, newGreen);
-          
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t b = targetSegment->getConfig().b();
-          uint8_t w = targetSegment->getConfig().w();
-          targetSegment->setPrimaryColor(r, (uint8_t)newGreen, b, w);
-          targetSegment->setAll(r, (uint8_t)newGreen, b, w);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::GREEN, rel, channel);
         break;
       }
 
       case NEO_KoBRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          uint8_t currentBlue = targetSegment->getConfig().b();
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newBlue = direction ? (currentBlue + step) : (currentBlue - step);
-          newBlue = constrain(newBlue, 0, 255);
-          
-          logInfoP("Segment %d Blue Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentBlue, newBlue);
-          
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t w = targetSegment->getConfig().w();
-          targetSegment->setPrimaryColor(r, g, (uint8_t)newBlue, w);
-          targetSegment->setAll(r, g, (uint8_t)newBlue, w);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::BLUE, rel, channel);
         break;
       }
 
       case NEO_KoWRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          uint8_t currentWhite = targetSegment->getConfig().w();
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newWhite = direction ? (currentWhite + step) : (currentWhite - step);
-          newWhite = constrain(newWhite, 0, 255);
-          
-          logInfoP("Segment %d White Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentWhite, newWhite);
-          
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          targetSegment->setPrimaryColor(r, g, b, (uint8_t)newWhite);
-          targetSegment->setAll(r, g, b, (uint8_t)newWhite);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::WHITE, rel, channel);
         break;
       }
 
       case NEO_KoWWRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          uint8_t currentWW = targetSegment->getConfig().w(); // Using primaryW for warm white
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newWW = direction ? (currentWW + step) : (currentWW - step);
-          newWW = constrain(newWW, 0, 255);
-          
-          logInfoP("Segment %d Warm White Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentWW, newWW);
-          
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          targetSegment->setPrimaryColor(r, g, b, (uint8_t)newWW);
-          targetSegment->setAll(r, g, b, (uint8_t)newWW);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::WARM_WHITE, rel, channel);
         break;
       }
 
       case NEO_KoCWRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          uint8_t currentCW = targetSegment->getConfig().w(); // Using primaryW (secondaryW removed)
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newCW = direction ? (currentCW + step) : (currentCW - step);
-          newCW = constrain(newCW, 0, 255);
-          
-          logInfoP("Segment %d Cool White Relative: %s %d -> %d", channel, 
-                   direction ? "UP" : "DOWN", currentCW, newCW);
-          
-          // For cool white relative, apply as white channel (Note: secondaryW removed in refactoring)
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          targetSegment->setPrimaryColor(r, g, b, (uint8_t)newCW);
-          targetSegment->setAll(r, g, b, (uint8_t)newCW);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::COOL_WHITE, rel, channel);
         break;
       }
 
       case NEO_KoHRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          // Get current RGB from segment config
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          uint8_t w = targetSegment->getConfig().w();
-          
-          // Convert RGB to HSV
-          uint8_t h, s, v;
-          ColorHelper::rgbToHSV(r, g, b, h, s, v);
-          
-          // Calculate hue step (0-255 maps to 0-360 degrees)
-          int16_t step = (stepCode * 255) / 64; // Scale step to 0-255 range
-          int16_t newHue = direction ? (h + step) : (h - step);
-          
-          // Wrap hue around 0-255 (equivalent to 0-360 degrees)
-          if (newHue < 0) newHue += 255;
-          else if (newHue > 255) newHue -= 255;
-          
-          logInfoP("Segment %d Hue Relative: %s H=%d->%d S=%d V=%d", channel, 
-                   direction ? "UP" : "DOWN", h, newHue, s, v);
-          
-          // Convert back to RGB
-          uint8_t newR, newG, newB;
-          ColorHelper::hsvToRGB((uint8_t)newHue, s, v, newR, newG, newB);
-          
-          // Store in config and apply
-          targetSegment->setPrimaryColor(newR, newG, newB, w);
-          targetSegment->setAll(newR, newG, newB, w);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::HUE, rel, channel);
         break;
       }
 
       case NEO_KoSRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          // Get current RGB from segment config
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          uint8_t w = targetSegment->getConfig().w();
-          
-          // Convert RGB to HSV
-          uint8_t h, s, v;
-          ColorHelper::rgbToHSV(r, g, b, h, s, v);
-          
-          // Calculate saturation step
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newSat = direction ? (s + step) : (s - step);
-          newSat = constrain(newSat, 0, 255);
-          
-          logInfoP("Segment %d Saturation Relative: %s H=%d S=%d->%d V=%d", channel, 
-                   direction ? "UP" : "DOWN", h, s, newSat, v);
-          
-          // Convert back to RGB
-          uint8_t newR, newG, newB;
-          ColorHelper::hsvToRGB(h, (uint8_t)newSat, v, newR, newG, newB);
-          
-          // Store in config and apply
-          targetSegment->setPrimaryColor(newR, newG, newB, w);
-          targetSegment->setAll(newR, newG, newB, w);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::SATURATION, rel, channel);
         break;
       }
 
       case NEO_KoVRel: {
-        uint8_t rel = ko.value(DPT_Control_Dimming);
-        uint8_t direction = (rel & 0x08) >> 3;
-        uint8_t stepCode = rel & 0x07;
-        
-        if (stepCode > 0) {
-          // Get current RGB from segment config
-          uint8_t r = targetSegment->getConfig().r();
-          uint8_t g = targetSegment->getConfig().g();
-          uint8_t b = targetSegment->getConfig().b();
-          uint8_t w = targetSegment->getConfig().w();
-          
-          // Convert RGB to HSV
-          uint8_t h, s, v;
-          ColorHelper::rgbToHSV(r, g, b, h, s, v);
-          
-          // Calculate value (brightness) step
-          int16_t step = (stepCode * 255) / 64;
-          int16_t newValue = direction ? (v + step) : (v - step);
-          newValue = constrain(newValue, 0, 255);
-          
-          logInfoP("Segment %d Value Relative: %s H=%d S=%d V=%d->%d", channel, 
-                   direction ? "UP" : "DOWN", h, s, v, newValue);
-          
-          // Convert back to RGB
-          uint8_t newR, newG, newB;
-          ColorHelper::hsvToRGB(h, s, (uint8_t)newValue, newR, newG, newB);
-          
-          // Store in config and apply
-          targetSegment->setPrimaryColor(newR, newG, newB, w);
-          targetSegment->setAll(newR, newG, newB, w);
-        }
+        uint8_t rel = ko.value(Dpt(5, 10));
+        startStopDimming(_segments[channel], SegmentConfig::VALUE, rel, channel);
         break;
       }
 

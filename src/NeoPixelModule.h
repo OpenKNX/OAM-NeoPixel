@@ -73,6 +73,14 @@ public:
     uint8_t currentH = 0;                // Current Hue (0-255)
     uint8_t currentS = 255;              // Current Saturation (0-255)
     uint8_t currentV = 0;                // Current Value (0-255)
+
+    // DPT 3.007 Start/Stop dimming state
+    enum DimmingChannel { NONE, BRIGHTNESS, RED, GREEN, BLUE, WHITE, WARM_WHITE, COOL_WHITE, HUE, SATURATION, VALUE };
+    DimmingChannel activeDimming = NONE; // Which channel is currently dimming
+    bool dimmingIncrease = false;        // Dimming direction (true = increase/up, false = decrease/down)
+    uint8_t dimmingStepCode = 0;         // Current step code (0 = stopped, 1-7 = speed)
+    uint32_t dimmingLastUpdate = 0;      // Last telegram time (millis)
+    uint32_t dimmingNextStep = 0;        // Next dimming step time (millis)
   };
 
   // Virtual Strip Configuration Structure  
@@ -97,6 +105,7 @@ public:
   void setup(bool configured) override;
   void loop(bool configured) override;
   void processInputKo(GroupObject& ko) override;
+  void processActiveDimming(); // Process DPT 3.007 start/stop dimming
 
   // Console integration: delegate help and commands to core NeoPixel module
   void showHelp() override;
