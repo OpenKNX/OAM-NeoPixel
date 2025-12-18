@@ -529,6 +529,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
           // No effect - apply immediately
           uint8_t r, g, b;
           if (targetSegment->getPixel(0, r, g, b)) {
+            //logInfoP("Segment %d: Read current RGB=(%d,%d,%d), setting W=%d", channel, r, g, b, white);
             targetSegment->setAll(r, g, b, white);
             cfg.savedR = r;
             cfg.savedG = g;
@@ -539,6 +540,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             cfg.savedLastWasEffect = false;
           } else {
             // Fallback if getPixel fails - pure white
+            //logInfoP("Segment %d: getPixel failed, using pure white W=%d", channel, white);
             targetSegment->setAll(0, 0, 0, white);
             cfg.savedR = 0;
             cfg.savedG = 0;
@@ -549,6 +551,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             cfg.savedLastWasEffect = false;
           }
           
+          //logInfoP("Segment %d: About to call updateAll(), white should be %d", channel, white);
           neoPixelModule.updateAll();
         }
         
@@ -1396,8 +1399,21 @@ void NeoPixelBusModule::configureFromETS()
   {
     _channelIndex = i;
     
-    const LedProtocol proto = mapProtocol((uint8_t)ParamNEOSTRIP_NEOLEDType);
-    const ColorOrder order = mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
+    const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
+    const LedProtocol proto = mapProtocol(ledTypeParam);
+    
+    // Get color order: use GRBW for RGBW protocols, or user-selected for others
+    ColorOrder order;
+    if (ledTypeParam == 8) {  // SK6812/WS2814 (RGBW) - special ETS value
+      // RGBW capable protocols: use GRBW by default (white channel on back)
+      // User can adjust white position with Swap parameter if needed
+      order = ColorOrder::GRBW;
+      logInfoP("Strip %d: RGBW protocol detected (ETS type 8), using GRBW color order", i);
+    } else {
+      // Regular RGB protocols: use user-selected color order
+      order = mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
+    }
+    
     const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
     const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
 
@@ -1769,11 +1785,25 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
     return;
   }
 
-  // Create virtual strip (always RGB internally, regardless of hardware ColorOrders)
-  _virtualStrip = neoPixelModule.addVirtualStrip(_totalLeds, ColorOrder::RGB);
+  // Determine if any physical strip requires RGBW (4 bytes per LED)
+  bool needsRGBW = false;
+  for (const auto* phys : _physicalStrips) {
+    if (phys && phys->getColorOrder() >= ColorOrder::RGBW) {
+      needsRGBW = true;
+      break;
+    }
+  }
+
+  // Create virtual strip: RGBW if any strip needs it, otherwise RGB
+  ColorOrder virtualOrder = needsRGBW ? ColorOrder::RGBW : ColorOrder::RGB;
+  _virtualStrip = neoPixelModule.addVirtualStrip(_totalLeds, virtualOrder);
   if (!_virtualStrip) {
     logErrorP("Failed to create virtual strip");
     return;
+  }
+  
+  if (needsRGBW) {
+    logInfoP("VirtualStrip created with RGBW support (4 bytes/LED) for RGBW physical strips");
   }
 
   auto mgr = neoPixelModule.getManager();
