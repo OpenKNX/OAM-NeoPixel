@@ -289,12 +289,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         if (effectActive) {
           // Store as pending - will be applied when effect stops
           // Use saved color as base, not the current effect frame
-          uint8_t r = cfg.savedValid ? cfg.savedR : 0;
-          uint8_t g = cfg.savedValid ? cfg.savedG : 0;
-          uint8_t b = cfg.savedValid ? cfg.savedB : 0;
           cfg.pendingSolidR = red;
-          cfg.pendingSolidG = g;
-          cfg.pendingSolidB = b;
+          cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
+          cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
           cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
           logInfoP("Segment %d: Stored pending Red=%d (effect active, base on saved color)", channel, red);
         } else {
@@ -368,12 +365,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         if (effectActive) {
           // Store as pending - will be applied when effect stops
           // Use saved color as base, not the current effect frame
-          uint8_t r = cfg.savedValid ? cfg.savedR : 0;
-          uint8_t g = cfg.savedValid ? cfg.savedG : 0;
-          uint8_t b = cfg.savedValid ? cfg.savedB : 0;
-          cfg.pendingSolidR = r;
+          cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
           cfg.pendingSolidG = green;
-          cfg.pendingSolidB = b;
+          cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
           cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
           logInfoP("Segment %d: Stored pending Green=%d (effect active, base on saved color)", channel, green);
         } else {
@@ -447,11 +441,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         if (effectActive) {
           // Store as pending - will be applied when effect stops
           // Use saved color as base, not the current effect frame
-          uint8_t r = cfg.savedValid ? cfg.savedR : 0;
-          uint8_t g = cfg.savedValid ? cfg.savedG : 0;
-          uint8_t b = cfg.savedValid ? cfg.savedB : 0;
-          cfg.pendingSolidR = r;
-          cfg.pendingSolidG = g;
+          cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
+          cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
           cfg.pendingSolidB = blue;
           cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
           logInfoP("Segment %d: Stored pending Blue=%d (effect active, base on saved color)", channel, blue);
@@ -1395,6 +1386,41 @@ void NeoPixelBusModule::configureFromETS()
   // Initialize the OFM-NeoPixel module first
   neoPixelModule.init();
   
+  // Track used GPIO pins to avoid conflicts
+  std::vector<uint8_t> usedPins;
+  
+  // Available GPIO pins in order (PIN1-PIN8)
+  #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
+    const uint8_t availablePins[] = {
+      KNXIAO_RP2040_PIN1, KNXIAO_RP2040_PIN2, KNXIAO_RP2040_PIN3, KNXIAO_RP2040_PIN4,
+      KNXIAO_RP2040_PIN5, KNXIAO_RP2040_PIN6, KNXIAO_RP2040_PIN7, KNXIAO_RP2040_PIN8
+    };
+  #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
+    const uint8_t availablePins[] = {
+      KNXIAO_ESP32S3_PIN1, KNXIAO_ESP32S3_PIN2, KNXIAO_ESP32S3_PIN3, KNXIAO_ESP32S3_PIN4,
+      KNXIAO_ESP32S3_PIN5, KNXIAO_ESP32S3_PIN6, KNXIAO_ESP32S3_PIN7, KNXIAO_ESP32S3_PIN8
+    };
+  #else
+    const uint8_t availablePins[] = {27, 28, 29, 6, 7, 2, 4, 3}; // Fallback
+  #endif
+  const uint8_t numAvailablePins = sizeof(availablePins) / sizeof(availablePins[0]);
+  uint8_t nextPinIndex = 0; // Index into availablePins array
+  
+  // Helper lambda to get next available pin(s)
+  auto getNextPin = [&](uint8_t count = 1) -> bool {
+    // Check if we have enough pins available
+    if (nextPinIndex + count > numAvailablePins) {
+      return false; // Not enough pins
+    }
+    nextPinIndex += count;
+    return true;
+  };
+  
+  // Helper lambda to check if a pin is already used
+  auto isPinUsed = [&usedPins](uint8_t pin) {
+    return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
+  };
+  
   // 1) Determine number of strips from ETS (max 6 strips supported in virtual configuration)
   const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(6, ParamNEO_NEONumberOfLEDStrips));
   _totalLeds = 0;
@@ -1439,56 +1465,39 @@ void NeoPixelBusModule::configureFromETS()
         mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
         sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
       } else {
-        // Use predefined GPIO pins based on strip index and hardware platform
-        // Default SPI configurations from hardware definitions
-        switch (i) {
-          case 0: // Strip 1 - Default SPI configuration
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              sckGpio = 2;   // KNXIAO_RP2040_PIN6 (GPIO2)
-              mosiGpio = 3;  // KNXIAO_RP2040_PIN8 (GPIO3) 
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              sckGpio = 2;   // KNXIAO_ESP32S3_PIN1 (GPIO2)
-              mosiGpio = 3;  // KNXIAO_ESP32S3_PIN2 (GPIO3)
-            #else
-              sckGpio = 2;   // Fallback
-              mosiGpio = 3;
-            #endif
+        // Automatic pin allocation: SPI needs 2 consecutive pins
+        // Skip to next available pair of pins that aren't used
+        bool foundPins = false;
+        while (nextPinIndex + 1 < numAvailablePins) {
+          sckGpio = availablePins[nextPinIndex];
+          mosiGpio = availablePins[nextPinIndex + 1];
+          
+          // Check if both pins are free
+          if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio)) {
+            foundPins = true;
+            nextPinIndex += 2; // Consume both pins
             break;
-          case 1: // Strip 2 - Second SPI configuration  
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              sckGpio = 6;   // KNXIAO_RP2040_PIN4 (GPIO6)
-              mosiGpio = 7;  // KNXIAO_RP2040_PIN5 (GPIO7)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              sckGpio = 4;   // KNXIAO_ESP32S3_PIN3 (GPIO4)
-              mosiGpio = 5;  // KNXIAO_ESP32S3_PIN4 (GPIO5)
-            #else
-              sckGpio = 6;   // Fallback
-              mosiGpio = 7;
-            #endif
-            break;
-          case 2: // Strip 3 - Third SPI configuration
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              sckGpio = 27;  // KNXIAO_RP2040_PIN1 (GPIO27)
-              mosiGpio = 28; // KNXIAO_RP2040_PIN2 (GPIO28)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              sckGpio = 6;   // KNXIAO_ESP32S3_PIN5 (GPIO6)
-              mosiGpio = 7;  // KNXIAO_ESP32S3_PIN6 (GPIO7)
-            #else
-              sckGpio = 18;  // Fallback
-              mosiGpio = 19;
-            #endif
-            break;
-          default: // Strip 4+ - Use fallback values
-            sckGpio = 18;
-            mosiGpio = 19;
-            break;
+          }
+          // If conflict, skip to next pin and try again
+          nextPinIndex++;
+        }
+        
+        if (!foundPins) {
+          logErrorP("Strip %d: No available GPIO pins for SPI strip!", i);
+          // Fallback to last resort pins
+          sckGpio = 18;
+          mosiGpio = 19;
         }
       }
       
       phys = neoPixelModule.addSpiStrip(mosiGpio, sckGpio, pixels, proto, order);
       logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s%s", 
               i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
-              gpioManualConfig ? " (Manual)" : " (Default)");
+              gpioManualConfig ? " (Manual)" : " (Auto)");
+      
+      // Track used pins
+      usedPins.push_back(mosiGpio);
+      usedPins.push_back(sckGpio);
     } else {
       // 1-Wire protocols use Data GPIO
       uint8_t dataGpioPin;
@@ -1500,91 +1509,36 @@ void NeoPixelBusModule::configureFromETS()
         // Use ETS configured GPIO pin
         dataGpioPin = dataGpio;
       } else {
-        // Use predefined GPIO pins based on strip index and hardware platform
-        // D1-D8 pins for physical strips 0-7
-        switch (i) {
-          case 0: // Strip 1 - D1
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 27;  // D1: KNXIAO_RP2040_PIN1 (GPIO27)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 2;   // D1: KNXIAO_ESP32S3_PIN1 (GPIO2)
-            #else
-              dataGpioPin = 27;  // Fallback
-            #endif
+        // Automatic pin allocation: 1-Wire needs 1 pin
+        // Find next available unused pin
+        bool foundPin = false;
+        while (nextPinIndex < numAvailablePins) {
+          dataGpioPin = availablePins[nextPinIndex];
+          
+          // Check if pin is free
+          if (!isPinUsed(dataGpioPin)) {
+            foundPin = true;
+            nextPinIndex++; // Consume this pin
             break;
-          case 1: // Strip 2 - D2
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 28;  // D2: KNXIAO_RP2040_PIN2 (GPIO28)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 3;   // D2: KNXIAO_ESP32S3_PIN2 (GPIO3)
-            #else
-              dataGpioPin = 28;  // Fallback
-            #endif
-            break;
-          case 2: // Strip 3 - D3
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 29;  // D3: KNXIAO_RP2040_PIN3 (GPIO29)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 4;   // D3: KNXIAO_ESP32S3_PIN3 (GPIO4)
-            #else
-              dataGpioPin = 29;  // Fallback
-            #endif
-            break;
-          case 3: // Strip 4 - D4
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 6;   // D4: KNXIAO_RP2040_PIN4 (GPIO6)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 5;   // D4: KNXIAO_ESP32S3_PIN4 (GPIO5)
-            #else
-              dataGpioPin = 6;   // Fallback
-            #endif
-            break;
-          case 4: // Strip 5 - D5
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 7;   // D5: KNXIAO_RP2040_PIN5 (GPIO7)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 6;   // D5: KNXIAO_ESP32S3_PIN5 (GPIO6)
-            #else
-              dataGpioPin = 7;   // Fallback
-            #endif
-            break;
-          case 5: // Strip 6 - D6
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 2;   // D6: KNXIAO_RP2040_PIN6 (GPIO2)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 7;   // D6: KNXIAO_ESP32S3_PIN6 (GPIO7)
-            #else
-              dataGpioPin = 2;   // Fallback
-            #endif
-            break;
-          case 6: // Strip 7 - D7
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 4;   // D7: KNXIAO_RP2040_PIN7 (GPIO4)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 8;   // D7: KNXIAO_ESP32S3_PIN8 (GPIO9)
-            #else
-              dataGpioPin = 4;   // Fallback
-            #endif
-            break;
-          case 7: // Strip 8 - D8
-            #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-              dataGpioPin = 3;   // D8: KNXIAO_RP2040_PIN8 (GPIO3)
-            #elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-              dataGpioPin = 9;   // D8: KNXIAO_ESP32S3_PIN8 (GPIO9)
-            #else
-              dataGpioPin = 3;   // Fallback
-            #endif
-            break;
-          default: // More than 8 strips - use fallback
-            dataGpioPin = dataGpio; // Use ETS parameter as fallback
-            break;
+          }
+          // If conflict, skip to next pin
+          nextPinIndex++;
+        }
+        
+        if (!foundPin) {
+          logErrorP("Strip %d: No available GPIO pins for 1-Wire strip!", i);
+          // Fallback to ETS parameter
+          dataGpioPin = dataGpio;
         }
       }
       
       phys = neoPixelModule.addStrip(dataGpioPin, pixels, proto, order);
       logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s", 
               i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
-              gpioManualConfig ? " (Manual)" : " (Default)");
+              gpioManualConfig ? " (Manual)" : " (Auto)");
+      
+      // Track used pin
+      usedPins.push_back(dataGpioPin);
     }
 
     if (phys) {
