@@ -58,10 +58,19 @@ void NeoPixelBusModule::loop(bool configured)
 {
   if (!configured || !_initialized) return;
   
+  // Calculate deltaTime for effects and animations
+  uint32_t currentTime = millis();
+  uint32_t deltaTime = currentTime - _lastLoopTime;
+  _lastLoopTime = currentTime;
+  
   // Process active DPT 3.007 start/stop dimming
   processActiveDimming();
   
-  neoPixelModule.loop(configured);
+  // Use full 4-phase update pipeline for effect support
+  auto mgr = neoPixelModule.getManager();
+  if (mgr) {
+    mgr->update(deltaTime);  // Phase 1-4: updateEffects, applyPowerLimit, syncAll, showAll
+  }
 }
 
 // Process active start/stop dimming for all segments
