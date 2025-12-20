@@ -606,6 +606,16 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %ModuleVersion%" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
+                  <!-- Global Power KO -->
+                  <ComObjectRefRef RefId="%AID%_O-%TT%00000_R-%TT%0000001"  />
+                  <!-- Global Power State KO -->
+                  <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />
+                  <!-- Global Brightness KO -->
+                  <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
+                  <!-- Global Brightness State KO -->
+                  <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
+                </ParameterBlock>
                 <!-- ========================================================================================================= -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Kurve" UIHint="Headline" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" HelpContext="%DOC%"/>
@@ -645,7 +655,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="HCL" Text="HCL" Inline="true" ShowInComObjectTree="true">
                 <!-- HCL State  -->
-                <!-- <ComObjectRefRef RefId="%AID%_O-%TT%00002_R-%TT%0000201" /> -->
+                <ComObjectRefRef RefId="%AID%_O-%TT%00002_R-%TT%0000201" />
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Physikalisch" Text="Physikalische LED Streifen" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine LedStreifen Parameter" UIHint="Headline" />

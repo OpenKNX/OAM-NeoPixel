@@ -58,6 +58,9 @@ void NeoPixelBusModule::loop(bool configured)
 {
   if (!configured || !_initialized) return;
   
+  // If global power is OFF, skip all processing (no effects, no dimming, no updates)
+  if (!_globalPowerOn) return;
+  
   // Calculate deltaTime for effects and animations
   uint32_t currentTime = millis();
   uint32_t deltaTime = currentTime - _lastLoopTime;
@@ -200,12 +203,19 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     bool powerState = ko.value(DPT_Switch);
     logInfoP("Global Power KO: %s", powerState ? "ON" : "OFF");
     
+    // Update global power state flag
+    _globalPowerOn = powerState;
+    
     if (powerState) {
       // Power on - restore previous state or apply default
       neoPixelModule.updateAll();
     } else {
-      // Power off - turn off all LEDs  
-      neoPixelModule.clearAll();
+      // Power off - turn off all LEDs immediately
+      auto mgr = neoPixelModule.getManager();
+      if (mgr) {
+        mgr->clearAll();
+        mgr->showAll();  // Must explicitly show after clear
+      }
     }
     
     // Send state feedback
@@ -1069,44 +1079,41 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         uint8_t brightness = (brightnessPercent * 255) / 100;
         logInfoP("Segment %d Brightness: %d%% (scaled to %d/255)", channel, brightnessPercent, brightness);
         
-        // Get the ACTUAL current pixel color from the first LED (this has old brightness baked in)
-        uint8_t r = 0, g = 0, b = 0, w = 0;
-        bool isRgbw = _virtualStrip && _virtualStrip->getBytesPerLed() == 4;
-        if (isRgbw) {
-          targetSegment->getPixel(0, r, g, b, w);
-        } else {
-          targetSegment->getPixel(0, r, g, b);
-        }
+        // Check if an effect is running
+        bool effectActive = (targetSegment->getEffect() != nullptr);
         
-        // Get OLD brightness to scale the current RGB values back to "undimmed"
-        uint8_t oldBrightness = targetSegment->getBrightness();
+        // Set the new brightness level
+        targetSegment->setBrightness(brightness);
         
-        // Scale current colors back to full brightness
-        // This gives us the "desired" color independent of brightness
-        uint8_t desiredR = r, desiredG = g, desiredB = b, desiredW = w;
-        if (oldBrightness > 0 && oldBrightness < 255) {
-          // Inverse scaling: currentValue = desiredValue * (brightness/255), so desiredValue = currentValue * (255/brightness)
-          desiredR = (r * 255) / oldBrightness;
-          desiredG = (g * 255) / oldBrightness;
-          desiredB = (b * 255) / oldBrightness;
+        if (!effectActive) {
+          // No effect running - need to reapply current solid color to trigger brightness change
+          uint8_t r = 0, g = 0, b = 0, w = 0;
+          bool isRgbw = _virtualStrip && _virtualStrip->getBytesPerLed() == 4;
+          bool hasPixelData = false;
+          
           if (isRgbw) {
-            desiredW = (w * 255) / oldBrightness;
+            hasPixelData = targetSegment->getPixel(0, r, g, b, w);
+          } else {
+            hasPixelData = targetSegment->getPixel(0, r, g, b);
+          }
+          
+          // Reapply the current pixel color to trigger the brightness change
+          if (hasPixelData) {
+            if (isRgbw) {
+              targetSegment->setAll(r, g, b, w);
+            } else {
+              targetSegment->setAll(r, g, b);
+            }
           }
         }
-        
-        // Set segment brightness FIRST
-        targetSegment->setBrightness(brightness);
-
-        // Reapply desired color with NEW brightness scaling
-        if (isRgbw) {
-          targetSegment->setAll(desiredR, desiredG, desiredB, desiredW);
-        } else {
-          targetSegment->setAll(desiredR, desiredG, desiredB);
-        }
+        // If effect is active, just changing brightness is enough - effect will render with new brightness
 
         // Persist desired brightness for power-restore
         SegmentConfig& cfgB = _segments[channel];
         cfgB.savedBrightness = brightness;
+        
+        // Trigger update to apply brightness change
+        neoPixelModule.updateAll();
         
         // Send status feedback (send back percentage)
         _channelIndex = channel;

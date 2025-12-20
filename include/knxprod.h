@@ -18,7 +18,7 @@
 #define MAIN_FirmwareName "NeoPixel KNX Adapter (Dev)"
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 1
-#define MAIN_ApplicationVersion 23
+#define MAIN_ApplicationVersion 32
 #define MAIN_ApplicationEncoding iso-8859-15
 #define MAIN_ParameterSize 5525
 #define MAIN_MaxKoNumber 1223

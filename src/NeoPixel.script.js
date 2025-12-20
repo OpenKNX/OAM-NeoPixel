@@ -25,7 +25,7 @@ function NEO_LedTypeToRGB(input, output, context) {
   map[2]  = CO_RGB; // WS2811
   map[3]  = CO_GRB; // WS2813
   map[4]  = CO_GRB; // SK6812 (RGB)
-  map[5]  = CO_RGB; // APA102 (SPI)
+  map[5]  = CO_GRB; // APA102 (SPI)
   map[6]  = CO_RGB; // SK9822 (SPI)
   map[7]  = CO_GRB; // WS281x (generic RGB)
   map[8]  = CO_GRB; // SK6812/WS2814 (RGBW) -> RGB part = GRB

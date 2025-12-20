@@ -194,6 +194,9 @@ private:
   uint8_t _globalBrightness = 255;       // Global brightness multiplier (0-255, default full)
   std::vector<uint8_t> _originalBrightness; // Store original segment brightness levels
   
+  // Global Power Control
+  bool _globalPowerOn = true;            // Global power state (default ON)
+  
   // HCL Color Temperature Control
   bool _hclModeEnabled = false;          // Whether HCL mode is active
   uint16_t _currentHclTemperature = 6500; // Current HCL temperature in Kelvin (default daylight)
