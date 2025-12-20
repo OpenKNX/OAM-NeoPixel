@@ -1731,27 +1731,28 @@ void NeoPixelBusModule::configureFromETS()
             // The config is created in the PhysicalStrip constructor
             if (phys)
             {
-                auto* cfg = dynamic_cast<SpiStripConfig*>(phys->getConfig());
+                auto* cfg = phys->getConfig();
+                SpiStripConfig* spiCfg = cfg && cfg->isSpiConfig() ? static_cast<SpiStripConfig*>(cfg) : nullptr;
 
-                if (cfg)
+                if (spiCfg)
                 {
                     // Read "Überspringe erste LEDs" parameter for this strip
                     uint16_t skipLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
 
                     // Store skipFirstLeds in config (VirtualStrip will force them to black)
-                    cfg->setSkipFirstLeds(skipLeds);
+                    spiCfg->setSkipFirstLeds(skipLeds);
 
                     // Set dummy LED mode based on skipLeds parameter:
                     // - skipLeds=0: setDummyLedMode(0) - all LEDs active
                     // - skipLeds>0: setDummyLedMode(1) - sacrifice LED#0, then (skipLeds-1) LEDs forced black
                     if (skipLeds > 0)
                     {
-                        cfg->setDummyLedMode(1); // Physical dummy LED (sacrifice LED#0)
+                        spiCfg->setDummyLedMode(1); // Physical dummy LED (sacrifice LED#0)
                         logInfoP("SPI Strip %d: Skip mode enabled - %d LEDs will stay black (1 dummy + %d forced)", i, skipLeds, skipLeds - 1);
                     }
                     else
                     {
-                        cfg->setDummyLedMode(0); // No dummy LED
+                        spiCfg->setDummyLedMode(0); // No dummy LED
                         logInfoP("SPI Strip %d: All LEDs active (no skipping)", i);
                     }
 

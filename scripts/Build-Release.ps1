@@ -28,21 +28,24 @@
 ../OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $args[0]
 if (!$?) { exit 1 }
 
-# build firmware based on generated headerfile for SAMD
-lib/OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_SAMD firmware-SAMD bin
-if (!$?) { exit 1 }
-
-# build firmware for PiPico-BCU-Connector
-lib/OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_PiPico_BCU_Connector firmware-PiPico-BCU-Connector uf2
-if (!$?) { exit 1 }
-
-# build firmware for Masifi-Sensor_Breakout
-lib/OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_MASIFI_SENSOR_BREAKOUT firmware-Masifi-Sensor_Breakout uf2
-if (!$?) { exit 1 }
-
 # build firmware based on generated headerfile for ESP32
-../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_ESP32 firmware-ESP32 bin
+#../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_ESP32 firmware-ESP32 bin
+#if (!$?) { exit 1 }
+
+../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 OpenKNX-XIAO-KNeoPiX-RP2350_V1 uf2
 if (!$?) { exit 1 }
+
+../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1 OpenKNX-XIAO-KNeoPiX-RP2040_V1 uf2
+if (!$?) { exit 1 }
+#
+../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1 OpenKNX-XIAO-RP2040-Mini_V1 uf2
+if (!$?) { exit 1 }
+#
+#../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1 OpenKNX-XIAO-RP2350-Mini_V1 uf2
+#if (!$?) { exit 1 }
+#
+../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1 OpenKNX-XIAO-ESP32S3-Mini_V1 bin
+if (!$?) { exit 1 } 
 
 # execute generic post-build steps
 ../OGM-Common/scripts/setup/reusable/Build-Release-Postprocess.ps1 $args[0]
