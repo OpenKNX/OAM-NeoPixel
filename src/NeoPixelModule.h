@@ -223,8 +223,8 @@ private:
   void applyPowerLimiting();
   
   // Strip Options Implementation
-  void applySwapMode();               // Apply color channel swapping
-  void configureSkipLeds();           // Configure LED skipping offset
+  void applySwapMode();               // Apply color channel swapping (legacy NO-OP)
+  // Skip LED functionality is now handled automatically in OFM-NeoPixel library
   
   // Segment Implementation
   void createSegments();              // Create segments on virtual strip

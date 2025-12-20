@@ -2,6 +2,7 @@
 #include "colorhelper.h"
 #include "OpenKNX.h"
 #include "knxprod.h"
+#include "PhysicalStripConfig.h"  // For SpiStripConfig
 #include <algorithm>
 #include <vector>
 
@@ -1525,6 +1526,49 @@ void NeoPixelBusModule::configureFromETS()
       // Use manager directly for frequency parameter (NeoPixel wrapper doesn't expose this overload yet)
       auto mgr = neoPixelModule.getManager();
       phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
+      
+      // Configure SPI strip-specific settings BEFORE init()
+      // The config is created in the PhysicalStrip constructor
+      if (phys)
+      {
+        auto* cfg = dynamic_cast<SpiStripConfig*>(phys->getConfig());
+        
+        if (cfg)
+        {
+          // Read "Überspringe erste LEDs" parameter for this strip
+          uint16_t skipLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
+          
+          // Store skipFirstLeds in config (VirtualStrip will force them to black)
+          cfg->setSkipFirstLeds(skipLeds);
+          
+          // Set dummy LED mode based on skipLeds parameter:
+          // - skipLeds=0: setDummyLedMode(0) - all LEDs active
+          // - skipLeds>0: setDummyLedMode(1) - sacrifice LED#0, then (skipLeds-1) LEDs forced black
+          if (skipLeds > 0)
+          {
+            cfg->setDummyLedMode(1); // Physical dummy LED (sacrifice LED#0)
+            logInfoP("SPI Strip %d: Skip mode enabled - %d LEDs will stay black (1 dummy + %d forced)", i, skipLeds, skipLeds - 1);
+          }
+          else
+          {
+            cfg->setDummyLedMode(0); // No dummy LED
+            logInfoP("SPI Strip %d: All LEDs active (no skipping)", i);
+          }
+          
+          // Apply the configuration (prepares for init)
+          phys->applyConfig();
+          logInfoP("SPI Strip %d: Configuration applied successfully", i);
+        }
+        else
+        {
+          logErrorP("SPI Strip %d: Failed to cast config to SpiStripConfig!", i);
+        }
+      }
+      else
+      {
+        logErrorP("SPI Strip %d: addSpiStrip returned nullptr!", i);
+      }
+      
       logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s", 
               i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
               spiFrequency, gpioManualConfig ? " (Manual)" : " (Auto)");
@@ -1570,6 +1614,22 @@ void NeoPixelBusModule::configureFromETS()
       logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s", 
               i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
               gpioManualConfig ? " (Manual)" : " (Auto)");
+      
+      // Configure skipFirstLeds for serial strips (all strip types support this now)
+      if (phys)
+      {
+        auto* cfg = phys->getConfig();
+        if (cfg)
+        {
+          uint16_t skipLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
+          cfg->setSkipFirstLeds(skipLeds);
+          
+          if (skipLeds > 0)
+          {
+            logInfoP("1-Wire Strip %d: Skip mode enabled - first %d LEDs will stay black", i, skipLeds);
+          }
+        }
+      }
       
       // Track used pin
       usedPins.push_back(dataGpioPin);
@@ -2271,11 +2331,10 @@ void NeoPixelBusModule::configureStripOptions()
   _swapMode = mapSwapMode(ParamNEOSTRIP_NEOSwap);
   logDebugP("Swap mode configured: %d", _swapMode);
   
-  // Skip first LEDs configuration
+  // Skip first LEDs - now handled automatically in VirtualStrip::syncToPhysical()
   _skipFirstLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
   if (_skipFirstLeds > 0) {
-    configureSkipLeds();
-    logInfoP("Skip first LEDs configured: %d LEDs", _skipFirstLeds);
+    logInfoP("Skip first LEDs configured: %d LEDs (handled by OFM-NeoPixel)", _skipFirstLeds);
   }
 }
 
@@ -2293,30 +2352,6 @@ void NeoPixelBusModule::applySwapMode()
   // Mode 3: G<->B swap
   // Mode 4: R<->G<->B rotate right (R->B, G->R, B->G)
   // Mode 5: R<->G<->B rotate left (R->G, G->B, B->R)
-}
-
-// Configure LED skipping offset
-void NeoPixelBusModule::configureSkipLeds()
-{
-  // Skip LEDs implementation:
-  // This affects how pixels are mapped from VirtualStrip to PhysicalStrips
-  // When skip is applied, the first N LEDs of each PhysicalStrip are not used
-  
-  if (_skipFirstLeds > 0 && _virtualStrip) {
-    // Clear the skipped LEDs to black to ensure they're off
-    for (uint16_t stripIdx = 0; stripIdx < _physicalStrips.size(); stripIdx++) {
-      auto* phys = _physicalStrips[stripIdx];
-      if (phys && _skipFirstLeds < phys->getLedCount()) {
-        // Clear the first N LEDs on each physical strip
-        for (uint16_t led = 0; led < _skipFirstLeds; led++) {
-          phys->setPixel(led, 0, 0, 0); // Set to black
-        }
-        logDebugP("Strip %d: Cleared first %d LEDs (skip offset)", stripIdx, _skipFirstLeds);
-      }
-    }
-  }
-  
-  logDebugP("Skip LEDs configuration applied: %d LEDs", _skipFirstLeds);
 }
 
 // Map ETS swap parameter to swap mode
