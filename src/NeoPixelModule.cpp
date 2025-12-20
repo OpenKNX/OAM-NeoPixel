@@ -1452,6 +1452,12 @@ void NeoPixelBusModule::configureFromETS()
     const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
     const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
 
+    // Skip strips with 0 LEDs configured
+    if (pixels == 0) {
+      logInfoP("Strip %d: Skipped (0 LEDs configured)", i);
+      continue;
+    }
+
     // Determine if this is an SPI protocol and get appropriate GPIO pins
     PhysicalStrip* phys = nullptr;
     if (isSpiProtocol(proto)) {
@@ -1490,10 +1496,31 @@ void NeoPixelBusModule::configureFromETS()
         }
       }
       
-      phys = neoPixelModule.addSpiStrip(mosiGpio, sckGpio, pixels, proto, order);
-      logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s%s", 
+      // Read SPI frequency from ETS (if manual config enabled)
+      uint32_t spiFrequency = 10000000; // Default: 10 MHz
+      bool spiClkManual = (bool)ParamNEOSTRIP_NEOSPICLKManual;
+      
+      if (spiClkManual) {
+        // Map ETS enum value to frequency in Hz
+        uint8_t spiClkValue = (uint8_t)ParamNEOSTRIP_NEOSPICLK;
+        switch (spiClkValue) {
+          case 0: spiFrequency = 1000000;  break; // 1 MHz
+          case 1: spiFrequency = 2000000;  break; // 2 MHz
+          case 2: spiFrequency = 4000000;  break; // 4 MHz
+          case 3: spiFrequency = 8000000;  break; // 8 MHz
+          case 4: spiFrequency = 12000000; break; // 12 MHz
+          case 5: spiFrequency = 16000000; break; // 16 MHz
+          case 6: spiFrequency = 20000000; break; // 20 MHz
+          default: spiFrequency = 10000000; break; // Fallback: 10 MHz
+        }
+      }
+      
+      // Use manager directly for frequency parameter (NeoPixel wrapper doesn't expose this overload yet)
+      auto mgr = neoPixelModule.getManager();
+      phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
+      logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s", 
               i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
-              gpioManualConfig ? " (Manual)" : " (Auto)");
+              spiFrequency, gpioManualConfig ? " (Manual)" : " (Auto)");
       
       // Track used pins
       usedPins.push_back(mosiGpio);
@@ -2018,19 +2045,11 @@ void NeoPixelBusModule::applyGlobalBrightness(uint8_t brightness)
     }
   }
   
-  // Also apply to physical strips that support hardware brightness
-  for (auto* strip : _physicalStrips) {
-    if (strip && strip->supportsHardwareBrightness()) {
-      strip->setHardwareBrightness(brightness);
-      logDebugP("Applied hardware brightness %d%% to physical strip", (brightness * 100) / 255);
-    }
-  }
-  
   // Trigger immediate update to apply changes
   neoPixelModule.updateAll();
   
-  logInfoP("Global brightness %d%% applied to %d segments and %d physical strips", 
-           (brightness * 100) / 255, (int)_segments.size(), (int)_physicalStrips.size());
+  logInfoP("Global brightness %d%% applied to %d segments", 
+           (brightness * 100) / 255, (int)_segments.size());
 }
 
 void NeoPixelBusModule::restoreOriginalBrightness()
@@ -2050,14 +2069,6 @@ void NeoPixelBusModule::restoreOriginalBrightness()
   
   // Reset global brightness to full
   _globalBrightness = 255;
-  
-  // Also reset hardware brightness on physical strips
-  for (auto* strip : _physicalStrips) {
-    if (strip && strip->supportsHardwareBrightness()) {
-      strip->setHardwareBrightness(255);
-      logDebugP("Reset hardware brightness to 100%% on physical strip");
-    }
-  }
   
   // Trigger update to apply changes
   neoPixelModule.updateAll();
@@ -2635,11 +2646,13 @@ Effect* NeoPixelBusModule::getEffectFromType(uint8_t effectType)
     case 3: return EffectPool::getRainbow();     // Rainbow
     case 4: return EffectPool::getPride();       // Pride2015
     case 5: return EffectPool::getConfetti();    // Confetti
-    case 6: return EffectPool::getJuggle();      // Juggle
+    case 6: return EffectPool::getJuggle();      // Juggle    
     case 7: return EffectPool::getBPM();         // BPM
     case 8: return EffectPool::getCylon();       // Cylon
+#ifndef NEOPIXEL_MINIMAL_EFFECTS
     case 9: return EffectPool::getRGBWTest();    // SK6812/RGBW Test
     case 10: return EffectPool::getGarageDoor(); // GarageDoor
+#endif
     default: return nullptr;
   }
 }
