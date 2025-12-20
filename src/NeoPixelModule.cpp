@@ -2652,6 +2652,17 @@ Effect* NeoPixelBusModule::getEffectFromType(uint8_t effectType)
 #ifndef NEOPIXEL_MINIMAL_EFFECTS
     case 9: return EffectPool::getRGBWTest();    // SK6812/RGBW Test
     case 10: return EffectPool::getGarageDoor(); // GarageDoor
+    case 11: return EffectPool::getFire();       // Fire
+    case 12: return EffectPool::getTheaterChase(); // Theater Chase
+    case 13: return EffectPool::getTheaterChaseRainbow(); // Theater Chase Rainbow
+    case 14: return EffectPool::getSinelon();    // Sinelon
+    case 15: return EffectPool::getTwinkle();    // Twinkle
+    case 16: return EffectPool::getSparkle();    // Sparkle
+    case 17: return EffectPool::getBreathing();  // Breathing
+    case 18: return EffectPool::getStrobe();     // Strobe
+    case 19: return EffectPool::getPulse();      // Pulse
+    case 20: return EffectPool::getComet();      // Comet
+    case 21: return EffectPool::getMeteor();     // Meteor
 #endif
     default: return nullptr;
   }
