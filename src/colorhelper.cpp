@@ -2,16 +2,17 @@
 
 uint16_t ColorHelper::getKelvinFromSun(uint16_t minCurr, uint16_t minDiff, uint16_t minK, uint16_t maxK)
 {
-    if (minDiff == 0) {
+    if (minDiff == 0)
+    {
         // Degenerate case: fall back to minK
         return minK;
     }
 
     if (minCurr > minDiff)
-        minCurr = minDiff;  // clamp to [0, minDiff]
+        minCurr = minDiff; // clamp to [0, minDiff]
 
     float x = (float)minCurr * 3.14159265f / (float)minDiff; // 0..π
-    float y = sinf(x);                                      // 0..1..0
+    float y = sinf(x);                                       // 0..1..0
     float k = (float)(maxK - minK) * y + (float)minK;
 
     if (k < minK) k = (float)minK;
@@ -24,18 +25,17 @@ void ColorHelper::rgbToXY(uint8_t in_r, uint8_t in_g, uint8_t in_b, uint16_t& x,
     float r = in_r / 255.0;
     float g = in_g / 255.0;
     float b = in_b / 255.0;
-    r = (r   > 0.04045) ? pow((r   + 0.055) / (1.0 + 0.055), 2.4) : (r   / 12.92);
+    r = (r > 0.04045) ? pow((r + 0.055) / (1.0 + 0.055), 2.4) : (r / 12.92);
     g = (g > 0.04045) ? pow((g + 0.055) / (1.0 + 0.055), 2.4) : (g / 12.92);
-    b = (b  > 0.04045) ? pow((b  + 0.055) / (1.0 + 0.055), 2.4) : (b  / 12.92);
-    
-	float X = r * 0.4124 + g * 0.3576 + b * 0.1805;
-	float Y = r * 0.2126 + g * 0.7152 + b * 0.0722;
-	float Z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+    b = (b > 0.04045) ? pow((b + 0.055) / (1.0 + 0.055), 2.4) : (b / 12.92);
 
+    float X = r * 0.4124 + g * 0.3576 + b * 0.1805;
+    float Y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    float Z = r * 0.0193 + g * 0.1192 + b * 0.9505;
 
     float cx = X / (X + Y + Z);
     float cy = Y / (X + Y + Z);
-    
+
     x = getBytes(cx);
     y = getBytes(cy);
 }
@@ -56,7 +56,8 @@ void ColorHelper::hsvToRGB(uint8_t in_h, uint8_t in_s, uint8_t in_v, uint8_t& r,
     double q = v * (1 - f * s);
     double t = v * (1 - (1 - f) * s);
 
-    switch(i % 6){
+    switch (i % 6)
+    {
         case 0: rt = v, gt = t, bt = p; break;
         case 1: rt = q, gt = v, bt = p; break;
         case 2: rt = p, gt = v, bt = t; break;
@@ -91,23 +92,34 @@ void ColorHelper::rgbToHSV(uint8_t in_r, uint8_t in_g, uint8_t in_b, uint8_t& h,
     v = (uint8_t)(max_val * 255.0f + 0.5f);
 
     // Saturation
-    if (max_val == 0.0f) {
+    if (max_val == 0.0f)
+    {
         s = 0;
-    } else {
+    }
+    else
+    {
         s = (uint8_t)((delta / max_val) * 255.0f + 0.5f);
     }
 
     // Hue
-    if (delta == 0.0f) {
+    if (delta == 0.0f)
+    {
         h = 0; // Undefined, but we'll use 0
-    } else {
+    }
+    else
+    {
         float hue_float;
-        if (max_val == r) {
+        if (max_val == r)
+        {
             hue_float = ((g - b) / delta);
             if (hue_float < 0.0f) hue_float += 6.0f;
-        } else if (max_val == g) {
+        }
+        else if (max_val == g)
+        {
             hue_float = 2.0f + (b - r) / delta;
-        } else { // max_val == b
+        }
+        else
+        { // max_val == b
             hue_float = 4.0f + (r - g) / delta;
         }
         hue_float /= 6.0f; // Normalize to 0-1
@@ -149,8 +161,8 @@ void ColorHelper::xyyToRGB(uint16_t ix, uint16_t iy, uint8_t iz, uint8_t& r, uin
     float _x = getFloat(ix);
     float _y = getFloat(iy);
 
-    //let z = 1.0 - x - y;
-	//return this.colorFromXYZ((Y / y) * x, Y, (Y / y) * z);
+    // let z = 1.0 - x - y;
+    // return this.colorFromXYZ((Y / y) * x, Y, (Y / y) * z);
 
     float y = iz / 255.0f;
     float x = _x * (y / _y);
@@ -171,7 +183,7 @@ void ColorHelper::xyyToRGB(uint16_t ix, uint16_t iy, uint8_t iz, uint8_t& r, uin
 
 uint16_t ColorHelper::getBytes(float input)
 {
-	return max(min(round(input * 65536), 65534.0f), 0.0f);
+    return max(min(round(input * 65536), 65534.0f), 0.0f);
 }
 
 float ColorHelper::getFloat(uint16_t input)
@@ -184,23 +196,26 @@ float ColorHelper::getFloat(uint16_t input)
 
 double ColorHelper::hue2rgb(double p, double q, double t)
 {
-	if (t < 0) t += 1;
-	if (t > 1) t -= 1;
-	if (t < 1 / 6.0) return p + (q - p) * 6 * t;
-	if (t < 1 / 2.0) return q;
-	if (t < 2 / 3.0) return p + (q - p) * (2 / 3.0 - t) * 6;
-	return p;
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6.0) return p + (q - p) * 6 * t;
+    if (t < 1 / 2.0) return q;
+    if (t < 2 / 3.0) return p + (q - p) * (2 / 3.0 - t) * 6;
+    return p;
 }
 
 float ColorHelper::adjust(float input)
 {
     float result;
-    if (input > 0.0031308) {
+    if (input > 0.0031308)
+    {
         result = (1.055f * pow(input, (1.0f / 2.4f)) - 0.055f) * 255.0f;
-    } else {
+    }
+    else
+    {
         result = 12.92f * input * 255.0f;
     }
-    
+
     // Clamp to valid range
     if (result < 0.0f) result = 0.0f;
     if (result > 255.0f) result = 255.0f;

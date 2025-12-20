@@ -40,7 +40,7 @@ void setup()
 #ifdef NEOPIXEL_MODULE
     openknx.addModule(1, openknxNeoPixelModule);
 #endif
-     openknx.addModule(3, openknxLogic);
+    openknx.addModule(3, openknxLogic);
     // openknx.addModule(4, openknxDummyModule);
     // #ifndef ARDUINO_ARCH_SAMD
     //     openknx.addModule(5, openknxVirtualButtonModule);
@@ -147,7 +147,6 @@ void setup()
     // openknxNetwork.mqtt.subscribe("awtrix_a92888/+/pv", [](const char *topic, const void *payload, size_t payload_size) {
     //     logInfo("MQTT2", "Received message on Test2 topic: %s", topic);
     // });
-
 }
 
 void loop()
