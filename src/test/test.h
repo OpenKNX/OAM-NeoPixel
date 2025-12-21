@@ -49,7 +49,7 @@ inline void setup_test_environment(NeoPixel& neoPixelModule)
     auto strip5 = mgr->addStrip(NEOPIX_6, NEOPIX_6_LEDS, LedProtocol::WS2812B, ColorOrder::GRB); // External: use AUTO timing (default)
     strip5->init();
 
-    auto strip6 = mgr->addSpiStrip(NEOPIX_7_MOSI, NEOPIX_7_SCK, NEOPIX_7_LEDS, LedProtocol::APA102, ColorOrder::BGR, 2000000); // 7.5 MHz tested stable
+    auto strip6 = mgr->addSpiStrip(NEOPIX_7_MOSI, NEOPIX_7_SCK, NEOPIX_7_LEDS, LedProtocol::APA102, ColorOrder::BGR, 4000000); //
 
     // Configure dummy LED mode BEFORE init (0=none, 1=physical, 2=virtual)
     // auto* spiCfg = dynamic_cast<SpiStripConfig*>(strip6->getConfig());
