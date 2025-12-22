@@ -1470,7 +1470,68 @@ void NeoPixelBusModule::configureFromETS()
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
 
-    // 2) Create all physical strips first to determine total LED count
+    // PRE-SCAN: Mark all manually configured GPIO pins as used BEFORE auto-allocation starts
+    // This prevents auto-allocation from using pins that are manually configured on other strips
+    logInfoP("Pre-scanning %d strips for manual GPIO configurations...", maxStrips);
+    for (uint8_t i = 0; i < maxStrips; ++i)
+    {
+        _channelIndex = i;
+
+        const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
+        if (pixels == 0) continue; // Skip strips with 0 LEDs
+
+        const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
+        const LedProtocol proto = mapProtocol(ledTypeParam);
+        const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
+
+        if (gpioManualConfig)
+        {
+            if (isSpiProtocol(proto))
+            {
+                // SPI protocols need 2 pins
+                uint8_t mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
+                uint8_t sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
+
+                if (!isPinUsed(sckGpio))
+                {
+                    usedPins.push_back(sckGpio);
+                    logInfoP("Strip %d: Pre-marked manual SCK GPIO %d as used", i, sckGpio);
+                }
+                else
+                {
+                    logWarningP("Strip %d: Manual SCK GPIO %d already marked as used!", i, sckGpio);
+                }
+
+                if (!isPinUsed(mosiGpio))
+                {
+                    usedPins.push_back(mosiGpio);
+                    logInfoP("Strip %d: Pre-marked manual MOSI GPIO %d as used", i, mosiGpio);
+                }
+                else
+                {
+                    logWarningP("Strip %d: Manual MOSI GPIO %d already marked as used!", i, mosiGpio);
+                }
+            }
+            else
+            {
+                // 1-Wire protocols need 1 pin
+                const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
+
+                if (!isPinUsed(dataGpio))
+                {
+                    usedPins.push_back(dataGpio);
+                    logInfoP("Strip %d: Pre-marked manual Data GPIO %d as used", i, dataGpio);
+                }
+                else
+                {
+                    logWarningP("Strip %d: Manual Data GPIO %d already marked as used!", i, dataGpio);
+                }
+            }
+        }
+    }
+    logInfoP("Pre-scan complete: %d manual GPIO pins marked as used", (int)usedPins.size());
+
+    // 2) Create all physical strips in configuration order (auto-allocation will skip pre-marked pins)
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         _channelIndex = i;
@@ -1514,7 +1575,7 @@ void NeoPixelBusModule::configureFromETS()
 
             if (gpioManualConfig)
             {
-                // Use ETS configured GPIO pins
+                // Use ETS configured GPIO pins (already pre-marked as used during pre-scan)
                 mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
                 sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
             }
@@ -1532,6 +1593,9 @@ void NeoPixelBusModule::configureFromETS()
                     if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio))
                     {
                         foundPins = true;
+                        // Mark pins as used immediately
+                        usedPins.push_back(sckGpio);
+                        usedPins.push_back(mosiGpio);
                         nextPinIndex += 2; // Consume both pins
                         break;
                     }
@@ -1545,6 +1609,9 @@ void NeoPixelBusModule::configureFromETS()
                     // Fallback to last resort pins
                     sckGpio = 18;
                     mosiGpio = 19;
+                    // Mark fallback pins as used
+                    usedPins.push_back(sckGpio);
+                    usedPins.push_back(mosiGpio);
                 }
             }
 
@@ -1619,10 +1686,6 @@ void NeoPixelBusModule::configureFromETS()
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
                      i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
                      spiFrequency, gpioManualConfig ? " (Manual)" : " (Auto)");
-
-            // Track used pins
-            usedPins.push_back(mosiGpio);
-            usedPins.push_back(sckGpio);
         }
         else
         {
@@ -1634,7 +1697,7 @@ void NeoPixelBusModule::configureFromETS()
 
             if (gpioManualConfig)
             {
-                // Use ETS configured GPIO pin
+                // Use ETS configured GPIO pin (already pre-marked as used during pre-scan)
                 dataGpioPin = dataGpio;
             }
             else
@@ -1650,6 +1713,8 @@ void NeoPixelBusModule::configureFromETS()
                     if (!isPinUsed(dataGpioPin))
                     {
                         foundPin = true;
+                        // Mark pin as used immediately
+                        usedPins.push_back(dataGpioPin);
                         nextPinIndex++; // Consume this pin
                         break;
                     }
@@ -1662,6 +1727,7 @@ void NeoPixelBusModule::configureFromETS()
                     logErrorP("Strip %d: No available GPIO pins for 1-Wire strip!", i);
                     // Fallback to ETS parameter
                     dataGpioPin = dataGpio;
+                    usedPins.push_back(dataGpioPin);
                 }
             }
 
@@ -1685,9 +1751,6 @@ void NeoPixelBusModule::configureFromETS()
                     }
                 }
             }
-
-            // Track used pin
-            usedPins.push_back(dataGpioPin);
         }
 
         if (phys)
