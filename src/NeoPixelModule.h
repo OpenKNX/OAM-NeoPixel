@@ -136,6 +136,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Access to unified virtual strip (if created)
     VirtualStrip* getVirtualStrip() const { return _virtualStrip; }
 
+    // Access to internal NeoPixel library instance (for testing/console)
+    NeoPixel& getNeoPixel() { return _neoPixel; }
+
     // Access to individual physical strips
     const std::vector<PhysicalStrip*>& getPhysicalStrips() const { return _physicalStrips; }
 
@@ -178,6 +181,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     static const char* getProtocolName(LedProtocol protocol);
 
   private:
+    // OFM-NeoPixel library instance (not registered as separate module)
+    NeoPixel _neoPixel;
+
     bool _initialized = false;
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
@@ -219,7 +225,6 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Performance & Rate Limiting
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp
     static const unsigned long COLOR_UPDATE_INTERVAL_MS = 50; // Update color every 500ms to reduce logging overhead
-    uint32_t _lastLoopTime = 0;                               // Last loop time for deltaTime calculation
 
     // Configuration & Setup
     void configureFromETS();               // reads ETS params and builds phys+virt layout

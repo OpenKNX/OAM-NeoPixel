@@ -5,6 +5,10 @@
 #include "knxprod.h"
 #include <algorithm>
 #include <vector>
+// #define NEOPIXEL_MODULE_TEST_ENV
+#ifdef NEOPIXEL_MODULE_TEST_ENV
+    #include "test/test.h"
+#endif
 
 // DPT 3.007 step code to delta mapping (exponential)
 // Standard KNX/ETS: stepCode 1 = largest (100%), 7 = smallest (~2%), 0 = stop
@@ -51,16 +55,32 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
 }
 
 NeoPixelBusModule openknxNeoPixelModule;
-extern NeoPixel neoPixelModule;
 
 void NeoPixelBusModule::setup(bool configured)
 {
+#ifdef NEOPIXEL_MODULE_TEST_ENV
+    // Test mode: Initialize core module first, then setup test environment
+    if (!_neoPixel.isInitialized())
+    {
+        _neoPixel.init();
+        _neoPixel.setup(true); // Must call setup() to set _initialized flag
+    }
+    setup_test_environment(_neoPixel);
+    _initialized = true;
+#else
     if (configured)
     {
+        // Initialize NeoPixel library first (creates manager)
+        if (!_neoPixel.isInitialized())
+        {
+            _neoPixel.init();
+        }
+
         configureFromETS();
         _initialized = true;
-        neoPixelModule.setup(configured);
+        _neoPixel.setup(configured);
     }
+#endif
 }
 
 void NeoPixelBusModule::loop(bool configured)
@@ -70,20 +90,11 @@ void NeoPixelBusModule::loop(bool configured)
     // If global power is OFF, skip all processing (no effects, no dimming, no updates)
     if (!_globalPowerOn) return;
 
-    // Calculate deltaTime for effects and animations
-    uint32_t currentTime = millis();
-    uint32_t deltaTime = currentTime - _lastLoopTime;
-    _lastLoopTime = currentTime;
-
     // Process active DPT 3.007 start/stop dimming
     processActiveDimming();
 
-    // Use full 4-phase update pipeline for effect support
-    auto mgr = neoPixelModule.getManager();
-    if (mgr)
-    {
-        mgr->update(deltaTime); // Phase 1-4: updateEffects, applyPowerLimit, syncAll, showAll
-    }
+    // Call library loop() for auto-update timer and effect processing
+    _neoPixel.loop(configured);
 }
 
 // Process active start/stop dimming for all segments
@@ -361,9 +372,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                 // Send combined RGB/RGBW status feedback
                 _channelIndex = channel;
-                uint8_t r = cfg.pendingSolidR;
-                uint8_t g = cfg.pendingSolidG;
-                uint8_t b = cfg.pendingSolidB;
+                uint8_t r, g, b;
+                r = cfg.pendingSolidR;
+                g = cfg.pendingSolidG;
+                b = cfg.pendingSolidB;
                 // Check if virtual strip has white channel (4 bytes per LED)
                 if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                 {
@@ -423,9 +435,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                 // Send combined RGB/RGBW status feedback
                 _channelIndex = channel;
-                uint8_t r = cfg.pendingSolidR;
-                uint8_t g = cfg.pendingSolidG;
-                uint8_t b = cfg.pendingSolidB;
+                uint8_t r, g, b;
+                r = cfg.pendingSolidR;
+                g = cfg.pendingSolidG;
+                b = cfg.pendingSolidB;
                 // Check if virtual strip has white channel (4 bytes per LED)
                 if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                 {
@@ -485,9 +498,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                 // Send combined RGB/RGBW status feedback
                 _channelIndex = channel;
-                uint8_t r = cfg.pendingSolidR;
-                uint8_t g = cfg.pendingSolidG;
-                uint8_t b = cfg.pendingSolidB;
+                uint8_t r, g, b;
+                r = cfg.pendingSolidR;
+                g = cfg.pendingSolidG;
+                b = cfg.pendingSolidB;
                 // Check if virtual strip has white channel (4 bytes per LED)
                 if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                 {
@@ -548,9 +562,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                 // Send RGBW status feedback (white channel update)
                 _channelIndex = channel;
-                uint8_t r = cfg.pendingSolidR;
-                uint8_t g = cfg.pendingSolidG;
-                uint8_t b = cfg.pendingSolidB;
+                uint8_t r, g, b;
+                r = cfg.pendingSolidR;
+                g = cfg.pendingSolidG;
+                b = cfg.pendingSolidB;
                 uint8_t w = white;
                 uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w; // RGBW
                 bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
@@ -1413,20 +1428,20 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 void NeoPixelBusModule::showHelp()
 {
     // Print the 'neo' command group header via core module
-    neoPixelModule.showHelp();
+    _neoPixel.showHelp();
 }
 
 // Console: process commands by delegating 'neo' prefixed commands
 bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
 {
     // Forward to core module's console handler
-    return neoPixelModule.processCommand(command, diagnose);
+    return _neoPixel.processCommand(command, diagnose);
 }
 
 void NeoPixelBusModule::configureFromETS()
 {
     // Initialize the OFM-NeoPixel module first
-    neoPixelModule.init();
+    _neoPixel.init();
 
     // Track used GPIO pins to avoid conflicts
     std::vector<uint8_t> usedPins;
@@ -1465,12 +1480,80 @@ void NeoPixelBusModule::configureFromETS()
     // 1) Determine number of strips from ETS (max 6 strips supported in virtual configuration)
     const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(6, ParamNEO_NEONumberOfLEDStrips));
     _totalLeds = 0;
+
+    // CRITICAL: Delete old PhysicalStrip objects before clearing vector!
+    // This prevents memory leaks and deregisters old DMA handlers
+    for (auto* strip : _physicalStrips)
+    {
+        if (strip) delete strip;
+    }
     _physicalStrips.clear();
 
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
 
-    // 2) Create all physical strips first to determine total LED count
+    // PRE-SCAN: Mark all manually configured GPIO pins as used BEFORE auto-allocation starts
+    // This prevents auto-allocation from using pins that are manually configured on other strips
+    logInfoP("Pre-scanning %d strips for manual GPIO configurations...", maxStrips);
+    for (uint8_t i = 0; i < maxStrips; ++i)
+    {
+        _channelIndex = i;
+
+        const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
+        if (pixels == 0) continue; // Skip strips with 0 LEDs
+
+        const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
+        const LedProtocol proto = mapProtocol(ledTypeParam);
+        const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
+
+        if (gpioManualConfig)
+        {
+            if (isSpiProtocol(proto))
+            {
+                // SPI protocols need 2 pins
+                uint8_t mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
+                uint8_t sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
+
+                if (!isPinUsed(sckGpio))
+                {
+                    usedPins.push_back(sckGpio);
+                    logInfoP("Strip %d: Pre-marked manual SCK GPIO %d as used", i, sckGpio);
+                }
+                else
+                {
+                    logWarningP("Strip %d: Manual SCK GPIO %d already marked as used!", i, sckGpio);
+                }
+
+                if (!isPinUsed(mosiGpio))
+                {
+                    usedPins.push_back(mosiGpio);
+                    logInfoP("Strip %d: Pre-marked manual MOSI GPIO %d as used", i, mosiGpio);
+                }
+                else
+                {
+                    logWarningP("Strip %d: Manual MOSI GPIO %d already marked as used!", i, mosiGpio);
+                }
+            }
+            else
+            {
+                // 1-Wire protocols need 1 pin
+                const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
+
+                if (!isPinUsed(dataGpio))
+                {
+                    usedPins.push_back(dataGpio);
+                    logInfoP("Strip %d: Pre-marked manual Data GPIO %d as used", i, dataGpio);
+                }
+                else
+                {
+                    logWarningP("Strip %d: Manual Data GPIO %d already marked as used!", i, dataGpio);
+                }
+            }
+        }
+    }
+    logInfoP("Pre-scan complete: %d manual GPIO pins marked as used", (int)usedPins.size());
+
+    // 2) Create all physical strips in configuration order (auto-allocation will skip pre-marked pins)
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         _channelIndex = i;
@@ -1514,7 +1597,7 @@ void NeoPixelBusModule::configureFromETS()
 
             if (gpioManualConfig)
             {
-                // Use ETS configured GPIO pins
+                // Use ETS configured GPIO pins (already pre-marked as used during pre-scan)
                 mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
                 sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
             }
@@ -1532,6 +1615,9 @@ void NeoPixelBusModule::configureFromETS()
                     if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio))
                     {
                         foundPins = true;
+                        // Mark pins as used immediately
+                        usedPins.push_back(sckGpio);
+                        usedPins.push_back(mosiGpio);
                         nextPinIndex += 2; // Consume both pins
                         break;
                     }
@@ -1545,6 +1631,9 @@ void NeoPixelBusModule::configureFromETS()
                     // Fallback to last resort pins
                     sckGpio = 18;
                     mosiGpio = 19;
+                    // Mark fallback pins as used
+                    usedPins.push_back(sckGpio);
+                    usedPins.push_back(mosiGpio);
                 }
             }
 
@@ -1570,7 +1659,7 @@ void NeoPixelBusModule::configureFromETS()
             }
 
             // Use manager directly for frequency parameter (NeoPixel wrapper doesn't expose this overload yet)
-            auto mgr = neoPixelModule.getManager();
+            auto mgr = _neoPixel.getManager();
             phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
 
             // Configure SPI strip-specific settings BEFORE init()
@@ -1619,10 +1708,6 @@ void NeoPixelBusModule::configureFromETS()
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
                      i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
                      spiFrequency, gpioManualConfig ? " (Manual)" : " (Auto)");
-
-            // Track used pins
-            usedPins.push_back(mosiGpio);
-            usedPins.push_back(sckGpio);
         }
         else
         {
@@ -1634,7 +1719,7 @@ void NeoPixelBusModule::configureFromETS()
 
             if (gpioManualConfig)
             {
-                // Use ETS configured GPIO pin
+                // Use ETS configured GPIO pin (already pre-marked as used during pre-scan)
                 dataGpioPin = dataGpio;
             }
             else
@@ -1650,6 +1735,8 @@ void NeoPixelBusModule::configureFromETS()
                     if (!isPinUsed(dataGpioPin))
                     {
                         foundPin = true;
+                        // Mark pin as used immediately
+                        usedPins.push_back(dataGpioPin);
                         nextPinIndex++; // Consume this pin
                         break;
                     }
@@ -1662,10 +1749,11 @@ void NeoPixelBusModule::configureFromETS()
                     logErrorP("Strip %d: No available GPIO pins for 1-Wire strip!", i);
                     // Fallback to ETS parameter
                     dataGpioPin = dataGpio;
+                    usedPins.push_back(dataGpioPin);
                 }
             }
 
-            phys = neoPixelModule.addStrip(dataGpioPin, pixels, proto, order);
+            phys = _neoPixel.addStrip(dataGpioPin, pixels, proto, order);
             logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s",
                      i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
                      gpioManualConfig ? " (Manual)" : " (Auto)");
@@ -1685,9 +1773,6 @@ void NeoPixelBusModule::configureFromETS()
                     }
                 }
             }
-
-            // Track used pin
-            usedPins.push_back(dataGpioPin);
         }
 
         if (phys)
@@ -1940,7 +2025,7 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
 
     // Create virtual strip: RGBW if any strip needs it, otherwise RGB
     ColorOrder virtualOrder = needsRGBW ? ColorOrder::RGBW : ColorOrder::RGB;
-    _virtualStrip = neoPixelModule.addVirtualStrip(_totalLeds, virtualOrder);
+    _virtualStrip = _neoPixel.addVirtualStrip(_totalLeds, virtualOrder);
     if (!_virtualStrip)
     {
         logErrorP("Failed to create virtual strip");
@@ -1952,7 +2037,7 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
         logInfoP("VirtualStrip created with RGBW support (4 bytes/LED) for RGBW physical strips");
     }
 
-    auto mgr = neoPixelModule.getManager();
+    auto mgr = _neoPixel.getManager();
     if (!mgr)
     {
         logErrorP("NeoPixelManager not available for virtual strip creation");
@@ -2122,7 +2207,7 @@ void NeoPixelBusModule::configurePowerManagement()
     // Restore channel index
     _channelIndex = oldChannelIndex;
 
-    auto mgr = neoPixelModule.getManager();
+    auto mgr = _neoPixel.getManager();
     if (!mgr)
     {
         logErrorP("NeoPixelManager not available for power management configuration");
@@ -2581,7 +2666,7 @@ void NeoPixelBusModule::createSegments()
         return;
     }
 
-    auto mgr = neoPixelModule.getManager();
+    auto mgr = _neoPixel.getManager();
     if (!mgr)
     {
         logErrorP("NeoPixelManager not available for segment creation");
@@ -2766,9 +2851,9 @@ void NeoPixelBusModule::configureEffects()
             break;
     }
 
-    // ALWAYS enable auto-update
-    neoPixelModule.setAutoUpdate(true);
-    neoPixelModule.setUpdateSpeed(speed);
+    // ALWAYS enable auto-update (even without effects) so KO color changes are rendered
+    _neoPixel.setAutoUpdate(true);
+    _neoPixel.setUpdateSpeed(speed);
 }
 
 void NeoPixelBusModule::applyEffectToSegment(Segment* segment, uint8_t effectType)
@@ -2834,6 +2919,9 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
     config.speed = ParamNEO_NEOEffectSpeed;         // Effect speed (0-255)
     config.intensity = ParamNEO_NEOEffectIntensity; // Effect intensity (0-255)
 
+    // Apply fallback for intensity if 0 (many effects use this for brightness)
+    if (config.intensity == 0) config.intensity = 20;
+
     // Extended effect parameters
     config.option1 = ParamNEO_NEOEffectOption1; // Custom option 1
     config.option2 = ParamNEO_NEOEffectOption2; // Custom option 2
@@ -2842,6 +2930,62 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
     // Effect features (boolean flags)
     config.reverse = ParamNEO_NEOEffectFeature1 ? 1 : 0; // Reverse direction
     // Feature2 and Feature3 could be used for other boolean options
+
+    // Initialize effect-specific state parameters
+    Effect* effect = segment->getEffect();
+    if (effect)
+    {
+        uint8_t paramCount = effect->getParameterCount();
+
+        // Standard ETS parameter mapping for effects:
+        //   Parameter 0 → ETS "Effekt Speed" (animation/movement speed)
+        //   Parameter 1 → ETS "Effekt Option 1" (color/hue/primary effect parameter)
+        //   Parameter 2 → ETS "Effekt Option 2" (size/mode/secondary parameter)
+        //   Parameter 3 → ETS "Effekt Option 3" (tertiary parameter)
+        //   Brightness  → ETS "Effekt Intensity" (stored in config.intensity)
+        //
+        // Cylon example:
+        //   Speed=122 → Cylon movement speed (0=auto, higher=faster)
+        //   Intensity=255 → Eye brightness
+        //   Option1=0 → Hue (0=red, 85=green, 170=blue, 212=magenta)
+        //   Option2=4 → EyeSize (1-10)
+        //   Option3=40 → FadeAmount (trail fade speed, 1-255)
+
+        for (uint8_t i = 0; i < paramCount; i++)
+        {
+            uint32_t value = effect->getParameterDefault(i);
+
+            // Map ETS parameters to effect parameters
+            switch (i)
+            {
+                case 0:
+                    // Parameter 0: ETS Speed
+                    if (config.speed > 0) value = config.speed;
+                    break;
+                case 1:
+                    // Parameter 1: ETS Option 1
+                    if (config.option1 > 0) value = config.option1;
+                    break;
+                case 2:
+                    // Parameter 2: ETS Option 2 or Option 3 (fallback)
+                    if (config.option2 > 0) value = config.option2;
+                    else if (config.mode > 0)
+                        value = config.mode;
+                    break;
+                case 3:
+                    // Parameter 3: ETS Option 3
+                    if (config.mode > 0) value = config.mode;
+                    break;
+                    // Parameter 4+ use effect defaults only
+            }
+
+            effect->setParameter(segment, i, value);
+        }
+
+        logInfoP("Effect '%s': Speed=%d, Int=%d, Opt1=%d, Opt2=%d, Opt3=%d",
+                 effect->getName(), config.speed, config.intensity,
+                 config.option1, config.option2, config.mode);
+    }
 
     // Mirror effect (from segment configuration)
     bool mirrorEffect = ParamNEO_NEOSegmentMirrorEffect;

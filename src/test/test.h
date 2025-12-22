@@ -49,25 +49,16 @@ inline void setup_test_environment(NeoPixel& neoPixelModule)
     auto strip5 = mgr->addStrip(NEOPIX_6, NEOPIX_6_LEDS, LedProtocol::WS2812B, ColorOrder::GRB); // External: use AUTO timing (default)
     strip5->init();
 
-    auto strip6 = mgr->addSpiStrip(NEOPIX_7_MOSI, NEOPIX_7_SCK, NEOPIX_7_LEDS, LedProtocol::APA102, ColorOrder::BGR, 4000000); //
+    auto strip6 = mgr->addSpiStrip(NEOPIX_7_MOSI, NEOPIX_7_SCK, NEOPIX_7_LEDS, LedProtocol::APA102_CLONE, ColorOrder::BGR, 4000000); //
 
-    // Configure dummy LED mode BEFORE init (0=none, 1=physical, 2=virtual)
-    // auto* spiCfg = dynamic_cast<SpiStripConfig*>(strip6->getConfig());
-    // if (spiCfg)
-    //{
-    //    spiCfg->setDummyLedMode(1);
-    //    // 0 = none (accept wrong color)
-    //    // 2 = virtual dummy LED (force LED#0 black)
-    //    // 1 = physical dummy LED (sacrifice LED#0)
-    //
-    //    spiCfg->setStartFrameCount(4); // Reduce start frames to 4 (default 8)
-    //    spiCfg->setEndFrameCount(8);   // Increase end frames to 8 (default 1)
-    //    spiCfg->setEndFramePattern(0xFF); // Use SK9822 end frame pattern (0xFF: for SK9822, 0x00: for APA102) For APA102 Clones often 0xFF works more reliably
-    //    spiCfg->setHwBrightness(16); // Set hardware brightness to 31 (5-bit APA102 range: 0-31)
-    //    spiCfg->setSpiFrequency(2000000); // 2 MHz SPI clock for better reliability
-    //    spiCfg->setColorOrder(ColorOrder::BGR); // APA102 typical color order is BGR
-    //    strip6->applyConfig();
-    //}
+    // Configure for clone chips (minRgbValue=8 to prevent color update bug)
+    auto* spiCfg = dynamic_cast<SpiStripConfig*>(strip6->getConfig());
+    if (spiCfg)
+    {
+        spiCfg->setMinRgbValue(8);  // Minimum RGB value (8 for clones, 0 for originals)
+        spiCfg->setDummyLedMode(1); // 1 = physical dummy LED (sacrifice LED#0)
+        strip6->applyConfig();
+    }
 
     strip6->init();
 
