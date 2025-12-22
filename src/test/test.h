@@ -89,8 +89,14 @@ inline void setup_test_environment(NeoPixel& neoPixelModule)
     mgr->attachPhysicalToVirtual(virt0, strip0, 0);
     mgr->attachPhysicalToVirtual(virt0, strip1, NEOPIX_1_LEDS);
     mgr->attachPhysicalToVirtual(virt0, strip2, NEOPIX_1_LEDS + NEOPIX_2_LEDS);
-    // ONE segment for all LEDs
+
+            #if defined(TWO_SEGMENTS_TEST)
+    Segment* seg0 = mgr->addSegment(virt0, 0, NEOPIX_1_LEDS);
+    Segment* seg1 = mgr->addSegment(virt0, NEOPIX_1_LEDS + 1, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS - 1);
+            #else
+    // one segment for all LEDs
     Segment* seg0 = mgr->addSegment(virt0, 0, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS - 1);
+            #endif
         #else
     auto virt0 = mgr->addVirtualStrip(
         NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS + NEOPIX_4_LEDS + NEOPIX_5_LEDS + NEOPIX_6_LEDS + NEOPIX_7_LEDS,
@@ -105,9 +111,14 @@ inline void setup_test_environment(NeoPixel& neoPixelModule)
     mgr->attachPhysicalToVirtual(virt0, strip5, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS + NEOPIX_4_LEDS + NEOPIX_5_LEDS);
     mgr->attachPhysicalToVirtual(virt0, strip6, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS + NEOPIX_4_LEDS + NEOPIX_5_LEDS + NEOPIX_6_LEDS);
 
+            #if defined(TWO_SEGMENTS_TEST)
+    Segment* seg0 = mgr->addSegment(virt0, 0, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS);
+    Segment* seg1 = mgr->addSegment(virt0, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS + 1, NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS + NEOPIX_4_LEDS + NEOPIX_5_LEDS + NEOPIX_6_LEDS + NEOPIX_7_LEDS - 1);
+            #else
     // ONE segment for all LEDs
     Segment* seg0 = mgr->addSegment(virt0, 0,
                                     NEOPIX_1_LEDS + NEOPIX_2_LEDS + NEOPIX_3_LEDS + NEOPIX_4_LEDS + NEOPIX_5_LEDS + NEOPIX_6_LEDS + NEOPIX_7_LEDS - 1);
+            #endif
         #endif
     #else
         #define NEOPIX_1 22
@@ -159,9 +170,20 @@ inline void setup_test_environment(NeoPixel& neoPixelModule)
         seg0->getEffect()->setParameter(0, 2, 4);   // Eye size
         seg0->getEffect()->setParameter(0, 3, 40);  // Fade amount */
 
-    seg0->setEffect(EffectPool::getCylon(), true);
+    #if defined(TWO_SEGMENTS_TEST)
+    seg0->setEffect(EffectPool::getRainbow(), true);
+    seg0->getEffect()->setParameter(seg0, 0, 0); // Speed (Default 1)
+    seg0->getEffect()->setParameter(seg0, 1, 0); // Delta (Default 7)
 
     seg0->resume();
+
+    seg1->setEffect(EffectPool::getWipe(), true);
+    seg1->getEffect()->setParameter(seg1, 0, 0); // Speed (Default 0)
+    seg1->resume();
+    #else
+    seg0->setEffect(EffectPool::getCylon(), true);
+    seg0->resume();
+    #endif
 
     // Enable auto-update
     mgr->updateAll();
