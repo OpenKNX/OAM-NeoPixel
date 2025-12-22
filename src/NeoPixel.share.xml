@@ -222,21 +222,11 @@
               </ParameterType>  
               <!-- SPICLK GPIO-->
               <ParameterType Id="%AID%_PT-NEOSPICLKGPIO" Name="NEOSPICLKGPIO">
-                <TypeRestriction Base="Value" SizeInBit="6">
-                  <Enumeration Text="GPIO 2"  Value="2" Id="%ENID%" />
-                  <Enumeration Text="GPIO 6"  Value="6" Id="%ENID%" />
-                  <Enumeration Text="GPIO 18" Value="18" Id="%ENID%" />
-                  <Enumeration Text="GPIO 22" Value="22" Id="%ENID%" />
-                </TypeRestriction>
+                <TypeNumber SizeInBit="6" Type="unsignedInt" minInclusive="0" maxInclusive="50" />
               </ParameterType> 
               <!-- SPIMOSI GPIO-->
               <ParameterType Id="%AID%_PT-NEOSPIMOSIGPIO" Name="NEOSPIMOSIGPIO">
-                <TypeRestriction Base="Value" SizeInBit="6">
-                  <Enumeration Text="GPIO 3"  Value="3" Id="%ENID%" />
-                  <Enumeration Text="GPIO 7"  Value="7" Id="%ENID%" />
-                  <Enumeration Text="GPIO 19" Value="19" Id="%ENID%" />
-                  <Enumeration Text="GPIO 23" Value="23" Id="%ENID%" />
-                </TypeRestriction>
+                <TypeNumber SizeInBit="6" Type="unsignedInt" minInclusive="0" maxInclusive="50" />
               </ParameterType> 
               <!-- GammaValue -->
               <ParameterType Id="%AID%_PT-NEOGammaValue" Name="NEOGammaValue">
