@@ -236,10 +236,6 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint8_t calculateBrightnessLimit() const;
     void applyPowerLimiting();
 
-    // Strip Options Implementation
-    void applySwapMode(); // Apply color channel swapping (legacy NO-OP)
-    // Skip LED functionality is now handled automatically in OFM-NeoPixel library
-
     // Segment Implementation
     void createSegments();                                   // Create segments on virtual strip
     void applySegmentConfiguration();                        // Apply segment-specific settings
