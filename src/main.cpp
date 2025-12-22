@@ -5,6 +5,10 @@
 #include "NeoPixelModule.h"
 // #include <async_http_client.h>
 
+#ifdef NEOPIXEL_MODULE_TEST_ENV
+    #include "test/test.h"
+#endif
+
 #ifdef ARDUINO_ARCH_RP2040
     #include "FileTransferModule.h"
     #ifndef OPENKNX_USB_EXCHANGE_IGNORE
@@ -41,10 +45,6 @@ void setup()
     openknx.addModule(1, openknxNeoPixelModule);
 #endif
     openknx.addModule(3, openknxLogic);
-    // openknx.addModule(4, openknxDummyModule);
-    // #ifndef ARDUINO_ARCH_SAMD
-    //     openknx.addModule(5, openknxVirtualButtonModule);
-    // #endif
 
 #if defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)
     openknx.addModule(7, openknxNetwork);
@@ -56,8 +56,14 @@ void setup()
     #endif
     openknx.addModule(9, openknxFileTransferModule);
 #endif
+#ifdef NEOPIXEL_MODULE_TEST_ENV
+    openknx.addModule(99, neoPixelModule);
 
+#endif
     openknx.setup();
+#ifdef NEOPIXEL_MODULE_TEST_ENV
+    setup_test_environment(neoPixelModule);
+#endif
 #ifdef FUNC1_BUTTON_PIN
     openknx.func1Button.onShortClick([]() -> void {
         func1test = !func1test;
@@ -129,15 +135,15 @@ void setup()
     // openknx.progLed.brightness(60);
 
 #ifdef INFO1_LED_PIN
-    openknx.info1Led.pulsing();
+    // openknx.info1Led.pulsing();
 // openknx.info1Led.brightness(60);
 #endif
 #ifdef INFO2_LED_PIN
-    openknx.info2Led.pulsing();
+    // openknx.info2Led.pulsing();
 // openknx.info2Led.brightness(60);
 #endif
 #ifdef INFO3_LED_PIN
-    openknx.info3Led.pulsing();
+    // openknx.info3Led.pulsing();
 // openknx.info3Led.brightness(60);
 #endif
 
