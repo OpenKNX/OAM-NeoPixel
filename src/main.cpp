@@ -57,12 +57,12 @@ void setup()
     openknx.addModule(9, openknxFileTransferModule);
 #endif
 #ifdef NEOPIXEL_MODULE_TEST_ENV
-    openknx.addModule(99, neoPixelModule);
+//    openknx.addModule(99, neoPixelModule);
 
 #endif
     openknx.setup();
 #ifdef NEOPIXEL_MODULE_TEST_ENV
-    setup_test_environment(neoPixelModule);
+  //  setup_test_environment(neoPixelModule);
 #endif
 #ifdef FUNC1_BUTTON_PIN
     openknx.func1Button.onShortClick([]() -> void {
