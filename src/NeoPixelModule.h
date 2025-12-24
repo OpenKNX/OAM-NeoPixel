@@ -49,8 +49,9 @@ class NeoPixelBusModule : public OpenKNX::Module
         bool mirrorEffect;          // Mirror effect flag
         Segment* segment = nullptr; // Pointer to actual segment
 
-        // Saved state for power toggle
+        // Saved state for power toggle and flash persistence
         bool savedValid = false;
+        uint8_t savedPower = 1;      // 1 = on, 0 = off (for flash persistence)
         uint8_t savedR = 0;
         uint8_t savedG = 0;
         uint8_t savedB = 0;
@@ -119,7 +120,11 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint8_t _channelIndex = 0; // Add the channel index for parameter access
 
   public:
-    NeoPixelBusModule() = default;
+    // Allow flash persistence class to access private members
+    friend class NeoPixelFlashPersistence;
+
+    NeoPixelBusModule();
+    ~NeoPixelBusModule();
 
     const std::string name() override { return "NeoPixelBus (OAM)"; }
     const std::string version() override { return "OAM-NeoPixel-adapter 0.1"; }
@@ -128,7 +133,13 @@ class NeoPixelBusModule : public OpenKNX::Module
     void loop(bool configured) override;
     void processInputKo(GroupObject& ko) override;
     void processBeforeRestart() override; // Turn off all LEDs before restart/programming
+    void processAfterStartupDelay() override; // Restore LED states after startup
     void processActiveDimming(); // Process DPT 3.007 start/stop dimming
+
+    // Flash persistence (OGM-Common calls these automatically)
+    uint16_t flashSize() override;
+    void writeFlash() override;
+    void readFlash(const uint8_t* data, const uint16_t size) override;
 
     // Console integration: delegate help and commands to core NeoPixel module
     void showHelp() override;
@@ -146,6 +157,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Access to segments
     const std::vector<SegmentConfig>& getSegments() const { return _segments; }
     uint8_t getNumberOfSegments() const { return _numberOfSegments; }
+
+    // Apply effect to segment (used by flash persistence)
+    void applyEffectToSegment(Segment* segment, uint8_t effectType);
     Segment* getSegment(uint8_t index) const; // Get segment by index
 
     // Effects status
@@ -227,6 +241,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp
     static const unsigned long COLOR_UPDATE_INTERVAL_MS = 50; // Update color every 500ms to reduce logging overhead
 
+    // Flash persistence handler
+    class NeoPixelFlashPersistence* _flashPersistence;
+
     // Configuration & Setup
     void configureFromETS();               // reads ETS params and builds phys+virt layout
     void configurePowerManagement();       // Configure power management using OFM PowerManager
@@ -249,10 +266,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
     // Effect Implementation
-    void configureEffects();                                         // Configure effects from ETS parameters
-    void applyEffectToSegment(Segment* segment, uint8_t effectType); // Apply effect to specific segment
-    Effect* getEffectFromType(uint8_t effectType);                   // Get effect instance from type ID
-    void setupEffectConfiguration(Segment* segment);                 // Setup effect configuration from ETS
+    void configureEffects();                           // Configure effects from ETS parameters
+    Effect* getEffectFromType(uint8_t effectType);     // Get effect instance from type ID
+    void setupEffectConfiguration(Segment* segment);   // Setup effect configuration from ETS
 
     // Power Management Helpers
     static uint16_t calculateLedCurrentMa(uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0);

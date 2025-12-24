@@ -1,4 +1,5 @@
 #include "NeoPixelModule.h"
+#include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
 #include "PhysicalStripConfig.h" // For SpiStripConfig
 #include "colorhelper.h"
@@ -55,6 +56,17 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
 }
 
 NeoPixelBusModule openknxNeoPixelModule;
+
+NeoPixelBusModule::NeoPixelBusModule()
+    : _flashPersistence(nullptr)
+{
+    _flashPersistence = new NeoPixelFlashPersistence(this);
+}
+
+NeoPixelBusModule::~NeoPixelBusModule()
+{
+    delete _flashPersistence;
+}
 
 void NeoPixelBusModule::setup(bool configured)
 {
@@ -136,6 +148,39 @@ void NeoPixelBusModule::processBeforeRestart()
     
     // Wait for DMA completion before restart (max 100ms timeout)
     _virtualStrip->waitForCompletion(100);
+}
+
+// ============================================================================
+// Flash State Persistence - Delegate to NeoPixelFlashPersistence
+// ============================================================================
+
+uint16_t NeoPixelBusModule::flashSize()
+{
+    return _flashPersistence ? _flashPersistence->calculateFlashSize() : 0;
+}
+
+void NeoPixelBusModule::writeFlash()
+{
+    if (_flashPersistence)
+    {
+        _flashPersistence->writeToFlash();
+    }
+}
+
+void NeoPixelBusModule::readFlash(const uint8_t* data, const uint16_t size)
+{
+    if (_flashPersistence)
+    {
+        _flashPersistence->readFromFlash(data, size);
+    }
+}
+
+void NeoPixelBusModule::processAfterStartupDelay()
+{
+    if (_flashPersistence)
+    {
+        _flashPersistence->restoreStatesAfterStartup();
+    }
 }
 
 // Process active start/stop dimming for all segments
@@ -1100,6 +1145,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     logDebugP("Segment %d Power ON: savedValid=%d, savedLastWasEffect=%d, savedEffectValid=%d, type=%d, savedRGB=(%d,%d,%d), savedBri=%d",
                               channel, cfg.savedValid, cfg.savedLastWasEffect, cfg.savedEffectValid, cfg.savedEffectType,
                               cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedBrightness);
+                    
+                    // Update power state for flash persistence
+                    cfg.savedPower = 1;
+                    
                     if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0)
                     {
                         // Restore effect with its configuration
@@ -1147,6 +1196,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedB = b;
                     cfg.savedBrightness = targetSegment->getBrightness();
                     cfg.savedValid = true;
+                    
+                    // Update power state for flash persistence
+                    cfg.savedPower = 0;
 
                     // Snapshot effect configuration on power off
                     // Note: We track last commanded effect type in cfg.savedEffectType
