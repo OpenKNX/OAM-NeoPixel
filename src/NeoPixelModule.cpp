@@ -97,6 +97,47 @@ void NeoPixelBusModule::loop(bool configured)
     _neoPixel.loop(configured);
 }
 
+void NeoPixelBusModule::processBeforeRestart()
+{
+    // Check if LED shutdown is enabled in ETS
+    if (!ParamNEO_NEOTurnOffBeforeRestart)
+    {
+        logInfoP("LED shutdown before restart is disabled in ETS");
+        return;
+    }
+    
+    // Turn off all LEDs before ETS programming or device restart
+    logInfoP("Turning off all LEDs before restart/programming");
+    
+    if (!_initialized || !_virtualStrip) return;
+    
+    // Stop all effects and clear all segments if segments are configured
+    if (!_segments.empty())
+    {
+        for (auto& segConfig : _segments)
+        {
+            if (segConfig.segment)
+            {
+                if (segConfig.segment->hasEffect())
+                {
+                    segConfig.segment->clearEffect();
+                }
+                segConfig.segment->clearAll(); // Clear RGBW (handles both RGB and RGBW strips)
+            }
+        }
+        // Send update to all physical strips
+        _virtualStrip->show();
+    }
+    else
+    {
+        // No segments configured - turn off all LEDs directly
+        _virtualStrip->turnOffAll();
+    }
+    
+    // Wait for DMA completion before restart (max 100ms timeout)
+    _virtualStrip->waitForCompletion(100);
+}
+
 // Process active start/stop dimming for all segments
 void NeoPixelBusModule::processActiveDimming()
 {

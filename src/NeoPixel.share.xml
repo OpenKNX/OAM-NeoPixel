@@ -334,8 +334,9 @@
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="20" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
                 <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 6"/>
-                <!-- Byte 1: 0..4 (5b) -->
+                <!-- Byte 1: 0..4 (5b), 5 (1b) -->
                 <Parameter Id="%AID%_UP-%TT%00021" Offset="1" BitOffset="0" Name="NEONumberOfSegments" ParameterType="%AID%_PT-NumberOfSegments" Text="Anzahl der Segmente" Value="1" SuffixText=" von 16"/>
+                <Parameter Id="%AID%_UP-%TT%00023" Offset="1" BitOffset="5" Name="NEOTurnOffBeforeRestart" ParameterType="%AID%_PT-Boolean" Text="LEDs vor Upload/Neustart ausschalten" Value="1"/>
                 <!-- Byte 2: 8b -->
                 <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEO%C%UpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Update Speed" Value="50"/>
               </Union>
@@ -407,6 +408,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00020_R-%TT%0002001" RefId="%AID%_UP-%TT%00020" />
               <ParameterRef Id="%AID%_UP-%TT%00021_R-%TT%0002101" RefId="%AID%_UP-%TT%00021" />
               <ParameterRef Id="%AID%_UP-%TT%00022_R-%TT%0002201" RefId="%AID%_UP-%TT%00022" />
+              <ParameterRef Id="%AID%_UP-%TT%00023_R-%TT%0002301" RefId="%AID%_UP-%TT%00023" />
               <!-- Virtual Strip Parameter References (canonical, used by logic/JS) -->
               <ParameterRef Id="%AID%_UP-%TT%00030_R-%TT%0003001" RefId="%AID%_UP-%TT%00030" />
               <ParameterRef Id="%AID%_UP-%TT%00031_R-%TT%0003101" RefId="%AID%_UP-%TT%00031" />
@@ -606,6 +608,8 @@
                   <!-- Global Brightness State KO -->
                   <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
                 </ParameterBlock>
+                <!-- Turn Off LEDs before Restart -->
+                <ParameterRefRef RefId="%AID%_UP-%TT%00023_R-%TT%0002301" IndentLevel="1" HelpContext="%DOC%"/>
                 <!-- ========================================================================================================= -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Kurve" UIHint="Headline" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" HelpContext="%DOC%"/>

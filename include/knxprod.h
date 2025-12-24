@@ -2615,6 +2615,9 @@
 #define NEO_NEONumberOfSegments                 4960      // 5 Bits, Bit 7-3
 #define     NEO_NEONumberOfSegmentsMask 0xF8
 #define     NEO_NEONumberOfSegmentsShift 3
+#define NEO_NEOTurnOffBeforeRestart             4960      // 1 Bit, Bit 2
+#define     NEO_NEOTurnOffBeforeRestartMask 0x04
+#define     NEO_NEOTurnOffBeforeRestartShift 2
 #define NEO_NEOUpdateSpeed                      4961      // 8 Bits, Bit 7-0
 #define NEO_VirtualStripPos1                    4969      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1Mask 0xF0
@@ -2716,6 +2719,8 @@
 #define ParamNEO_NEONumberOfLEDStrips                ((knx.paramByte(NEO_NEONumberOfLEDStrips) & NEO_NEONumberOfLEDStripsMask) >> NEO_NEONumberOfLEDStripsShift)
 // Anzahl der Segmente
 #define ParamNEO_NEONumberOfSegments                 ((knx.paramByte(NEO_NEONumberOfSegments) & NEO_NEONumberOfSegmentsMask) >> NEO_NEONumberOfSegmentsShift)
+// LEDs vor Upload/Neustart ausschalten
+#define ParamNEO_NEOTurnOffBeforeRestart             ((bool)(knx.paramByte(NEO_NEOTurnOffBeforeRestart) & NEO_NEOTurnOffBeforeRestartMask))
 // Update Speed
 #define ParamNEO_NEOUpdateSpeed                      (knx.paramByte(NEO_NEOUpdateSpeed))
 // Position 1

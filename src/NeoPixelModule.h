@@ -127,6 +127,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void setup(bool configured) override;
     void loop(bool configured) override;
     void processInputKo(GroupObject& ko) override;
+    void processBeforeRestart() override; // Turn off all LEDs before restart/programming
     void processActiveDimming(); // Process DPT 3.007 start/stop dimming
 
     // Console integration: delegate help and commands to core NeoPixel module
