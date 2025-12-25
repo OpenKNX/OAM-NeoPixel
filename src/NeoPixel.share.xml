@@ -362,7 +362,7 @@
                 <Parameter Id="%AID%_UP-%TT%00021" Offset="1" BitOffset="0" Name="NEONumberOfSegments" ParameterType="%AID%_PT-NumberOfSegments" Text="Anzahl der Segmente" Value="1" SuffixText=" von 16"/>
                 <Parameter Id="%AID%_UP-%TT%00023" Offset="1" BitOffset="5" Name="NEOTurnOffBeforeRestart" ParameterType="%AID%_PT-Boolean" Text="LEDs vor Upload/Neustart ausschalten" Value="1"/>
                 <!-- Byte 2: 8b -->
-                <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEO%C%UpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Update Speed" Value="50"/>
+                <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEOUpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Update Speed" Value="50"/>
               </Union>
               <!-- Global Startup Behavior Union -->
               <Union SizeInBit="56">
