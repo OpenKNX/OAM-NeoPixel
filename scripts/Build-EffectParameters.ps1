@@ -33,11 +33,11 @@ FILEPATH: scripts/Build-EffectParameters.ps1
     Language for parameter descriptions (de or en), default: de
     
 .EXAMPLE
-    ./Build-EffectParameters.ps1
+    .\scripts\Build-EffectParameters.ps1
     Generates parameters with German descriptions (default)
     
 .EXAMPLE
-    ./Build-EffectParameters.ps1 -Language "en"
+    .\scripts\Build-EffectParameters.ps1 -Language "en"
     Generates parameters with English descriptions
     
 .NOTES
@@ -51,11 +51,11 @@ FILEPATH: scripts/Build-EffectParameters.ps1
     When used with -Clean, also empties the content between AUTO-GENERATED markers in template
     
 .EXAMPLE
-    ./Build-EffectParameters.ps1 -Clean
+    .\scripts\Build-EffectParameters.ps1 -Clean
     Removes all generated files
     
 .EXAMPLE
-    ./Build-EffectParameters.ps1 -Clean -EmptyMarkers
+    .\scripts\Build-EffectParameters.ps1 -Clean -EmptyMarkers
     Removes all generated files AND empties marker blocks in template
 #>
 
@@ -675,19 +675,34 @@ function Test-OpenKNXproducer {
     Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host "  Verifying with OpenKNXproducer" -ForegroundColor Cyan
     Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-    
-    # Detect OS and OpenKNXproducer path
-    $openKnxExe = if ($IsWindows) {
-        "OpenKNXproducer.exe"
-    } else {
-        # macOS/Linux: Check ~/bin/OpenKNXproducer.exe first (mono wrapper)
-        if (Test-Path "$HOME/bin/OpenKNXproducer.exe") {
-            "$HOME/bin/OpenKNXproducer.exe"
-        } else {
-            "OpenKNXproducer"
-        }
+    # Priority:
+    #   1) $env:OPENKNXPRODUCER_PATH (explicit)
+    #   2) $HOME/bin/OpenKNXproducer.exe (matches VS Code task "~/bin/OpenKNXproducer.exe")
+    #   3) <repo-root>/OpenKNXproducer.exe
+    #   4) PATH: OpenKNXproducer(.exe)
+    $candidates = @()
+
+    if ($env:OPENKNXPRODUCER_PATH) { $candidates += $env:OPENKNXPRODUCER_PATH }
+
+    $homeExe = Join-Path $HOME "bin/OpenKNXproducer.exe"
+    $candidates += $homeExe
+
+    # repo-root is usually $WorkingDir; also try current script working directory
+    $candidates += (Join-Path $WorkingDir "OpenKNXproducer.exe")
+    $candidates += (Join-Path (Get-Location).Path "OpenKNXproducer.exe")
+
+    $openKnxExe = $null
+    foreach ($c in $candidates) {
+        if ($c -and (Test-Path -LiteralPath $c)) { $openKnxExe = (Resolve-Path -LiteralPath $c).Path; break }
     }
-    
+    if (-not $openKnxExe) {
+        $cmd = Get-Command OpenKNXproducer, OpenKNXproducer.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($cmd) { $openKnxExe = $cmd.Source }
+    }
+
+    if (-not $openKnxExe) {
+        throw "OpenKNXproducer not found. Set OPENKNXPRODUCER_PATH or place it at $homeExe or add it to PATH."
+    }
     Write-Host ""
     Write-Host "  ▸ Executable: $openKnxExe" -ForegroundColor DarkGray
     Write-Host "  ▸ Command: $openKnxExe create --Debug -h $HeaderFile $SourceDir" -ForegroundColor DarkGray
