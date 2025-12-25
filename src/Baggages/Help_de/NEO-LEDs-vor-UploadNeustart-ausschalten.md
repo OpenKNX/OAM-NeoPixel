@@ -12,4 +12,4 @@ Diese Einstellung bestimmt, ob alle LEDs vor einem ETS-Upload oder Geräteneusta
 - **Ein**: Verhindert unerwünschte Lichteffekte während des Neustarts und schützt die Hardware
 - **Aus**: Nützlich bei speziellen Szenarien, bei denen der LED-Zustand erhalten bleiben soll
 
-**Hinweis:** Bei aktivierter Option werden alle laufenden Effekte gestoppt, alle LEDs werden ausgeschaltet bevor der Neustart erfolgt.
+**Hinweis:** Bei aktivierter Option werden alle laufenden Effekte gestoppt und alle LEDs ausgeschaltet, bevor der Neustart erfolgt.
