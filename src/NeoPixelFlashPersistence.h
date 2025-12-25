@@ -68,6 +68,7 @@ public:
 
 private:
     NeoPixelBusModule* _module;  // Parent module reference
+    uint8_t _channelIndex = 0;   // Current channel index for ParamNEO_NEO* macros
 
     /**
      * @brief Save current segment state to flash structure

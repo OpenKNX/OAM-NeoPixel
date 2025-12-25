@@ -26,7 +26,9 @@
                 <!-- Byte 10: 0 (1b), 1 (1b) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%055" Offset="10" BitOffset="0" Name="NEO%C%SegmentReverseDirection" ParameterType="%AID%_PT-Boolean" Text="ReverseDirection" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%056" Offset="10" BitOffset="1" Name="NEO%C%SegmentMirrorEffect" ParameterType="%AID%_PT-Boolean" Text="Spiegelung des Effekts" Value="0"/>
-                <!-- Byte 10: Bits 2..7 frei -->
+                <!-- Byte 10: Bits 2-4 - Segment Startup Behavior (3 bits) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%066" Offset="10" BitOffset="2" Name="NEO%C%SegmentStartupBehavior" ParameterType="%AID%_PT-SegmentStartupBehavior" Text="Verhalten nach Neustart" Value="0"/>
+                <!-- Byte 10: Bits 5-7 frei -->
                 <!-- Byte 11: 8b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%057" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt Typ" Value="0"/>
                 <!-- Byte 12: 8b -->
@@ -45,6 +47,13 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%064" Offset="18" BitOffset="7" Name="NEO%C%EffectFeature2" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 2" Value="0"/>
                 <!-- Byte 19 -->
                 <Parameter Id="%AID%_UP-%TT%%CC%065" Offset="19" BitOffset="7" Name="NEO%C%EffectFeature3" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 3" Value="0"/>
+                <!-- Segment Startup Color Parameters (Bytes 24-29) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%068" Offset="25" BitOffset="0" Name="NEO%C%SegmentStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%069" Offset="26" BitOffset="0" Name="NEO%C%SegmentStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe B" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe W" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Helligkeit" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Standard-Effekt" Value="0"/>
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -66,6 +75,13 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%063_R-%TT%%CC%06301" RefId="%AID%_UP-%TT%%CC%063" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%064_R-%TT%%CC%06401" RefId="%AID%_UP-%TT%%CC%064" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%065_R-%TT%%CC%06501" RefId="%AID%_UP-%TT%%CC%065" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" RefId="%AID%_UP-%TT%%CC%067" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%068_R-%TT%%CC%06801" RefId="%AID%_UP-%TT%%CC%068" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%069_R-%TT%%CC%06901" RefId="%AID%_UP-%TT%%CC%069" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" RefId="%AID%_UP-%TT%%CC%070" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" RefId="%AID%_UP-%TT%%CC%071" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
             </ParameterRefs>
             <ComObjectTable>
               <!-- R -->
@@ -272,6 +288,22 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%064_R-%TT%%CC%06401" IndentLevel="1" HelpContext="%DOC%"/>
                     <!-- Effect Feature 3 -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%065_R-%TT%%CC%06501" IndentLevel="1" HelpContext="%DOC%"/>
+
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    <!-- ========================================================================================================= -->
+                    <!-- Segment Startup Behavior Dynamic UI -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten nach Neustart" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" IndentLevel="1" HelpContext="%DOC%"/>
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601">
+                      <when test="3">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%068_R-%TT%%CC%06801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%069_R-%TT%%CC%06901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                    </choose>
 
                     <!-- R -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" />

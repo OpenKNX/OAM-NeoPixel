@@ -2619,6 +2619,15 @@
 #define     NEO_NEOTurnOffBeforeRestartMask 0x04
 #define     NEO_NEOTurnOffBeforeRestartShift 2
 #define NEO_NEOUpdateSpeed                      4961      // 8 Bits, Bit 7-0
+#define NEO_NEOGlobalStartupBehavior            4962      // 2 Bits, Bit 7-6
+#define     NEO_NEOGlobalStartupBehaviorMask 0xC0
+#define     NEO_NEOGlobalStartupBehaviorShift 6
+#define NEO_NEOGlobalStartupR                   4963      // uint8_t
+#define NEO_NEOGlobalStartupG                   4964      // uint8_t
+#define NEO_NEOGlobalStartupB                   4965      // uint8_t
+#define NEO_NEOGlobalStartupW                   4966      // uint8_t
+#define NEO_NEOGlobalStartupBrightness          4967      // uint8_t
+#define NEO_NEOGlobalStartupEffect              4968      // 8 Bits, Bit 7-0
 #define NEO_VirtualStripPos1                    4969      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1Mask 0xF0
 #define     NEO_VirtualStripPos1Shift 4
@@ -2723,6 +2732,20 @@
 #define ParamNEO_NEOTurnOffBeforeRestart             ((bool)(knx.paramByte(NEO_NEOTurnOffBeforeRestart) & NEO_NEOTurnOffBeforeRestartMask))
 // Update Speed
 #define ParamNEO_NEOUpdateSpeed                      (knx.paramByte(NEO_NEOUpdateSpeed))
+// Verhalten nach Neustart (Global)
+#define ParamNEO_NEOGlobalStartupBehavior            ((knx.paramByte(NEO_NEOGlobalStartupBehavior) & NEO_NEOGlobalStartupBehaviorMask) >> NEO_NEOGlobalStartupBehaviorShift)
+// Standard-Farbe R
+#define ParamNEO_NEOGlobalStartupR                   (knx.paramByte(NEO_NEOGlobalStartupR))
+// Standard-Farbe G
+#define ParamNEO_NEOGlobalStartupG                   (knx.paramByte(NEO_NEOGlobalStartupG))
+// Standard-Farbe B
+#define ParamNEO_NEOGlobalStartupB                   (knx.paramByte(NEO_NEOGlobalStartupB))
+// Standard-Farbe W
+#define ParamNEO_NEOGlobalStartupW                   (knx.paramByte(NEO_NEOGlobalStartupW))
+// Standard-Helligkeit
+#define ParamNEO_NEOGlobalStartupBrightness          (knx.paramByte(NEO_NEOGlobalStartupBrightness))
+// Standard-Effekt
+#define ParamNEO_NEOGlobalStartupEffect              (knx.paramByte(NEO_NEOGlobalStartupEffect))
 // Position 1
 #define ParamNEO_VirtualStripPos1                    ((knx.paramByte(NEO_VirtualStripPos1) & NEO_VirtualStripPos1Mask) >> NEO_VirtualStripPos1Shift)
 // Position 2
@@ -2821,6 +2844,9 @@
 #define NEO_NEOSegmentMirrorEffect              10      // 1 Bit, Bit 6
 #define     NEO_NEOSegmentMirrorEffectMask 0x40
 #define     NEO_NEOSegmentMirrorEffectShift 6
+#define NEO_NEOSegmentStartupBehavior           10      // 3 Bits, Bit 5-3
+#define     NEO_NEOSegmentStartupBehaviorMask 0x38
+#define     NEO_NEOSegmentStartupBehaviorShift 3
 #define NEO_NEONEOEffectType                    11      // 8 Bits, Bit 7-0
 #define NEO_NEOEffectSpeed                      12      // uint8_t
 #define NEO_NEOEffectIntensity                  13      // uint8_t
@@ -2836,6 +2862,12 @@
 #define NEO_NEOEffectFeature3                   19      // 1 Bit, Bit 0
 #define     NEO_NEOEffectFeature3Mask 0x01
 #define     NEO_NEOEffectFeature3Shift 0
+#define NEO_NEOSegmentStartupR                  24      // uint8_t
+#define NEO_NEOSegmentStartupG                  25      // uint8_t
+#define NEO_NEOSegmentStartupB                  26      // uint8_t
+#define NEO_NEOSegmentStartupW                  27      // uint8_t
+#define NEO_NEOSegmentStartupBrightness         28      // uint8_t
+#define NEO_NEOSegmentStartupEffect             29      // 8 Bits, Bit 7-0
 
 // Start LED
 #define ParamNEO_NEOSegmentStart                     ((knx.paramWord(NEO_ParamCalcIndex(NEO_NEOSegmentStart)) & NEO_NEOSegmentStartMask) >> NEO_NEOSegmentStartShift)
@@ -2851,6 +2883,8 @@
 #define ParamNEO_NEOSegmentReverseDirection          ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentReverseDirection)) & NEO_NEOSegmentReverseDirectionMask))
 // Spiegelung des Effekts
 #define ParamNEO_NEOSegmentMirrorEffect              ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentMirrorEffect)) & NEO_NEOSegmentMirrorEffectMask))
+// Verhalten nach Neustart
+#define ParamNEO_NEOSegmentStartupBehavior           ((knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupBehavior)) & NEO_NEOSegmentStartupBehaviorMask) >> NEO_NEOSegmentStartupBehaviorShift)
 // Effekt Typ
 #define ParamNEO_NEONEOEffectType                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEONEOEffectType)))
 // Effekt Speed
@@ -2869,6 +2903,18 @@
 #define ParamNEO_NEOEffectFeature2                   ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectFeature2)) & NEO_NEOEffectFeature2Mask))
 // Effekt Feature 3
 #define ParamNEO_NEOEffectFeature3                   ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectFeature3)) & NEO_NEOEffectFeature3Mask))
+// Standard-Farbe R
+#define ParamNEO_NEOSegmentStartupR                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupR)))
+// Standard-Farbe G
+#define ParamNEO_NEOSegmentStartupG                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupG)))
+// Standard-Farbe B
+#define ParamNEO_NEOSegmentStartupB                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupB)))
+// Standard-Farbe W
+#define ParamNEO_NEOSegmentStartupW                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupW)))
+// Standard-Helligkeit
+#define ParamNEO_NEOSegmentStartupBrightness         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupBrightness)))
+// Standard-Effekt
+#define ParamNEO_NEOSegmentStartupEffect             (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupEffect)))
 
 // deprecated
 #define NEO_KoOffset 600

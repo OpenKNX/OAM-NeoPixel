@@ -1,4 +1,5 @@
 #include "NeoPixelModule.h"
+//#include "EffectParameterMapping.h"  // AUTO-GENERATED effect parameter mapping
 #include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
 #include "PhysicalStripConfig.h" // For SpiStripConfig
@@ -2956,11 +2957,14 @@ void NeoPixelBusModule::applyEffectToSegment(Segment* segment, uint8_t effectTyp
     Effect* effect = getEffectFromType(effectType);
     if (effect != nullptr)
     {
+        // Store effect type in config for parameter loading
+        segment->getConfig().effectType = effectType;
+        
         // Clear the segment (turn all LEDs off) before starting the effect
         segment->setPrimaryColor(0, 0, 0, 0);
 
         segment->setEffect(effect);
-        logInfoP("Applied effect '%s' to segment (cleared first)", effect->getName());
+        logInfoP("Applied effect '%s' (ID: %d) to segment (cleared first)", effect->getName(), effectType);
     }
     else
     {
@@ -3016,68 +3020,32 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
     if (config.intensity == 0) config.intensity = 20;
 
     // Extended effect parameters
-    config.option1 = ParamNEO_NEOEffectOption1; // Custom option 1
-    config.option2 = ParamNEO_NEOEffectOption2; // Custom option 2
-    config.mode = ParamNEO_NEOEffectOption3;    // Effect mode
+    // TEMPORARILY DISABLED FOR TESTING:
+    // config.option1 = ParamNEO_NEOEffectOption1; // Custom option 1
+    // config.option2 = ParamNEO_NEOEffectOption2; // Custom option 2
+    // config.mode = ParamNEO_NEOEffectOption3;    // Effect mode
+    config.option1 = 0;
+    config.option2 = 0;
+    config.mode = 0;
 
     // Effect features (boolean flags)
-    config.reverse = ParamNEO_NEOEffectFeature1 ? 1 : 0; // Reverse direction
+    // TEMPORARILY DISABLED FOR TESTING:
+    // config.reverse = ParamNEO_NEOEffectFeature1 ? 1 : 0; // Reverse direction
+    config.reverse = 0;
     // Feature2 and Feature3 could be used for other boolean options
 
     // Initialize effect-specific state parameters
     Effect* effect = segment->getEffect();
     if (effect)
     {
-        uint8_t paramCount = effect->getParameterCount();
+        // Load effect-specific parameters from EEPROM (AUTO-GENERATED)
+        // This replaces the old manual mapping code and automatically reads
+        // parameters generated from Effect*.h headers via Build-EffectParameters.ps1
+        // TEMPORARILY DISABLED FOR TESTING:
+        // loadEffectParameters(effect, segment, segment->getConfig().effectType, _channelIndex);
 
-        // Standard ETS parameter mapping for effects:
-        //   Parameter 0 → ETS "Effekt Speed" (animation/movement speed)
-        //   Parameter 1 → ETS "Effekt Option 1" (color/hue/primary effect parameter)
-        //   Parameter 2 → ETS "Effekt Option 2" (size/mode/secondary parameter)
-        //   Parameter 3 → ETS "Effekt Option 3" (tertiary parameter)
-        //   Brightness  → ETS "Effekt Intensity" (stored in config.intensity)
-        //
-        // Cylon example:
-        //   Speed=122 → Cylon movement speed (0=auto, higher=faster)
-        //   Intensity=255 → Eye brightness
-        //   Option1=0 → Hue (0=red, 85=green, 170=blue, 212=magenta)
-        //   Option2=4 → EyeSize (1-10)
-        //   Option3=40 → FadeAmount (trail fade speed, 1-255)
-
-        for (uint8_t i = 0; i < paramCount; i++)
-        {
-            uint32_t value = effect->getParameterDefault(i);
-
-            // Map ETS parameters to effect parameters
-            switch (i)
-            {
-                case 0:
-                    // Parameter 0: ETS Speed
-                    if (config.speed > 0) value = config.speed;
-                    break;
-                case 1:
-                    // Parameter 1: ETS Option 1
-                    if (config.option1 > 0) value = config.option1;
-                    break;
-                case 2:
-                    // Parameter 2: ETS Option 2 or Option 3 (fallback)
-                    if (config.option2 > 0) value = config.option2;
-                    else if (config.mode > 0)
-                        value = config.mode;
-                    break;
-                case 3:
-                    // Parameter 3: ETS Option 3
-                    if (config.mode > 0) value = config.mode;
-                    break;
-                    // Parameter 4+ use effect defaults only
-            }
-
-            effect->setParameter(segment, i, value);
-        }
-
-        logInfoP("Effect '%s': Speed=%d, Int=%d, Opt1=%d, Opt2=%d, Opt3=%d",
-                 effect->getName(), config.speed, config.intensity,
-                 config.option1, config.option2, config.mode);
+        logInfoP("Effect '%s' configured with %d parameter(s)",
+                 effect->getName(), effect->getParameterCount());
     }
 
     // Mirror effect (from segment configuration)

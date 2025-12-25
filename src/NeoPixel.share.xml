@@ -252,6 +252,22 @@
               <ParameterType Id="%AID%_PT-NumberOfSegments" Name="NumberOfSegments">
                 <TypeNumber SizeInBit="5" Type="unsignedInt" minInclusive="1" maxInclusive="16" />
               </ParameterType>
+              <!-- Startup Behavior Types -->
+              <ParameterType Id="%AID%_PT-GlobalStartupBehavior" Name="GlobalStartupBehavior">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Text="Aus" Value="0" Id="%ENID%" />
+                  <Enumeration Text="Letzter Zustand" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Standard-Farbe" Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="%AID%_PT-SegmentStartupBehavior" Name="SegmentStartupBehavior">
+                <TypeRestriction Base="Value" SizeInBit="3">
+                  <Enumeration Text="Global verwenden" Value="0" Id="%ENID%" />
+                  <Enumeration Text="Aus" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Letzter Zustand" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Standard-Farbe (eigene)" Value="3" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <!-- Virtual Strip Selection for exactly 1 strip -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect1" Name="VirtualStripSelect1">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
@@ -340,6 +356,17 @@
                 <!-- Byte 2: 8b -->
                 <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEO%C%UpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Update Speed" Value="50"/>
               </Union>
+              <!-- Global Startup Behavior Union -->
+              <Union SizeInBit="56">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="23" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00027" Offset="3" BitOffset="0" Name="NEOGlobalStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe B" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00028" Offset="4" BitOffset="0" Name="NEOGlobalStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe W" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00029" Offset="5" BitOffset="0" Name="NEOGlobalStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Helligkeit" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Standard-Effekt" Value="0"/>
+              </Union>
               <!-- Virtual Strip Configuration -->
               <Union SizeInBit="24">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="30" BitOffset="0" />
@@ -409,6 +436,14 @@
               <ParameterRef Id="%AID%_UP-%TT%00021_R-%TT%0002101" RefId="%AID%_UP-%TT%00021" />
               <ParameterRef Id="%AID%_UP-%TT%00022_R-%TT%0002201" RefId="%AID%_UP-%TT%00022" />
               <ParameterRef Id="%AID%_UP-%TT%00023_R-%TT%0002301" RefId="%AID%_UP-%TT%00023" />
+              <!-- Global Startup Behavior Parameter References -->
+              <ParameterRef Id="%AID%_UP-%TT%00024_R-%TT%0002401" RefId="%AID%_UP-%TT%00024" />
+              <ParameterRef Id="%AID%_UP-%TT%00025_R-%TT%0002501" RefId="%AID%_UP-%TT%00025" />
+              <ParameterRef Id="%AID%_UP-%TT%00026_R-%TT%0002601" RefId="%AID%_UP-%TT%00026" />
+              <ParameterRef Id="%AID%_UP-%TT%00027_R-%TT%0002701" RefId="%AID%_UP-%TT%00027" />
+              <ParameterRef Id="%AID%_UP-%TT%00028_R-%TT%0002801" RefId="%AID%_UP-%TT%00028" />
+              <ParameterRef Id="%AID%_UP-%TT%00029_R-%TT%0002901" RefId="%AID%_UP-%TT%00029" />
+              <ParameterRef Id="%AID%_UP-%TT%00060_R-%TT%0006001" RefId="%AID%_UP-%TT%00060" />
               <!-- Virtual Strip Parameter References (canonical, used by logic/JS) -->
               <ParameterRef Id="%AID%_UP-%TT%00030_R-%TT%0003001" RefId="%AID%_UP-%TT%00030" />
               <ParameterRef Id="%AID%_UP-%TT%00031_R-%TT%0003101" RefId="%AID%_UP-%TT%00031" />
@@ -610,6 +645,19 @@
                 </ParameterBlock>
                 <!-- Turn Off LEDs before Restart -->
                 <ParameterRefRef RefId="%AID%_UP-%TT%00023_R-%TT%0002301" IndentLevel="1" HelpContext="%DOC%"/>
+                <!-- Global Startup Behavior Dynamic UI -->
+                <ParameterSeparator Id="%AID%_PS-GlobalStartup" Text="Verhalten nach Neustart" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00024_R-%TT%0002401" IndentLevel="1" HelpContext="%DOC%"/>
+                <choose ParamRefId="%AID%_UP-%TT%00024_R-%TT%0002401">
+                  <when test="2">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00025_R-%TT%0002501" IndentLevel="2" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00026_R-%TT%0002601" IndentLevel="2" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00027_R-%TT%0002701" IndentLevel="2" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00028_R-%TT%0002801" IndentLevel="2" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" HelpContext="%DOC%"/>
+                  </when>
+                </choose>
                 <!-- ========================================================================================================= -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Kurve" UIHint="Headline" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" HelpContext="%DOC%"/>
