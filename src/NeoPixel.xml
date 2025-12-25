@@ -38,6 +38,10 @@
     <op:verify File="../lib/OFM-LogicModule/library.json" ModuleVersion="%LOG_VerifyVersion%" /> 
   </op:define>
 
+  <!-- BEGIN AUTO-GENERATED: NEOEFF Module -->
+  <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+  <!-- END AUTO-GENERATED: NEOEFF Module -->
+
   <op:define prefix="NEO" ModuleType="40"
     share="NeoPixel.share.xml"
     template="NeoPixel.Segment.templ.xml"

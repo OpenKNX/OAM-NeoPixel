@@ -47,6 +47,7 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%064" Offset="18" BitOffset="7" Name="NEO%C%EffectFeature2" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 2" Value="0"/>
                 <!-- Byte 19 -->
                 <Parameter Id="%AID%_UP-%TT%%CC%065" Offset="19" BitOffset="7" Name="NEO%C%EffectFeature3" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 3" Value="0"/>
+                <!-- Bytes 20-23: Reserved for future features -->
                 <!-- Segment Startup Color Parameters (Bytes 24-29) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%068" Offset="25" BitOffset="0" Name="NEO%C%SegmentStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
@@ -54,6 +55,11 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe W" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Helligkeit" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Standard-Effekt" Value="0"/>
+                <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
+                <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
+                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+                <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
+        <!-- END AUTO-GENERATED: Effect Parameters Union -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -82,6 +88,9 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" RefId="%AID%_UP-%TT%%CC%070" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" RefId="%AID%_UP-%TT%%CC%071" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
+              <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
+                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+              <!-- END AUTO-GENERATED: Effect ParameterRefs -->
             </ParameterRefs>
             <ComObjectTable>
               <!-- R -->
@@ -288,6 +297,10 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%064_R-%TT%%CC%06401" IndentLevel="1" HelpContext="%DOC%"/>
                     <!-- Effect Feature 3 -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%065_R-%TT%%CC%06501" IndentLevel="1" HelpContext="%DOC%"/>
+                    <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
+                      <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+                      <!-- Dynamic choose/when blocks for effect-specific parameters -->
+              <!-- END AUTO-GENERATED: Effect Dynamic UI -->
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->

@@ -1,5 +1,16 @@
 #include "NeoPixelModule.h"
-//#include "EffectParameterMapping.h"  // AUTO-GENERATED effect parameter mapping
+// Include generated effect parameters if available
+#ifdef __has_include
+#  if __has_include("EffectParameterMapping.h")
+#    define EFFECT_PARAMETER_MAPPING_GENERATED
+#    include "EffectParameterMapping.h"
+#  endif
+#else
+#  // Fallback for older compilers: can define via build flags
+#  ifdef EFFECT_PARAMETER_MAPPING_GENERATED
+#    include "EffectParameterMapping.h"
+#  endif
+#endif
 #include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
 #include "PhysicalStripConfig.h" // For SpiStripConfig
@@ -3041,11 +3052,14 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
         // Load effect-specific parameters from EEPROM (AUTO-GENERATED)
         // This replaces the old manual mapping code and automatically reads
         // parameters generated from Effect*.h headers via Build-EffectParameters.ps1
-        // TEMPORARILY DISABLED FOR TESTING:
-        // loadEffectParameters(effect, segment, segment->getConfig().effectType, _channelIndex);
-
+#ifdef EFFECT_PARAMETER_MAPPING_GENERATED
+        loadEffectParameters(effect, segment, segment->getConfig().effectType, _channelIndex);
         logInfoP("Effect '%s' configured with %d parameter(s)",
                  effect->getName(), effect->getParameterCount());
+#else
+        logDebugP("Effect '%s' loaded (no parameters - run Build-EffectParameters.ps1 to generate)",
+                  effect->getName());
+#endif
     }
 
     // Mirror effect (from segment configuration)
