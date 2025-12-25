@@ -12,6 +12,9 @@
 
   <!-- Prepare: Not ready to use -->
   <op:config name="%NET_ServiceHTTP%" value="0" />
+
+  <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
+  <op:nowarn id="3" regex="toInt" />
   
   <ManufacturerData>
     <Manufacturer RefId="M-00FA">

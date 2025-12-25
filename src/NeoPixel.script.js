@@ -1,6 +1,12 @@
 // Colour-order enum: 0=GRB, 1=RGB, 2=BRG, 3=RBG, 4=BGR, 5=GBR
 var CO_GRB = 0, CO_RGB = 1, CO_BRG = 2, CO_RBG = 3, CO_BGR = 4, CO_GBR = 5;
 
+// Helper function for safe integer parsing with default value
+function toInt(v, def) {
+  var x = parseInt(v, 10);
+  return isNaN(x) ? (def !== undefined ? def : 0) : x;
+}
+
 function NEO_Empty(input, output, context) {
   // no-op for reverse direction
   info("NEO_Empty called with RGBColourOrder: " + input.RGBColourOrder);
@@ -8,8 +14,7 @@ function NEO_Empty(input, output, context) {
 
 // Map LedType -> RGBColourOrder (RGB part for RGBW/RGBCCT types)
 function NEO_LedTypeToRGB(input, output, context) {
-  var ledType = parseInt(input.LedType, 10);
-  if (isNaN(ledType)) ledType = 0;
+  var ledType = toInt(input.LedType);
 
   // Default fallback if a type has no explicit mapping
   var defaultOrder = CO_RGB; // safe default
@@ -64,11 +69,6 @@ function NEO_LedTypeToRGB(input, output, context) {
 function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   info("NEO_UpdateVirtualStripStartIndices called");
 
-  function toInt(v, def) {
-    var x = parseInt(v, 10);
-    return isNaN(x) ? def : x;
-  }
-
   // Number of physical strips in use (1..6)
   var numStrips = toInt(input.NumberOfLEDStrips, 6);
   if (numStrips < 1) numStrips = 1;
@@ -82,55 +82,55 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
 
   switch (numStrips) {
     case 1:
-      pos[0] = toInt(input.Pos1_1, 0);
+      pos[0] = toInt(input.Pos1_1);
       break;
 
     case 2:
-      pos[0] = toInt(input.Pos1_2, 0);
-      pos[1] = toInt(input.Pos2_2, 0);
+      pos[0] = toInt(input.Pos1_2);
+      pos[1] = toInt(input.Pos2_2);
       break;
 
     case 3:
-      pos[0] = toInt(input.Pos1_3, 0);
-      pos[1] = toInt(input.Pos2_3, 0);
-      pos[2] = toInt(input.Pos3_3, 0);
+      pos[0] = toInt(input.Pos1_3);
+      pos[1] = toInt(input.Pos2_3);
+      pos[2] = toInt(input.Pos3_3);
       break;
 
     case 4:
-      pos[0] = toInt(input.Pos1_4, 0);
-      pos[1] = toInt(input.Pos2_4, 0);
-      pos[2] = toInt(input.Pos3_4, 0);
-      pos[3] = toInt(input.Pos4_4, 0);
+      pos[0] = toInt(input.Pos1_4);
+      pos[1] = toInt(input.Pos2_4);
+      pos[2] = toInt(input.Pos3_4);
+      pos[3] = toInt(input.Pos4_4);
       break;
 
     case 5:
-      pos[0] = toInt(input.Pos1_5, 0);
-      pos[1] = toInt(input.Pos2_5, 0);
-      pos[2] = toInt(input.Pos3_5, 0);
-      pos[3] = toInt(input.Pos4_5, 0);
-      pos[4] = toInt(input.Pos5_5, 0);
+      pos[0] = toInt(input.Pos1_5);
+      pos[1] = toInt(input.Pos2_5);
+      pos[2] = toInt(input.Pos3_5);
+      pos[3] = toInt(input.Pos4_5);
+      pos[4] = toInt(input.Pos5_5);
       break;
 
     case 6:
     default:
       // Full range – UI uses canonical params directly
-      pos[0] = toInt(input.Pos1, 0);
-      pos[1] = toInt(input.Pos2, 0);
-      pos[2] = toInt(input.Pos3, 0);
-      pos[3] = toInt(input.Pos4, 0);
-      pos[4] = toInt(input.Pos5, 0);
-      pos[5] = toInt(input.Pos6, 0);
+      pos[0] = toInt(input.Pos1);
+      pos[1] = toInt(input.Pos2);
+      pos[2] = toInt(input.Pos3);
+      pos[3] = toInt(input.Pos4);
+      pos[4] = toInt(input.Pos5);
+      pos[5] = toInt(input.Pos6);
       break;
   }
 
   // Physical strip lengths (per physical index 1..6)
   var len = [
-    toInt(input.Len1, 0),
-    toInt(input.Len2, 0),
-    toInt(input.Len3, 0),
-    toInt(input.Len4, 0),
-    toInt(input.Len5, 0),
-    toInt(input.Len6, 0)
+    toInt(input.Len1),
+    toInt(input.Len2),
+    toInt(input.Len3),
+    toInt(input.Len4),
+    toInt(input.Len5),
+    toInt(input.Len6)
   ];
 
   // ------------------------------------------------------------------
@@ -207,11 +207,6 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
 
 function NEO_CheckSegmentStartEndRanges(input, output, context) {
   info("NEO_CheckSegmentStartEndRanges called");
-
-  function toInt(v) {
-    var x = parseInt(v, 10);
-    return isNaN(x) ? 0 : x;
-  }
 
   var numSeg = toInt(input.NumberOfSegments);
   if (numSeg < 0) numSeg = 0;
