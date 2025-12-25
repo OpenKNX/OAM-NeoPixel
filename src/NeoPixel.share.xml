@@ -88,7 +88,7 @@
                 <Enumeration Text="Juggle"                Value="5"  Id="%ENID%"/>
                 <Enumeration Text="BPM"                   Value="6"  Id="%ENID%"/>
                 <Enumeration Text="Cylon"                 Value="7"  Id="%ENID%"/>
-                <Enumeration Text="SK6812Test"            Value="8"  Id="%ENID%"/>
+                <Enumeration Text="RGBWTestEffect"        Value="8"  Id="%ENID%"/>
                 <Enumeration Text="GarageDoor"            Value="9"  Id="%ENID%"/>
                 <Enumeration Text="Fire"                  Value="10" Id="%ENID%"/>
                 <Enumeration Text="Theater Chase"         Value="11" Id="%ENID%"/>
@@ -101,6 +101,11 @@
                 <Enumeration Text="Pulse"                 Value="18" Id="%ENID%"/>
                 <Enumeration Text="Comet"                 Value="19" Id="%ENID%"/>
                 <Enumeration Text="Meteor"                Value="20" Id="%ENID%"/>
+                <Enumeration Text="Rainbow Cycle"         Value="21" Id="%ENID%"/>
+                <Enumeration Text="Noise"                 Value="22" Id="%ENID%"/>
+                <Enumeration Text="Palette"               Value="23" Id="%ENID%"/>
+                <Enumeration Text="Lightning"             Value="24" Id="%ENID%"/>
+                <Enumeration Text="Gradient"              Value="25" Id="%ENID%"/>
               </TypeRestriction>
               </ParameterType>
               <!-- Led Types -->

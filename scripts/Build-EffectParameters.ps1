@@ -430,42 +430,117 @@ function Extract-ParameterType {
     return "PARAM_UINT8"  # Default
 }
 
+# Caches the parsed map so we don't re-read the XML for every call
+$script:NeoEffectMapCache = $null
+$script:NeoEffectMapCachePath = $null
+$script:NeoEffectMapCacheMTime = $null
+
+function Resolve-NeoPixelShareXmlPath {
+    # Script liegt in <repo>\scripts\...
+    # XML liegt in <repo>\src\NeoPixel.share.xml
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+    $xmlPath  = Join-Path $repoRoot "src\NeoPixel.share.xml"
+
+    if (Test-Path -LiteralPath $xmlPath) {
+        return (Resolve-Path -LiteralPath $xmlPath).Path
+    }
+
+    throw "NeoPixel.share.xml not found at expected path: $xmlPath"
+}
+
+function Get-NeoEffectMapFromShareXml {
+    $xmlPath = Resolve-NeoPixelShareXmlPath
+    $mtime = (Get-Item -LiteralPath $xmlPath).LastWriteTimeUtc
+
+    # Cache hit?
+    if ($script:NeoEffectMapCache -and
+        $script:NeoEffectMapCachePath -eq $xmlPath -and
+        $script:NeoEffectMapCacheMTime -eq $mtime)
+    {
+        return $script:NeoEffectMapCache
+    }
+
+    [xml]$xml = Get-Content -LiteralPath $xmlPath -Raw
+
+    # Namespace-safe query using local-name()
+    $enumNodes = $xml.SelectNodes(
+        "//*[local-name()='ParameterType' and (@Name='NEOEffectType' or contains(@Id,'PT-NEOEffectType'))]//*[local-name()='Enumeration']"
+    )
+
+    if (-not $enumNodes -or $enumNodes.Count -eq 0) {
+        throw "Could not find NEOEffectType Enumeration in $xmlPath"
+    }
+
+    $map = @{}
+    foreach ($node in $enumNodes) {
+        $text  = $node.Attributes["Text"].Value
+        $value = [int]$node.Attributes["Value"].Value
+        $map[$text] = $value
+    }
+
+    # Update cache
+    $script:NeoEffectMapCache = $map
+    $script:NeoEffectMapCachePath = $xmlPath
+    $script:NeoEffectMapCacheMTime = $mtime
+
+    return $map
+}
+
+function Get-EffectDisplayNameFromHeader {
+    param([Parameter(Mandatory)][string]$HeaderPath)
+
+    if (-not (Test-Path -LiteralPath $HeaderPath)) {
+        throw "Effect header not found: $HeaderPath"
+    }
+
+    $content = Get-Content -LiteralPath $HeaderPath -Raw
+
+    # Match getName() override returning a string literal
+    $rx = [regex]'getName\s*\(\s*\)\s*override[\s\S]*?return\s*"([^"]+)"\s*;'
+    $m = $rx.Match($content)
+
+    if (-not $m.Success) {
+        throw "Could not find getName() return string in: $HeaderPath"
+    }
+
+    return $m.Groups[1].Value
+}
+
+function Resolve-EffectHeaderPath {
+    param([Parameter(Mandatory)][string]$EffectName)
+
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+
+    # Adjust this if your effects live elsewhere
+    $effectsDir = Join-Path $repoRoot "lib\OFM-NeoPixel\src\effects"
+
+    # Your input looks like "GarageDoorEffect" -> file "GarageDoorEffect.h"
+    $header = Join-Path $effectsDir "$EffectName.h"
+
+    if (Test-Path -LiteralPath $header) {
+        return (Resolve-Path -LiteralPath $header).Path
+    }
+
+    throw "Effect header not found for '$EffectName' at expected path: $header"
+}
+
 function Get-EffectId {
-    param([string]$EffectName)
-    
-    # Map Effect names to ETS Enum Values (from NeoPixel.share.xml)
-    $effectIds = @{
-        "EffectSolid" = 0
-        "EffectWipe" = 1
-        "RainbowEffect" = 2
-        "PrideEffect" = 3
-        "ConfettiEffect" = 4
-        "JuggleEffect" = 5
-        "BPMEffect" = 6
-        "CylonEffect" = 7
-        "RGBWTestEffect" = 8
-        "GarageDoorEffect" = 9
-        "FireEffect" = 10
-        "TheaterChaseEffect" = 11
-        "TheaterChaseRainbowEffect" = 12
-        "SinelonEffect" = 13
-        "TwinkleEffect" = 14
-        "SparkleEffect" = 15
-        "BreathingEffect" = 16
-        "StrobeEffect" = 17
-        "PulseEffect" = 18
-        "CometEffect" = 19
-        "MeteorEffect" = 20
-        "RainbowCycleEffect" = 21
+    param([Parameter(Mandatory)][string]$EffectName)
+
+    $map = Get-NeoEffectMapFromShareXml
+
+    $headerPath  = Resolve-EffectHeaderPath -EffectName $EffectName
+    $displayName = Get-EffectDisplayNameFromHeader -HeaderPath $headerPath
+
+    if ($map.ContainsKey($displayName)) {
+        return $map[$displayName]
     }
-    
-    if ($effectIds.ContainsKey($EffectName)) {
-        return $effectIds[$EffectName]
-    }
-    
-    Write-Warning "Unknown effect: $EffectName (add to mapping!)"
+
+    Write-Warning "Unknown effect: '$EffectName' -> getName()='$displayName' not found in NeoPixel.share.xml"
     return -1
 }
+
+
 
 function Parse-EffectHeader {
     param(
