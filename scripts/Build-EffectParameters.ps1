@@ -72,6 +72,162 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$SCRIPT_VERSION = "0.1"
+
+# ====================================================================
+# Configuration - Central place for all magic numbers and paths
+# ====================================================================
+$script:Config = @{
+    # Effect Parameter IDs (FIXED - referenced in XML comments)
+    EffectParameterStartId = 73
+    EffectParameterStartOffset = 30
+    
+    # Application/Module Numbers
+    ApplicationNumber = 40
+    ModuleType = 40
+    
+    # Parameter Type Defaults
+    DefaultMaxUint8 = 255
+    DefaultMaxPercent = 100
+    
+    # Relative paths from repo root
+    EffectPoolPath = "lib/OFM-NeoPixel/src/effects/EffectPool.cpp"
+    EffectsDir = "lib/OFM-NeoPixel/src/effects"
+    SrcDir = "src"
+    HelpDir = "src/Baggages/Help_de"
+    IncludeDir = "include"
+    
+    # XML Templates
+    SegmentTemplate = "src/NeoPixel.Segment.templ.xml"
+    StripTemplate = "src/NeoPixel.Strip.templ.xml"
+    ShareXml = "src/NeoPixel.share.xml"
+    MainXml = "src/NeoPixel.xml"
+    
+    # Generated XML files
+    ParameterTypesXml = "src/NeoPixel.Effects.ParameterTypes.generated.xml"
+    UnionParametersXml = "src/NeoPixel.Effects.UnionParameters.generated.xml"
+    ParameterRefsXml = "src/NeoPixel.Effects.ParameterRefs.generated.xml"
+    DynamicChooseXml = "src/NeoPixel.Effects.DynamicChoose.generated.xml"
+    
+    # C++ Headers and includes
+    KnxProdHeader = "include/knxprod.h"
+    CppHeader = "src/EffectParameterMapping.h"
+    CppHeaderName = "EffectParameterMapping.h"
+    EffectBaseHeader = "../lib/OFM-NeoPixel/src/effects/Effect.h"
+    SegmentHeader = "../lib/OFM-NeoPixel/src/Segment.h"
+    
+    # File names and extensions
+    EffectHeaderPattern = "*.h"
+    MarkdownPattern = "*.md"
+    EffectHeaderSuffix = "Effect.h"
+    EffectHeaderPrefix = "Effect"
+    
+    # Effect naming patterns (for matching both conventions)
+    EffectNamePattern1 = "*Effect.h"   # BPMEffect.h, CylonEffect.h
+    EffectNamePattern2 = "Effect*.h"   # EffectSolid.h, EffectWipe.h
+    
+    # Special files to exclude
+    ExcludeHeaders = @("Effect.h", "EffectPool.h")
+    
+    # File patterns for cleanup
+    GeneratedXmlPattern = "NeoPixel.Effects.*.generated.xml"
+    PartXmlPattern = "NeoPixel.Effects.*.part.xml"
+    
+    # Help file naming
+    HelpFilePrefix = "NEO-"
+    HelpFileSuffix = ".md"
+    
+    # XML Markers
+    Markers = @{
+        UnionStart = "<!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->"
+        UnionEnd = "<!-- END AUTO-GENERATED: Effect Parameters Union -->"
+        ParamRefsStart = "<!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->"
+        ParamRefsEnd = "<!-- END AUTO-GENERATED: Effect ParameterRefs -->"
+        DynamicUIStart = "<!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->"
+        DynamicUIEnd = "<!-- END AUTO-GENERATED: Effect Dynamic UI -->"
+        ModuleStart = "<!-- BEGIN AUTO-GENERATED: NEOEFF Module -->"
+        ModuleEnd = "<!-- END AUTO-GENERATED: NEOEFF Module -->"
+        EnumStart = "<!-- GENERATED_EFFECT_ENUMERATIONS_START -->"
+        EnumEnd = "<!-- GENERATED_EFFECT_ENUMERATIONS_END -->"
+    }
+    
+    # String cleaning/replacement patterns
+    CleanPatterns = @{
+        # Remove "Effect" suffix
+        RemoveEffectSuffix = 'Effect$'
+        # Remove all non-alphanumeric characters
+        AlphanumericOnly = '[^a-zA-Z0-9]'
+        # Remove spaces and hyphens
+        RemoveSpacesHyphens = '[-\s]'
+        # Replace spaces with hyphens
+        SpaceToHyphen = '\s+'
+    }
+    
+    # Regex Patterns for C++ Parsing
+    Patterns = @{
+        # Effect class name - supports both naming conventions: *Effect and Effect*
+        ClassName = 'class\s+((?:\w+Effect)|(?:Effect\w+))\s*:'
+        
+        # getName() with EFFECT_NAME_DE_EN macro
+        GetNameMacro = 'getName\s*\([^)]*\)\s*override[\s\S]*?return\s+EFFECT_NAME_DE_EN\s*\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\)\s*;'
+        
+        # getName() with plain string - supports both inline {return "X";} and multi-line return
+        GetNamePlain = 'getName\s*\([^)]*\)\s*override\s*\{?\s*return\s*"([^"]+)"\s*;'
+        
+        # getParameterCount() return value
+        ParameterCount = 'getParameterCount\s*\(\s*\)\s*(?:const\s+)?(?:override\s+)?{[^}]*return\s+(\d+)'
+        
+        # getParameterName case statement
+        ParameterName = '(?s)getParameterName.*?case\s+{0}\s*:\s*return\s+"([^"]+)"'
+        
+        # EffectPool.cpp getEffectByIndex() function
+        EffectPoolFunction = 'Effect\*\s+EffectPool::getEffectByIndex\([^)]+\)\s*\{(.*?)\n}'
+        
+        # return getXXX() in EffectPool
+        EffectPoolReturn = 'return\s+get(\w+)\(\)'
+        
+        # Filename pattern: EffectXXX → XXXEffect
+        FilenameToClass = '^Effect(.+)$'
+        
+        # Parameter type matching
+        ParamTypeUint8 = 'PARAM_UINT8|PARAM_HUE'
+        
+        # Multi-language separator (de | en)
+        MultiLangSeparator = '(.+?)\s*\|\s*(.+)'
+    }
+}
+
+# Helper: Verbose logging
+function Write-ScriptVerbose {
+    param([string]$Message, [string]$Color = "Gray")
+    if ($VerbosePreference -eq 'Continue') {
+        Write-Host "  [VERBOSE] $Message" -ForegroundColor $Color
+    }
+}
+
+# Helper: Resolve repository root
+function Get-RepoRoot {
+    $scriptDir = if ($PSScriptRoot) { 
+        $PSScriptRoot 
+    } elseif ($PSCommandPath) { 
+        Split-Path -Parent $PSCommandPath 
+    } else { 
+        $PWD.Path 
+    }
+    
+    $repoRoot = Split-Path -Parent $scriptDir
+    Write-ScriptVerbose "Repository root: $repoRoot"
+    return $repoRoot
+}
+
+# Helper: Resolve path relative to repo root
+function Resolve-RepoPath {
+    param([string]$RelativePath)
+    $root = Get-RepoRoot
+    $fullPath = Join-Path $root $RelativePath
+    Write-ScriptVerbose "Resolved: $RelativePath → $fullPath"
+    return $fullPath
+}
 
 # ====================================================================
 # OpenKNX Logo
@@ -80,23 +236,77 @@ $ErrorActionPreference = "Stop"
 function Show-OpenKNXLogo {
     param([string]$SubTitle, [string]$Version)
     
+    $boxWidth = 112  # Content width inside the box
+    
     Write-Host ""
-    Write-Host ("─" * 116) -ForegroundColor DarkGray
+    Write-Host "  ┌" -NoNewline -ForegroundColor DarkGray
+    Write-Host ("─" * $boxWidth) -NoNewline -ForegroundColor DarkGray
+    Write-Host "─┐" -ForegroundColor DarkGray
+    
+    # Line 1: "Open ■" - Open in normal color, ■ in green
+    $line1Length = 6  # "Open " (5) + "■" (1)
+    Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
     Write-Host "Open " -NoNewline
-    Write-Host "$([char]::ConvertFromUtf32(0x25A0))" -ForegroundColor Green
+    Write-Host "$([char]::ConvertFromUtf32(0x25A0))" -NoNewline -ForegroundColor Green
+    Write-Host (" " * ($boxWidth - $line1Length)) -NoNewline
+    Write-Host "│" -ForegroundColor DarkGray
+    
+    # Line 2: Unicode + SubTitle + Version (all green)
     $unicodeString = "$([char]::ConvertFromUtf32(0x252C))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2534)) "
     
     if ($SubTitle -and $Version) {
-        Write-Host "$($unicodeString) $($SubTitle) v$Version" -ForegroundColor Green
+        $line2 = "$($unicodeString)$($SubTitle) v$Version"
     } elseif ($SubTitle) {
-        Write-Host "$($unicodeString) $($SubTitle)" -ForegroundColor Green
+        $line2 = "$($unicodeString)$($SubTitle)"
     } else {
-        Write-Host "$($unicodeString)" -ForegroundColor Green
+        $line2 = "$($unicodeString)"
     }
     
-    Write-Host "$([char]::ConvertFromUtf32(0x25A0)) KNX" -ForegroundColor Green
-    Write-Host ("─" * 116) -ForegroundColor DarkGray
+    Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
+    Write-Host $line2 -NoNewline -ForegroundColor Green
+    Write-Host (" " * ($boxWidth - $line2.Length)) -NoNewline
+    Write-Host "│" -ForegroundColor DarkGray
+    
+    # Line 3: "■ KNX" - ■ in green, KNX in normal color
+    $line3Length = 5  # "■" (1) + " KNX" (4)
+    Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
+    Write-Host "$([char]::ConvertFromUtf32(0x25A0))" -NoNewline -ForegroundColor Green
+    Write-Host " KNX" -NoNewline
+    Write-Host (" " * ($boxWidth - $line3Length)) -NoNewline
+    Write-Host "│" -ForegroundColor DarkGray
+    
+    Write-Host "  └" -NoNewline -ForegroundColor DarkGray
+    Write-Host ("─" * $boxWidth) -NoNewline -ForegroundColor DarkGray
+    Write-Host "─┘" -ForegroundColor DarkGray
     Write-Host ""
+}
+
+# ====================================================================
+# Helper Functions - Must be defined BEFORE Clean Mode
+# ====================================================================
+
+function Get-AllEffectHeaders {
+    $effectsDir = Resolve-RepoPath $script:Config.EffectsDir
+    
+    if (-not (Test-Path -LiteralPath $effectsDir)) {
+        throw "Effects directory not found: $effectsDir"
+    }
+    
+    Write-ScriptVerbose "Scanning for effect headers in: $effectsDir"
+    
+    # Get all effect headers but exclude the base Effect.h class and EffectPool.h
+    # Support both naming patterns:
+    #   - Pattern 1: Effect*.h (EffectSolid.h, EffectWipe.h)
+    #   - Pattern 2: *Effect.h (BPMEffect.h, CylonEffect.h)
+    $allHeaders = Get-ChildItem -Path $effectsDir -Filter $script:Config.EffectHeaderPattern
+    $effectHeaders = $allHeaders | Where-Object { 
+        ($_.Name -like $script:Config.EffectNamePattern1 -or $_.Name -like $script:Config.EffectNamePattern2) -and 
+        $_.Name -notin $script:Config.ExcludeHeaders
+    }
+    
+    Write-ScriptVerbose "Found $($effectHeaders.Count) effect headers"
+    
+    return $effectHeaders | Sort-Object Name
 }
 
 # ====================================================================
@@ -106,50 +316,47 @@ function Show-OpenKNXLogo {
 if ($Clean) {
     Clear-Host
     
-    Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version "0.1"
+    Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
     
     Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host "  Cleaning Auto-Generated Effect Parameter Files" -ForegroundColor Cyan
     Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host ""
     
-    $scriptDir = Split-Path -Parent $PSCommandPath
-    $rootDir = Split-Path -Parent $scriptDir
-    $srcDir = Join-Path $rootDir "src"
+    # Use centralized path resolution
+    $srcDir = Resolve-RepoPath $script:Config.SrcDir
     
     # Collect files to delete
     $filesToDelete = @()
     
     # 1. Collect generated XML fragments
-    $xmlFiles = Get-ChildItem -Path $srcDir -Filter "NeoPixel.Effects.*.generated.xml" -ErrorAction SilentlyContinue
+    $xmlFiles = Get-ChildItem -Path $srcDir -Filter $script:Config.GeneratedXmlPattern -ErrorAction SilentlyContinue
     foreach ($file in $xmlFiles) {
         $filesToDelete += [PSCustomObject]@{ Type = "XML Fragment"; Name = $file.Name; Path = $file.FullName }
     }
     
     # 2. Collect C++ parameter mapping header
-    $cppFile = Join-Path $srcDir "EffectParameterMapping.h"
+    $cppFile = Join-Path $srcDir $script:Config.CppHeaderName
     if (Test-Path $cppFile) {
-        $filesToDelete += [PSCustomObject]@{ Type = "C++ Header"; Name = "EffectParameterMapping.h"; Path = $cppFile }
+        $filesToDelete += [PSCustomObject]@{ Type = "C++ Header"; Name = $script:Config.CppHeaderName; Path = $cppFile }
     }
     
     # 3. Collect old .part.xml files (legacy)
-    $partFiles = Get-ChildItem -Path $srcDir -Filter "NeoPixel.Effects.*.part.xml" -ErrorAction SilentlyContinue
+    $partFiles = Get-ChildItem -Path $srcDir -Filter $script:Config.PartXmlPattern -ErrorAction SilentlyContinue
     foreach ($file in $partFiles) {
         $filesToDelete += [PSCustomObject]@{ Type = "Legacy XML"; Name = $file.Name; Path = $file.FullName }
     }
     
     # 4. Collect auto-generated help files using SAME logic as Generate-HelpFiles
-    $helpDir = Join-Path $srcDir "Baggages/Help_de"
-    $effectsDir = Join-Path $rootDir "lib/OFM-NeoPixel/src/effects"
+    $helpDir = Resolve-RepoPath $script:Config.HelpDir
+    $effectsDir = Resolve-RepoPath $script:Config.EffectsDir
     
     Write-Host "  Scanning effects for help files..." -ForegroundColor DarkGray
     Write-Host ""
     
     if ((Test-Path $helpDir) -and (Test-Path $effectsDir)) {
-        # Parse effects using same logic as main script
-        # Get all *Effect.h files but exclude the base Effect.h class
-        $allHeaders = Get-ChildItem -Path $effectsDir -Filter "*.h"
-        $effectHeaders = $allHeaders | Where-Object { $_.Name -like "*Effect.h" -and $_.Name -ne "Effect.h" }
+        # Use centralized function to get all effect headers
+        $effectHeaders = Get-AllEffectHeaders
         
         # DEBUG: Uncomment to see detailed scanning process
         # Write-Host "  DEBUG: Found $($effectHeaders.Count) effect headers in $effectsDir" -ForegroundColor Yellow
@@ -159,17 +366,25 @@ if ($Clean) {
         foreach ($header in $effectHeaders) {
             $headerContent = Get-Content $header.FullName -Raw
             
-            # Extract effect display name
+            # Extract effect display name - support both EFFECT_NAME_DE_EN macro and plain string
             $effectDisplayName = ""
-            if ($headerContent -match 'getName\s*\(\s*\)\s*(?:const\s+)?(?:override\s+)?{[^}]*return\s+"([^"]+)"') {
+            
+            # Try macro first (returns German name)
+            if ($headerContent -match $script:Config.Patterns.GetNameMacro) {
+                $effectDisplayName = $matches[1]  # Use German name (matches XML display)
+            }
+            # Fallback: plain string
+            elseif ($headerContent -match $script:Config.Patterns.GetNamePlain) {
                 $effectDisplayName = $matches[1]
-            } elseif ($headerContent -match 'class\s+(\w+)Effect') {
-                $effectDisplayName = $matches[1] -replace 'Effect$', ''
+            }
+            # Last resort: derive from class name
+            elseif ($headerContent -match $script:Config.Patterns.ClassName) {
+                $effectDisplayName = $matches[1] -replace $script:Config.CleanPatterns.RemoveEffectSuffix, ''
             }
             
             # Get parameter count
             $paramCount = 0
-            if ($headerContent -match 'getParameterCount\s*\(\s*\)\s*(?:const\s+)?(?:override\s+)?{[^}]*return\s+(\d+)') {
+            if ($headerContent -match $script:Config.Patterns.ParameterCount) {
                 $paramCount = [int]$matches[1]
             }
             
@@ -183,16 +398,18 @@ if ($Clean) {
             
             # For each parameter, generate help filename using SAME logic as Generate-HelpFiles
             if ($paramCount -gt 0 -and $effectDisplayName) {
-                $effectNameClean = $effectDisplayName -replace '[-\s]', ''
+                # IMPORTANT: Must match Generate-HelpFiles logic: spaces → hyphens
+                $effectNameClean = $effectDisplayName -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
                 
                 for ($i = 0; $i -lt $paramCount; $i++) {
                     # Extract parameter name using dotall regex
-                    if ($headerContent -match "(?s)getParameterName.*?case\s+$i\s*:\s*return\s+`"([^`"]+)`"") {
+                    $pattern = $script:Config.Patterns.ParameterName -f $i
+                    if ($headerContent -match $pattern) {
                         $paramName = $matches[1]
-                        $paramNameClean = $paramName -replace '[-\s]', ''
+                        $paramNameClean = $paramName -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
                         
                         # SAME logic as Generate-HelpFiles: NEO-{ParamName}-{EffectName}.md
-                        $helpFileName = "NEO-$paramNameClean-$effectNameClean.md"
+                        $helpFileName = "$($script:Config.HelpFilePrefix)$paramNameClean-$effectNameClean$($script:Config.HelpFileSuffix)"
                         $helpFilePath = Join-Path $helpDir $helpFileName
                         
                         # DEBUG: Uncomment to see individual help file checks
@@ -246,6 +463,7 @@ if ($Clean) {
         Write-Host "    • Empty Effect Parameters Union block" -ForegroundColor DarkGray
         Write-Host "    • Empty Effect ParameterRefs block" -ForegroundColor DarkGray
         Write-Host "    • Empty Effect Dynamic UI block" -ForegroundColor DarkGray
+        Write-Host "    • Empty Effect Type Enumeration in share.xml" -ForegroundColor DarkGray
     }
     
     Write-Host "  " -NoNewline
@@ -294,25 +512,25 @@ if ($Clean) {
         Write-Host "  • Emptying marker blocks in templates..." -ForegroundColor Cyan
         
         # 1. Empty NeoPixel.Segment.templ.xml markers
-        $templateFile = Join-Path $srcDir "NeoPixel.Segment.templ.xml"
+        $templateFile = Resolve-RepoPath $script:Config.SegmentTemplate
         if (Test-Path $templateFile) {
             $content = Get-Content $templateFile -Raw
             
             # Empty Union Parameters block - keep important comments
-            $pattern1 = '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->\r?\n)(.*?)(<!-- END AUTO-GENERATED: Effect Parameters Union -->)'
+            $pattern1 = "(?s)($([regex]::Escape($script:Config.Markers.UnionStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.UnionEnd)))"
             $replacement1 = '$1                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + 
                            '                <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->' + [Environment]::NewLine + 
                            '        $3'
             $content = $content -replace $pattern1, $replacement1
             
             # Empty ParameterRefs block - keep important comments
-            $pattern2 = '(?s)(<!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->\r?\n)(.*?)(<!-- END AUTO-GENERATED: Effect ParameterRefs -->)'
+            $pattern2 = "(?s)($([regex]::Escape($script:Config.Markers.ParamRefsStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.ParamRefsEnd)))"
             $replacement2 = '$1                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + 
                            '              $3'
             $content = $content -replace $pattern2, $replacement2
             
             # Empty Dynamic UI block - keep important comments
-            $pattern3 = '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->\r?\n)(.*?)(<!-- END AUTO-GENERATED: Effect Dynamic UI -->)'
+            $pattern3 = "(?s)($([regex]::Escape($script:Config.Markers.DynamicUIStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.DynamicUIEnd)))"
             $replacement3 = '$1                      <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + 
                            '                      <!-- Dynamic choose/when blocks for effect-specific parameters -->' + [Environment]::NewLine + 
                            '              $3'
@@ -323,18 +541,33 @@ if ($Clean) {
         }
         
         # 2. Empty NEOEFF Module in NeoPixel.xml
-        $neoPixelXml = Join-Path $srcDir "NeoPixel.xml"
+        $neoPixelXml = Resolve-RepoPath $script:Config.MainXml
         if (Test-Path $neoPixelXml) {
             $content = Get-Content $neoPixelXml -Raw
             
             # Empty NEOEFF Module block - keep important comment
-            $pattern4 = '(?s)(<!-- BEGIN AUTO-GENERATED: NEOEFF Module -->\r?\n)(.*?)(<!-- END AUTO-GENERATED: NEOEFF Module -->)'
+            $pattern4 = "(?s)($([regex]::Escape($script:Config.Markers.ModuleStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.ModuleEnd)))"
             $replacement4 = '$1  <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + 
                            '  $3'
             $content = $content -replace $pattern4, $replacement4
             
             Set-Content -Path $neoPixelXml -Value $content -NoNewline
             Write-Host "    ✓ NeoPixel.xml - NEOEFF Module removed" -ForegroundColor Green
+        }
+        
+        # 3. Empty Effect Type Enumeration in NeoPixel.share.xml
+        $shareXmlPath = Resolve-RepoPath $script:Config.ShareXml
+        if (Test-Path $shareXmlPath) {
+            $content = Get-Content $shareXmlPath -Raw
+            
+            # Empty Effect Enumeration block - keep markers
+            $pattern5 = "(?s)($([regex]::Escape($script:Config.Markers.EnumStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.EnumEnd)))"
+            $replacement5 = '$1                <!-- Content will be generated by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + 
+                           '                $3'
+            $content = $content -replace $pattern5, $replacement5
+            
+            Set-Content -Path $shareXmlPath -Value $content -NoNewline
+            Write-Host "    ✓ NeoPixel.share.xml - Effect Type Enumeration emptied" -ForegroundColor Green
         }
     }
     
@@ -351,13 +584,13 @@ if ($Clean) {
     Write-Host ""
     
     if (-not $EmptyMarkers) {
-        Write-Host "  💡 Use -EmptyMarkers to also empty template blocks for complete clean test" -ForegroundColor Cyan
+        Write-Host "    Use -EmptyMarkers to also empty template blocks for complete clean test" -ForegroundColor Cyan
     } else {
-        Write-Host "  💡 Run without -Clean to regenerate everything" -ForegroundColor Cyan
+        Write-Host "    Run without -Clean to regenerate everything" -ForegroundColor Cyan
     }
     
     Write-Host ""
-    Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version "0.1"
+    Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
     exit 0
 }
 
@@ -388,13 +621,30 @@ function Extract-SwitchCaseMultiLang {
         [string]$Lang
     )
     
-    # Find PARAM_DESC_DE_EN("de text", "en text") for case $CaseIndex
-    $pattern = "get$FunctionName\s*\([^)]*\)[^{]*\{.*?case\s+$CaseIndex\s*:\s*return\s+PARAM_DESC_DE_EN\s*\(\s*[`"']([^`"']+)[`"']\s*,\s*[`"']([^`"']+)[`"']\s*\)"
+    # Pattern 1: PARAM_DESC_DE_EN("de text", "en text") macro
+    $pattern1 = "(?s)get$FunctionName\s*\([^)]*\)[^{]*\{.*?case\s+$CaseIndex\s*:\s*return\s+PARAM_DESC_DE_EN\s*\(\s*[`"']([^`"']+)[`"']\s*,\s*[`"']([^`"']+)[`"']\s*\)"
     
-    if ($Content -match $pattern) {
+    if ($Content -match $pattern1) {
         $deText = $Matches[1]
         $enText = $Matches[2]
-        return if ($Lang -eq "en") { $enText } else { $deText }
+        return $(if ($Lang -eq "en") { $enText } else { $deText })
+    }
+    
+    # Pattern 2: Simple string with pipe separator "de text | en text"
+    $pattern2 = "(?s)get$FunctionName\s*\([^)]*\)[^{]*\{.*?case\s+$CaseIndex\s*:\s*return\s+[`"']([^`"']+)[`"']"
+    
+    if ($Content -match $pattern2) {
+        $fullText = $Matches[1]
+        
+        # Check if it contains a pipe separator for multi-language
+        if ($fullText -match $script:Config.Patterns.MultiLangSeparator) {
+            $deText = $Matches[1].Trim()
+            $enText = $Matches[2].Trim()
+            return $(if ($Lang -eq "en") { $enText } else { $deText })
+        }
+        
+        # Single language string - return as is
+        return $fullText
     }
     
     # Fallback: Simple string without multi-lang
@@ -430,61 +680,15 @@ function Extract-ParameterType {
     return "PARAM_UINT8"  # Default
 }
 
-# Caches the parsed map so we don't re-read the XML for every call
-$script:NeoEffectMapCache = $null
-$script:NeoEffectMapCachePath = $null
-$script:NeoEffectMapCacheMTime = $null
+# ====================================================================
+# Effect ID Management - Dynamic Discovery from Headers
+# ====================================================================
+# IDs are generated dynamically by scanning Effect headers and sorting
+# alphabetically by display name. No manual mapping or XML parsing needed!
 
-function Resolve-NeoPixelShareXmlPath {
-    # Script liegt in <repo>\scripts\...
-    # XML liegt in <repo>\src\NeoPixel.share.xml
-    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-    $xmlPath  = Join-Path $repoRoot "src\NeoPixel.share.xml"
-
-    if (Test-Path -LiteralPath $xmlPath) {
-        return (Resolve-Path -LiteralPath $xmlPath).Path
-    }
-
-    throw "NeoPixel.share.xml not found at expected path: $xmlPath"
-}
-
-function Get-NeoEffectMapFromShareXml {
-    $xmlPath = Resolve-NeoPixelShareXmlPath
-    $mtime = (Get-Item -LiteralPath $xmlPath).LastWriteTimeUtc
-
-    # Cache hit?
-    if ($script:NeoEffectMapCache -and
-        $script:NeoEffectMapCachePath -eq $xmlPath -and
-        $script:NeoEffectMapCacheMTime -eq $mtime)
-    {
-        return $script:NeoEffectMapCache
-    }
-
-    [xml]$xml = Get-Content -LiteralPath $xmlPath -Raw
-
-    # Namespace-safe query using local-name()
-    $enumNodes = $xml.SelectNodes(
-        "//*[local-name()='ParameterType' and (@Name='NEOEffectType' or contains(@Id,'PT-NEOEffectType'))]//*[local-name()='Enumeration']"
-    )
-
-    if (-not $enumNodes -or $enumNodes.Count -eq 0) {
-        throw "Could not find NEOEffectType Enumeration in $xmlPath"
-    }
-
-    $map = @{}
-    foreach ($node in $enumNodes) {
-        $text  = $node.Attributes["Text"].Value
-        $value = [int]$node.Attributes["Value"].Value
-        $map[$text] = $value
-    }
-
-    # Update cache
-    $script:NeoEffectMapCache = $map
-    $script:NeoEffectMapCachePath = $xmlPath
-    $script:NeoEffectMapCacheMTime = $mtime
-
-    return $map
-}
+# Caches the parsed effect list so we don't re-scan for every call
+$script:EffectIdCache = $null
+$script:EffectIdCacheMTime = $null
 
 function Get-EffectDisplayNameFromHeader {
     param([Parameter(Mandatory)][string]$HeaderPath)
@@ -495,51 +699,360 @@ function Get-EffectDisplayNameFromHeader {
 
     $content = Get-Content -LiteralPath $HeaderPath -Raw
 
-    # Match getName() override returning a string literal
-    $rx = [regex]'getName\s*\(\s*\)\s*override[\s\S]*?return\s*"([^"]+)"\s*;'
-    $m = $rx.Match($content)
-
-    if (-not $m.Success) {
-        throw "Could not find getName() return string in: $HeaderPath"
+    # Try to match EFFECT_NAME_DE_EN macro first (new multi-language pattern)
+    $rxMacro = [regex]$script:Config.Patterns.GetNameMacro
+    $mMacro = $rxMacro.Match($content)
+    
+    if ($mMacro.Success) {
+        # Return hashtable with both languages
+        return @{
+            DE = $mMacro.Groups[1].Value
+            EN = $mMacro.Groups[2].Value
+        }
     }
 
-    return $m.Groups[1].Value
+    # Fallback: Try old pattern (plain string literal) - assume it's English
+    $rxPlain = [regex]$script:Config.Patterns.GetNamePlain
+    $mPlain = $rxPlain.Match($content)
+
+    if ($mPlain.Success) {
+        # Return only EN, DE is same as EN
+        $name = $mPlain.Groups[1].Value
+        return @{
+            DE = $name
+            EN = $name
+        }
+    }
+
+    throw "Could not find getName() return in: $HeaderPath"
 }
 
-function Resolve-EffectHeaderPath {
-    param([Parameter(Mandatory)][string]$EffectName)
+# ====================================================================
+# Effect Pool Registration Order Parser
+# ====================================================================
+# Parse EffectPool.cpp to extract the exact registration order.
+# This ensures XML IDs match runtime indices exactly.
+# ====================================================================
 
-    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-
-    # Adjust this if your effects live elsewhere
-    $effectsDir = Join-Path $repoRoot "lib\OFM-NeoPixel\src\effects"
-
-    # Your input looks like "GarageDoorEffect" -> file "GarageDoorEffect.h"
-    $header = Join-Path $effectsDir "$EffectName.h"
-
-    if (Test-Path -LiteralPath $header) {
-        return (Resolve-Path -LiteralPath $header).Path
+function Parse-EffectPoolRegistrationOrder {
+    <#
+    .SYNOPSIS
+        Parse EffectPool.cpp getEffectByIndex() to extract effect registration order.
+    
+    .DESCRIPTION
+        This function parses the getEffectByIndex() function in EffectPool.cpp
+        to extract the exact order in which effects are registered.
+        
+        The registration order directly defines the effect IDs:
+          - Index 0 in getEffectByIndex() → XML Value="0"
+          - Index 1 in getEffectByIndex() → XML Value="1"
+          
+        Returns an ordered list of effect class names (e.g., "SolidEffect", "WipeEffect").
+        
+    .EXAMPLE
+        $order = Parse-EffectPoolRegistrationOrder
+        # Returns: @("SolidEffect", "WipeEffect", "RainbowEffect", ...)
+    #>
+    
+    $effectPoolPath = Resolve-RepoPath $script:Config.EffectPoolPath
+    
+    if (-not (Test-Path $effectPoolPath)) {
+        throw "EffectPool.cpp not found at: $effectPoolPath"
     }
+    
+    Write-ScriptVerbose "Parsing EffectPool.cpp registration order from: $effectPoolPath"
+    
+    $content = Get-Content -Path $effectPoolPath -Raw
+    
+    # Extract getEffectByIndex() function body
+    $match = [regex]::Match($content, $script:Config.Patterns.EffectPoolFunction, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    
+    if (-not $match.Success) {
+        throw "Could not find getEffectByIndex() function in EffectPool.cpp"
+    }
+    
+    $functionBody = $match.Groups[1].Value
+    
+    # Parse return statements: "if (index == currentIndex++) return getXXX();"
+    # We need to extract them in order and map getXXX → XXXEffect
+    $returnPattern = $script:Config.Patterns.EffectPoolReturn
+    $matches = [regex]::Matches($functionBody, $returnPattern)
+    
+    $effectOrder = @()
+    
+    foreach ($m in $matches) {
+        $effectBaseName = $m.Groups[1].Value  # e.g., "Solid", "Wipe", "Rainbow"
+        
+        # Handle special naming: EffectSolid/EffectWipe vs. BPMEffect pattern
+        $effectClassName = if ($effectBaseName -in @("Solid", "Wipe")) {
+            "Effect${effectBaseName}"  # → EffectSolid, EffectWipe
+        } else {
+            "${effectBaseName}Effect"  # → BPMEffect, CylonEffect
+        }
+        
+        $effectOrder += $effectClassName
+        Write-ScriptVerbose "  Registration [$($effectOrder.Count - 1)]: $effectClassName" "DarkGray"
+    }
+    
+    if ($effectOrder.Count -eq 0) {
+        Write-Warning "No effects found in getEffectByIndex(). Pattern might need adjustment."
+    } else {
+        Write-ScriptVerbose "Parsed $($effectOrder.Count) effects from EffectPool.cpp registration order" "Green"
+    }
+    
+    return $effectOrder
+}
 
-    throw "Effect header not found for '$EffectName' at expected path: $header"
+function Build-EffectIdMap {
+    $effectsDir = Resolve-RepoPath $script:Config.EffectsDir
+    
+    Write-ScriptVerbose "Building effect ID map from: $effectsDir"
+    
+    # Check cache validity based on newest file modification time
+    $latestMTime = (Get-ChildItem -Path $effectsDir -Filter $script:Config.EffectHeaderPattern | 
+                    Sort-Object LastWriteTimeUtc -Descending | 
+                    Select-Object -First 1).LastWriteTimeUtc
+    
+    # Cache hit?
+    if ($script:EffectIdCache -and $script:EffectIdCacheMTime -eq $latestMTime) {
+        Write-ScriptVerbose "Using cached effect ID map" "DarkGray"
+        return $script:EffectIdCache
+    }
+    
+    Write-ScriptVerbose "Cache miss - rebuilding effect ID map" "DarkGray"
+    
+    $headers = Get-AllEffectHeaders
+    $map = @{}
+    
+    Write-ScriptVerbose "First pass: Extracting effect names from headers"
+    
+    # First pass: collect all effects with their display names
+    foreach ($header in $headers) {
+        $basename = $header.BaseName
+        
+        # Filename is already the class name (no conversion needed):
+        # - EffectSolid.h → EffectSolid
+        # - EffectWipe.h → EffectWipe
+        # - BPMEffect.h → BPMEffect
+        $className = $basename
+        
+        try {
+            $names = Get-EffectDisplayNameFromHeader -HeaderPath $header.FullName
+            
+            $map[$className] = @{
+                NameDE = $names.DE
+                NameEN = $names.EN
+                FilePath = $header.FullName
+            }
+            Write-ScriptVerbose "  Parsed $className → DE:'$($names.DE)' EN:'$($names.EN)'" "DarkGray"
+        } catch {
+            Write-Warning "Could not parse effect $className from $($header.Name): $_"
+        }
+    }
+    
+    Write-ScriptVerbose "Found $($map.Count) effect headers with names"
+    Write-ScriptVerbose "Second pass: Assigning IDs based on EffectPool.cpp registration order"
+    
+    # Second pass: Assign IDs based on EffectPool.cpp registration order
+    # This ensures XML IDs match runtime indices exactly!
+    $registrationOrder = Parse-EffectPoolRegistrationOrder
+    
+    if ($registrationOrder.Count -eq 0) {
+        Write-Error "Failed to parse EffectPool.cpp registration order! Falling back to alphabetical sort."
+        $registrationOrder = $map.Keys | Sort-Object
+    }
+    
+    $effectIds = @{}
+    $id = 0
+    
+    foreach ($effectClassName in $registrationOrder) {
+        if ($map.ContainsKey($effectClassName)) {
+            $effectIds[$effectClassName] = $id
+            $effectName = $map[$effectClassName].NameEN
+            Write-ScriptVerbose "  ID $id → $effectClassName ('$effectName')" "Green"
+            $id++
+        } else {
+            Write-Warning "Effect $effectClassName found in EffectPool.cpp but no header file found!"
+            Write-ScriptVerbose "  Available effect classes: $($map.Keys -join ', ')" "Yellow"
+        }
+    }
+    
+    Write-ScriptVerbose "ID mapping complete: $($effectIds.Count) effects assigned IDs 0-$($id - 1)" "Green"
+    
+    # Update cache
+    $script:EffectIdCache = $effectIds
+    $script:EffectIdCacheMTime = $latestMTime
+    
+    return $effectIds
 }
 
 function Get-EffectId {
     param([Parameter(Mandatory)][string]$EffectName)
-
-    $map = Get-NeoEffectMapFromShareXml
-
-    $headerPath  = Resolve-EffectHeaderPath -EffectName $EffectName
-    $displayName = Get-EffectDisplayNameFromHeader -HeaderPath $headerPath
-
-    if ($map.ContainsKey($displayName)) {
-        return $map[$displayName]
+    
+    $map = Build-EffectIdMap
+    
+    if ($map.ContainsKey($EffectName)) {
+        return $map[$EffectName]
     }
-
-    Write-Warning "Unknown effect: '$EffectName' -> getName()='$displayName' not found in NeoPixel.share.xml"
+    
+    Write-Warning "Unknown effect: $EffectName (not found in effects directory)"
     return -1
 }
 
+# ====================================================================
+# Effect Type Enumeration XML Generation
+# ====================================================================
+
+function Generate-EffectTypeEnumeration {
+    <#
+    .SYNOPSIS
+        Generates XML Enumeration entries for all effects
+    .DESCRIPTION
+        Scans all Effect headers, extracts display names (DE/EN), sorts by EffectPool.cpp order,
+        and generates <Enumeration> XML entries with IDs matching runtime indices
+    #>
+    
+    Write-Host "  Generating Effect Type Enumeration XML..." -ForegroundColor Cyan
+    Write-ScriptVerbose "Starting effect type enumeration generation"
+    
+    $headers = Get-AllEffectHeaders
+    $effectList = @()
+    
+    Write-ScriptVerbose "Collecting effect display names from $($headers.Count) headers"
+    
+    # Collect all effects with their display names
+    foreach ($header in $headers) {
+        $className = $header.BaseName
+        try {
+            $names = Get-EffectDisplayNameFromHeader -HeaderPath $header.FullName
+            $effectList += [PSCustomObject]@{ 
+                ClassName = $className
+                NameDE = $names.DE
+                NameEN = $names.EN
+            }
+            Write-Host "    ✓ " -NoNewline -ForegroundColor Green
+            Write-Host "$className".PadRight(30) -NoNewline -ForegroundColor Gray
+            if ($names.DE -ne $names.EN) {
+                Write-Host "→ DE: '$($names.DE)' | EN: '$($names.EN)'" -ForegroundColor White
+            } else {
+                Write-Host "→ '$($names.EN)' (no translation)" -ForegroundColor White
+            }
+            Write-ScriptVerbose "  ${className}: DE='$($names.DE)' EN='$($names.EN)'" "DarkGray"
+        } catch {
+            Write-Warning "    ✗ Could not parse $className : $_"
+        }
+    }
+    
+    Write-ScriptVerbose "Collected $($effectList.Count) effects with display names"
+    
+    # ⚠️ CRITICAL: Sort by EffectPool.cpp registration order, NOT alphabetically!
+    # XML IDs must match runtime indices from getEffectByIndex()
+    Write-ScriptVerbose "Sorting effects by EffectPool.cpp registration order"
+    $registrationOrder = Parse-EffectPoolRegistrationOrder
+    
+    if ($registrationOrder.Count -eq 0) {
+        Write-Warning "Failed to parse EffectPool.cpp! Falling back to alphabetical sort (IDs will be WRONG!)"
+        $sorted = $effectList | Sort-Object NameEN
+    } else {
+        # Create lookup for effects by class name
+        $effectLookup = @{}
+        foreach ($effect in $effectList) {
+            $effectLookup[$effect.ClassName] = $effect
+        }
+        
+        # Build sorted list based on registration order
+        $sorted = @()
+        foreach ($className in $registrationOrder) {
+            if ($effectLookup.ContainsKey($className)) {
+                $sorted += $effectLookup[$className]
+                Write-ScriptVerbose "  Ordered: $className" "DarkGray"
+            }
+        }
+        
+        Write-Host "  ✓ Effect order synced with EffectPool.cpp registration" -ForegroundColor Green
+        Write-ScriptVerbose "Successfully ordered $($sorted.Count) effects" "Green"
+    }
+    
+    # Generate XML enumeration entries - use German as default
+    Write-ScriptVerbose "Generating XML enumeration entries"
+    $xmlLines = @()
+    $id = 0
+    
+    foreach ($effect in $sorted) {
+        $text = $effect.NameDE
+        # Add comment with English name if different
+        if ($effect.NameDE -ne $effect.NameEN) {
+            $xmlLines += "                <Enumeration Text=`"$text`" Value=`"$id`" Id=`"%ENID%`"/> <!-- EN: $($effect.NameEN) -->"
+        } else {
+            $xmlLines += "                <Enumeration Text=`"$text`" Value=`"$id`" Id=`"%ENID%`"/>"
+        }
+        Write-ScriptVerbose "  XML Entry ID ${id}: '$text'" "DarkGray"
+        $id++
+    }
+    
+    Write-Host ""
+    Write-Host "  Generated $($xmlLines.Count) effect enumerations (IDs 0-$($id-1))" -ForegroundColor Green
+    Write-Host "  Note: Using DE names as default in XML. EN names in comments." -ForegroundColor Yellow
+    Write-ScriptVerbose "Effect type enumeration generation complete" "Green"
+    Write-Host ""
+    
+    return ($xmlLines -join "`n")
+}
+
+function Update-EffectTypeEnumerationInShareXml {
+    <#
+    .SYNOPSIS
+        Updates the GENERATED_EFFECT_ENUMERATIONS section in NeoPixel.share.xml
+    #>
+    
+    param([Parameter(Mandatory)][string]$ShareXmlPath)
+    
+    Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "  Updating Effect Type Enumeration in NeoPixel.share.xml" -ForegroundColor Cyan
+    Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host ""
+    Write-ScriptVerbose "Updating effect type enumeration in: $ShareXmlPath"
+    
+    if (-not (Test-Path $ShareXmlPath)) {
+        throw "NeoPixel.share.xml not found at: $ShareXmlPath"
+    }
+    
+    Write-ScriptVerbose "Generating new enumeration XML content"
+    # Generate new enumeration XML
+    $enumXml = Generate-EffectTypeEnumeration
+    
+    # Read current XML
+    Write-ScriptVerbose "Reading current XML content"
+    $xmlContent = Get-Content $ShareXmlPath -Raw
+    
+    # Use markers from config
+    $startMarker = $script:Config.Markers.EnumStart
+    $endMarker = $script:Config.Markers.EnumEnd
+    
+    Write-ScriptVerbose "Looking for markers: $startMarker / $endMarker"
+    
+    # Check if markers exist
+    if ($xmlContent -notmatch [regex]::Escape($startMarker)) {
+        Write-Warning "Marker $startMarker not found in NeoPixel.share.xml"
+        Write-Warning "Please add markers manually around the Effect Type enumeration section."
+        return
+    }
+    
+    # Replace content between markers using regex
+    $pattern = "(?s)($([regex]::Escape($startMarker))).*?($([regex]::Escape($endMarker)))"
+    $replacement = "`$1`n$enumXml`n                `$2"
+    
+    Write-ScriptVerbose "Replacing content between markers"
+    $newXmlContent = $xmlContent -replace $pattern, $replacement
+    
+    # Write back to file
+    Write-ScriptVerbose "Writing updated XML back to file"
+    Set-Content -Path $ShareXmlPath -Value $newXmlContent -NoNewline -Encoding UTF8
+    
+    Write-Host "  ✓ NeoPixel.share.xml updated successfully!" -ForegroundColor Green
+    Write-ScriptVerbose "Effect type enumeration update complete" "Green"
+    Write-Host ""
+}
 
 
 function Parse-EffectHeader {
@@ -551,34 +1064,35 @@ function Parse-EffectHeader {
     $fileName = Split-Path -Leaf $HeaderPath
     Write-Host "  " -NoNewline
     Write-Host "Parsing $fileName".PadRight(50) -NoNewline -ForegroundColor Gray
+    Write-ScriptVerbose "Parsing effect header: $HeaderPath"
     
     $content = Get-Content -Path $HeaderPath -Raw
     
     # Extract effect class name
-    if ($content -match 'class\s+(\w+Effect)\s*:') {
+    if ($content -match $script:Config.Patterns.ClassName) {
         $effectName = $Matches[1]
+        Write-ScriptVerbose "  Class name: $effectName" "DarkGray"
     } else {
         Write-Warning "Could not extract class name from $HeaderPath"
         return $null
     }
     
     # Extract effect display name (from getName() return)
-    if ($content -match 'getName\(\)[^{]*\{[^}]*return\s+"([^"]+)"') {
-        $displayName = $Matches[1]
-    } else {
-        $displayName = $effectName -replace 'Effect$', ''
-    }
+    Write-ScriptVerbose "  Extracting display names" "DarkGray"
+    $names = Get-EffectDisplayNameFromHeader -HeaderPath $HeaderPath
     
     # Extract parameter count
-    if ($content -match 'getParameterCount\s*\(\)[^{]*\{[^}]*return\s+(\d+)') {
+    if ($content -match $script:Config.Patterns.ParameterCount) {
         $paramCount = [int]$Matches[1]
+        Write-ScriptVerbose "  Parameter count: $paramCount" "DarkGray"
     } else {
         $paramCount = 0
+        Write-ScriptVerbose "  No parameters found" "DarkGray"
     }
     
     Write-Host "OK " -NoNewline -ForegroundColor Green
     Write-Host "Effect: " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$displayName".PadRight(20) -NoNewline -ForegroundColor White
+    Write-Host "$($names.DE)".PadRight(20) -NoNewline -ForegroundColor White
     Write-Host "ID: " -NoNewline -ForegroundColor DarkGray
     Write-Host "$(Get-EffectId $effectName)".PadRight(4) -NoNewline -ForegroundColor Cyan
     Write-Host "Params: " -NoNewline -ForegroundColor DarkGray
@@ -587,6 +1101,7 @@ function Parse-EffectHeader {
     # Parse parameters
     $parameters = @()
     for ($i = 0; $i -lt $paramCount; $i++) {
+        Write-ScriptVerbose "  Parsing parameter $i" "DarkGray"
         $paramName = Extract-SwitchCase -Content $content -FunctionName "ParameterName" -CaseIndex $i
         $paramDesc = Extract-SwitchCaseMultiLang -Content $content -FunctionName "ParameterDescription" -CaseIndex $i -Lang $Lang
         $paramType = Extract-ParameterType -Content $content -CaseIndex $i
@@ -597,15 +1112,16 @@ function Parse-EffectHeader {
         # Set sensible defaults for Min/Max if not defined (both are 0)
         # For UINT8/HUE types, use full range 0-255 unless explicitly limited
         if ($paramMin -eq 0 -and $paramMax -eq 0) {
-            if ($paramType -match 'PARAM_UINT8|PARAM_HUE') {
-                $paramMax = 255
+            if ($paramType -match $script:Config.Patterns.ParamTypeUint8) {
+                $paramMax = $script:Config.DefaultMaxUint8
             } elseif ($paramType -eq 'PARAM_PERCENT') {
-                $paramMax = 100
+                $paramMax = $script:Config.DefaultMaxPercent
             }
         }
         
         if ($paramName) {
             Write-Host "       [$i] $paramName ($paramType) = $paramDefault [$paramMin..$paramMax]" -ForegroundColor DarkGray
+            Write-ScriptVerbose "    [$i] ${paramName}: type=$paramType default=$paramDefault range=[$paramMin..$paramMax]" "DarkGray"
             $parameters += @{
                 Index = $i
                 Name = $paramName
@@ -621,13 +1137,16 @@ function Parse-EffectHeader {
     $effectId = Get-EffectId -EffectName $effectName
     
     # Clean effect name for file naming (remove "Effect" suffix, spaces, hyphens)
-    $cleanName = $effectName -replace 'Effect$', ''
-    $cleanName = $cleanName -replace '[^a-zA-Z0-9]', ''
+    $cleanName = $effectName -replace $script:Config.CleanPatterns.RemoveEffectSuffix, ''
+    $cleanName = $cleanName -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
+    
+    Write-ScriptVerbose "Parsed effect: $cleanName (ID: $effectId, $($parameters.Count) params)" "Green"
     
     return @{
         Name = $cleanName
         ClassName = $effectName
-        DisplayName = $displayName
+        NameDE = $names.DE
+        NameEN = $names.EN
         EffectID = $effectId
         Parameters = $parameters
     }
@@ -644,7 +1163,7 @@ function Generate-ParameterTypes {
     $xml += '  <ManufacturerData>'
     $xml += '    <Manufacturer RefId="M-00FA">'
     $xml += '      <ApplicationPrograms>'
-    $xml += '        <ApplicationProgram Id="%AID%" ApplicationNumber="40" ApplicationVersion="1" ProgramType="ApplicationProgram" MaskVersion="MV-07B0" DynamicTableManagement="false">'
+    $xml += "        <ApplicationProgram Id=`"%AID%`" ApplicationNumber=`"$($script:Config.ApplicationNumber)`" ApplicationVersion=`"1`" ProgramType=`"ApplicationProgram`" MaskVersion=`"MV-07B0`" DynamicTableManagement=`"false`">"
     $xml += '          <Static>'
     $xml += '            <ParameterTypes>'
     
@@ -652,15 +1171,15 @@ function Generate-ParameterTypes {
         if ($effect.Parameters.Count -eq 0) { continue }
         
         $xml += ''
-        $xml += "              <!-- $($effect.DisplayName) Effect Parameters -->"
+        $xml += "              <!-- $($effect.NameDE) Effect Parameters -->"
         
         foreach ($param in $effect.Parameters) {
             # ParameterType ID format: %AID%_PT-{EffectName}{ParamName}
             # Replace hyphens/spaces with nothing for clean names
-            $effectNameClean = $effect.DisplayName -replace '[-\s]', ''
-            $paramNameClean = $param.Name -replace '[-\s]', ''
+            $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
+            $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
             $ptId = "%AID%_PT-$($effectNameClean)$($paramNameClean)"
-            $paramNameWithEffect = "$($param.Name) ($($effect.DisplayName))"
+            $paramNameWithEffect = "$($param.Name) ($($effect.NameDE))"
             
             $xml += "<ParameterType Id=`"$ptId`" Name=`"$paramNameWithEffect`">"
             
@@ -718,21 +1237,21 @@ function Update-NeoEffModule {
         $neoeffModule = @"
 
   <!-- Effect Parameter Types - MUST be loaded BEFORE NEO module! -->
-  <op:define prefix="NEOEFF" ModuleType="40"
+  <op:define prefix="NEOEFF" ModuleType="$($script:Config.ModuleType)"
     share="NeoPixel.Effects.ParameterTypes.generated.xml">
   </op:define>
 "@
         
         # Insert NEOEFF module between markers
         $content = $content -replace `
-            '(?s)(<!-- BEGIN AUTO-GENERATED: NEOEFF Module -->.*?<!-- DO NOT REMOVE THIS MARKER[^>]*-->).*?(<!-- END AUTO-GENERATED: NEOEFF Module -->)',`
+            "(?s)($([regex]::Escape($script:Config.Markers.ModuleStart)).*?<!-- DO NOT REMOVE THIS MARKER[^>]*-->).*?($([regex]::Escape($script:Config.Markers.ModuleEnd)))",`
             "`$1$neoeffModule`n  `$2"
     } else {
         Write-Host "  • Removing NEOEFF module from NeoPixel.xml..." -ForegroundColor Yellow
         
         # Clear content between markers
         $content = $content -replace `
-            '(?s)(<!-- BEGIN AUTO-GENERATED: NEOEFF Module -->.*?<!-- DO NOT REMOVE THIS MARKER[^>]*-->).*?(<!-- END AUTO-GENERATED: NEOEFF Module -->)',`
+            "(?s)($([regex]::Escape($script:Config.Markers.ModuleStart)).*?<!-- DO NOT REMOVE THIS MARKER[^>]*-->).*?($([regex]::Escape($script:Config.Markers.ModuleEnd)))",`
             "`$1`n  `$2"
     }
     
@@ -845,17 +1364,17 @@ function Clear-MarkerRegions {
     
     # Clear Union Parameters region
     $content = $content -replace `
-        '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->.*?<!-- Start ID: \d+, Start Offset: \d+ \(FIXED[^)]*\) -->.*?<!-- Generated:[^>]*-->).*?(<!-- END AUTO-GENERATED: Effect Parameters Union -->)',`
+        "(?s)($([regex]::Escape($script:Config.Markers.UnionStart)).*?<!-- Start ID: \d+, Start Offset: \d+ \(FIXED[^)]*\) -->.*?<!-- Generated:[^>]*-->).*?($([regex]::Escape($script:Config.Markers.UnionEnd)))",`
         "`$1`n`$2"
     
     # Clear ParameterRefs region
     $content = $content -replace `
-        '(?s)(<!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->.*?<!-- Generated:[^>]*-->).*?(<!-- END AUTO-GENERATED: Effect ParameterRefs -->)',`
+        "(?s)($([regex]::Escape($script:Config.Markers.ParamRefsStart)).*?<!-- Generated:[^>]*-->).*?($([regex]::Escape($script:Config.Markers.ParamRefsEnd)))",`
         "`$1`n`$2"
     
     # Clear Dynamic UI region
     $content = $content -replace `
-        '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->.*?<!-- Effect-specific[^>]*-->).*?(<!-- END AUTO-GENERATED: Effect Dynamic UI -->)',`
+        "(?s)($([regex]::Escape($script:Config.Markers.DynamicUIStart)).*?<!-- Effect-specific[^>]*-->).*?($([regex]::Escape($script:Config.Markers.DynamicUIEnd)))",`
         "`$1`n`$2"
     
     Set-Content -Path $TemplatePath -Value $content -Encoding UTF8 -NoNewline
@@ -869,11 +1388,12 @@ function Clear-MarkerRegions {
 function Generate-UnionParameters {
     param(
         [array]$Effects,
-        [int]$StartId,
-        [int]$StartOffset
+        [int]$StartId = $script:Config.EffectParameterStartId,
+        [int]$StartOffset = $script:Config.EffectParameterStartOffset
     )
     
     Write-Host "    ▸ Generating Union Parameters (Start ID=$StartId, Offset=$StartOffset)..." -ForegroundColor DarkGray
+    Write-ScriptVerbose "Generating union parameters for $($Effects.Count) effects"
     
     # Generate Parameter definitions for Union block (Static section)
     # ALL parameters must be defined statically - UI visibility controlled in Dynamic section
@@ -883,6 +1403,7 @@ function Generate-UnionParameters {
     
     if ($Effects.Count -eq 0 -or ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum -eq 0) {
         $xml += '                <!-- No effect-specific parameters found -->'
+        Write-ScriptVerbose "No effect parameters to generate"
         return @{
             Xml = ($xml -join "`n")
             NextId = $StartId
@@ -893,13 +1414,16 @@ function Generate-UnionParameters {
     $currentId = $StartId
     $currentOffset = $StartOffset
     
+    Write-ScriptVerbose "Starting ID: $currentId, Starting offset: $currentOffset"
+    
     foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
-        $xml += "                <!-- $($effect.DisplayName) Effect (ID $($effect.EffectID)) Parameters -->"
+        $xml += "                <!-- $($effect.NameDE) Effect (ID $($effect.EffectID)) Parameters -->"
+        Write-ScriptVerbose "  Processing effect: $($effect.NameDE) (ID $($effect.EffectID), $($effect.Parameters.Count) params)" "DarkGray"
         
         foreach ($param in $effect.Parameters) {
             # Parameter Type ID format: %AID%_PT-{EffectName}{ParamName}
-            $effectNameClean = $effect.Name -replace '[^a-zA-Z0-9]', ''
-            $paramNameClean = $param.Name -replace '[^a-zA-Z0-9]', ''
+            $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
+            $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
             $ptId = "%AID%_PT-$($effectNameClean)$($paramNameClean)"
             
             # Format ID with leading zeros (073, 074, etc.)
@@ -913,8 +1437,8 @@ function Generate-UnionParameters {
             $bitOffset = if ($param.Type -eq "PARAM_BOOL") { 7 } else { 0 }
             
             # Generate Parameter element
-            $xml += "                <Parameter Id=`"$paramId`" Offset=`"$currentOffset`" BitOffset=`"$bitOffset`" Name=`"$paramName`" ParameterType=`"$ptId`" Text=`"$($param.Name) ($($effect.DisplayName))`" Value=`"$($param.Default)`"/>"
-            
+            $xml += "                <Parameter Id=`"$paramId`" Offset=`"$currentOffset`" BitOffset=`"$bitOffset`" Name=`"$paramName`" ParameterType=`"$ptId`" Text=`"$($param.Name) ($($effect.NameDE))`" Value=`"$($param.Default)`"/>"
+            Write-ScriptVerbose "    Param ID ${currentId} @ offset ${currentOffset}: $($param.Name)" "DarkGray"
             Write-Host "      + Param ${paramIdNum}: $($param.Name) @ Offset $currentOffset" -ForegroundColor DarkGray
             
             $currentId++
@@ -954,7 +1478,7 @@ function Generate-ParameterRefs {
     $currentId = $StartId
     
     foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
-        $xml += "              <!-- $($effect.DisplayName) Effect ParameterRefs -->"
+        $xml += "              <!-- $($effect.NameDE) Effect ParameterRefs -->"
         
         foreach ($param in $effect.Parameters) {
             $paramIdNum = "{0:D3}" -f $currentId
@@ -996,7 +1520,7 @@ function Generate-DynamicChoose {
     
     foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
         $xml += "                      <when test=`"$($effect.EffectID)`">"
-        $xml += "                        <!-- $($effect.DisplayName) Effect Parameters -->"
+        $xml += "                        <!-- $($effect.NameDE) Effect Parameters -->"
         
         foreach ($param in $effect.Parameters) {
             $paramIdNum = "{0:D3}" -f $currentId
@@ -1019,12 +1543,14 @@ function Generate-DynamicChoose {
 function Generate-HelpFiles {
     param([array]$Effects)
     
-    $helpDir = "src/Baggages/Help_de"
+    $helpDir = Resolve-RepoPath $script:Config.HelpDir
     
     # Create help directory if it doesn't exist
     if (-not (Test-Path $helpDir)) {
         New-Item -ItemType Directory -Path $helpDir -Force | Out-Null
     }
+    
+    $createdFiles = @()
     
     foreach ($effect in $Effects) {
         if ($effect.Parameters.Count -eq 0) { continue }
@@ -1033,9 +1559,10 @@ function Generate-HelpFiles {
             # HelpContext format: NEO-{ParamName}-{EffectName}.md
             # Must match Text attribute: "ParamName (EffectName)"
             # OpenKNXproducer derives: NEO-ParamName-EffectName
-            $effectNameClean = $effect.DisplayName -replace '[-\s]', ''
-            $paramNameClean = $param.Name -replace '[-\s]', ''
-            $helpFileName = "NEO-$paramNameClean-$effectNameClean.md"
+            # IMPORTANT: OpenKNXproducer replaces spaces with hyphens, so we must do the same
+            $effectNameCleaned = $effect.NameDE -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'  # Space → Hyphen
+            $paramNameCleaned = $param.Name -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'            # Space → Hyphen
+            $helpFileName = "$($script:Config.HelpFilePrefix)$paramNameCleaned-$effectNameCleaned$($script:Config.HelpFileSuffix)"
             $helpFilePath = Join-Path $helpDir $helpFileName
             
             # Skip if help file already exists
@@ -1047,20 +1574,80 @@ function Generate-HelpFiles {
             $helpContent = @()
             $helpContent += "# $($param.Name)"
             $helpContent += ""
-            $helpContent += "**Effekt:** $($effect.DisplayName)"
+            $helpContent += "**Effekt:** $($effect.NameDE)"
             $helpContent += ""
             if ($param.Description) {
                 $helpContent += $param.Description
             } else {
-                $helpContent += "Parameter zur Steuerung von '$($param.Name)' für den $($effect.DisplayName)-Effekt."
+                $helpContent += "Parameter zur Steuerung von '$($param.Name)' für den $($effect.NameDE)-Effekt."
             }
             $helpContent += ""
             $helpContent += "**Wertebereich:** $($param.Min) - $($param.Max)"
             $helpContent += "**Standardwert:** $($param.Default)"
             
             Set-Content -Path $helpFilePath -Value ($helpContent -join "`n") -Encoding UTF8
-            Write-Host "  OK Created help file: $helpFileName" -ForegroundColor DarkGray
+            
+            # Track created file with source info
+            $source = if ($param.Description) { "aus Header" } else { "Platzhalter" }
+            $createdFiles += [PSCustomObject]@{
+                FileName = $helpFileName
+                Source = $source
+            }
         }
+    }
+    
+    # Show warning if files were created
+    if ($createdFiles.Count -gt 0) {
+        Write-Host ""
+        Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
+        Write-Host "$($createdFiles.Count) help file(s) newly created" -ForegroundColor White
+        Write-Host "  " -NoNewline
+        Write-Host ("─" * 116) -ForegroundColor DarkGray
+        
+        # Group by source
+        $fromHeader = $createdFiles | Where-Object { $_.Source -eq "aus Header" }
+        $fromPlaceholder = $createdFiles | Where-Object { $_.Source -eq "Platzhalter" }
+        
+        if ($fromHeader.Count -gt 0) {
+            Write-Host "    With description from header ($($fromHeader.Count)):" -ForegroundColor Green
+            foreach ($file in $fromHeader) {
+                Write-Host "      • $($file.FileName)" -ForegroundColor DarkGray
+            }
+        }
+        
+        if ($fromPlaceholder.Count -gt 0) {
+            Write-Host "    With placeholder text ($($fromPlaceholder.Count)) - please fill in:" -ForegroundColor Yellow
+            foreach ($file in $fromPlaceholder) {
+                Write-Host "      • $($file.FileName)" -ForegroundColor DarkGray
+            }
+        }
+        
+        Write-Host "  " -NoNewline
+        Write-Host ("─" * 116) -ForegroundColor DarkGray
+        Write-Host "  Help texts are displayed in ETS for the parameters." -ForegroundColor Gray
+        Write-Host "  Edit the .md files directly - they will not be overwritten on next run." -ForegroundColor Gray
+        Write-Host ""
+    }
+    
+    # Return info for summary: count and list of effects without description
+    $effectsWithoutDesc = @()
+    foreach ($effect in $Effects) {
+        # Check if any parameter has placeholder
+        $hasPlaceholder = $false
+        foreach ($param in $effect.Parameters) {
+            if (-not $param.Description) {
+                $hasPlaceholder = $true
+                break
+            }
+        }
+        if ($hasPlaceholder) {
+            $effectsWithoutDesc += $effect.NameDE
+        }
+    }
+    
+    return @{
+        Count = $createdFiles.Count
+        EffectsWithoutDescription = $effectsWithoutDesc
     }
 }
 
@@ -1077,7 +1664,7 @@ function Read-StartingIdsFromMarkers {
     
     # Extract starting ID and Offset from Union marker comments
     # Expected format: <!-- Start ID: 073, Start Offset: 30 -->
-    $unionMarker = "<!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->"
+    $unionMarker = $script:Config.Markers.UnionStart
     
     if ($templateContent -match "(?s)$([regex]::Escape($unionMarker)).*?Start ID:\s*(\d+).*?Start Offset:\s*(\d+)") {
         $startId = [int]$Matches[1]
@@ -1139,12 +1726,12 @@ function Validate-GeneratedXml {
     
     # 1. Check all markers are present
     $markers = @(
-        "<!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->",
-        "<!-- END AUTO-GENERATED: Effect Parameters Union -->",
-        "<!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->",
-        "<!-- END AUTO-GENERATED: Effect ParameterRefs -->",
-        "<!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->",
-        "<!-- END AUTO-GENERATED: Effect Dynamic UI -->"
+        $script:Config.Markers.UnionStart,
+        $script:Config.Markers.UnionEnd,
+        $script:Config.Markers.ParamRefsStart,
+        $script:Config.Markers.ParamRefsEnd,
+        $script:Config.Markers.DynamicUIStart,
+        $script:Config.Markers.DynamicUIEnd
     )
     
     foreach ($marker in $markers) {
@@ -1288,8 +1875,8 @@ function Update-TemplateWithMarkers {
         $updateCount = 0
         
         # Update Union Parameters block
-        $beginMarker = "<!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->"
-        $endMarker = "<!-- END AUTO-GENERATED: Effect Parameters Union -->"
+        $beginMarker = $script:Config.Markers.UnionStart
+        $endMarker = $script:Config.Markers.UnionEnd
         
         if ($templateContent -match "(?s)$([regex]::Escape($beginMarker)).*?$([regex]::Escape($endMarker))") {
             $replacement = @"
@@ -1307,8 +1894,8 @@ $UnionContent                $endMarker
         }
         
         # Update ParameterRefs block
-        $beginMarker = "<!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->"
-        $endMarker = "<!-- END AUTO-GENERATED: Effect ParameterRefs -->"
+        $beginMarker = $script:Config.Markers.ParamRefsStart
+        $endMarker = $script:Config.Markers.ParamRefsEnd
         
         if ($templateContent -match "(?s)$([regex]::Escape($beginMarker)).*?$([regex]::Escape($endMarker))") {
             $replacement = @"
@@ -1326,8 +1913,8 @@ $ParameterRefsContent
         }
         
         # Update Dynamic UI block
-        $beginMarker = "<!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->"
-        $endMarker = "<!-- END AUTO-GENERATED: Effect Dynamic UI -->"
+        $beginMarker = $script:Config.Markers.DynamicUIStart
+        $endMarker = $script:Config.Markers.DynamicUIEnd
         
         if ($templateContent -match "(?s)$([regex]::Escape($beginMarker)).*?$([regex]::Escape($endMarker))") {
             $replacement = @"
@@ -1387,8 +1974,8 @@ function Generate-CppMapping {
     $cpp += '#pragma once'
     $cpp += ''
     $cpp += '#include "knxprod.h"'
-    $cpp += '#include "../lib/OFM-NeoPixel/src/effects/Effect.h"'
-    $cpp += '#include "../lib/OFM-NeoPixel/src/Segment.h"'
+    $cpp += '#include "' + $script:Config.EffectBaseHeader + '"'
+    $cpp += '#include "' + $script:Config.SegmentHeader + '"'
     $cpp += ''
     $cpp += '/**'
     $cpp += ' * @brief Load effect-specific parameters from EEPROM and apply to effect instance'
@@ -1420,14 +2007,14 @@ function Generate-CppMapping {
     $cpp += '    {'
     
     foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
-        $cpp += "        case $($effect.EffectID):  // $($effect.DisplayName) Effect"
+        $cpp += "        case $($effect.EffectID):  // $($effect.NameDE) Effect"
         
         # Effect name for macro (remove spaces/hyphens)
-        $effectNameClean = $effect.DisplayName -replace '[-\s]', ''
+        $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
         
         for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
             $param = $effect.Parameters[$i]
-            $paramNameClean = $param.Name -replace '[-\s]', ''
+            $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
             
             # Macro name must match OpenKNXproducer format: ParamNEO_NEO{EffectName}{ParamName}
             # E.g., ParamNEO_NEORainbowSpeed (from Name="NEO%C%RainbowSpeed")
@@ -1458,12 +2045,23 @@ function Generate-CppMapping {
 # ====================================================================
 
 Clear-Host
+Show-OpenKNXLogo -SubTitle "Build Effect Parameters" -Version $SCRIPT_VERSION
+
+# Determine script and repository root directories
+$scriptDir = if ($PSScriptRoot) { 
+    $PSScriptRoot 
+} elseif ($PSCommandPath) { 
+    Split-Path -Parent $PSCommandPath 
+} else { 
+    $PWD.Path 
+}
+$rootDir = Split-Path -Parent $scriptDir
 
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "  Parsing Effect Headers (Language: $Language)" -ForegroundColor Cyan
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
-$effectsDir = "lib/OFM-NeoPixel/src/effects"
+$effectsDir = Resolve-RepoPath $script:Config.EffectsDir
 $effects = @()
 
 if (-not (Test-Path $effectsDir)) {
@@ -1471,12 +2069,8 @@ if (-not (Test-Path $effectsDir)) {
     exit 1
 }
 
-# Find all *Effect.h files (except base Effect.h and EffectSolid.h/EffectWipe.h which are special)
-$effectFiles = Get-ChildItem -Path $effectsDir -Filter "*Effect.h" | Where-Object { 
-    $_.Name -ne "Effect.h" -and 
-    $_.Name -ne "EffectSolid.h" -and 
-    $_.Name -ne "EffectWipe.h"
-}
+# Find all *Effect.h files (using centralized function)
+$effectFiles = Get-AllEffectHeaders
 
 Write-Host ""
 Write-Host "  Found " -NoNewline -ForegroundColor Gray
@@ -1519,10 +2113,14 @@ Write-Host "  Generating Files" -ForegroundColor Cyan
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
+# Step 0: Update Effect Type Enumeration in NeoPixel.share.xml
+$shareXmlPath = Resolve-RepoPath $script:Config.ShareXml
+Update-EffectTypeEnumerationInShareXml -ShareXmlPath $shareXmlPath
+
 # Read starting IDs from template markers
 Write-Host ""
 Write-Host "  Reading template configuration..." -ForegroundColor Cyan
-$templatePath = "src/NeoPixel.Segment.templ.xml"
+$templatePath = Resolve-RepoPath $script:Config.SegmentTemplate
 
 try {
     $markerConfig = Read-StartingIdsFromMarkers -TemplatePath $templatePath
@@ -1553,7 +2151,7 @@ Write-Host "ParameterTypes XML" -ForegroundColor White
 Write-Host "       $paramTypesPath" -ForegroundColor DarkGray
 
 # 1b. Add NEOEFF module to NeoPixel.xml
-$neoPixelXmlPath = "src/NeoPixel.xml"
+$neoPixelXmlPath = Resolve-RepoPath $script:Config.MainXml
 Update-NeoEffModule -NeoPixelXmlPath $neoPixelXmlPath -Enable $true
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "NEOEFF module added" -ForegroundColor White
@@ -1598,7 +2196,9 @@ Write-Host "       $cppMappingPath" -ForegroundColor DarkGray
 
 # 6. Help Files (Markdown)
 Write-Host "  ▸ Generating help files..." -ForegroundColor Gray
-Generate-HelpFiles -Effects $effects
+$helpFilesInfo = Generate-HelpFiles -Effects $effects
+$newHelpFilesCount = $helpFilesInfo.Count
+$effectsWithoutDesc = $helpFilesInfo.EffectsWithoutDescription
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Help files generated" -ForegroundColor White
 
@@ -1675,22 +2275,25 @@ try {
             Write-Host " total parameter(s)" -ForegroundColor Green
             Write-Host ""
             Write-Host "  Generated Files:" -ForegroundColor Cyan
-            Write-Host "  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐" -ForegroundColor DarkGray
+            $boxLine = "  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐"
+            Write-Host $boxLine -ForegroundColor DarkGray
             
-            # Calculate padding for file paths (Box is 114 chars wide, "  │ " = 4, " │" = 2, so content = 108)
-            $boxContentWidth = 106
-            $label1 = "ParameterTypes:   "
-            $label2 = "Union Parameters: "
-            $label3 = "ParameterRefs:    "
-            $label4 = "Dynamic Choose:   "
-            $label5 = "C++ Mapping:      "
+            # Calculate box width dynamically (Total - 4 for "  │ " - 2 for " │")
+            $boxTotalWidth = $boxLine.Length
+            $boxContentWidth = $boxTotalWidth - 6
+            $labelWidth = 18  # Fixed width for all labels
+            $label1 = "ParameterTypes:".PadRight($labelWidth)
+            $label2 = "Union Parameters:".PadRight($labelWidth)
+            $label3 = "ParameterRefs:".PadRight($labelWidth)
+            $label4 = "Dynamic Choose:".PadRight($labelWidth)
+            $label5 = "C++ Mapping:".PadRight($labelWidth)
             
             Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
             Write-Host ($label1 + $paramTypesPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
             Write-Host " │" -ForegroundColor DarkGray
             
             Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
-            Write-Host ($label2 + $unionPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
+            Write-Host ($label2 + $unionParamsPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
             Write-Host " │" -ForegroundColor DarkGray
             
             Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
@@ -1707,22 +2310,62 @@ try {
             
             Write-Host "  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
             Write-Host ""
-            Write-Host "  Ready for ETS Import:" -ForegroundColor Cyan
-            Write-Host "  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐" -ForegroundColor DarkGray
             
+            # Summary Statistics
             $totalHelpFiles = ($effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum
             
-            Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
-            Write-Host ("Effects with parameters: " + $effects.Count).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
-            Write-Host " │" -ForegroundColor DarkGray
+            # Count placeholders
+            $placeholderCount = 0
+            foreach ($effect in $effects) {
+                foreach ($param in $effect.Parameters) {
+                    if (-not $param.Description) {
+                        $placeholderCount++
+                    }
+                }
+            }
             
-            Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
-            Write-Host ("Help files generated:    " + $totalHelpFiles).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
-            Write-Host " │" -ForegroundColor DarkGray
-            
-            Write-Host "  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
+            Write-Host "  Ready for ETS Import:" -ForegroundColor Cyan
+            Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
             Write-Host ""
-            Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version "0.1"
+            Write-Host "  Total effects with parameters:    " -NoNewline -ForegroundColor Gray
+            Write-Host "$($effects.Count)" -ForegroundColor White
+            
+            Write-Host "  Help files generated:             " -NoNewline -ForegroundColor Gray
+            Write-Host "$totalHelpFiles" -NoNewline -ForegroundColor White
+            if ($placeholderCount -gt 0) {
+                Write-Host " ($placeholderCount with placeholders)" -ForegroundColor Gray
+            } else {
+                Write-Host ""
+            }
+            
+            Write-Host ""
+            
+            # Show warning for effects missing getParameterDescription()
+            if ($effectsWithoutDesc.Count -gt 0) {
+                Write-Host "  WARNING " -NoNewline -ForegroundColor Yellow
+                Write-Host "[!] " -NoNewline -ForegroundColor Yellow
+                Write-Host "- $placeholderCount Help files with placeholders generated." -ForegroundColor Yellow
+                Write-Host "  Effect(s) missing getParameterDescription():" -ForegroundColor Yellow
+                
+                # Show first 3 effects
+                $showCount = [Math]::Min(3, $effectsWithoutDesc.Count)
+                for ($i = 0; $i -lt $showCount; $i++) {
+                    Write-Host "    • " -NoNewline -ForegroundColor DarkGray
+                    Write-Host "$($effectsWithoutDesc[$i])" -ForegroundColor White
+                }
+                
+                if ($effectsWithoutDesc.Count -gt 3) {
+                    Write-Host "    ... and " -NoNewline -ForegroundColor DarkGray
+                    Write-Host "$($effectsWithoutDesc.Count - 3)" -NoNewline -ForegroundColor White
+                    Write-Host " more" -ForegroundColor DarkGray
+                }
+                Write-Host "  Please implement getParameterDescription() in these effects to provide proper descriptions." -ForegroundColor Yellow
+                Write-Host ""
+            }
+            
+            Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+            Write-Host ""
+            Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
         } else {
             # OpenKNXproducer failed -> ROLLBACK!
             Write-Host ""
