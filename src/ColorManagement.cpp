@@ -192,7 +192,7 @@ void ColorManagement::configureColorCorrection()
 {
     // Local variable for ETS parameter macros
     uint8_t _channelIndex = _module->getChannelIndex();
-    
+
     // Gamma correction configuration
     _module->_gammaCorrectionEnabled = (bool)ParamNEOSTRIP_NEOGammaCorrection;
     if (_module->_gammaCorrectionEnabled)
@@ -209,7 +209,7 @@ void ColorManagement::configureColorCorrection()
         _module->_whiteBalanceRed = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceRed);
         _module->_whiteBalanceGreen = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceGreen);
         _module->_whiteBalanceBlue = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceBlue);
-        logInfoP("White balance configured: R:%d G:%d B:%d", 
+        logInfoP("White balance configured: R:%d G:%d B:%d",
                  _module->_whiteBalanceRed, _module->_whiteBalanceGreen, _module->_whiteBalanceBlue);
     }
 }

@@ -9,22 +9,23 @@ class Segment;
 
 /**
  * @brief Flash persistence handler for NeoPixel LED states
- * 
+ *
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
- * 
+ *
  * Storage: 10 bytes per segment × 16 segments = 160 bytes max
  */
 class NeoPixelFlashPersistence
 {
-public:
+  public:
     // OGM-Common logging support
     const std::string logPrefix() const { return "NeoPixelFlashPersistence"; }
-    
+
     /**
      * @brief Flash storage structure for one segment (10 bytes)
      */
-    struct SegmentFlashState {
+    struct SegmentFlashState
+    {
         uint8_t power;           // 1 = on, 0 = off (1 byte)
         uint8_t r, g, b, w;      // RGBW color values (4 bytes)
         uint8_t brightness;      // Brightness 0-255 (1 byte)
@@ -66,9 +67,9 @@ public:
      */
     void restoreStatesAfterStartup();
 
-private:
-    NeoPixelBusModule* _module;  // Parent module reference
-    uint8_t _channelIndex = 0;   // Current channel index for ParamNEO_NEO* macros
+  private:
+    NeoPixelBusModule* _module; // Parent module reference
+    uint8_t _channelIndex = 0;  // Current channel index for ParamNEO_NEO* macros
 
     /**
      * @brief Save current segment state to flash structure

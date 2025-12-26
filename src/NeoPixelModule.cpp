@@ -1,19 +1,19 @@
 #include "NeoPixelModule.h"
-#include "EffectConfiguration.h"
 #include "ColorManagement.h"
-#include "StripConfiguration.h"
+#include "EffectConfiguration.h"
 #include "SegmentController.h"
+#include "StripConfiguration.h"
 // Include generated effect parameters if available
 #ifdef __has_include
-#  if __has_include("EffectParameterMapping.h")
-#    define EFFECT_PARAMETER_MAPPING_GENERATED
-#    include "EffectParameterMapping.h"
-#  endif
+    #if __has_include("EffectParameterMapping.h")
+        #define EFFECT_PARAMETER_MAPPING_GENERATED
+        #include "EffectParameterMapping.h"
+    #endif
 #else
-#  // Fallback for older compilers: can define via build flags
-#  ifdef EFFECT_PARAMETER_MAPPING_GENERATED
-#    include "EffectParameterMapping.h"
-#  endif
+    #// Fallback for older compilers: can define via build flags
+    #ifdef EFFECT_PARAMETER_MAPPING_GENERATED
+        #include "EffectParameterMapping.h"
+    #endif
 #endif
 #include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
@@ -139,12 +139,12 @@ void NeoPixelBusModule::processBeforeRestart()
         logInfoP("LED shutdown before restart is disabled in ETS");
         return;
     }
-    
+
     // Turn off all LEDs before ETS programming or device restart
     logInfoP("Turning off all LEDs before restart/programming");
-    
+
     if (!_initialized || !_virtualStrip) return;
-    
+
     // Stop all effects and clear all segments if segments are configured
     if (!_segments.empty())
     {
@@ -167,7 +167,7 @@ void NeoPixelBusModule::processBeforeRestart()
         // No segments configured - turn off all LEDs directly
         _virtualStrip->turnOffAll();
     }
-    
+
     // Wait for DMA completion before restart (max 100ms timeout)
     _virtualStrip->waitForCompletion(100);
 }
@@ -1030,10 +1030,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     logDebugP("Segment %d Power ON: savedValid=%d, savedLastWasEffect=%d, savedEffectValid=%d, type=%d, savedRGB=(%d,%d,%d), savedBri=%d",
                               channel, cfg.savedValid, cfg.savedLastWasEffect, cfg.savedEffectValid, cfg.savedEffectType,
                               cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedBrightness);
-                    
+
                     // Update power state for flash persistence
                     cfg.savedPower = 1;
-                    
+
                     if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0)
                     {
                         // Restore effect (parameters are loaded from ETS automatically)
@@ -1075,7 +1075,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedB = b;
                     cfg.savedBrightness = targetSegment->getBrightness();
                     cfg.savedValid = true;
-                    
+
                     // Update power state for flash persistence
                     cfg.savedPower = 0;
 

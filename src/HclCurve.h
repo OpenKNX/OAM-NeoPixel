@@ -4,9 +4,9 @@
 #include <string>
 
 #include "OpenKNX.h"
-#include "knxprod.h"
 #include "Timer.h" // from OFM-LogicModule instead of TimerModule
 #include "colorhelper.h"
+#include "knxprod.h"
 
 class HclCurve
 {

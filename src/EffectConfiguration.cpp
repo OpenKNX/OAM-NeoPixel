@@ -96,7 +96,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
     {
         // Store effect type in config for parameter loading
         segment->getConfig().effectType = effectType;
-        
+
         // Clear the segment (turn all LEDs off) before starting the effect
         segment->setPrimaryColor(0, 0, 0, 0);
 
@@ -164,7 +164,7 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment)
     }
 
     // Mirror effect (from segment configuration)
-    uint8_t _channelIndex = _module->getChannelIndex();  // Local variable for ETS parameter macros
+    uint8_t _channelIndex = _module->getChannelIndex(); // Local variable for ETS parameter macros
     bool mirrorEffect = ParamNEO_NEOSegmentMirrorEffect;
     if (mirrorEffect)
     {

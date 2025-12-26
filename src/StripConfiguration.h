@@ -1,16 +1,16 @@
 #pragma once
 
+#include "NeoPixel.h" // For LedProtocol, ColorOrder
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "NeoPixel.h" // For LedProtocol, ColorOrder
 
 // Forward declaration
 class NeoPixelBusModule;
 
 /**
  * @brief Manages physical and virtual LED strip configuration
- * 
+ *
  * This class handles:
  * - Reading ETS parameters and building physical/virtual strip layout
  * - Physical strip creation (SPI and 1-Wire protocols)
@@ -20,7 +20,7 @@ class NeoPixelBusModule;
  */
 class StripConfiguration
 {
-public:
+  public:
     /**
      * @brief Constructor
      * @param module Pointer to parent NeoPixelBusModule
@@ -43,7 +43,7 @@ public:
 
     /**
      * @brief Configure strips from ETS parameters
-     * 
+     *
      * Main entry point that reads ETS params and builds complete physical + virtual layout:
      * - Creates physical strips with GPIO auto-allocation
      * - Configures virtual strip ordering
@@ -96,6 +96,6 @@ public:
      */
     static bool isSpiProtocol(LedProtocol protocol);
 
-private:
+  private:
     NeoPixelBusModule* _module; ///< Pointer to parent NeoPixelBusModule
 };

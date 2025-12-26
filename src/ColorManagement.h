@@ -1,16 +1,16 @@
 #pragma once
 
-#include <cstdint>
-#include <vector>
 #include <array>
+#include <cstdint>
 #include <string>
+#include <vector>
 
 // Forward declaration
 class NeoPixelBusModule;
 
 /**
  * @brief Manages color correction, global brightness, and HCL color temperature
- * 
+ *
  * This class handles:
  * - Global brightness control across all segments
  * - HCL (Human Centric Lighting) color temperature control
@@ -20,7 +20,7 @@ class NeoPixelBusModule;
  */
 class ColorManagement
 {
-public:
+  public:
     /**
      * @brief Constructor
      * @param module Pointer to parent NeoPixelBusModule
@@ -104,6 +104,6 @@ public:
      */
     static uint8_t mapWhiteBalanceValue(uint8_t paramValue);
 
-private:
+  private:
     NeoPixelBusModule* _module; ///< Pointer to parent NeoPixelBusModule
 };

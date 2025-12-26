@@ -62,7 +62,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
         // Saved state for power toggle and flash persistence
         bool savedValid = false;
-        uint8_t savedPower = 1;      // 1 = on, 0 = off (for flash persistence)
+        uint8_t savedPower = 1; // 1 = on, 0 = off (for flash persistence)
         uint8_t savedR = 0;
         uint8_t savedG = 0;
         uint8_t savedB = 0;
@@ -139,7 +139,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void setup(bool configured) override;
     void loop(bool configured) override;
     void processInputKo(GroupObject& ko) override;
-    void processBeforeRestart() override; // Turn off all LEDs before restart/programming
+    void processBeforeRestart() override;     // Turn off all LEDs before restart/programming
     void processAfterStartupDelay() override; // Restore LED states after startup
 
     // Flash persistence (OGM-Common calls these automatically)
@@ -171,8 +171,8 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Apply effect to segment (used by flash persistence and EffectConfiguration)
     void applyEffectToSegment(Segment* segment, uint8_t effectType);
-    void setupEffectConfiguration(Segment* segment);  // Setup effect parameters
-    Segment* getSegment(uint8_t index) const; // Get segment by index
+    void setupEffectConfiguration(Segment* segment); // Setup effect parameters
+    Segment* getSegment(uint8_t index) const;        // Get segment by index
 
     // Public API for segment control (delegates to SegmentController)
     void processActiveDimming();
@@ -236,7 +236,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Segment Configuration
     std::vector<SegmentConfig> _segments; // Configured segments
     uint8_t _numberOfSegments = 0;        // Number of segments from ETS
-    
+
     // Sub-module: Effect Configuration
     class EffectConfiguration* _effectConfiguration;
     bool _effectsEnabled = false; // Whether effects are enabled

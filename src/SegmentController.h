@@ -1,8 +1,8 @@
 #ifndef SEGMENT_CONTROLLER_H
 #define SEGMENT_CONTROLLER_H
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 // Forward declarations
 class NeoPixelBusModule;
@@ -10,7 +10,7 @@ class GroupObject;
 
 /**
  * @brief Handles segment-specific operations including dimming and KO processing
- * 
+ *
  * This class manages:
  * - Start/stop dimming for segment channels (RGBW, HSV, Brightness)
  * - Processing KNX communication objects for segment control
@@ -20,13 +20,13 @@ class SegmentController
 {
     friend class NeoPixelBusModule;
 
-public:
+  public:
     /**
      * @brief Construct a new Segment Controller
      * @param module Parent NeoPixelBusModule instance
      */
     SegmentController(NeoPixelBusModule* module);
-    
+
     /**
      * @brief Destroy the Segment Controller
      */
@@ -40,7 +40,7 @@ public:
 
     /**
      * @brief Process active start/stop dimming for all segments
-     * 
+     *
      * Handles continuous dimming operations based on DPT3.007 telegrams.
      * Updates segment colors/brightness according to active dimming channel.
      * Automatically stops dimming after timeout (2 seconds).
@@ -57,7 +57,7 @@ public:
      */
     bool processSegmentKo(GroupObject& ko, uint16_t koNumber, uint8_t channel);
 
-private:
+  private:
     NeoPixelBusModule* _module; ///< Reference to parent module
 
     /**
