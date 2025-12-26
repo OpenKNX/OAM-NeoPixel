@@ -1,4 +1,8 @@
 #include "NeoPixelModule.h"
+#include "EffectConfiguration.h"
+#include "ColorManagement.h"
+#include "StripConfiguration.h"
+#include "SegmentController.h"
 // Include generated effect parameters if available
 #ifdef __has_include
 #  if __has_include("EffectParameterMapping.h")
@@ -70,14 +74,20 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
 NeoPixelBusModule openknxNeoPixelModule;
 
 NeoPixelBusModule::NeoPixelBusModule()
-    : _flashPersistence(nullptr)
+    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr)
 {
     _flashPersistence = new NeoPixelFlashPersistence(this);
+    _effectConfiguration = new EffectConfiguration(this);
+    _colorManagement = new ColorManagement(this);
+    _segmentController = new SegmentController(this);
 }
 
 NeoPixelBusModule::~NeoPixelBusModule()
 {
     delete _flashPersistence;
+    delete _effectConfiguration;
+    delete _colorManagement;
+    delete _segmentController;
 }
 
 void NeoPixelBusModule::setup(bool configured)
@@ -198,135 +208,7 @@ void NeoPixelBusModule::processAfterStartupDelay()
 // Process active start/stop dimming for all segments
 void NeoPixelBusModule::processActiveDimming()
 {
-    uint32_t now = millis();
-    const uint32_t DIMMING_TIMEOUT = 2000; // Stop if no telegram for 2 seconds
-
-    for (auto& segConfig : _segments)
-    {
-        if (segConfig.activeDimming == SegmentConfig::NONE) continue;
-
-        Segment* seg = segConfig.segment;
-        if (!seg) continue;
-
-        // Check for timeout
-        if (now - segConfig.dimmingLastUpdate > DIMMING_TIMEOUT)
-        {
-            segConfig.activeDimming = SegmentConfig::NONE;
-            segConfig.dimmingStepCode = 0;
-            continue;
-        }
-
-        // Check if it's time for next step
-        if (now < segConfig.dimmingNextStep) continue;
-
-        // Calculate step interval based on stepCode (faster = more frequent updates)
-        // stepCode 1 (100%) = ~40ms, stepCode 7 (~2%) = ~250ms
-        uint32_t interval = 40 + (segConfig.dimmingStepCode - 1) * 35;
-        segConfig.dimmingNextStep = now + interval;
-
-        // Calculate delta for this step
-        int16_t delta = dpt3_007_delta(segConfig.dimmingStepCode);
-        delta = delta / 6; // Divide by ~6 to make continuous dimming smoother
-        if (!segConfig.dimmingIncrease) delta = -delta;
-
-        // Apply dimming based on active channel
-        uint8_t r, g, b;
-        switch (segConfig.activeDimming)
-        {
-            case SegmentConfig::BRIGHTNESS:
-            {
-                uint8_t bri = seg->getBrightness();
-                int16_t newBri = bri + delta;
-                newBri = constrain(newBri, 0, 255);
-                seg->setBrightness((uint8_t)newBri);
-                break;
-            }
-
-            case SegmentConfig::RED:
-                if (seg->getPixel(0, r, g, b))
-                {
-                    int16_t newR = r + delta;
-                    newR = constrain(newR, 0, 255);
-                    seg->setPrimaryColor((uint8_t)newR, g, b, 0);
-                }
-                break;
-
-            case SegmentConfig::GREEN:
-                if (seg->getPixel(0, r, g, b))
-                {
-                    int16_t newG = g + delta;
-                    newG = constrain(newG, 0, 255);
-                    seg->setPrimaryColor(r, (uint8_t)newG, b, 0);
-                }
-                break;
-
-            case SegmentConfig::BLUE:
-                if (seg->getPixel(0, r, g, b))
-                {
-                    int16_t newB = b + delta;
-                    newB = constrain(newB, 0, 255);
-                    seg->setPrimaryColor(r, g, (uint8_t)newB, 0);
-                }
-                break;
-
-            case SegmentConfig::WHITE:
-            case SegmentConfig::WARM_WHITE:
-            case SegmentConfig::COOL_WHITE:
-                if (seg->getVirtualStrip()->getBytesPerLed() == 4)
-                {
-                    uint8_t w;
-                    if (seg->getPixel(0, r, g, b, w))
-                    {
-                        int16_t newW = w + delta;
-                        newW = constrain(newW, 0, 255);
-                        seg->setPrimaryColor(r, g, b, (uint8_t)newW);
-                        seg->setPrimaryColor(r, g, b, (uint8_t)newW);
-                    }
-                }
-                break;
-
-            case SegmentConfig::HUE:
-            case SegmentConfig::SATURATION:
-            case SegmentConfig::VALUE:
-            {
-                if (seg->getPixel(0, r, g, b))
-                {
-                    uint8_t h, s, v;
-                    ColorHelper::rgbToHSV(r, g, b, h, s, v);
-
-                    if (segConfig.activeDimming == SegmentConfig::HUE)
-                    {
-                        h = (uint8_t)(h + delta); // Wraps automatically
-                    }
-                    else if (segConfig.activeDimming == SegmentConfig::SATURATION)
-                    {
-                        int16_t newS = s + delta;
-                        s = (uint8_t)constrain(newS, 0, 255);
-                    }
-                    else
-                    { // VALUE
-                        int16_t newV = v + delta;
-                        v = (uint8_t)constrain(newV, 0, 255);
-                    }
-
-                    uint8_t newR, newG, newB;
-                    ColorHelper::hsvToRGB(h, s, v, newR, newG, newB);
-                    seg->setPrimaryColor(newR, newG, newB, 0);
-
-                    if (seg->getVirtualStrip()->getBytesPerLed() == 4)
-                    {
-                        uint8_t w;
-                        seg->getPixel(0, r, g, b, w);
-                        seg->setPrimaryColor(newR, newG, newB, w);
-                    }
-                }
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
+    _segmentController->processActiveDimming();
 }
 
 void NeoPixelBusModule::processInputKo(GroupObject& ko)
@@ -1070,17 +952,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 }
                 // Auto-update will render the change on next cycle
                 cfg.savedEffectType = effect;
-                // Snapshot current effect configuration
-                {
-                    auto& ec = targetSegment->getConfig();
-                    cfg.savedEffectSpeed = ec.speed;
-                    cfg.savedEffectIntensity = ec.intensity;
-                    cfg.savedEffectOption1 = ec.option1;
-                    cfg.savedEffectOption2 = ec.option2;
-                    cfg.savedEffectMode = ec.mode;
-                    cfg.savedEffectReverse = ec.reverse;
-                    cfg.savedEffectValid = (effect > 0);
-                }
+                cfg.savedEffectValid = (effect > 0);
+                // Note: Effect-specific parameters are now stored in ETS, no need to snapshot
 
                 // Send status feedback
                 _channelIndex = channel;
@@ -1163,15 +1036,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     
                     if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0)
                     {
-                        // Restore effect with its configuration
+                        // Restore effect (parameters are loaded from ETS automatically)
                         applyEffectToSegment(targetSegment, cfg.savedEffectType);
-                        auto& ec = targetSegment->getConfig();
-                        ec.speed = cfg.savedEffectSpeed;
-                        ec.intensity = cfg.savedEffectIntensity;
-                        ec.option1 = cfg.savedEffectOption1;
-                        ec.option2 = cfg.savedEffectOption2;
-                        ec.mode = cfg.savedEffectMode;
-                        ec.reverse = cfg.savedEffectReverse;
+                        _effectConfiguration->setupEffectConfiguration(targetSegment);
                         targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
                     }
                     else if (cfg.savedValid)
@@ -1212,15 +1079,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     // Update power state for flash persistence
                     cfg.savedPower = 0;
 
-                    // Snapshot effect configuration on power off
-                    // Note: We track last commanded effect type in cfg.savedEffectType
-                    auto& ec = targetSegment->getConfig();
-                    cfg.savedEffectSpeed = ec.speed;
-                    cfg.savedEffectIntensity = ec.intensity;
-                    cfg.savedEffectOption1 = ec.option1;
-                    cfg.savedEffectOption2 = ec.option2;
-                    cfg.savedEffectMode = ec.mode;
-                    cfg.savedEffectReverse = ec.reverse;
+                    // Track if effect was active (effect type already stored in cfg.savedEffectType)
                     cfg.savedLastWasEffect = (targetSegment->getEffect() != nullptr);
 
                     logDebugP("Segment %d Power OFF: snapshot RGB=(%d,%d,%d), W=%d, Bri=%d, effectType=%d",
@@ -1962,7 +1821,7 @@ void NeoPixelBusModule::configureFromETS()
         // Configure effects for segments (now that virtual strip and segments exist)
         if (_numberOfSegments > 0)
         {
-            configureEffects();
+            _effectConfiguration->configureEffects();
             logInfoP("Applied effects to %d segments", _numberOfSegments);
         }
 
@@ -2366,269 +2225,50 @@ void NeoPixelBusModule::configurePowerManagement()
 }
 
 // ============================================================================
-// Global Brightness Control Implementation
+// Global Brightness Control Implementation (delegated to ColorManagement)
 // ============================================================================
 
 void NeoPixelBusModule::applyGlobalBrightness(uint8_t brightness)
 {
-    // Special case: if brightness is full (255), restore original brightness levels
-    if (brightness == 255)
-    {
-        restoreOriginalBrightness();
-        return;
-    }
-
-    _globalBrightness = brightness;
-
-    logInfoP("Applying global brightness: %d%% to all segments", (brightness * 100) / 255);
-
-    // Initialize original brightness storage if needed
-    if (_originalBrightness.size() != _segments.size())
-    {
-        _originalBrightness.resize(_segments.size());
-
-        // Store current brightness levels as original if not done yet
-        for (size_t i = 0; i < _segments.size(); i++)
-        {
-            if (_segments[i].segment)
-            {
-                _originalBrightness[i] = _segments[i].segment->getBrightness();
-                logDebugP("Stored original brightness for segment %zu: %d%%",
-                          i, (_originalBrightness[i] * 100) / 255);
-            }
-        }
-    }
-
-    // Apply brightness to all configured segments
-    for (size_t i = 0; i < _segments.size(); i++)
-    {
-        if (_segments[i].segment)
-        {
-            // Use stored original brightness, not current (to avoid cumulative effects)
-            uint8_t originalBrightness = _originalBrightness[i];
-            uint8_t effectiveBrightness = (originalBrightness * brightness) / 255;
-
-            // Apply effective brightness to segment
-            _segments[i].segment->setBrightness(effectiveBrightness);
-
-            logDebugP("Segment %zu brightness: original=%d%%, global=%d%%, effective=%d%%",
-                      i,
-                      (originalBrightness * 100) / 255,
-                      (brightness * 100) / 255,
-                      (effectiveBrightness * 100) / 255);
-        }
-    }
-
-    logInfoP("Global brightness %d%% applied to %d segments",
-             (brightness * 100) / 255, (int)_segments.size());
+    _colorManagement->applyGlobalBrightness(brightness);
 }
 
 void NeoPixelBusModule::restoreOriginalBrightness()
 {
-    logInfoP("Restoring original brightness levels for all segments");
-
-    // Restore original brightness levels for all segments
-    for (size_t i = 0; i < _segments.size() && i < _originalBrightness.size(); i++)
-    {
-        if (_segments[i].segment)
-        {
-            uint8_t originalBrightness = _originalBrightness[i];
-            _segments[i].segment->setBrightness(originalBrightness);
-
-            logDebugP("Restored segment %zu brightness to original: %d%%",
-                      i, (originalBrightness * 100) / 255);
-        }
-    }
-
-    // Reset global brightness to full
-    _globalBrightness = 255;
-
-    logInfoP("Original brightness levels restored for all %d segments", (int)_segments.size());
+    _colorManagement->restoreOriginalBrightness();
 }
 
 // ============================================================================
-// HCL Color Temperature Control Implementation
+// HCL Color Temperature Control Implementation (delegated to ColorManagement)
 // ============================================================================
 
 void NeoPixelBusModule::applyHclColorTemperature(uint16_t kelvin)
 {
-    _currentHclTemperature = kelvin;
-
-    // Validate Kelvin range (typical LED range: 2000K-10000K)
-    if (kelvin < 2000 || kelvin > 10000)
-    {
-        logWarningP("HCL temperature %dK out of typical range (2000K-10000K)", kelvin);
-        return;
-    }
-
-    logInfoP("Applying HCL color temperature: %dK to all segments", kelvin);
-
-    // Convert Kelvin to RGB using ColorHelper
-    uint8_t r, g, b;
-    ColorHelper::kelvinToRGB(kelvin, r, g, b);
-
-    logDebugP("HCL %dK converts to RGB: R=%d, G=%d, B=%d", kelvin, r, g, b);
-
-    // Store original colors if this is the first HCL application
-    if (!_hclModeEnabled && _originalColors.size() != _segments.size())
-    {
-        _originalColors.resize(_segments.size());
-
-        for (size_t i = 0; i < _segments.size(); i++)
-        {
-            if (_segments[i].segment)
-            {
-                uint8_t origR, origG, origB;
-                if (_segments[i].segment->getPixel(0, origR, origG, origB))
-                {
-                    _originalColors[i] = {origR, origG, origB};
-                    logDebugP("Stored original color for segment %zu: R=%d, G=%d, B=%d",
-                              i, origR, origG, origB);
-                }
-                else
-                {
-                    _originalColors[i] = {255, 255, 255}; // Default to white if can't read
-                }
-            }
-        }
-    }
-
-    // Apply color temperature to all segments
-    uint16_t segmentsUpdated = 0;
-    for (auto& segmentConfig : _segments)
-    {
-        if (segmentConfig.segment)
-        {
-            // Apply the Kelvin-derived RGB to the entire segment
-            segmentConfig.segment->setPrimaryColor(r, g, b, 0);
-            segmentsUpdated++;
-
-            logDebugP("Applied %dK color temperature to segment", kelvin);
-        }
-    }
-
-    _hclModeEnabled = true;
-
-    logInfoP("HCL color temperature %dK applied to %d segments", kelvin, segmentsUpdated);
+    _colorManagement->applyHclColorTemperature(kelvin);
 }
 
 void NeoPixelBusModule::disableHclMode()
 {
-    if (!_hclModeEnabled)
-    {
-        logDebugP("HCL mode already disabled");
-        return;
-    }
-
-    logInfoP("Disabling HCL mode and restoring original colors");
-
-    // Restore original colors for all segments
-    for (size_t i = 0; i < _segments.size() && i < _originalColors.size(); i++)
-    {
-        if (_segments[i].segment)
-        {
-            auto& color = _originalColors[i];
-            _segments[i].segment->setPrimaryColor(color[0], color[1], color[2], 0);
-
-            logDebugP("Restored segment %zu color to original: R=%d, G=%d, B=%d",
-                      i, color[0], color[1], color[2]);
-        }
-    }
-
-    _hclModeEnabled = false;
-    _currentHclTemperature = 6500; // Reset to neutral daylight
-
-    logInfoP("HCL mode disabled, original colors restored for all %d segments", (int)_segments.size());
+    _colorManagement->disableHclMode();
 }
 
 // ============================================================================
-// Color Correction Implementation
+// Color Correction Implementation (delegated to ColorManagement)
 // ============================================================================
 
-// Configure color correction from ETS parameters
 void NeoPixelBusModule::configureColorCorrection()
 {
-    // Gamma correction configuration
-    _gammaCorrectionEnabled = (bool)ParamNEOSTRIP_NEOGammaCorrection;
-    if (_gammaCorrectionEnabled)
-    {
-        uint8_t gammaParam = ParamNEOSTRIP_NEOGammaValue;
-        _gammaValue = mapGammaValue(gammaParam);
-        logInfoP("Gamma correction configured: value=%.2f", _gammaValue);
-    }
-
-    // White balance configuration
-    _whiteBalanceEnabled = (bool)ParamNEOSTRIP_NEOWhiteBalanceCorrection;
-    if (_whiteBalanceEnabled)
-    {
-        _whiteBalanceRed = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceRed);
-        _whiteBalanceGreen = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceGreen);
-        _whiteBalanceBlue = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceBlue);
-        logInfoP("White balance configured: R:%d G:%d B:%d", _whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue);
-    }
+    _colorManagement->configureColorCorrection();
 }
 
 void NeoPixelBusModule::updateColorCorrection()
 {
-    if (!_initialized) return;
-    // Update color correction parameters on VirtualStrip
-    // (These are applied during rendering, NOT in-place!)
-    // NOTE: setColorCorrection removed from VirtualStrip - color correction deactivated for now
-    /*     if (_virtualStrip) {
-          _virtualStrip->setColorCorrection(
-            _gammaCorrectionEnabled, _gammaValue,
-            _whiteBalanceEnabled, _whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue,
-            _swapMode
-          );
-        } */
+    _colorManagement->updateColorCorrection();
 }
 
 void NeoPixelBusModule::forceColorCorrectionUpdate()
 {
-    if (!_initialized) return;
-
-    // Force immediate update bypassing rate limiting
-    updateColorCorrection();
-    _lastColorUpdateMs = millis(); // Update timestamp to reset rate limiting
-
-    logDebugP("Forced color correction update");
-}
-
-float NeoPixelBusModule::mapGammaValue(uint8_t paramValue)
-{
-    // Map ETS parameter (0-10) to gamma value range (2.0-3.0)
-    // ETS XML configuration:
-    // Value 0 -> 2.0, Value 1 -> 2.1, ..., Value 10 -> 3.0
-    // Each step represents 0.1 gamma increment
-
-    // Clamp parameter value to valid range
-    if (paramValue > 10)
-    {
-        paramValue = 10;
-    }
-
-    // Convert: gamma = 2.0 + (paramValue * 0.1)
-    float gammaValue = 2.0f + (paramValue * 0.1f);
-
-    return gammaValue;
-}
-
-uint8_t NeoPixelBusModule::mapWhiteBalanceValue(uint8_t paramValue)
-{
-    // ETS parameter is percentage (0-100), need to map to RGB scaling range (0-255)
-    // ETS XML configuration: PT-NEOPercent with range 0-100
-    // Convert: rgbValue = (percentage * 255) / 100
-
-    // Clamp parameter value to valid range
-    if (paramValue > 100)
-    {
-        paramValue = 100;
-    }
-
-    // Convert percentage to 0-255 range for RGB channel scaling
-    uint8_t rgbValue = (paramValue * 255) / 100;
-
-    return rgbValue;
+    _colorManagement->forceColorCorrectionUpdate();
 }
 
 // ============================================================================
@@ -2890,187 +2530,18 @@ Segment* NeoPixelBusModule::getSegment(uint8_t index) const
 
 void NeoPixelBusModule::configureEffects()
 {
-    for (size_t i = 0; i < _segments.size(); ++i)
-    {
-        if (_segments[i].segment)
-        {
-            _channelIndex = i; // Set channel context for parameter access
-            uint8_t effectType = ParamNEO_NEONEOEffectType;
-            applyEffectToSegment(_segments[i].segment, effectType);
-            setupEffectConfiguration(_segments[i].segment);
-            // Initialize saved effect state from ETS defaults
-            _segments[i].savedEffectType = effectType;
-            auto& ec = _segments[i].segment->getConfig();
-            _segments[i].savedEffectSpeed = ec.speed;
-            _segments[i].savedEffectIntensity = ec.intensity;
-            _segments[i].savedEffectOption1 = ec.option1;
-            _segments[i].savedEffectOption2 = ec.option2;
-            _segments[i].savedEffectMode = ec.mode;
-            _segments[i].savedEffectReverse = ec.reverse;
-            _segments[i].savedEffectValid = true;
-
-            logInfoP("Segment %zu: Applied effect type %d", i, effectType);
-        }
-    }
-
-    // Read global UpdateSpeed parameter
-    uint8_t updateSpeedParam = ParamNEO_NEOUpdateSpeed;
-    UpdateSpeed speed = UpdateSpeed::NORMAL;
-    const char* speedName = "Normal";
-
-    // Safely map parameter value to UpdateSpeed enum
-    switch (updateSpeedParam)
-    {
-        case 100:
-            speed = UpdateSpeed::SLOW;
-            speedName = "Slow (10 FPS)";
-            break;
-        case 50:
-            speed = UpdateSpeed::NORMAL;
-            speedName = "Normal (20 FPS)";
-            break;
-        case 33:
-            speed = UpdateSpeed::FAST;
-            speedName = "Fast (30 FPS)";
-            break;
-        case 20:
-            speed = UpdateSpeed::MAX;
-            speedName = "Max (50 FPS)";
-            break;
-        case 12:
-            speed = UpdateSpeed::EXTREME;
-            speedName = "Extreme (80 FPS)";
-            break;
-        case 4:
-            speed = UpdateSpeed::LUDICROUS;
-            speedName = "Ludicrous (120 FPS)";
-            break;
-        case 0:
-            speed = UpdateSpeed::FTL;
-            speedName = "FTL (240 FPS)";
-            break;
-        default:
-            logInfoP("Invalid UpdateSpeed parameter %d, using Normal", updateSpeedParam);
-            speed = UpdateSpeed::NORMAL;
-            speedName = "Normal (20 FPS) [fallback]";
-            break;
-    }
-
-    // ALWAYS enable auto-update (even without effects) so KO color changes are rendered
-    _neoPixel.setAutoUpdate(true);
-    _neoPixel.setUpdateSpeed(speed);
+    // Delegate to EffectConfiguration sub-module
+    _effectConfiguration->configureEffects();
 }
 
 void NeoPixelBusModule::applyEffectToSegment(Segment* segment, uint8_t effectType)
 {
-    if (!segment) return;
-
-    Effect* effect = getEffectFromType(effectType);
-    if (effect != nullptr)
-    {
-        // Store effect type in config for parameter loading
-        segment->getConfig().effectType = effectType;
-        
-        // Clear the segment (turn all LEDs off) before starting the effect
-        segment->setPrimaryColor(0, 0, 0, 0);
-
-        segment->setEffect(effect);
-        logInfoP("Applied effect '%s' (ID: %d) to segment (cleared first)", effect->getName(), effectType);
-    }
-    else
-    {
-        logWarningP("Unknown effect type: %d", effectType);
-    }
-}
-
-Effect* NeoPixelBusModule::getEffectFromType(uint8_t effectType)
-{
-    // Map effect type ID to actual effect instances
-    // Based on the console effect list:
-    switch (effectType)
-    {
-        case 0: return EffectPool::getSolid();    // Solid Color
-        case 1: return EffectPool::getWipe();     // Color Wipe
-        case 2: return EffectPool::getRainbow();  // Rainbow
-        case 3: return EffectPool::getPride();    // Pride2015
-        case 4: return EffectPool::getConfetti(); // Confetti
-        case 5: return EffectPool::getJuggle();   // Juggle
-        case 6: return EffectPool::getBPM();      // BPM
-        case 7: return EffectPool::getCylon();    // Cylon
-#ifndef NEOPIXEL_MINIMAL_EFFECTS
-        case 8: return EffectPool::getRGBWTest();             // SK6812/RGBW Test
-        case 9: return EffectPool::getGarageDoor();           // GarageDoor
-        case 10: return EffectPool::getFire();                // Fire
-        case 11: return EffectPool::getTheaterChase();        // Theater Chase
-        case 12: return EffectPool::getTheaterChaseRainbow(); // Theater Chase Rainbow
-        case 13: return EffectPool::getSinelon();             // Sinelon
-        case 14: return EffectPool::getTwinkle();             // Twinkle
-        case 15: return EffectPool::getSparkle();             // Sparkle
-        case 16: return EffectPool::getBreathing();           // Breathing
-        case 17: return EffectPool::getStrobe();              // Strobe
-        case 18: return EffectPool::getPulse();               // Pulse
-        case 19: return EffectPool::getComet();               // Comet
-        case 20: return EffectPool::getMeteor();              // Meteor
-#endif
-        default: return EffectPool::getSolid();
-    }
+    // Delegate to EffectConfiguration sub-module
+    _effectConfiguration->applyEffectToSegment(segment, effectType);
 }
 
 void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
 {
-    if (!segment) return;
-
-    // Get ETS effect parameters for current channel
-    auto& config = segment->getConfig();
-
-    // Basic effect parameters from ETS
-    config.speed = ParamNEO_NEOEffectSpeed;         // Effect speed (0-255)
-    config.intensity = ParamNEO_NEOEffectIntensity; // Effect intensity (0-255)
-
-    // Apply fallback for intensity if 0 (many effects use this for brightness)
-    if (config.intensity == 0) config.intensity = 20;
-
-    // Extended effect parameters
-    // TEMPORARILY DISABLED FOR TESTING:
-    // config.option1 = ParamNEO_NEOEffectOption1; // Custom option 1
-    // config.option2 = ParamNEO_NEOEffectOption2; // Custom option 2
-    // config.mode = ParamNEO_NEOEffectOption3;    // Effect mode
-    config.option1 = 0;
-    config.option2 = 0;
-    config.mode = 0;
-
-    // Effect features (boolean flags)
-    // TEMPORARILY DISABLED FOR TESTING:
-    // config.reverse = ParamNEO_NEOEffectFeature1 ? 1 : 0; // Reverse direction
-    config.reverse = 0;
-    // Feature2 and Feature3 could be used for other boolean options
-
-    // Initialize effect-specific state parameters
-    Effect* effect = segment->getEffect();
-    if (effect)
-    {
-        // Load effect-specific parameters from EEPROM (AUTO-GENERATED)
-        // This replaces the old manual mapping code and automatically reads
-        // parameters generated from Effect*.h headers via Build-EffectParameters.ps1
-#ifdef EFFECT_PARAMETER_MAPPING_GENERATED
-        loadEffectParameters(effect, segment, segment->getConfig().effectType, _channelIndex);
-        logInfoP("Effect '%s' configured with %d parameter(s)",
-                 effect->getName(), effect->getParameterCount());
-#else
-        logDebugP("Effect '%s' loaded (no parameters - run Build-EffectParameters.ps1 to generate)",
-                  effect->getName());
-#endif
-    }
-
-    // Mirror effect (from segment configuration)
-    bool mirrorEffect = ParamNEO_NEOSegmentMirrorEffect;
-    if (mirrorEffect)
-    {
-        // Note: Mirror effect would need to be implemented in the segment update logic
-        logInfoP("Mirror effect enabled for segment");
-    }
-
-    logInfoP("Effect config: Speed=%d, Intensity=%d, Options=[%d,%d,%d], Reverse=%d, Mirror=%s",
-             config.speed, config.intensity, config.option1, config.option2, config.mode,
-             config.reverse, mirrorEffect ? "YES" : "NO");
+    // Delegate to EffectConfiguration sub-module
+    _effectConfiguration->setupEffectConfiguration(segment);
 }

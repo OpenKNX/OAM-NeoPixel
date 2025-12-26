@@ -31,23 +31,7 @@
                 <!-- Byte 10: Bits 5-7 frei -->
                 <!-- Byte 11: 8b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%057" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt Typ" Value="0"/>
-                <!-- Byte 12: 8b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%058" Offset="12" BitOffset="0" Name="NEO%C%EffectSpeed" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Effekt Speed" Value="122"/>
-                <!-- Byte 13: 8b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%059" Offset="13" BitOffset="0" Name="NEO%C%EffectIntensity" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Effekt Intensität" Value="255"/>
-                <!-- Byte 14: 8b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%060" Offset="14" BitOffset="0" Name="NEO%C%EffectOption1" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Effekt Option 1" Value="0"/>
-                <!-- Byte 15: 8b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%061" Offset="15" BitOffset="0" Name="NEO%C%EffectOption2" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Effekt Option 2" Value="0"/>
-                <!-- Byte 16: 8b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%062" Offset="16" BitOffset="0" Name="NEO%C%EffectOption3" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Effekt Option 3" Value="0"/>
-                <!-- Byte 17 -->
-                <Parameter Id="%AID%_UP-%TT%%CC%063" Offset="17" BitOffset="7" Name="NEO%C%EffectFeature1" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 1" Value="0"/>
-                <!-- Byte 18 -->
-                <Parameter Id="%AID%_UP-%TT%%CC%064" Offset="18" BitOffset="7" Name="NEO%C%EffectFeature2" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 2" Value="0"/>
-                <!-- Byte 19 -->
-                <Parameter Id="%AID%_UP-%TT%%CC%065" Offset="19" BitOffset="7" Name="NEO%C%EffectFeature3" ParameterType="%AID%_PT-Boolean" Text="Effekt Feature 3" Value="0"/>
-                <!-- Bytes 20-23: Reserved for future features -->
+                <!-- Bytes 12-23: Reserved (replaced by dynamic effect parameters) -->
                 <!-- Segment Startup Color Parameters (Bytes 24-29) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%068" Offset="25" BitOffset="0" Name="NEO%C%SegmentStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
@@ -73,14 +57,6 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%055_R-%TT%%CC%05501" RefId="%AID%_UP-%TT%%CC%055" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%056_R-%TT%%CC%05601" RefId="%AID%_UP-%TT%%CC%056" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" RefId="%AID%_UP-%TT%%CC%057" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" RefId="%AID%_UP-%TT%%CC%058" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%059_R-%TT%%CC%05901" RefId="%AID%_UP-%TT%%CC%059" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%060_R-%TT%%CC%06001" RefId="%AID%_UP-%TT%%CC%060" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%061_R-%TT%%CC%06101" RefId="%AID%_UP-%TT%%CC%061" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%062_R-%TT%%CC%06201" RefId="%AID%_UP-%TT%%CC%062" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%063_R-%TT%%CC%06301" RefId="%AID%_UP-%TT%%CC%063" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%064_R-%TT%%CC%06401" RefId="%AID%_UP-%TT%%CC%064" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%065_R-%TT%%CC%06501" RefId="%AID%_UP-%TT%%CC%065" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" RefId="%AID%_UP-%TT%%CC%067" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%068_R-%TT%%CC%06801" RefId="%AID%_UP-%TT%%CC%068" />
@@ -281,22 +257,6 @@
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-Einstellungen" UIHint="Headline" />
                     <!-- Effect Type -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="%DOC%"/>
-                     <!-- Effect Speed -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Intensity -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%059_R-%TT%%CC%05901" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Option 1 -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%060_R-%TT%%CC%06001" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Option 2 -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%061_R-%TT%%CC%06101" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Option 3 -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%062_R-%TT%%CC%06201" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Feature 1 -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%063_R-%TT%%CC%06301" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Feature 2 -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%064_R-%TT%%CC%06401" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Effect Feature 3 -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%065_R-%TT%%CC%06501" IndentLevel="1" HelpContext="%DOC%"/>
                     <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
                       <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                       <!-- Dynamic choose/when blocks for effect-specific parameters -->

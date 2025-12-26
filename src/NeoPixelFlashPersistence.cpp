@@ -177,8 +177,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         cfg.savedW = state.w;
         cfg.savedBrightness = state.brightness;
         cfg.savedEffectType = state.effectType;
-        cfg.savedEffectSpeed = state.effectSpeed;
-        cfg.savedEffectIntensity = state.effectIntensity;
+        // Note: Effect-specific parameters are now loaded from ETS, not from flash
         cfg.savedValid = true;
         cfg.savedEffectValid = (state.effectType > 0);
         cfg.savedLastWasEffect = (state.effectType > 0);
@@ -297,15 +296,13 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                     }
                     else if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0)
                     {
-                        // Restore effect
+                        // Restore effect (parameters loaded from ETS automatically)
                         _module->applyEffectToSegment(seg, cfg.savedEffectType);
-                        auto& ec = seg->getConfig();
-                        ec.speed = cfg.savedEffectSpeed;
-                        ec.intensity = cfg.savedEffectIntensity;
+                        _module->setupEffectConfiguration(seg);
                         seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
-                        logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Speed=%d, Intensity=%d, Brightness=%d)", 
-                                 i, cfg.savedEffectType, cfg.savedEffectSpeed, cfg.savedEffectIntensity, cfg.savedBrightness);
+                        logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Brightness=%d)", 
+                                 i, cfg.savedEffectType, cfg.savedBrightness);
 #endif
                     }
                     else
@@ -460,10 +457,11 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     // Save brightness
     state.brightness = seg->getBrightness();
     
-    // Save effect info
+    // Save effect type only (parameters are always loaded from ETS)
     state.effectType = cfg.savedEffectType;
-    state.effectSpeed = cfg.savedEffectSpeed;
-    state.effectIntensity = cfg.savedEffectIntensity;
+    // Note: effectSpeed and effectIntensity fields deprecated (always 0)
+    state.effectSpeed = 0;
+    state.effectIntensity = 0;
     
     return true;
 }

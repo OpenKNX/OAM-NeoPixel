@@ -9,6 +9,12 @@
 #include "effects/EffectPool.h" // Effect pool for singleton instances
 #include <vector>
 
+// Forward declarations
+class EffectConfiguration;
+class ColorManagement;
+class StripConfiguration;
+class SegmentController;
+
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
  * All rendering, effects, timing and power handling are delegated to the library.
@@ -36,6 +42,11 @@
  */
 class NeoPixelBusModule : public OpenKNX::Module
 {
+    friend class EffectConfiguration;
+    friend class ColorManagement;
+    friend class StripConfiguration;
+    friend class SegmentController;
+
   public:
     // Segment Configuration Structure
     struct SegmentConfig
@@ -61,12 +72,8 @@ class NeoPixelBusModule : public OpenKNX::Module
         // Saved effect information
         bool savedEffectValid = false;
         uint8_t savedEffectType = 0; // 0 = none
-        uint8_t savedEffectSpeed = 0;
-        uint8_t savedEffectIntensity = 0;
-        uint8_t savedEffectOption1 = 0;
-        uint8_t savedEffectOption2 = 0;
-        uint8_t savedEffectMode = 0;
-        uint8_t savedEffectReverse = 0;
+        // Note: Effect-specific parameters are now dynamically loaded from ETS
+        // Old generic parameters (speed/intensity/option1-3) removed - replaced by effect-specific params
 
         // Which rendering mode was active before power-off
         bool savedLastWasEffect = false;
@@ -134,7 +141,6 @@ class NeoPixelBusModule : public OpenKNX::Module
     void processInputKo(GroupObject& ko) override;
     void processBeforeRestart() override; // Turn off all LEDs before restart/programming
     void processAfterStartupDelay() override; // Restore LED states after startup
-    void processActiveDimming(); // Process DPT 3.007 start/stop dimming
 
     // Flash persistence (OGM-Common calls these automatically)
     uint16_t flashSize() override;
@@ -155,38 +161,46 @@ class NeoPixelBusModule : public OpenKNX::Module
     const std::vector<PhysicalStrip*>& getPhysicalStrips() const { return _physicalStrips; }
 
     // Access to segments
+    std::vector<SegmentConfig>& getSegments() { return _segments; }
     const std::vector<SegmentConfig>& getSegments() const { return _segments; }
     uint8_t getNumberOfSegments() const { return _numberOfSegments; }
 
-    // Apply effect to segment (used by flash persistence)
+    // Channel index access (for parameter reading)
+    uint8_t getChannelIndex() const { return _channelIndex; }
+    void setChannelIndex(uint8_t index) { _channelIndex = index; }
+
+    // Apply effect to segment (used by flash persistence and EffectConfiguration)
     void applyEffectToSegment(Segment* segment, uint8_t effectType);
+    void setupEffectConfiguration(Segment* segment);  // Setup effect parameters
     Segment* getSegment(uint8_t index) const; // Get segment by index
+
+    // Public API for segment control (delegates to SegmentController)
+    void processActiveDimming();
+
+    // Public API for color management (delegates to ColorManagement)
+    void configureColorCorrection();
+    void updateColorCorrection();
+    void forceColorCorrectionUpdate();
+    void applyGlobalBrightness(uint8_t brightness);
+    void restoreOriginalBrightness();
+    void applyHclColorTemperature(uint16_t kelvin);
+    void disableHclMode();
 
     // Effects status
     bool areEffectsEnabled() const { return _effectsEnabled; }
 
-    // Color Correction
-    void updateColorCorrection();
-    void forceColorCorrectionUpdate(); // Force immediate update (bypassing rate limiting)
+    // Color Correction Status (read-only)
     bool isGammaCorrectionEnabled() const { return _gammaCorrectionEnabled; }
     bool isWhiteBalanceEnabled() const { return _whiteBalanceEnabled; }
     float getGammaValue() const { return _gammaValue; }
+    uint8_t getGlobalBrightness() const { return _globalBrightness; }
+    uint16_t getCurrentHclTemperature() const { return _currentHclTemperature; }
+    bool isHclModeEnabled() const { return _hclModeEnabled; }
 
-    // Color correction functions
+    // Color correction functions (inline helpers - not delegated)
     uint8_t applyGammaCorrection(uint8_t value) const;
     void applyWhiteBalance(uint8_t& r, uint8_t& g, uint8_t& b) const;
     uint32_t correctColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0) const;
-
-    // Global brightness control
-    void applyGlobalBrightness(uint8_t brightness);
-    void restoreOriginalBrightness();
-    uint8_t getGlobalBrightness() const { return _globalBrightness; }
-
-    // HCL color temperature control
-    void applyHclColorTemperature(uint16_t kelvin);
-    void disableHclMode();
-    uint16_t getCurrentHclTemperature() const { return _currentHclTemperature; }
-    bool isHclModeEnabled() const { return _hclModeEnabled; }
 
     // Static helper functions (public for testing)
     static LedProtocol mapProtocol(uint8_t paramLedType);
@@ -222,8 +236,16 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Segment Configuration
     std::vector<SegmentConfig> _segments; // Configured segments
     uint8_t _numberOfSegments = 0;        // Number of segments from ETS
-    // Effect Configuration
+    
+    // Sub-module: Effect Configuration
+    class EffectConfiguration* _effectConfiguration;
     bool _effectsEnabled = false; // Whether effects are enabled
+
+    // Sub-module: Color Management
+    class ColorManagement* _colorManagement;
+
+    // Sub-module: Segment Controller
+    class SegmentController* _segmentController;
 
     // Global Brightness Control
     uint8_t _globalBrightness = 255;          // Global brightness multiplier (0-255, default full)
@@ -247,7 +269,6 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Configuration & Setup
     void configureFromETS();               // reads ETS params and builds phys+virt layout
     void configurePowerManagement();       // Configure power management using OFM PowerManager
-    void configureColorCorrection();       // Configure color correction from ETS parameters
     void configureStripOptions();          // Configure swap and skip options from ETS parameters
     void configureSegments();              // Configure segments from ETS parameters
     void configureVirtualStripOrder();     // Configure virtual strip order from ETS parameters
@@ -265,18 +286,14 @@ class NeoPixelBusModule : public OpenKNX::Module
     void applyGroupingAndSpacing(SegmentConfig& config);     // Apply grouping and spacing pattern
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
-    // Effect Implementation
-    void configureEffects();                           // Configure effects from ETS parameters
-    Effect* getEffectFromType(uint8_t effectType);     // Get effect instance from type ID
-    void setupEffectConfiguration(Segment* segment);   // Setup effect configuration from ETS
+    // Effect Implementation (delegated to EffectConfiguration)
+    // Note: configureEffects(), getEffectFromType(), setupEffectConfiguration() moved to EffectConfiguration class
+    // Private wrapper for configureFromETS()
+    void configureEffects();
 
     // Power Management Helpers
     static uint16_t calculateLedCurrentMa(uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0);
     static uint16_t getTypicalLedCurrentMa(LedProtocol protocol);
-
-    // Color Correction Helpers
-    static float mapGammaValue(uint8_t paramValue);          // Map ETS gamma value to float
-    static uint8_t mapWhiteBalanceValue(uint8_t paramValue); // Map ETS white balance to 0-255
 
     // Strip Configuration Helpers
     static uint8_t mapSwapMode(uint8_t paramValue); // Map ETS swap parameter
