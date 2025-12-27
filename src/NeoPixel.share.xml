@@ -369,11 +369,11 @@
                 <!-- Byte 1..2 -->
                 <!-- Start time -->
                 <Parameter Id="%AID%_UP-%TT%00002" Offset="1" BitOffset="0" Name="HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%00003" Offset="2" BitOffset="0" Name="HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0" SuffixText=" HH:MM"/>
+                <Parameter Id="%AID%_UP-%TT%00003" Offset="2" BitOffset="0" Name="HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
                 <!-- Byte 3..4 -->
                 <!-- End time -->
                 <Parameter Id="%AID%_UP-%TT%00066" Offset="3" BitOffset="0" Name="HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
-                <Parameter Id="%AID%_UP-%TT%00067" Offset="4" BitOffset="0" Name="HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0" SuffixText=" HH:MM"/>
+                <Parameter Id="%AID%_UP-%TT%00067" Offset="4" BitOffset="0" Name="HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
                 <!-- Byte 5..6 -->
                 <!-- HCLoffsetSunrise: Byte5[0..7] + Byte6[0..1] => 10b signed -->
                 <Parameter Id="%AID%_UP-%TT%00004" Offset="5" BitOffset="0" Name="HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
@@ -768,31 +768,37 @@
                     <!-- 2 = Zeit -->
                     <when test="=2">
                       <!-- ===== Time-specific ===== -->
-                      <ParameterBlock Id="%AID%_PB-HCLTime" Name="HCLTime"  Inline="true" Layout="Grid">
+                      <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid">
                         <Rows>
-                          <Row Id="%AID%_PB-HCLTime_R-1" Name="Begin"/>
-                          <Row Id="%AID%_PB-HCLTime_R-2" Name="End" />
+                          <Row Id="%AID%_PB-nnn_R-1"/>
+                          <Row Id="%AID%_PB-nnn_R-2"/>
                         </Rows>
                         <Columns>
+                          <!-- Indent Level 2 -->
+                          <Column Id="%AID%_PB-nnn_C-1" Width="3%" />
                           <!-- Label -->
-                          <Column Id="%AID%_PB-HCLTime_C-1" Name="Label" Width="45%" />
+                          <Column Id="%AID%_PB-nnn_C-2" Width="42%" />
                           <!-- HH -->
-                          <Column Id="%AID%_PB-HCLTime_C-2" Name="HH" Width="20%" />
+                          <Column Id="%AID%_PB-nnn_C-3" Width="10%" />
                           <!-- ":" -->
-                          <Column Id="%AID%_PB-HCLTime_C-3" Name="Colon" Width="2%" />
+                          <Column Id="%AID%_PB-nnn_C-4" Width="2%" />
                           <!-- MM -->
-                          <Column Id="%AID%_PB-HCLTime_C-4" Name="MM" Width="20%" />
+                          <Column Id="%AID%_PB-nnn_C-5" Width="10%" />
+                          <!-- HH:MM Label -->
+                          <Column Id="%AID%_PB-nnn_C-6" Width="14%" />
                         </Columns>
                         <!-- Row 1: Begin time -->
-                        <ParameterSeparator Id="%AID%_PS-HCLBegin" Text="HCL Startzeit" Cell="1,1" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" Cell="1,2"  IndentLevel="2" HelpContext="%DOC%" /> <!-- Begin hour -->
-                        <ParameterSeparator Id="%AID%_PS-HCLBeginColon" Text=":" Cell="1,3" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00003_R-%TT%0000301" Cell="1,4"  IndentLevel="2" HelpContext="%DOC%"/> <!-- Begin minute -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Startzeit" Cell="1,2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" Cell="1,3" HelpContext="%DOC%" />
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text=":" Cell="1,4" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00003_R-%TT%0000301" Cell="1,5" HelpContext="%DOC%"/>
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HH:MM" Cell="1,6" />
                         <!-- Row 2: End time -->
-                        <ParameterSeparator Id="%AID%_PS-HCLEnd" Text="HCL Endzeit" Cell="2,1" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00066_R-%TT%0006601" Cell="2,2" IndentLevel="2"  HelpContext="%DOC%"/> <!-- End hour -->
-                        <ParameterSeparator Id="%AID%_PS-HCLEndColon" Text=":" Cell="2,3" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00067_R-%TT%0006701" Cell="2,4" IndentLevel="2"  HelpContext="%DOC%"/> <!-- End minute -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Endzeit" Cell="2,2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00066_R-%TT%0006601" Cell="2,3" HelpContext="%DOC%"/>
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text=":" Cell="2,4" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00067_R-%TT%0006701" Cell="2,5" HelpContext="%DOC%"/>
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HH:MM" Cell="2,6" />
                       </ParameterBlock>
                     </when>
                   </choose>
