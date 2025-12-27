@@ -346,7 +346,7 @@ void ColorManagement::applyHclPostProcess()
     if (!_module || !_module->_initialized) return;
     if (!_hclEnabled) return;
     if (_hclTargetKelvin == 0) return;
-    if (!ParamNEO_HCLenableKelvin) return;
+    // Note: HCL enable/disable controlled by HCLtype parameter (checked in HclCurve::loop)
 
     const unsigned long now = millis();
 

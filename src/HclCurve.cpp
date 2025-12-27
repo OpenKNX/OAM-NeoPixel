@@ -76,17 +76,8 @@ void HclCurve::loop()
         logWarningP("HCL: System time not set (00:00:00) - device may not have synchronized time via NTP or KNX");
     }
 
-    // If Kelvin is disabled, publish 0K (so module can disable HCL cleanly)
-    if (!ParamNEO_HCLenableKelvin)
-    {
-        if (_lastKelvinValue != 0)
-        {
-            logDebugP("Kelvin deaktiviert -> 0K");
-            KoNEO_HCLState.value((uint16_t)0, Dpt(7, 600));
-            _lastKelvinValue = 0;
-        }
-        return;
-    }
+    // Note: HCL enable/disable is controlled by _type (set in setup from ParamNEO_HCLtype)
+    // If disabled (_type == PT_hclType_none), this function returns early at the top
 
     // Bounds
     uint16_t kMin = (uint16_t)ParamNEO_HCLminKelvin;
