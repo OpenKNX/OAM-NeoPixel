@@ -1,4 +1,5 @@
 #include "HclCurve.h"
+#include <math.h>
 
 // Enum definitions from XML parameter types
 enum PT_hclType
@@ -6,13 +7,6 @@ enum PT_hclType
     PT_hclType_none = 0, // "Deaktiviert"
     PT_hclType_sun = 1,  // "Sonnenstand"
     PT_hclType_time = 2  // "Zeit"
-};
-
-enum PT_offset
-{
-    PT_offset_disabled = 0, // "Deaktiviert"
-    PT_offset_plus = 1,     // "Später"
-    PT_offset_minus = 2     // "Früher"
 };
 
 const std::string HclCurve::logPrefix()
@@ -38,117 +32,208 @@ void HclCurve::setup(uint8_t index)
 
     if (_isConfigured)
     {
+        uint16_t kMin = (uint16_t)ParamNEO_HCLminKelvin;
+        uint16_t kMax = (uint16_t)ParamNEO_HCLmaxKelvin;
+
         if (_type == PT_hclType_sun)
-            logDebugP("Konfiguriert: Sonnenstand %i/%i", ParamNEO_HCLmin, ParamNEO_HCLmax);
+        {
+            logInfoP("HCL Sun-based curve configured: Kelvin %u..%u K", (unsigned)kMin, (unsigned)kMax);
+            if (kMin == 0 || kMax == 0)
+                logWarningP("HCL: Min/Max Kelvin not configured in ETS (values are 0)");
+        }
         else if (_type == PT_hclType_time)
-            logDebugP("Konfiguriert: Zeittabelle (noch nicht implementiert)");
+        {
+            logInfoP("HCL Time-based curve configured: Kelvin %u..%u K, Window %02u:%02u-%02u:%02u",
+                     (unsigned)kMin, (unsigned)kMax,
+                     (unsigned)ParamNEO_HCLStartHour, (unsigned)ParamNEO_HCLStartMinute,
+                     (unsigned)ParamNEO_HCLEndHour, (unsigned)ParamNEO_HCLEndMinute);
+            if (kMin == 0 || kMax == 0)
+                logWarningP("HCL: Min/Max Kelvin not configured in ETS (values are 0) - will use 1000K..10000K defaults in loop");
+        }
     }
     else
-        logDebugP("Nicht Konfiguriert");
+        logInfoP("HCL curve: Not configured (disabled)");
 }
 
 void HclCurve::loop()
 {
     if (!_isConfigured) return;
 
-    // Only sun mode is implemented currently
-    if (_type != PT_hclType_sun)
-    {
-        logDebugP("Zeit-Modus noch nicht implementiert");
-        return;
-    }
+    // HCL curve computes a Kelvin target and writes it to the KO.
+    // Pixel-level "true HCL" application happens in NeoPixelModule (post-processing).
 
-    // Use Timer from OFM-LogicModule
     Timer &timer = Timer::instance();
 
     // Rate limiting: only update once per minute
-    uint8_t currentMinute = timer.getMinute();
+    const uint8_t currentMinute = timer.getMinute();
     if (currentMinute == _lastMinute)
-    {
-        return; // Already processed this minute
-    }
+        return;
     _lastMinute = currentMinute;
 
-    sTime *sunRise = timer.getSunInfo(SUN_SUNRISE);
-    sTime *sunSet = timer.getSunInfo(SUN_SUNSET);
-
-    if ((sunRise->hour == 0 && sunRise->minute == 0) || (sunSet->hour == 0 && sunSet->minute == 0))
+    // Warn if system time appears to be unset (00:00:00)
+    if (timer.getHour() == 0 && timer.getMinute() == 0 && timer.getSecond() == 0)
     {
-        logDebugP("Ungueltige Sonnenstandsdaten");
+        logWarningP("HCL: System time not set (00:00:00) - device may not have synchronized time via NTP or KNX");
+    }
+
+    // If Kelvin is disabled, publish 0K (so module can disable HCL cleanly)
+    if (!ParamNEO_HCLenableKelvin)
+    {
+        if (_lastKelvinValue != 0)
+        {
+            logDebugP("Kelvin deaktiviert -> 0K");
+            KoNEO_HCLState.value((uint16_t)0, Dpt(7, 600));
+            _lastKelvinValue = 0;
+        }
         return;
     }
 
-    logDebugP("Aktuelle Zeit: %i:%i:%i", timer.getHour(), timer.getMinute(), timer.getSecond());
-
-    uint16_t min = ParamNEO_HCLmin;
-    uint16_t max = ParamNEO_HCLmax;
-    uint16_t kelvinValue = min; // Default value
-
-    if (timer.getHour() < sunRise->hour || (timer.getHour() == sunRise->hour && timer.getMinute() < sunRise->minute))
+    // Bounds
+    uint16_t kMin = (uint16_t)ParamNEO_HCLminKelvin;
+    uint16_t kMax = (uint16_t)ParamNEO_HCLmaxKelvin;
+    if (kMin > kMax)
     {
-        logDebugP("Vor Sonnenaufgang %i K (%i:%i)", min, sunRise->hour, sunRise->minute);
-        kelvinValue = min;
+        uint16_t tmp = kMin;
+        kMin = kMax;
+        kMax = tmp;
     }
-    else if (timer.getHour() > sunSet->hour || (timer.getHour() == sunSet->hour && timer.getMinute() > sunSet->minute))
+
+    // Apply safe defaults if not configured
+    bool usedDefaults = false;
+    if (kMin < 1000)
     {
-        logDebugP("Nach Sonnenuntergang %i K (%i:%i)", max, sunSet->hour, sunSet->minute);
-        kelvinValue = max;
+        kMin = 1000;
+        usedDefaults = true;
     }
-    else
+    if (kMax > 10000)
     {
-        logDebugP("Zwischen Sonnenaufgang und Sonnenuntergang");
+        kMax = 10000;
+        usedDefaults = true;
+    }
+    if (kMax == 0 || kMin == 0)
+    {
+        kMin = 1000;
+        kMax = 10000;
+        usedDefaults = true;
+    }
 
-        // Use signed arithmetic to prevent underflow
-        int startMin = sunRise->hour * 60 + sunRise->minute;
-        int stopMin = sunSet->hour * 60 + sunSet->minute;
+    if (usedDefaults && _lastMinute == 255)
+    {
+        logWarningP("HCL: Using default Kelvin range 1000K..10000K (ETS parameters not configured)");
+    }
 
-        // Apply offsets
-        if (ParamNEO_HCLoffsetRiseType == PT_offset_plus)
-            startMin += ParamNEO_HCLoffsetRiseMin;
-        else if (ParamNEO_HCLoffsetRiseType == PT_offset_minus)
-            startMin -= ParamNEO_HCLoffsetRiseMin;
+    // Helper: clamp minutes to [0..1439]
+    auto clampDay = [](int m) -> int {
+        if (m < 0) return 0;
+        if (m > 24 * 60 - 1) return 24 * 60 - 1;
+        return m;
+    };
 
-        if (ParamNEO_HCLoffsetSetType == PT_offset_plus)
-            stopMin += ParamNEO_HCLoffsetSetMin;
-        else if (ParamNEO_HCLoffsetSetType == PT_offset_minus)
-            stopMin -= ParamNEO_HCLoffsetSetMin;
+    const int nowMin = (int)timer.getHour() * 60 + (int)timer.getMinute();
 
-        int currentMin = timer.getHour() * 60 + timer.getMinute();
+    // Compute target Kelvin
+    uint16_t kelvinValue = kMin;
 
-        // Clamp to valid day range [0, 24*60-1]
-        auto clampDay = [](int m) -> int {
-            if (m < 0) return 0;
-            if (m > 24 * 60 - 1) return 24 * 60 - 1;
-            return m;
-        };
+    if (_type == PT_hclType_sun)
+    {
+        // Sun-based curve: warm at edges (sunrise/sunset), cool at midday (peak).
+        sTime *sunRise = timer.getSunInfo(SUN_SUNRISE);
+        sTime *sunSet = timer.getSunInfo(SUN_SUNSET);
 
-        startMin = clampDay(startMin);
-        stopMin = clampDay(stopMin);
-        currentMin = clampDay(currentMin);
-
-        int diff = stopMin - startMin;
-        if (diff <= 0)
+        if ((sunRise->hour == 0 && sunRise->minute == 0) || (sunSet->hour == 0 && sunSet->minute == 0))
         {
-            // Degenerate configuration (start >= stop), use fallback
-            logDebugP("Ungueltige Konfiguration: Start >= Stop, verwende Min-Wert %i K", min);
-            KoNEO_HCLState.value(min, Dpt(7, 600));
+            // Sun times not available yet; fall back to min
+            kelvinValue = kMin;
         }
         else
         {
-            int rel = currentMin - startMin;
-            if (rel < 0) rel = 0;
-            if (rel > diff) rel = diff;
+            int startMin = (int)sunRise->hour * 60 + (int)sunRise->minute;
+            int stopMin = (int)sunSet->hour * 60 + (int)sunSet->minute;
 
-            uint16_t response = ColorHelper::getKelvinFromSun((uint16_t)rel, (uint16_t)diff, min, max);
-            logDebugP("Response: %i K (rel=%i, diff=%i)", response, rel, diff);
-            kelvinValue = response;
+            // Signed offsets (minutes)
+            startMin += (int)ParamNEO_HCLoffsetSunrise;
+            stopMin += (int)ParamNEO_HCLoffsetSunset;
+
+            startMin = clampDay(startMin);
+            stopMin = clampDay(stopMin);
+
+            // Guard: invalid window
+            if (stopMin <= startMin)
+            {
+                kelvinValue = kMin;
+            }
+            else if (nowMin <= startMin || nowMin >= stopMin)
+            {
+                // Outside window: warm
+                kelvinValue = kMin;
+            }
+            else
+            {
+                const float p = (float)(nowMin - startMin) / (float)(stopMin - startMin); // 0..1
+                // Half-sine: 0 at edges, 1 at middle
+                const float s = sinf(p * 3.14159265f);
+                const float k = (float)kMin + ((float)(kMax - kMin) * s);
+                kelvinValue = (uint16_t)(k + 0.5f);
+            }
         }
     }
+    else if (_type == PT_hclType_time)
+    {
+        // Time-based curve: warm at edges, cool at middle within user window.
+        const int beginMin = clampDay((int)ParamNEO_HCLStartHour * 60 + (int)ParamNEO_HCLStartMinute);
+        const int endMin = clampDay((int)ParamNEO_HCLEndHour * 60 + (int)ParamNEO_HCLEndMinute);
 
-    // Debouncing: Only send KNX update if value actually changed
+        // Support windows spanning midnight (e.g., 22:00 -> 06:00)
+        bool inWindow = false;
+        float p = 0.0f;
+
+        if (beginMin == endMin)
+        {
+            // Degenerate: treat as always in window
+            inWindow = true;
+            p = 0.5f;
+        }
+        else if (beginMin < endMin)
+        {
+            inWindow = (nowMin >= beginMin && nowMin <= endMin);
+            if (inWindow)
+                p = (float)(nowMin - beginMin) / (float)(endMin - beginMin);
+        }
+        else
+        {
+            // Wrap over midnight
+            inWindow = (nowMin >= beginMin || nowMin <= endMin);
+            if (inWindow)
+            {
+                const int span = (24 * 60 - beginMin) + endMin;
+                int rel = (nowMin >= beginMin) ? (nowMin - beginMin) : ((24 * 60 - beginMin) + nowMin);
+                p = (span > 0) ? ((float)rel / (float)span) : 0.5f;
+            }
+        }
+
+        if (!inWindow)
+        {
+            kelvinValue = kMin;
+        }
+        else
+        {
+            const float s = sinf(p * 3.14159265f);
+            const float k = (float)kMin + ((float)(kMax - kMin) * s);
+            kelvinValue = (uint16_t)(k + 0.5f);
+        }
+    }
+    else
+    {
+        // Disabled / unknown type
+        kelvinValue = 0;
+    }
+
+    // Debounce KNX update
     if (kelvinValue != _lastKelvinValue)
     {
-        logDebugP("Kelvin-Wert geaendert: %i K -> %i K", _lastKelvinValue, kelvinValue);
+        logInfoP("HCL Kelvin updated: %u K → %u K (min=%u, max=%u)",
+                 (unsigned)_lastKelvinValue, (unsigned)kelvinValue,
+                 (unsigned)kMin, (unsigned)kMax);
         KoNEO_HCLState.value(kelvinValue, Dpt(7, 600));
         _lastKelvinValue = kelvinValue;
     }

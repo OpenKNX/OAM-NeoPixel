@@ -1,0 +1,181 @@
+
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline" />
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701">
+                      <when test="1">
+                        <!-- Wipe Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%073_R-%TT%%CC%07301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%074_R-%TT%%CC%07401" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="2">
+                        <!-- Rainbow Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%075_R-%TT%%CC%07501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%076_R-%TT%%CC%07601" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="3">
+                        <!-- Rainbow Cycle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%077_R-%TT%%CC%07701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%078_R-%TT%%CC%07801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%079_R-%TT%%CC%07901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%080_R-%TT%%CC%08001" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="4">
+                        <!-- Pride2015 Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%081_R-%TT%%CC%08101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="5">
+                        <!-- Confetti Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%082_R-%TT%%CC%08201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%083_R-%TT%%CC%08301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="6">
+                        <!-- Juggle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%084_R-%TT%%CC%08401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%085_R-%TT%%CC%08501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%086_R-%TT%%CC%08601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%087_R-%TT%%CC%08701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="7">
+                        <!-- BPM Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%088_R-%TT%%CC%08801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%089_R-%TT%%CC%08901" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="8">
+                        <!-- Cylon Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%090_R-%TT%%CC%09001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%091_R-%TT%%CC%09101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%092_R-%TT%%CC%09201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%093_R-%TT%%CC%09301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="9">
+                        <!-- RGBWTest Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%094_R-%TT%%CC%09401" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="10">
+                        <!-- GarageDoor Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%095_R-%TT%%CC%09501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%096_R-%TT%%CC%09601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%097_R-%TT%%CC%09701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%098_R-%TT%%CC%09801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%099_R-%TT%%CC%09901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%102_R-%TT%%CC%10201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="11">
+                        <!-- Fire Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%104_R-%TT%%CC%10401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%105_R-%TT%%CC%10501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%106_R-%TT%%CC%10601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%107_R-%TT%%CC%10701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="12">
+                        <!-- Theater Chase Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%108_R-%TT%%CC%10801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%109_R-%TT%%CC%10901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="13">
+                        <!-- Theater Chase Rainbow Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%112_R-%TT%%CC%11201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%114_R-%TT%%CC%11401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%115_R-%TT%%CC%11501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%116_R-%TT%%CC%11601" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="14">
+                        <!-- Sinelon Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%117_R-%TT%%CC%11701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%118_R-%TT%%CC%11801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%119_R-%TT%%CC%11901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="15">
+                        <!-- Twinkle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%122_R-%TT%%CC%12201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%124_R-%TT%%CC%12401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%125_R-%TT%%CC%12501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%126_R-%TT%%CC%12601" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="16">
+                        <!-- Sparkle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%127_R-%TT%%CC%12701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%128_R-%TT%%CC%12801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%129_R-%TT%%CC%12901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%132_R-%TT%%CC%13201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="17">
+                        <!-- Breathing Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%134_R-%TT%%CC%13401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%135_R-%TT%%CC%13501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%136_R-%TT%%CC%13601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%137_R-%TT%%CC%13701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="18">
+                        <!-- Strobe Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%138_R-%TT%%CC%13801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%139_R-%TT%%CC%13901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%142_R-%TT%%CC%14201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="19">
+                        <!-- Pulse Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%144_R-%TT%%CC%14401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%145_R-%TT%%CC%14501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%146_R-%TT%%CC%14601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%147_R-%TT%%CC%14701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="20">
+                        <!-- Comet Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%148_R-%TT%%CC%14801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%149_R-%TT%%CC%14901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%152_R-%TT%%CC%15201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="21">
+                        <!-- Meteor Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%155_R-%TT%%CC%15501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%156_R-%TT%%CC%15601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%157_R-%TT%%CC%15701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="22">
+                        <!-- Noise Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%158_R-%TT%%CC%15801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%159_R-%TT%%CC%15901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%161_R-%TT%%CC%16101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="23">
+                        <!-- Palette Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%162_R-%TT%%CC%16201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%163_R-%TT%%CC%16301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%164_R-%TT%%CC%16401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%165_R-%TT%%CC%16501" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="24">
+                        <!-- Blitz Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%166_R-%TT%%CC%16601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%167_R-%TT%%CC%16701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%168_R-%TT%%CC%16801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%169_R-%TT%%CC%16901" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="25">
+                        <!-- Gradient Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%170_R-%TT%%CC%17001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%171_R-%TT%%CC%17101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%173_R-%TT%%CC%17301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                    </choose>
+

@@ -95,93 +95,336 @@ void ColorManagement::restoreOriginalBrightness()
 
 void ColorManagement::applyHclColorTemperature(uint16_t kelvin)
 {
-    _module->_currentHclTemperature = kelvin;
-
-    // Validate Kelvin range (typical LED range: 2000K-10000K)
-    if (kelvin < 2000 || kelvin > 10000)
+    // 0K is used as "disable" command.
+    if (kelvin == 0)
     {
-        logWarningP("HCL temperature %dK out of typical range (2000K-10000K)", kelvin);
+        disableHclMode();
         return;
     }
 
-    logInfoP("Applying HCL color temperature: %dK to all segments", kelvin);
+    _hclTargetKelvin = kelvin;
 
-    // Convert Kelvin to RGB using ColorHelper
-    uint8_t r, g, b;
-    ColorHelper::kelvinToRGB(kelvin, r, g, b);
-
-    logDebugP("HCL %dK converts to RGB: R=%d, G=%d, B=%d", kelvin, r, g, b);
-
-    // Store original colors if this is the first HCL application
-    if (!_module->_hclModeEnabled && _module->_originalColors.size() != _module->_segments.size())
+    // Sanity range
+    if (kelvin < 1000 || kelvin > 10000)
     {
-        _module->_originalColors.resize(_module->_segments.size());
-
-        for (size_t i = 0; i < _module->_segments.size(); i++)
-        {
-            if (_module->_segments[i].segment)
-            {
-                uint8_t origR, origG, origB;
-                if (_module->_segments[i].segment->getPixel(0, origR, origG, origB))
-                {
-                    _module->_originalColors[i] = {origR, origG, origB};
-                    logDebugP("Stored original color for segment %zu: R=%d, G=%d, B=%d",
-                              i, origR, origG, origB);
-                }
-                else
-                {
-                    _module->_originalColors[i] = {255, 255, 255}; // Default to white if can't read
-                }
-            }
-        }
+        logWarningP("HCL target %dK out of range (1000K-10000K)", kelvin);
     }
 
-    // Apply color temperature to all segments
-    uint16_t segmentsUpdated = 0;
-    for (auto& segmentConfig : _module->_segments)
+    if (!_hclEnabled)
     {
-        if (segmentConfig.segment)
-        {
-            // Apply the Kelvin-derived RGB to the entire segment
-            segmentConfig.segment->setPrimaryColor(r, g, b, 0);
-            segmentsUpdated++;
-
-            logDebugP("Applied %dK color temperature to segment", kelvin);
-        }
+        _hclEnabled = true;
+        _hclAppliedKelvin = _hclTargetKelvin;
+        _lastHclApplyMs = 0;
+        logInfoP("HCL post-processing enabled: %d K target", (int)_hclTargetKelvin);
+    }
+    else if (_hclTargetKelvin != kelvin)
+    {
+        logInfoP("HCL target Kelvin changed: %d K → %d K", (int)_module->_hclTargetKelvin, (int)kelvin);
     }
 
+    // Keep module state in sync for status getters / diagnostics
+    _module->_hclTargetKelvin = _hclTargetKelvin;
+    _module->_hclAppliedKelvin = _hclAppliedKelvin;
     _module->_hclModeEnabled = true;
 
-    logInfoP("HCL color temperature %dK applied to %d segments", kelvin, segmentsUpdated);
+    logInfoP("HCL target set to %dK (post-processing enabled)", (int)_hclTargetKelvin);
 }
 
 void ColorManagement::disableHclMode()
 {
-    if (!_module->_hclModeEnabled)
+    if (!_hclEnabled && !_module->_hclModeEnabled)
     {
-        logDebugP("HCL mode already disabled");
+        logDebugP("HCL already disabled");
         return;
     }
 
-    logInfoP("Disabling HCL mode and restoring original colors");
+    _hclEnabled = false;
+    _hclTargetKelvin = 0;
+    _hclAppliedKelvin = 0;
+    _lastHclApplyMs = 0;
 
-    // Restore original colors for all segments
-    for (size_t i = 0; i < _module->_segments.size() && i < _module->_originalColors.size(); i++)
+    _module->_hclModeEnabled = false;
+    _module->_hclTargetKelvin = 6500;
+    _module->_hclAppliedKelvin = 6500;
+
+    logInfoP("HCL disabled");
+}
+
+// ============================================================================
+// HCL (Human Centric Lighting) post-processing implementation
+//
+// Goal: Circadian Kelvin correction without destroying effects/scenes.
+// We post-process the rendered pixels and apply a Kelvin whitepoint mainly to
+// white/low-saturation pixels (configurable). For RGBW/RGBCCT we can also
+// extract neutral luminance into W to preserve saturation.
+//
+// Controlled via ETS params (generated in knxprod.h):
+//   - ParamNEO_HCLenableKelvin (bool)
+//   - ParamNEO_HclApplyMode (0=Nur Wei�, 1=Alle Farben)
+//   - ParamNEO_HCLSatThreshold (0..255)
+//   - ParamNEO_HCLPreserveCurve (0=Linear,1=Smooth,2=Gamma)
+//   - ParamNEO_HCLStrength (0..100 %) : overall mix strength
+//   - ParamNEO_HCLTransitionTime (0..255 s) : Kelvin slew time
+//   - ParamNEO_HCLBrightnessCompensation (0..100 %) : perceived brightness equalization
+//   - ParamNEO_HCLWhiteMix (0..100 %) : how much neutral goes to W (RGBW only)
+// ============================================================================
+
+namespace
+{
+    inline uint8_t u8_max3(uint8_t a, uint8_t b, uint8_t c)
     {
-        if (_module->_segments[i].segment)
-        {
-            auto& color = _module->_originalColors[i];
-            _module->_segments[i].segment->setPrimaryColor(color[0], color[1], color[2], 0);
+        return (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);
+    }
 
-            logDebugP("Restored segment %zu color to original: R=%d, G=%d, B=%d",
-                      i, color[0], color[1], color[2]);
+    inline uint8_t u8_min3(uint8_t a, uint8_t b, uint8_t c)
+    {
+        return (a < b) ? ((a < c) ? a : c) : ((b < c) ? b : c);
+    }
+
+    inline uint8_t lerp_u8(uint8_t a, uint8_t b, uint8_t frac /*0..255*/)
+    {
+        const uint16_t inv = 255u - frac;
+        return (uint8_t)((a * inv + b * (uint16_t)frac + 127u) / 255u);
+    }
+
+    inline uint8_t clamp_u8(int v)
+    {
+        if (v < 0) return 0;
+        if (v > 255) return 255;
+        return (uint8_t)v;
+    }
+
+    // Integer smoothstep (t in 0..255)
+    inline uint8_t smoothstep_u8(uint8_t t)
+    {
+        // t^2 * (3 - 2t) in 0..1 (scaled to 0..255)
+        const uint32_t tt = (uint32_t)t * (uint32_t)t;   // 0..65025
+        const uint32_t a = 3u * 255u - 2u * (uint32_t)t; // 0..765
+        const uint32_t v = (tt * a + (255u * 255u / 2u)) / (255u * 255u);
+        return (uint8_t)((v > 255u) ? 255u : v);
+    }
+
+    // HCL blend weight from saturation.
+    //
+    // applyMode=0 (Nur Weiss):
+    //   - Only pixels below threshold are affected (hard cutoff) unless they already have W.
+    //   - Weight falls from 255 (sat=0) to 0 (sat=threshold).
+    //
+    // applyMode=1 (Alle Farben):
+    //   - All pixels can be affected.
+    //   - Threshold defines the point where we start fading out; above threshold we fade to 0 at sat=255.
+    //   - This matches typical "commercial" HCL behavior: whites get strong correction, saturated colors less.
+    inline uint8_t hclWeightFromSat(uint8_t sat, uint8_t threshold, uint8_t applyMode, uint8_t curve /*0..2*/)
+    {
+        uint32_t w = 0;
+
+        if (applyMode == 0)
+        {
+            // Nur Weiss: weight 255..0 within [0..threshold]
+            if (threshold == 0)
+            {
+                w = (sat == 0) ? 255u : 0u;
+            }
+            else
+            {
+                if (sat >= threshold) return 0;
+                w = 255u - ((uint32_t)sat * 255u) / threshold;
+            }
+        }
+        else
+        {
+            // Alle Farben: full weight below threshold, then fade to 0 at sat=255
+            if (sat <= threshold)
+            {
+                w = 255u;
+            }
+            else
+            {
+                const uint32_t denom = (threshold >= 255) ? 1u : (255u - (uint32_t)threshold);
+                w = ((255u - (uint32_t)sat) * 255u) / denom;
+            }
+        }
+
+        if (w > 255u) w = 255u;
+        const uint8_t ww = (uint8_t)w;
+
+        switch (curve)
+        {
+            default:
+            case 0: // Linear
+                return ww;
+            case 1: // Smooth
+                return smoothstep_u8(ww);
+            case 2: // Gamma (approx gamma=2)
+                return (uint8_t)(((uint16_t)ww * (uint16_t)ww + 127u) / 255u);
         }
     }
 
-    _module->_hclModeEnabled = false;
-    _module->_currentHclTemperature = 6500; // Reset to neutral daylight
+    inline void apply_hcl_pixel(uint16_t kelvin,
+                                uint8_t applyMode,
+                                uint8_t satThreshold,
+                                uint8_t preserveCurve,
+                                uint8_t strengthPct,
+                                uint8_t brightnessCompPct,
+                                uint8_t whiteMixPct,
+                                uint8_t& r, uint8_t& g, uint8_t& b,
+                                uint8_t* wOpt)
+    {
+        uint8_t kr, kg, kb;
+        ColorHelper::kelvinToRGB(kelvin, kr, kg, kb);
 
-    logInfoP("HCL mode disabled, original colors restored for all %d segments", (int)_module->_segments.size());
+        const uint8_t vmax = u8_max3(r, g, b);
+        const uint8_t vmin = u8_min3(r, g, b);
+        const uint8_t sat = (vmax == 0) ? 0 : (uint8_t)(((uint16_t)(vmax - vmin) * 255u) / vmax);
+        const uint8_t wIn = (wOpt) ? *wOpt : 0;
+
+        // ApplyMode=Nur Weiss: hard cutoff above threshold unless explicit W
+        if (applyMode == 0 && sat >= satThreshold && wIn == 0) return;
+
+        const uint8_t preserve = hclWeightFromSat(sat, satThreshold, applyMode, preserveCurve);
+        uint8_t strength = (strengthPct > 100) ? 100 : strengthPct;
+
+        uint16_t wFrac16 = (uint16_t)preserve * (uint16_t)strength; // 0..25500
+        uint8_t frac = (uint8_t)((wFrac16 + 50u) / 100u);           // 0..255
+
+        if (frac == 0) return;
+
+        // Use current pixel value/brightness basis (include W)
+        uint8_t v = vmax;
+        if (wIn > v) v = wIn;
+
+        int tr = ((int)kr * (int)v) / 255;
+        int tg = ((int)kg * (int)v) / 255;
+        int tb = ((int)kb * (int)v) / 255;
+        int tw = 0;
+
+        // Perceived brightness compensation (optional)
+        if (brightnessCompPct > 0)
+        {
+            uint8_t rr, rg, rb;
+            ColorHelper::kelvinToRGB(6500, rr, rg, rb);
+
+            const uint32_t yRef = 54u * rr + 183u * rg + 19u * rb;
+            const uint32_t yKel = 54u * kr + 183u * kg + 19u * kb;
+            if (yKel > 0)
+            {
+                uint32_t scaleQ8 = (yRef << 8) / yKel; // 256=1.0
+                if (scaleQ8 < 128u) scaleQ8 = 128u;
+                if (scaleQ8 > 512u) scaleQ8 = 512u;
+
+                uint8_t comp = (brightnessCompPct > 100) ? 100 : brightnessCompPct;
+                int32_t delta = (int32_t)scaleQ8 - 256;
+                scaleQ8 = (uint32_t)(256 + (delta * comp) / 100);
+
+                tr = (int)((tr * (int)scaleQ8 + 128) >> 8);
+                tg = (int)((tg * (int)scaleQ8 + 128) >> 8);
+                tb = (int)((tb * (int)scaleQ8 + 128) >> 8);
+            }
+        }
+
+        // RGBW: extract neutral part into W (configurable)
+        if (wOpt)
+        {
+            int n = u8_min3((uint8_t)clamp_u8(tr), (uint8_t)clamp_u8(tg), (uint8_t)clamp_u8(tb));
+            uint8_t mix = (whiteMixPct > 100) ? 100 : whiteMixPct;
+            int extracted = (n * (int)mix + 50) / 100;
+            tr -= extracted;
+            tg -= extracted;
+            tb -= extracted;
+            tw = extracted;
+        }
+
+        r = lerp_u8(r, clamp_u8(tr), frac);
+        g = lerp_u8(g, clamp_u8(tg), frac);
+        b = lerp_u8(b, clamp_u8(tb), frac);
+        if (wOpt) *wOpt = lerp_u8(wIn, clamp_u8(tw), frac);
+    }
+} // namespace
+
+void ColorManagement::applyHclPostProcess()
+{
+    if (!_module || !_module->_initialized) return;
+    if (!_hclEnabled) return;
+    if (_hclTargetKelvin == 0) return;
+    if (!ParamNEO_HCLenableKelvin) return;
+
+    const unsigned long now = millis();
+
+    // Rate limit
+    constexpr unsigned long kMinIntervalMs = 20; // 50 Hz
+    if (_lastHclApplyMs != 0 && (now - _lastHclApplyMs) < kMinIntervalMs)
+        return;
+    const unsigned long dtMs = (_lastHclApplyMs == 0) ? kMinIntervalMs : (now - _lastHclApplyMs);
+    _lastHclApplyMs = now;
+
+    // Kelvin slew / transition
+    uint16_t target = _hclTargetKelvin;
+    uint16_t applied = _hclAppliedKelvin;
+
+    uint16_t transitionSec = (uint16_t)ParamNEO_HCLTransitionTime;
+    if (transitionSec == 0)
+    {
+        applied = target;
+    }
+    else
+    {
+        int32_t diff = (int32_t)target - (int32_t)applied;
+        if (diff != 0)
+        {
+            uint32_t denom = (uint32_t)transitionSec * 1000u;
+            uint32_t adiff = (uint32_t)((diff < 0) ? -diff : diff);
+            uint32_t step = (adiff * (uint32_t)dtMs) / denom;
+            if (step == 0) step = 1;
+            if (step > adiff) step = adiff;
+            applied = (uint16_t)((int32_t)applied + ((diff < 0) ? -(int32_t)step : (int32_t)step));
+        }
+    }
+    _hclAppliedKelvin = applied;
+
+    // Log Kelvin transitions
+    if (applied != _module->_hclAppliedKelvin)
+    {
+        logDebugP("HCL Kelvin slewed: %u K → %u K (target=%u K, transition=%us)",
+                  (unsigned)_module->_hclAppliedKelvin, (unsigned)applied,
+                  (unsigned)target, (unsigned)transitionSec);
+    }
+
+    // Keep module state in sync for status getters / diagnostics
+    _module->_hclTargetKelvin = target;
+    _module->_hclAppliedKelvin = applied;
+    _module->_hclModeEnabled = true;
+
+    // Parameters
+    const uint8_t applyMode = (uint8_t)ParamNEO_HclApplyMode;
+    const uint8_t satThr = (uint8_t)ParamNEO_HCLSatThreshold;
+    const uint8_t curve = (uint8_t)ParamNEO_HCLPreserveCurve;
+    const uint8_t strength = (uint8_t)ParamNEO_HCLStrength;
+    const uint8_t comp = (uint8_t)ParamNEO_HCLBrightnessCompensation;
+    const uint8_t whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
+
+    // Apply to all segments, in-place (post-processing)
+    for (auto& segCfg : _module->_segments)
+    {
+        Segment* seg = segCfg.segment;
+        if (!seg) continue;
+
+        const uint16_t len = seg->getLength();
+        for (uint16_t i = 0; i < len; i++)
+        {
+            uint8_t r, g, b;
+            uint8_t w;
+            if (seg->getPixel(i, r, g, b, w))
+            {
+                apply_hcl_pixel(applied, applyMode, satThr, curve, strength, comp, whiteMix, r, g, b, &w);
+                seg->setPixel(i, r, g, b, w);
+            }
+            else if (seg->getPixel(i, r, g, b))
+            {
+                apply_hcl_pixel(applied, applyMode, satThr, curve, strength, comp, whiteMix, r, g, b, nullptr);
+                seg->setPixel(i, r, g, b);
+            }
+        }
+    }
 }
 
 // ============================================================================

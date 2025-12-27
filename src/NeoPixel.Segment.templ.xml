@@ -43,7 +43,159 @@
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                 <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
-        <!-- END AUTO-GENERATED: Effect Parameters Union -->
+                <!-- Generated: ID 73-173, Offset 30-130 -->
+
+                <!-- Wipe Effect (ID 1) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%073" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed (Wipe)" Value="25"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%074" Offset="31" BitOffset="0" Name="NEO%C%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction (Wipe)" Value="0"/>
+
+                <!-- Rainbow Effect (ID 2) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%075" Offset="32" BitOffset="0" Name="NEO%C%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed (Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%076" Offset="33" BitOffset="0" Name="NEO%C%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta (Rainbow)" Value="7"/>
+
+                <!-- Rainbow Cycle Effect (ID 3) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%077" Offset="34" BitOffset="0" Name="NEO%C%RainbowCycleSpeed" ParameterType="%AID%_PT-RainbowCycleSpeed" Text="Speed (Rainbow Cycle)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%078" Offset="35" BitOffset="0" Name="NEO%C%RainbowCycleSaturation" ParameterType="%AID%_PT-RainbowCycleSaturation" Text="Saturation (Rainbow Cycle)" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%079" Offset="36" BitOffset="0" Name="NEO%C%RainbowCycleDensity" ParameterType="%AID%_PT-RainbowCycleDensity" Text="Density (Rainbow Cycle)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%080" Offset="37" BitOffset="7" Name="NEO%C%RainbowCycleReverse" ParameterType="%AID%_PT-RainbowCycleReverse" Text="Reverse (Rainbow Cycle)" Value="0"/>
+
+                <!-- Pride2015 Effect (ID 4) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%081" Offset="38" BitOffset="0" Name="NEO%C%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed (Pride2015)" Value="128"/>
+
+                <!-- Confetti Effect (ID 5) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%082" Offset="39" BitOffset="0" Name="NEO%C%ConfettiFadeSpeed" ParameterType="%AID%_PT-ConfettiFadeSpeed" Text="FadeSpeed (Confetti)" Value="10"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%083" Offset="40" BitOffset="0" Name="NEO%C%ConfettiSaturation" ParameterType="%AID%_PT-ConfettiSaturation" Text="Saturation (Confetti)" Value="200"/>
+
+                <!-- Juggle Effect (ID 6) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%084" Offset="41" BitOffset="0" Name="NEO%C%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed (Juggle)" Value="80"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%085" Offset="42" BitOffset="0" Name="NEO%C%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots (Juggle)" Value="8"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%086" Offset="43" BitOffset="0" Name="NEO%C%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed (Juggle)" Value="20"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%087" Offset="44" BitOffset="0" Name="NEO%C%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset (Juggle)" Value="0"/>
+
+                <!-- BPM Effect (ID 7) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%088" Offset="45" BitOffset="0" Name="NEO%C%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM (BPM)" Value="62"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%089" Offset="46" BitOffset="0" Name="NEO%C%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue (BPM)" Value="0"/>
+
+                <!-- Cylon Effect (ID 8) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%090" Offset="47" BitOffset="0" Name="NEO%C%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed (Cylon)" Value="20"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%091" Offset="48" BitOffset="0" Name="NEO%C%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%092" Offset="49" BitOffset="0" Name="NEO%C%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize (Cylon)" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%093" Offset="50" BitOffset="0" Name="NEO%C%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount (Cylon)" Value="50"/>
+
+                <!-- RGBWTest Effect (ID 9) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%094" Offset="51" BitOffset="0" Name="NEO%C%RGBWTestPhaseDuration" ParameterType="%AID%_PT-RGBWTestPhaseDuration" Text="PhaseDuration (RGBWTest)" Value="5"/>
+
+                <!-- GarageDoor Effect (ID 10) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%095" Offset="52" BitOffset="0" Name="NEO%C%GarageDoorPhase" ParameterType="%AID%_PT-GarageDoorPhase" Text="Phase (GarageDoor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%096" Offset="53" BitOffset="0" Name="NEO%C%GarageDoorArrowSize" ParameterType="%AID%_PT-GarageDoorArrowSize" Text="ArrowSize (GarageDoor)" Value="6"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%097" Offset="54" BitOffset="0" Name="NEO%C%GarageDoorArrowSpeed" ParameterType="%AID%_PT-GarageDoorArrowSpeed" Text="ArrowSpeed (GarageDoor)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%098" Offset="55" BitOffset="0" Name="NEO%C%GarageDoorRunwayGroupSize" ParameterType="%AID%_PT-GarageDoorRunwayGroupSize" Text="RunwayGroupSize (GarageDoor)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%099" Offset="56" BitOffset="0" Name="NEO%C%GarageDoorRunwaySpeed" ParameterType="%AID%_PT-GarageDoorRunwaySpeed" Text="RunwaySpeed (GarageDoor)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%100" Offset="57" BitOffset="0" Name="NEO%C%GarageDoorBreathingSpeed" ParameterType="%AID%_PT-GarageDoorBreathingSpeed" Text="BreathingSpeed (GarageDoor)" Value="50"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%101" Offset="58" BitOffset="0" Name="NEO%C%GarageDoorOpeningDuration" ParameterType="%AID%_PT-GarageDoorOpeningDuration" Text="OpeningDuration (GarageDoor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%102" Offset="59" BitOffset="0" Name="NEO%C%GarageDoorRunwayDuration" ParameterType="%AID%_PT-GarageDoorRunwayDuration" Text="RunwayDuration (GarageDoor)" Value="0"/>
+
+                <!-- Fire Effect (ID 11) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%103" Offset="60" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed (Fire)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%104" Offset="61" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling (Fire)" Value="90"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%105" Offset="62" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking (Fire)" Value="120"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%106" Offset="63" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection (Fire)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%107" Offset="64" BitOffset="7" Name="NEO%C%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode (Fire)" Value="0"/>
+
+                <!-- Theater Chase Effect (ID 12) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%108" Offset="65" BitOffset="0" Name="NEO%C%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed (Theater Chase)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%109" Offset="66" BitOffset="0" Name="NEO%C%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing (Theater Chase)" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%110" Offset="67" BitOffset="0" Name="NEO%C%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize (Theater Chase)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%111" Offset="68" BitOffset="7" Name="NEO%C%TheaterChaseTrailMode" ParameterType="%AID%_PT-TheaterChaseTrailMode" Text="TrailMode (Theater Chase)" Value="0"/>
+
+                <!-- Theater Chase Rainbow Effect (ID 13) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%112" Offset="69" BitOffset="0" Name="NEO%C%TheaterChaseRainbowSpeed" ParameterType="%AID%_PT-TheaterChaseRainbowSpeed" Text="Speed (Theater Chase Rainbow)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%113" Offset="70" BitOffset="0" Name="NEO%C%TheaterChaseRainbowSpacing" ParameterType="%AID%_PT-TheaterChaseRainbowSpacing" Text="Spacing (Theater Chase Rainbow)" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%114" Offset="71" BitOffset="0" Name="NEO%C%TheaterChaseRainbowDotSize" ParameterType="%AID%_PT-TheaterChaseRainbowDotSize" Text="DotSize (Theater Chase Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%115" Offset="72" BitOffset="0" Name="NEO%C%TheaterChaseRainbowColorSpeed" ParameterType="%AID%_PT-TheaterChaseRainbowColorSpeed" Text="ColorSpeed (Theater Chase Rainbow)" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%116" Offset="73" BitOffset="7" Name="NEO%C%TheaterChaseRainbowTrailMode" ParameterType="%AID%_PT-TheaterChaseRainbowTrailMode" Text="TrailMode (Theater Chase Rainbow)" Value="0"/>
+
+                <!-- Sinelon Effect (ID 14) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%117" Offset="74" BitOffset="0" Name="NEO%C%SinelonSpeed" ParameterType="%AID%_PT-SinelonSpeed" Text="Speed (Sinelon)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%118" Offset="75" BitOffset="0" Name="NEO%C%SinelonFadeRate" ParameterType="%AID%_PT-SinelonFadeRate" Text="FadeRate (Sinelon)" Value="175"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%119" Offset="76" BitOffset="0" Name="NEO%C%SinelonDotSize" ParameterType="%AID%_PT-SinelonDotSize" Text="DotSize (Sinelon)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%120" Offset="77" BitOffset="7" Name="NEO%C%SinelonRainbowMode" ParameterType="%AID%_PT-SinelonRainbowMode" Text="RainbowMode (Sinelon)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%121" Offset="78" BitOffset="7" Name="NEO%C%SinelonBounceMode" ParameterType="%AID%_PT-SinelonBounceMode" Text="BounceMode (Sinelon)" Value="0"/>
+
+                <!-- Twinkle Effect (ID 15) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%122" Offset="79" BitOffset="0" Name="NEO%C%TwinkleSpeed" ParameterType="%AID%_PT-TwinkleSpeed" Text="Speed (Twinkle)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%123" Offset="80" BitOffset="0" Name="NEO%C%TwinkleFadeRate" ParameterType="%AID%_PT-TwinkleFadeRate" Text="FadeRate (Twinkle)" Value="120"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%124" Offset="81" BitOffset="0" Name="NEO%C%TwinkleDensity" ParameterType="%AID%_PT-TwinkleDensity" Text="Density (Twinkle)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%125" Offset="82" BitOffset="7" Name="NEO%C%TwinkleRainbowMode" ParameterType="%AID%_PT-TwinkleRainbowMode" Text="RainbowMode (Twinkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%126" Offset="83" BitOffset="7" Name="NEO%C%TwinkleVariableBrightness" ParameterType="%AID%_PT-TwinkleVariableBrightness" Text="VariableBrightness (Twinkle)" Value="0"/>
+
+                <!-- Sparkle Effect (ID 16) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%127" Offset="84" BitOffset="0" Name="NEO%C%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed (Sparkle)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%128" Offset="85" BitOffset="0" Name="NEO%C%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate (Sparkle)" Value="120"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%129" Offset="86" BitOffset="0" Name="NEO%C%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount (Sparkle)" Value="64"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%130" Offset="87" BitOffset="0" Name="NEO%C%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability (Sparkle)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%131" Offset="88" BitOffset="7" Name="NEO%C%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%132" Offset="89" BitOffset="7" Name="NEO%C%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode (Sparkle)" Value="0"/>
+
+                <!-- Breathing Effect (ID 17) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%133" Offset="90" BitOffset="0" Name="NEO%C%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed (Breathing)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%134" Offset="91" BitOffset="0" Name="NEO%C%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%135" Offset="92" BitOffset="7" Name="NEO%C%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%136" Offset="93" BitOffset="7" Name="NEO%C%BreathingHoldAtPeak" ParameterType="%AID%_PT-BreathingHoldAtPeak" Text="HoldAtPeak (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%137" Offset="94" BitOffset="0" Name="NEO%C%BreathingRainbowBreathing" ParameterType="%AID%_PT-BreathingRainbowBreathing" Text="RainbowBreathing (Breathing)" Value="0"/>
+
+                <!-- Strobe Effect (ID 18) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%138" Offset="95" BitOffset="0" Name="NEO%C%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed (Strobe)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%139" Offset="96" BitOffset="0" Name="NEO%C%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio (Strobe)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%140" Offset="97" BitOffset="0" Name="NEO%C%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%141" Offset="98" BitOffset="7" Name="NEO%C%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%142" Offset="99" BitOffset="7" Name="NEO%C%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe (Strobe)" Value="0"/>
+
+                <!-- Pulse Effect (ID 19) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%143" Offset="100" BitOffset="0" Name="NEO%C%PulseSpeed" ParameterType="%AID%_PT-PulseSpeed" Text="Speed (Pulse)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%144" Offset="101" BitOffset="0" Name="NEO%C%PulsePulseWidth" ParameterType="%AID%_PT-PulsePulseWidth" Text="PulseWidth (Pulse)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%145" Offset="102" BitOffset="0" Name="NEO%C%PulseGamma" ParameterType="%AID%_PT-PulseGamma" Text="Gamma (Pulse)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%146" Offset="103" BitOffset="7" Name="NEO%C%PulseSharpPulse" ParameterType="%AID%_PT-PulseSharpPulse" Text="SharpPulse (Pulse)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%147" Offset="104" BitOffset="7" Name="NEO%C%PulseRainbowPulse" ParameterType="%AID%_PT-PulseRainbowPulse" Text="RainbowPulse (Pulse)" Value="0"/>
+
+                <!-- Comet Effect (ID 20) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%148" Offset="105" BitOffset="0" Name="NEO%C%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed (Comet)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%149" Offset="106" BitOffset="0" Name="NEO%C%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate (Comet)" Value="150"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%150" Offset="107" BitOffset="0" Name="NEO%C%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength (Comet)" Value="10"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%151" Offset="108" BitOffset="7" Name="NEO%C%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%152" Offset="109" BitOffset="7" Name="NEO%C%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode (Comet)" Value="0"/>
+
+                <!-- Meteor Effect (ID 21) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%153" Offset="110" BitOffset="0" Name="NEO%C%MeteorSpeed" ParameterType="%AID%_PT-MeteorSpeed" Text="Speed (Meteor)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%154" Offset="111" BitOffset="0" Name="NEO%C%MeteorMeteorSize" ParameterType="%AID%_PT-MeteorMeteorSize" Text="MeteorSize (Meteor)" Value="20"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%155" Offset="112" BitOffset="0" Name="NEO%C%MeteorFrequency" ParameterType="%AID%_PT-MeteorFrequency" Text="Frequency (Meteor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%156" Offset="113" BitOffset="7" Name="NEO%C%MeteorRandomColors" ParameterType="%AID%_PT-MeteorRandomColors" Text="RandomColors (Meteor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%157" Offset="114" BitOffset="7" Name="NEO%C%MeteorMultiMeteor" ParameterType="%AID%_PT-MeteorMultiMeteor" Text="MultiMeteor (Meteor)" Value="0"/>
+
+                <!-- Noise Effect (ID 22) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%158" Offset="115" BitOffset="0" Name="NEO%C%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed (Noise)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%159" Offset="116" BitOffset="0" Name="NEO%C%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale (Noise)" Value="48"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%160" Offset="117" BitOffset="0" Name="NEO%C%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation (Noise)" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%161" Offset="118" BitOffset="0" Name="NEO%C%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset (Noise)" Value="0"/>
+
+                <!-- Palette Effect (ID 23) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%162" Offset="119" BitOffset="0" Name="NEO%C%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed (Palette)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%163" Offset="120" BitOffset="0" Name="NEO%C%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette (Palette)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%164" Offset="121" BitOffset="0" Name="NEO%C%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend (Palette)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%165" Offset="122" BitOffset="0" Name="NEO%C%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing (Palette)" Value="0"/>
+
+                <!-- Blitz Effect (ID 24) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%166" Offset="123" BitOffset="0" Name="NEO%C%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed (Blitz)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%167" Offset="124" BitOffset="0" Name="NEO%C%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width (Blitz)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%168" Offset="125" BitOffset="0" Name="NEO%C%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay (Blitz)" Value="40"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%169" Offset="126" BitOffset="0" Name="NEO%C%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue (Blitz)" Value="0"/>
+
+                <!-- Gradient Effect (ID 25) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%170" Offset="127" BitOffset="0" Name="NEO%C%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed (Gradient)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%171" Offset="128" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue (Gradient)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%172" Offset="129" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%173" Offset="130" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
+                <!-- END AUTO-GENERATED: Effect Parameters Union -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -65,90 +217,226 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" RefId="%AID%_UP-%TT%%CC%071" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
               <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
-                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+              <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+              <!-- Generated effect-specific parameter refs (ID 73-173) -->
+
+              <!-- Wipe Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%073_R-%TT%%CC%07301" RefId="%AID%_UP-%TT%%CC%073" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%074_R-%TT%%CC%07401" RefId="%AID%_UP-%TT%%CC%074" />
+              <!-- Rainbow Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%075_R-%TT%%CC%07501" RefId="%AID%_UP-%TT%%CC%075" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%076_R-%TT%%CC%07601" RefId="%AID%_UP-%TT%%CC%076" />
+              <!-- Rainbow Cycle Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%077_R-%TT%%CC%07701" RefId="%AID%_UP-%TT%%CC%077" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%078_R-%TT%%CC%07801" RefId="%AID%_UP-%TT%%CC%078" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%079_R-%TT%%CC%07901" RefId="%AID%_UP-%TT%%CC%079" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%080_R-%TT%%CC%08001" RefId="%AID%_UP-%TT%%CC%080" />
+              <!-- Pride2015 Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%081_R-%TT%%CC%08101" RefId="%AID%_UP-%TT%%CC%081" />
+              <!-- Confetti Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%082_R-%TT%%CC%08201" RefId="%AID%_UP-%TT%%CC%082" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%083_R-%TT%%CC%08301" RefId="%AID%_UP-%TT%%CC%083" />
+              <!-- Juggle Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%084_R-%TT%%CC%08401" RefId="%AID%_UP-%TT%%CC%084" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%085_R-%TT%%CC%08501" RefId="%AID%_UP-%TT%%CC%085" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%086_R-%TT%%CC%08601" RefId="%AID%_UP-%TT%%CC%086" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%087_R-%TT%%CC%08701" RefId="%AID%_UP-%TT%%CC%087" />
+              <!-- BPM Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%088_R-%TT%%CC%08801" RefId="%AID%_UP-%TT%%CC%088" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%089_R-%TT%%CC%08901" RefId="%AID%_UP-%TT%%CC%089" />
+              <!-- Cylon Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%090_R-%TT%%CC%09001" RefId="%AID%_UP-%TT%%CC%090" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%091_R-%TT%%CC%09101" RefId="%AID%_UP-%TT%%CC%091" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%092_R-%TT%%CC%09201" RefId="%AID%_UP-%TT%%CC%092" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%093_R-%TT%%CC%09301" RefId="%AID%_UP-%TT%%CC%093" />
+              <!-- RGBWTest Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%094_R-%TT%%CC%09401" RefId="%AID%_UP-%TT%%CC%094" />
+              <!-- GarageDoor Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%095_R-%TT%%CC%09501" RefId="%AID%_UP-%TT%%CC%095" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%096_R-%TT%%CC%09601" RefId="%AID%_UP-%TT%%CC%096" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%097_R-%TT%%CC%09701" RefId="%AID%_UP-%TT%%CC%097" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%098_R-%TT%%CC%09801" RefId="%AID%_UP-%TT%%CC%098" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%099_R-%TT%%CC%09901" RefId="%AID%_UP-%TT%%CC%099" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" RefId="%AID%_UP-%TT%%CC%100" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" RefId="%AID%_UP-%TT%%CC%101" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%102_R-%TT%%CC%10201" RefId="%AID%_UP-%TT%%CC%102" />
+              <!-- Fire Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" RefId="%AID%_UP-%TT%%CC%103" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%104_R-%TT%%CC%10401" RefId="%AID%_UP-%TT%%CC%104" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%105_R-%TT%%CC%10501" RefId="%AID%_UP-%TT%%CC%105" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%106_R-%TT%%CC%10601" RefId="%AID%_UP-%TT%%CC%106" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%107_R-%TT%%CC%10701" RefId="%AID%_UP-%TT%%CC%107" />
+              <!-- Theater Chase Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%108_R-%TT%%CC%10801" RefId="%AID%_UP-%TT%%CC%108" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%109_R-%TT%%CC%10901" RefId="%AID%_UP-%TT%%CC%109" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001" RefId="%AID%_UP-%TT%%CC%110" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" RefId="%AID%_UP-%TT%%CC%111" />
+              <!-- Theater Chase Rainbow Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%112_R-%TT%%CC%11201" RefId="%AID%_UP-%TT%%CC%112" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" RefId="%AID%_UP-%TT%%CC%113" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%114_R-%TT%%CC%11401" RefId="%AID%_UP-%TT%%CC%114" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%115_R-%TT%%CC%11501" RefId="%AID%_UP-%TT%%CC%115" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%116_R-%TT%%CC%11601" RefId="%AID%_UP-%TT%%CC%116" />
+              <!-- Sinelon Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%117_R-%TT%%CC%11701" RefId="%AID%_UP-%TT%%CC%117" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%118_R-%TT%%CC%11801" RefId="%AID%_UP-%TT%%CC%118" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%119_R-%TT%%CC%11901" RefId="%AID%_UP-%TT%%CC%119" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001" RefId="%AID%_UP-%TT%%CC%120" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" RefId="%AID%_UP-%TT%%CC%121" />
+              <!-- Twinkle Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%122_R-%TT%%CC%12201" RefId="%AID%_UP-%TT%%CC%122" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" RefId="%AID%_UP-%TT%%CC%123" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%124_R-%TT%%CC%12401" RefId="%AID%_UP-%TT%%CC%124" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%125_R-%TT%%CC%12501" RefId="%AID%_UP-%TT%%CC%125" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%126_R-%TT%%CC%12601" RefId="%AID%_UP-%TT%%CC%126" />
+              <!-- Sparkle Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%127_R-%TT%%CC%12701" RefId="%AID%_UP-%TT%%CC%127" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%128_R-%TT%%CC%12801" RefId="%AID%_UP-%TT%%CC%128" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%129_R-%TT%%CC%12901" RefId="%AID%_UP-%TT%%CC%129" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001" RefId="%AID%_UP-%TT%%CC%130" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" RefId="%AID%_UP-%TT%%CC%131" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%132_R-%TT%%CC%13201" RefId="%AID%_UP-%TT%%CC%132" />
+              <!-- Breathing Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" RefId="%AID%_UP-%TT%%CC%133" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%134_R-%TT%%CC%13401" RefId="%AID%_UP-%TT%%CC%134" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%135_R-%TT%%CC%13501" RefId="%AID%_UP-%TT%%CC%135" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%136_R-%TT%%CC%13601" RefId="%AID%_UP-%TT%%CC%136" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%137_R-%TT%%CC%13701" RefId="%AID%_UP-%TT%%CC%137" />
+              <!-- Strobe Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%138_R-%TT%%CC%13801" RefId="%AID%_UP-%TT%%CC%138" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%139_R-%TT%%CC%13901" RefId="%AID%_UP-%TT%%CC%139" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001" RefId="%AID%_UP-%TT%%CC%140" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" RefId="%AID%_UP-%TT%%CC%141" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%142_R-%TT%%CC%14201" RefId="%AID%_UP-%TT%%CC%142" />
+              <!-- Pulse Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" RefId="%AID%_UP-%TT%%CC%143" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%144_R-%TT%%CC%14401" RefId="%AID%_UP-%TT%%CC%144" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%145_R-%TT%%CC%14501" RefId="%AID%_UP-%TT%%CC%145" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%146_R-%TT%%CC%14601" RefId="%AID%_UP-%TT%%CC%146" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%147_R-%TT%%CC%14701" RefId="%AID%_UP-%TT%%CC%147" />
+              <!-- Comet Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%148_R-%TT%%CC%14801" RefId="%AID%_UP-%TT%%CC%148" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%149_R-%TT%%CC%14901" RefId="%AID%_UP-%TT%%CC%149" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001" RefId="%AID%_UP-%TT%%CC%150" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" RefId="%AID%_UP-%TT%%CC%151" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%152_R-%TT%%CC%15201" RefId="%AID%_UP-%TT%%CC%152" />
+              <!-- Meteor Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" RefId="%AID%_UP-%TT%%CC%153" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" RefId="%AID%_UP-%TT%%CC%154" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%155_R-%TT%%CC%15501" RefId="%AID%_UP-%TT%%CC%155" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%156_R-%TT%%CC%15601" RefId="%AID%_UP-%TT%%CC%156" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%157_R-%TT%%CC%15701" RefId="%AID%_UP-%TT%%CC%157" />
+              <!-- Noise Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%158_R-%TT%%CC%15801" RefId="%AID%_UP-%TT%%CC%158" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%159_R-%TT%%CC%15901" RefId="%AID%_UP-%TT%%CC%159" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" RefId="%AID%_UP-%TT%%CC%160" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%161_R-%TT%%CC%16101" RefId="%AID%_UP-%TT%%CC%161" />
+              <!-- Palette Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%162_R-%TT%%CC%16201" RefId="%AID%_UP-%TT%%CC%162" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%163_R-%TT%%CC%16301" RefId="%AID%_UP-%TT%%CC%163" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%164_R-%TT%%CC%16401" RefId="%AID%_UP-%TT%%CC%164" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%165_R-%TT%%CC%16501" RefId="%AID%_UP-%TT%%CC%165" />
+              <!-- Blitz Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%166_R-%TT%%CC%16601" RefId="%AID%_UP-%TT%%CC%166" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%167_R-%TT%%CC%16701" RefId="%AID%_UP-%TT%%CC%167" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%168_R-%TT%%CC%16801" RefId="%AID%_UP-%TT%%CC%168" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%169_R-%TT%%CC%16901" RefId="%AID%_UP-%TT%%CC%169" />
+              <!-- Gradient Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%170_R-%TT%%CC%17001" RefId="%AID%_UP-%TT%%CC%170" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%171_R-%TT%%CC%17101" RefId="%AID%_UP-%TT%%CC%171" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" RefId="%AID%_UP-%TT%%CC%172" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%173_R-%TT%%CC%17301" RefId="%AID%_UP-%TT%%CC%173" />
               <!-- END AUTO-GENERATED: Effect ParameterRefs -->
             </ParameterRefs>
             <ComObjectTable>
-              <!-- R -->
-              <ComObject Id="%AID%_O-%TT%%CC%005" Number="%K0%"  Name="%C%R"          Text="Rot"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                 ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- G -->
-              <ComObject Id="%AID%_O-%TT%%CC%006" Number="%K1%"  Name="%C%G"          Text="Grün"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- B -->
-              <ComObject Id="%AID%_O-%TT%%CC%007" Number="%K2%"  Name="%C%B"          Text="Blau"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- W -->
-              <ComObject Id="%AID%_O-%TT%%CC%008" Number="%K3%"  Name="%C%W"          Text="Weiß"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- CCT (Kelvin) -->
-              <ComObject Id="%AID%_O-%TT%%CC%009" Number="%K4%"  Name="%C%CCT"        Text="Farbtemperatur"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 7.600"      ObjectSize="2 Bytes"  DatapointType="DPST-7-600"  WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- CCT Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%010" Number="%K5%"  Name="%C%CCTState"   Text="Farbtemperatur Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 7.600" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- WW -->
-              <ComObject Id="%AID%_O-%TT%%CC%011" Number="%K6%" Name="%C%WW"         Text="Warmweiß"            FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"            ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- CW -->
-              <ComObject Id="%AID%_O-%TT%%CC%012" Number="%K7%" Name="%C%CW"         Text="Kaltweiß"            FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"            ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- H (Hue, 0..360° → 0..255) -->
-              <ComObject Id="%AID%_O-%TT%%CC%013" Number="%K8%" Name="%C%H"          Text="Farbton (Hue)"       FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.3"       ObjectSize="1 Byte"  DatapointType="DPST-5-3"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- S (0..100%) -->
-              <ComObject Id="%AID%_O-%TT%%CC%014" Number="%K9%" Name="%C%S"          Text="Sättigung"           FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.1"           ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- V (0..100%) -->
-              <ComObject Id="%AID%_O-%TT%%CC%015" Number="%K10%" Name="%C%V"          Text="Helligkeit (Value)"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.1"  ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Fx -->
-              <ComObject Id="%AID%_O-%TT%%CC%016" Number="%K11%" Name="%C%Fx"         Text="Effekt"              FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"              ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Fx Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%017" Number="%K12%" Name="%C%FxState"    Text="Effekt Status"       FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10"       ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Preset -->
-              <ComObject Id="%AID%_O-%TT%%CC%018" Number="%K13%" Name="%C%Preset"     Text="Voreinstellung"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"      ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Preset Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%019" Number="%K14%" Name="%C%PresetState" Text="Voreinstellung Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10" ObjectSize="1 Byte" DatapointType="DPST-5-10"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGB (3 bytes R,G,B) -->
-              <ComObject Id="%AID%_O-%TT%%CC%020" Number="%K15%" Name="%C%RGB"        Text="RGB"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGB Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%021" Number="%K16%" Name="%C%RGBState"   Text="RGB Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 232.600"          ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- HSV (3 bytes H,S,V) -->
-              <ComObject Id="%AID%_O-%TT%%CC%022" Number="%K17%" Name="%C%HSV"        Text="HSV"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- HSV Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%023" Number="%K18%" Name="%C%HSVState"   Text="HSV Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 232.600"          ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGBW (6 bytes R,G,B,W,ext1,ext2) -->
-              <ComObject Id="%AID%_O-%TT%%CC%024" Number="%K19%" Name="%C%RGBW"       Text="RGBW"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"                ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGBW Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%025" Number="%K20%" Name="%C%RGBWState"  Text="RGBW Status"         FunctionText="NeoPixel Segment %C%: Ausgang, DPT 251.600"         ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- BriRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%026" Number="%K21%" Name="%C%BriRel"     Text="Helligkeit Relativ"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"  ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%027" Number="%K22%" Name="%C%RRel"       Text="Rot Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- GRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%028" Number="%K23%" Name="%C%GRel"       Text="Grün Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- BRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%029" Number="%K24%" Name="%C%BRel"       Text="Blau Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- WRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%030" Number="%K25%" Name="%C%WRel"       Text="Weiß Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- WWRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%031" Number="%K26%" Name="%C%WWRel"      Text="Warmweiß Relativ"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- CWRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%032" Number="%K27%" Name="%C%CWRel"      Text="Kaltweiß Relativ"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- HRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%033" Number="%K28%" Name="%C%HRel"       Text="Hue Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- SRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%034" Number="%K29%" Name="%C%SRel"       Text="Sättigung Relativ"   FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"   ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- VRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%035" Number="%K30%" Name="%C%VRel"       Text="Helligkeit (Value) Relativ" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="1 Byte" DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- FxRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%036" Number="%K31%" Name="%C%FxRel"      Text="Effekt Relativ"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"      ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGBRel (3 bytes, relative encoding per Byte) -->
-              <ComObject Id="%AID%_O-%TT%%CC%037" Number="%K32%" Name="%C%RGBRel"     Text="RGB Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- HSVRel (3 bytes, relative encoding per Byte) -->
-              <ComObject Id="%AID%_O-%TT%%CC%038" Number="%K33%" Name="%C%HSVRel"     Text="HSV Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGBWRel (6 bytes total; first 4 = R,G,B,W) -->
-              <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K34%" Name="%C%RGBWRel"    Text="RGBW Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Segment Power -->
-              <ComObject Id="%AID%_O-%TT%%CC%040" Number="%K35%"  Name="%C%SegmentPower"     Text="Segment Ein/Aus"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 1.1"                 ObjectSize="1 Bit"   DatapointType="DPST-1-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+               <!-- Segment Power -->
+              <ComObject Id="%AID%_O-%TT%%CC%040" Number="%K0%"  Name="%C%SegmentPower"     Text="Segment Ein/Aus"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 1.1"                 ObjectSize="1 Bit"   DatapointType="DPST-1-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Segment Power Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%041" Number="%K36%"  Name="%C%SegmentPowerState" Text="Segment Ein/Aus Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 1.11"          ObjectSize="1 Bit"   DatapointType="DPST-1-11"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%041" Number="%K1%"  Name="%C%SegmentPowerState" Text="Segment Ein/Aus Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 1.11"          ObjectSize="1 Bit"   DatapointType="DPST-1-11"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Segment Brightness -->
-              <ComObject Id="%AID%_O-%TT%%CC%042" Number="%K37%"  Name="%C%SegmentBrightness" Text="Segment Helligkeit"          FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.1"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%042" Number="%K2%"  Name="%C%SegmentBrightness" Text="Segment Helligkeit"          FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.1"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Segment Brightness Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%043" Number="%K38%"  Name="%C%SegmentBrightnessState" Text="Segment Helligkeit Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.1" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%043" Number="%K3%"  Name="%C%SegmentBrightnessState" Text="Segment Helligkeit Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.1" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- R -->
+              <ComObject Id="%AID%_O-%TT%%CC%005" Number="%K4%"  Name="%C%R"          Text="Rot"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                 ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- G -->
+              <ComObject Id="%AID%_O-%TT%%CC%006" Number="%K5%"  Name="%C%G"          Text="Grün"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- B -->
+              <ComObject Id="%AID%_O-%TT%%CC%007" Number="%K6%"  Name="%C%B"          Text="Blau"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- W -->
+              <ComObject Id="%AID%_O-%TT%%CC%008" Number="%K7%"  Name="%C%W"          Text="Weiß"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"                ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- CCT (Kelvin) -->
+              <ComObject Id="%AID%_O-%TT%%CC%009" Number="%K8%"  Name="%C%CCT"        Text="Farbtemperatur"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 7.600"      ObjectSize="2 Bytes"  DatapointType="DPST-7-600"  WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- CCT Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%010" Number="%K9%"  Name="%C%CCTState"   Text="Farbtemperatur Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 7.600" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- WW -->
+              <ComObject Id="%AID%_O-%TT%%CC%011" Number="%K10%" Name="%C%WW"         Text="Warmweiß"            FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"            ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- CW -->
+              <ComObject Id="%AID%_O-%TT%%CC%012" Number="%K11%" Name="%C%CW"         Text="Kaltweiß"            FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"            ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- H (Hue, 0..360° → 0..255) -->
+              <ComObject Id="%AID%_O-%TT%%CC%013" Number="%K12%" Name="%C%H"          Text="Farbton (Hue)"       FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.3"       ObjectSize="1 Byte"  DatapointType="DPST-5-3"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- S (0..100%) -->
+              <ComObject Id="%AID%_O-%TT%%CC%014" Number="%K13%" Name="%C%S"          Text="Sättigung"           FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.1"           ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- V (0..100%) -->
+              <ComObject Id="%AID%_O-%TT%%CC%015" Number="%K14%" Name="%C%V"          Text="Helligkeit (Value)"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.1"  ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Fx -->
+              <ComObject Id="%AID%_O-%TT%%CC%016" Number="%K15%" Name="%C%Fx"         Text="Effekt"              FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"              ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Fx Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%017" Number="%K16%" Name="%C%FxState"    Text="Effekt Status"       FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10"       ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Preset -->
+              <ComObject Id="%AID%_O-%TT%%CC%018" Number="%K17%" Name="%C%Preset"     Text="Voreinstellung"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"      ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Preset Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%019" Number="%K18%" Name="%C%PresetState" Text="Voreinstellung Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10" ObjectSize="1 Byte" DatapointType="DPST-5-10"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RGB (3 bytes R,G,B) -->
+              <ComObject Id="%AID%_O-%TT%%CC%020" Number="%K19%" Name="%C%RGB"        Text="RGB"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RGB Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%021" Number="%K20%" Name="%C%RGBState"   Text="RGB Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 232.600"          ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- HSV (3 bytes H,S,V) -->
+              <ComObject Id="%AID%_O-%TT%%CC%022" Number="%K21%" Name="%C%HSV"        Text="HSV"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- HSV Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%023" Number="%K22%" Name="%C%HSVState"   Text="HSV Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 232.600"          ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RGBW (6 bytes R,G,B,W,ext1,ext2) -->
+              <ComObject Id="%AID%_O-%TT%%CC%024" Number="%K23%" Name="%C%RGBW"       Text="RGBW"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"                ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RGBW Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%025" Number="%K24%" Name="%C%RGBWState"  Text="RGBW Status"         FunctionText="NeoPixel Segment %C%: Ausgang, DPT 251.600"         ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- BriRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%026" Number="%K25%" Name="%C%BriRel"     Text="Helligkeit Relativ"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"  ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%027" Number="%K26%" Name="%C%RRel"       Text="Rot Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- GRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%028" Number="%K27%" Name="%C%GRel"       Text="Grün Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- BRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%029" Number="%K28%" Name="%C%BRel"       Text="Blau Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- WRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%030" Number="%K29%" Name="%C%WRel"       Text="Weiß Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- WWRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%031" Number="%K30%" Name="%C%WWRel"      Text="Warmweiß Relativ"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- CWRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%032" Number="%K31%" Name="%C%CWRel"      Text="Kaltweiß Relativ"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- HRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%033" Number="%K32%" Name="%C%HRel"       Text="Hue Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- SRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%034" Number="%K33%" Name="%C%SRel"       Text="Sättigung Relativ"   FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"   ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- VRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%035" Number="%K34%" Name="%C%VRel"       Text="Helligkeit (Value) Relativ" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="1 Byte" DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- FxRel -->
+              <ComObject Id="%AID%_O-%TT%%CC%036" Number="%K35%" Name="%C%FxRel"      Text="Effekt Relativ"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"      ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RGBRel (3 bytes, relative encoding per Byte) -->
+              <ComObject Id="%AID%_O-%TT%%CC%037" Number="%K36%" Name="%C%RGBRel"     Text="RGB Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- HSVRel (3 bytes, relative encoding per Byte) -->
+              <ComObject Id="%AID%_O-%TT%%CC%038" Number="%K37%" Name="%C%HSVRel"     Text="HSV Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- RGBWRel (6 bytes total; first 4 = R,G,B,W) -->
+              <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K38%" Name="%C%RGBWRel"    Text="RGBW Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
+              <!-- Segment Power -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" RefId="%AID%_O-%TT%%CC%040" Text="{{0:%C%}}: Ein/Aus" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Segment Power State -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%041_R-%TT%%CC%04101" RefId="%AID%_O-%TT%%CC%041" Text="{{0:%C%}}: Ein/Aus Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Segment Brightness -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%042_R-%TT%%CC%04201" RefId="%AID%_O-%TT%%CC%042" Text="{{0:%C%}}: Helligkeit" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Segment Brightness State -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%043_R-%TT%%CC%04301" RefId="%AID%_O-%TT%%CC%043" Text="{{0:%C%}}: Helligkeit Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- R -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" RefId="%AID%_O-%TT%%CC%005" Text="{{0:%C%}}: Rot" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
               <!-- G -->
@@ -219,14 +507,6 @@
               <ComObjectRef Id="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" RefId="%AID%_O-%TT%%CC%038" Text="{{0:%C%}}: HSV Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGBWRel -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" RefId="%AID%_O-%TT%%CC%039" Text="{{0:%C%}}: RGBW Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Segment Power -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" RefId="%AID%_O-%TT%%CC%040" Text="{{0:%C%}}: Ein/Aus" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Segment Power State -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%041_R-%TT%%CC%04101" RefId="%AID%_O-%TT%%CC%041" Text="{{0:%C%}}: Ein/Aus Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Segment Brightness -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%042_R-%TT%%CC%04201" RefId="%AID%_O-%TT%%CC%042" Text="{{0:%C%}}: Helligkeit" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Segment Brightness State -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%043_R-%TT%%CC%04301" RefId="%AID%_O-%TT%%CC%043" Text="{{0:%C%}}: Helligkeit Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
           </Static>   
           <Dynamic>
@@ -258,9 +538,189 @@
                     <!-- Effect Type -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="%DOC%"/>
                     <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
-                      <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-                      <!-- Dynamic choose/when blocks for effect-specific parameters -->
-              <!-- END AUTO-GENERATED: Effect Dynamic UI -->
+                    <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+                    <!-- Effect-specific conditional UI will be generated here -->
+
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline" />
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701">
+                      <when test="1">
+                        <!-- Wipe Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%073_R-%TT%%CC%07301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%074_R-%TT%%CC%07401" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="2">
+                        <!-- Rainbow Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%075_R-%TT%%CC%07501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%076_R-%TT%%CC%07601" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="3">
+                        <!-- Rainbow Cycle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%077_R-%TT%%CC%07701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%078_R-%TT%%CC%07801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%079_R-%TT%%CC%07901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%080_R-%TT%%CC%08001" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="4">
+                        <!-- Pride2015 Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%081_R-%TT%%CC%08101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="5">
+                        <!-- Confetti Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%082_R-%TT%%CC%08201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%083_R-%TT%%CC%08301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="6">
+                        <!-- Juggle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%084_R-%TT%%CC%08401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%085_R-%TT%%CC%08501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%086_R-%TT%%CC%08601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%087_R-%TT%%CC%08701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="7">
+                        <!-- BPM Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%088_R-%TT%%CC%08801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%089_R-%TT%%CC%08901" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="8">
+                        <!-- Cylon Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%090_R-%TT%%CC%09001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%091_R-%TT%%CC%09101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%092_R-%TT%%CC%09201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%093_R-%TT%%CC%09301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="9">
+                        <!-- RGBWTest Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%094_R-%TT%%CC%09401" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="10">
+                        <!-- GarageDoor Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%095_R-%TT%%CC%09501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%096_R-%TT%%CC%09601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%097_R-%TT%%CC%09701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%098_R-%TT%%CC%09801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%099_R-%TT%%CC%09901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%102_R-%TT%%CC%10201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="11">
+                        <!-- Fire Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%104_R-%TT%%CC%10401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%105_R-%TT%%CC%10501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%106_R-%TT%%CC%10601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%107_R-%TT%%CC%10701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="12">
+                        <!-- Theater Chase Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%108_R-%TT%%CC%10801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%109_R-%TT%%CC%10901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="13">
+                        <!-- Theater Chase Rainbow Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%112_R-%TT%%CC%11201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%114_R-%TT%%CC%11401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%115_R-%TT%%CC%11501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%116_R-%TT%%CC%11601" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="14">
+                        <!-- Sinelon Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%117_R-%TT%%CC%11701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%118_R-%TT%%CC%11801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%119_R-%TT%%CC%11901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="15">
+                        <!-- Twinkle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%122_R-%TT%%CC%12201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%124_R-%TT%%CC%12401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%125_R-%TT%%CC%12501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%126_R-%TT%%CC%12601" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="16">
+                        <!-- Sparkle Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%127_R-%TT%%CC%12701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%128_R-%TT%%CC%12801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%129_R-%TT%%CC%12901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%132_R-%TT%%CC%13201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="17">
+                        <!-- Breathing Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%134_R-%TT%%CC%13401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%135_R-%TT%%CC%13501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%136_R-%TT%%CC%13601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%137_R-%TT%%CC%13701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="18">
+                        <!-- Strobe Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%138_R-%TT%%CC%13801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%139_R-%TT%%CC%13901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%142_R-%TT%%CC%14201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="19">
+                        <!-- Pulse Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%144_R-%TT%%CC%14401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%145_R-%TT%%CC%14501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%146_R-%TT%%CC%14601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%147_R-%TT%%CC%14701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="20">
+                        <!-- Comet Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%148_R-%TT%%CC%14801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%149_R-%TT%%CC%14901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%152_R-%TT%%CC%15201" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="21">
+                        <!-- Meteor Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%155_R-%TT%%CC%15501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%156_R-%TT%%CC%15601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%157_R-%TT%%CC%15701" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="22">
+                        <!-- Noise Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%158_R-%TT%%CC%15801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%159_R-%TT%%CC%15901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%161_R-%TT%%CC%16101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="23">
+                        <!-- Palette Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%162_R-%TT%%CC%16201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%163_R-%TT%%CC%16301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%164_R-%TT%%CC%16401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%165_R-%TT%%CC%16501" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="24">
+                        <!-- Blitz Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%166_R-%TT%%CC%16601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%167_R-%TT%%CC%16701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%168_R-%TT%%CC%16801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%169_R-%TT%%CC%16901" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="25">
+                        <!-- Gradient Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%170_R-%TT%%CC%17001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%171_R-%TT%%CC%17101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%173_R-%TT%%CC%17301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                    </choose>
+                    <!-- END AUTO-GENERATED: Effect Dynamic UI -->
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->
@@ -278,6 +738,14 @@
                       </when>
                     </choose>
 
+                    <!-- Segment Power -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" />
+                    <!-- Segment Power State -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%041_R-%TT%%CC%04101" />
+                    <!-- Segment Brightness -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%042_R-%TT%%CC%04201" />
+                    <!-- Segment Brightness State -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%043_R-%TT%%CC%04301" />
                     <!-- R -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" />
                     <!-- G -->
@@ -348,14 +816,6 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" />
                     <!-- RGBWRel -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" />
-                    <!-- Segment Power -->
-                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" />
-                    <!-- Segment Power State -->
-                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%041_R-%TT%%CC%04101" />
-                    <!-- Segment Brightness -->
-                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%042_R-%TT%%CC%04201" />
-                    <!-- Segment Brightness State -->
-                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%043_R-%TT%%CC%04301" />
                   </ParameterBlock>
                 </when>
               </choose>

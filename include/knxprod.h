@@ -13,8 +13,9 @@
 #define ETS_ModuleId_NET 2
 #define ETS_ModuleId_UCT 3
 #define ETS_ModuleId_LOG 4
-#define ETS_ModuleId_NEO 5
-#define ETS_ModuleId_NEOSTRIP 6
+#define ETS_ModuleId_NEOEFF 5
+#define ETS_ModuleId_NEO 6
+#define ETS_ModuleId_NEOSTRIP 7
 #define MAIN_FirmwareName "NeoPixel KNX Adapter (Dev)"
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 1
@@ -96,12 +97,15 @@
 #define BASE_ModuleEnabled_LOG                   110      // 1 Bit, Bit 4
 #define     BASE_ModuleEnabled_LOGMask 0x10
 #define     BASE_ModuleEnabled_LOGShift 4
-#define BASE_ModuleEnabled_NEO                   110      // 1 Bit, Bit 3
-#define     BASE_ModuleEnabled_NEOMask 0x08
-#define     BASE_ModuleEnabled_NEOShift 3
-#define BASE_ModuleEnabled_NEOSTRIP              110      // 1 Bit, Bit 2
-#define     BASE_ModuleEnabled_NEOSTRIPMask 0x04
-#define     BASE_ModuleEnabled_NEOSTRIPShift 2
+#define BASE_ModuleEnabled_NEOEFF                110      // 1 Bit, Bit 3
+#define     BASE_ModuleEnabled_NEOEFFMask 0x08
+#define     BASE_ModuleEnabled_NEOEFFShift 3
+#define BASE_ModuleEnabled_NEO                   110      // 1 Bit, Bit 2
+#define     BASE_ModuleEnabled_NEOMask 0x04
+#define     BASE_ModuleEnabled_NEOShift 2
+#define BASE_ModuleEnabled_NEOSTRIP              110      // 1 Bit, Bit 1
+#define     BASE_ModuleEnabled_NEOSTRIPMask 0x02
+#define     BASE_ModuleEnabled_NEOSTRIPShift 1
 
 // Zeitbasis
 #define ParamBASE_StartupDelayBase                    ((knx.paramByte(BASE_StartupDelayBase) & BASE_StartupDelayBaseMask) >> BASE_StartupDelayBaseShift)
@@ -161,6 +165,8 @@
 #define ParamBASE_ModuleEnabled_UCT                   ((bool)(knx.paramByte(BASE_ModuleEnabled_UCT) & BASE_ModuleEnabled_UCTMask))
 // LOG
 #define ParamBASE_ModuleEnabled_LOG                   ((bool)(knx.paramByte(BASE_ModuleEnabled_LOG) & BASE_ModuleEnabled_LOGMask))
+// NEOEFF
+#define ParamBASE_ModuleEnabled_NEOEFF                ((bool)(knx.paramByte(BASE_ModuleEnabled_NEOEFF) & BASE_ModuleEnabled_NEOEFFMask))
 // NEO
 #define ParamBASE_ModuleEnabled_NEO                   ((bool)(knx.paramByte(BASE_ModuleEnabled_NEO) & BASE_ModuleEnabled_NEOMask))
 // NEOSTRIP
@@ -2159,8 +2165,6 @@
 // Sonnen auf-/untergang
 #define ParamLOG_fTd1HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd1HourRelShort)) & LOG_fTd1HourRelShortMask) >> LOG_fTd1HourRelShortShift)
 // Minute
-#define ParamLOG_fTd1MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd1MinuteAbs)))
-// Minute
 #define ParamLOG_fTd1MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd1MinuteRel)))
 // Wochentag
 #define ParamLOG_fTd1Weekday                         (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd1Weekday)) & LOG_fTd1WeekdayMask)
@@ -2174,8 +2178,6 @@
 #define ParamLOG_fTd2HourRel                         ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd2HourRel)) & LOG_fTd2HourRelMask) >> LOG_fTd2HourRelShift)
 // Sonnen auf-/untergang
 #define ParamLOG_fTd2HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd2HourRelShort)) & LOG_fTd2HourRelShortMask) >> LOG_fTd2HourRelShortShift)
-// Minute
-#define ParamLOG_fTd2MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd2MinuteAbs)))
 // Minute
 #define ParamLOG_fTd2MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd2MinuteRel)))
 // Wochentag
@@ -2191,8 +2193,6 @@
 // Sonnen auf-/untergang
 #define ParamLOG_fTd3HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd3HourRelShort)) & LOG_fTd3HourRelShortMask) >> LOG_fTd3HourRelShortShift)
 // Minute
-#define ParamLOG_fTd3MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd3MinuteAbs)))
-// Minute
 #define ParamLOG_fTd3MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd3MinuteRel)))
 // Wochentag
 #define ParamLOG_fTd3Weekday                         (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd3Weekday)) & LOG_fTd3WeekdayMask)
@@ -2206,8 +2206,6 @@
 #define ParamLOG_fTd4HourRel                         ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd4HourRel)) & LOG_fTd4HourRelMask) >> LOG_fTd4HourRelShift)
 // Sonnen auf-/untergang
 #define ParamLOG_fTd4HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd4HourRelShort)) & LOG_fTd4HourRelShortMask) >> LOG_fTd4HourRelShortShift)
-// Minute
-#define ParamLOG_fTd4MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd4MinuteAbs)))
 // Minute
 #define ParamLOG_fTd4MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd4MinuteRel)))
 // Wochentag
@@ -2223,8 +2221,6 @@
 // Sonnen auf-/untergang
 #define ParamLOG_fTd5HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd5HourRelShort)) & LOG_fTd5HourRelShortMask) >> LOG_fTd5HourRelShortShift)
 // Minute
-#define ParamLOG_fTd5MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd5MinuteAbs)))
-// Minute
 #define ParamLOG_fTd5MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd5MinuteRel)))
 // Wochentag
 #define ParamLOG_fTd5Weekday                         (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd5Weekday)) & LOG_fTd5WeekdayMask)
@@ -2238,8 +2234,6 @@
 #define ParamLOG_fTd6HourRel                         ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd6HourRel)) & LOG_fTd6HourRelMask) >> LOG_fTd6HourRelShift)
 // Sonnen auf-/untergang
 #define ParamLOG_fTd6HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd6HourRelShort)) & LOG_fTd6HourRelShortMask) >> LOG_fTd6HourRelShortShift)
-// Minute
-#define ParamLOG_fTd6MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd6MinuteAbs)))
 // Minute
 #define ParamLOG_fTd6MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd6MinuteRel)))
 // Wochentag
@@ -2255,8 +2249,6 @@
 // Sonnen auf-/untergang
 #define ParamLOG_fTd7HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd7HourRelShort)) & LOG_fTd7HourRelShortMask) >> LOG_fTd7HourRelShortShift)
 // Minute
-#define ParamLOG_fTd7MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd7MinuteAbs)))
-// Minute
 #define ParamLOG_fTd7MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd7MinuteRel)))
 // Wochentag
 #define ParamLOG_fTd7Weekday                         (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd7Weekday)) & LOG_fTd7WeekdayMask)
@@ -2270,8 +2262,6 @@
 #define ParamLOG_fTd8HourRel                         ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd8HourRel)) & LOG_fTd8HourRelMask) >> LOG_fTd8HourRelShift)
 // Sonnen auf-/untergang
 #define ParamLOG_fTd8HourRelShort                    ((knx.paramByte(LOG_ParamCalcIndex(LOG_fTd8HourRelShort)) & LOG_fTd8HourRelShortMask) >> LOG_fTd8HourRelShortShift)
-// Minute
-#define ParamLOG_fTd8MinuteAbs                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd8MinuteAbs)))
 // Minute
 #define ParamLOG_fTd8MinuteRel                       (knx.paramByte(LOG_ParamCalcIndex(LOG_fTd8MinuteRel)))
 // Wochentag
@@ -2590,25 +2580,50 @@
 #define NEO_HCLtype                             4939      // 3 Bits, Bit 7-5
 #define     NEO_HCLtypeMask 0xE0
 #define     NEO_HCLtypeShift 5
-#define NEO_HCLmin                              4940      // uint16_t
-#define NEO_HCLmax                              4942      // uint16_t
-#define NEO_HCLoffsetRiseType                   4944      // 3 Bits, Bit 7-5
-#define     NEO_HCLoffsetRiseTypeMask 0xE0
-#define     NEO_HCLoffsetRiseTypeShift 5
-#define NEO_HCLoffsetSetType                    4944      // 3 Bits, Bit 4-2
-#define     NEO_HCLoffsetSetTypeMask 0x1C
-#define     NEO_HCLoffsetSetTypeShift 2
-#define NEO_HCLenableKelvin                     4944      // 1 Bit, Bit 1
-#define     NEO_HCLenableKelvinMask 0x02
-#define     NEO_HCLenableKelvinShift 1
-#define NEO_HCLoffsetRiseMin                    4945      // uint16_t
-#define NEO_HCLoffsetSetMin                     4947      // uint16_t
+#define NEO_HCLStartHour                        4940      // 5 Bits, Bit 7-3
+#define     NEO_HCLStartHourMask 0xF8
+#define     NEO_HCLStartHourShift 3
+#define NEO_HCLStartMinute                      4941      // 6 Bits, Bit 7-2
+#define     NEO_HCLStartMinuteMask 0xFC
+#define     NEO_HCLStartMinuteShift 2
+#define NEO_HCLEndHour                          4942      // 5 Bits, Bit 7-3
+#define     NEO_HCLEndHourMask 0xF8
+#define     NEO_HCLEndHourShift 3
+#define NEO_HCLEndMinute                        4943      // 6 Bits, Bit 7-2
+#define     NEO_HCLEndMinuteMask 0xFC
+#define     NEO_HCLEndMinuteShift 2
+#define NEO_HCLoffsetSunrise                    4944      // 10 Bits, Bit 15-6
+#define     NEO_HCLoffsetSunriseMask 0xFFC0
+#define     NEO_HCLoffsetSunriseShift 6
+#define NEO_HclApplyMode                        4945      // 3 Bits, Bit 4-2
+#define     NEO_HclApplyModeMask 0x1C
+#define     NEO_HclApplyModeShift 2
+#define NEO_HCLoffsetSunset                     4946      // 10 Bits, Bit 15-6
+#define     NEO_HCLoffsetSunsetMask 0xFFC0
+#define     NEO_HCLoffsetSunsetShift 6
+#define NEO_HCLenableKelvin                     4947      // 1 Bit, Bit 4
+#define     NEO_HCLenableKelvinMask 0x10
+#define     NEO_HCLenableKelvinShift 4
+#define NEO_HCLPreserveCurve                    4947      // 3 Bits, Bit 3-1
+#define     NEO_HCLPreserveCurveMask 0x0E
+#define     NEO_HCLPreserveCurveShift 1
+#define NEO_HCLSatThreshold                     4948      // uint8_t
 #define NEO_HCLminKelvin                        4949      // 14 Bits, Bit 15-2
 #define     NEO_HCLminKelvinMask 0xFFFC
 #define     NEO_HCLminKelvinShift 2
 #define NEO_HCLmaxKelvin                        4951      // 14 Bits, Bit 15-2
 #define     NEO_HCLmaxKelvinMask 0xFFFC
 #define     NEO_HCLmaxKelvinShift 2
+#define NEO_HCLStrength                         4953      // 7 Bits, Bit 7-1
+#define     NEO_HCLStrengthMask 0xFE
+#define     NEO_HCLStrengthShift 1
+#define NEO_HCLTransitionTime                   4954      // uint8_t
+#define NEO_HCLBrightnessCompensation           4955      // 7 Bits, Bit 7-1
+#define     NEO_HCLBrightnessCompensationMask 0xFE
+#define     NEO_HCLBrightnessCompensationShift 1
+#define NEO_HCLWhiteMix                         4956      // 7 Bits, Bit 7-1
+#define     NEO_HCLWhiteMixMask 0xFE
+#define     NEO_HCLWhiteMixShift 1
 #define NEO_NEONumberOfLEDStrips                4959      // 4 Bits, Bit 7-4
 #define     NEO_NEONumberOfLEDStripsMask 0xF0
 #define     NEO_NEONumberOfLEDStripsShift 4
@@ -2706,24 +2721,38 @@
 
 // HCL Kurve Typ
 #define ParamNEO_HCLtype                             ((knx.paramByte(NEO_HCLtype) & NEO_HCLtypeMask) >> NEO_HCLtypeShift)
-// Minimum Wert
-#define ParamNEO_HCLmin                              (knx.paramWord(NEO_HCLmin))
-// Maximum Wert
-#define ParamNEO_HCLmax                              (knx.paramWord(NEO_HCLmax))
+// HCL Start (Stunde)
+#define ParamNEO_HCLStartHour                        ((knx.paramByte(NEO_HCLStartHour) & NEO_HCLStartHourMask) >> NEO_HCLStartHourShift)
+// HCL Start (Minute)
+#define ParamNEO_HCLStartMinute                      ((knx.paramByte(NEO_HCLStartMinute) & NEO_HCLStartMinuteMask) >> NEO_HCLStartMinuteShift)
+// HCL Ende (Stunde)
+#define ParamNEO_HCLEndHour                          ((knx.paramByte(NEO_HCLEndHour) & NEO_HCLEndHourMask) >> NEO_HCLEndHourShift)
+// HCL Ende (Minute)
+#define ParamNEO_HCLEndMinute                        ((knx.paramByte(NEO_HCLEndMinute) & NEO_HCLEndMinuteMask) >> NEO_HCLEndMinuteShift)
 // Verschiebe Sonnenaufgang
-#define ParamNEO_HCLoffsetRiseType                   ((knx.paramByte(NEO_HCLoffsetRiseType) & NEO_HCLoffsetRiseTypeMask) >> NEO_HCLoffsetRiseTypeShift)
+#define ParamNEO_HCLoffsetSunrise                    (((int16_t)knx.paramWord(NEO_HCLoffsetSunrise) & NEO_HCLoffsetSunriseMask) >> NEO_HCLoffsetSunriseShift)
+// HCL Anwendungsmodus
+#define ParamNEO_HclApplyMode                        ((knx.paramByte(NEO_HclApplyMode) & NEO_HclApplyModeMask) >> NEO_HclApplyModeShift)
 // Verschiebe Sonnenuntergang
-#define ParamNEO_HCLoffsetSetType                    ((knx.paramByte(NEO_HCLoffsetSetType) & NEO_HCLoffsetSetTypeMask) >> NEO_HCLoffsetSetTypeShift)
+#define ParamNEO_HCLoffsetSunset                     (((int16_t)knx.paramWord(NEO_HCLoffsetSunset) & NEO_HCLoffsetSunsetMask) >> NEO_HCLoffsetSunsetShift)
 // Farbtemperatur aktivieren
 #define ParamNEO_HCLenableKelvin                     ((bool)(knx.paramByte(NEO_HCLenableKelvin) & NEO_HCLenableKelvinMask))
-// Sonnenaufgang Offset
-#define ParamNEO_HCLoffsetRiseMin                    (knx.paramWord(NEO_HCLoffsetRiseMin))
-// Sonnenuntergang Offset
-#define ParamNEO_HCLoffsetSetMin                     (knx.paramWord(NEO_HCLoffsetSetMin))
+// Form der Abblendung
+#define ParamNEO_HCLPreserveCurve                    ((knx.paramByte(NEO_HCLPreserveCurve) & NEO_HCLPreserveCurveMask) >> NEO_HCLPreserveCurveShift)
+// Sättigungs Schwelle
+#define ParamNEO_HCLSatThreshold                     (knx.paramByte(NEO_HCLSatThreshold))
 // Farbtemperatur (Min)
 #define ParamNEO_HCLminKelvin                        ((knx.paramWord(NEO_HCLminKelvin) & NEO_HCLminKelvinMask) >> NEO_HCLminKelvinShift)
 // Farbtemperatur (Max)
 #define ParamNEO_HCLmaxKelvin                        ((knx.paramWord(NEO_HCLmaxKelvin) & NEO_HCLmaxKelvinMask) >> NEO_HCLmaxKelvinShift)
+// HCL Strength / Mix
+#define ParamNEO_HCLStrength                         ((knx.paramByte(NEO_HCLStrength) & NEO_HCLStrengthMask) >> NEO_HCLStrengthShift)
+// Kelvin Slew / Transition Time
+#define ParamNEO_HCLTransitionTime                   (knx.paramByte(NEO_HCLTransitionTime))
+// HCL Helligkeitskompensation
+#define ParamNEO_HCLBrightnessCompensation           ((knx.paramByte(NEO_HCLBrightnessCompensation) & NEO_HCLBrightnessCompensationMask) >> NEO_HCLBrightnessCompensationShift)
+// HCL Weiß Mix
+#define ParamNEO_HCLWhiteMix                         ((knx.paramByte(NEO_HCLWhiteMix) & NEO_HCLWhiteMixMask) >> NEO_HCLWhiteMixShift)
 // Anzahl der LED-Streifen
 #define ParamNEO_NEONumberOfLEDStrips                ((knx.paramByte(NEO_NEONumberOfLEDStrips) & NEO_NEONumberOfLEDStripsMask) >> NEO_NEONumberOfLEDStripsShift)
 // Anzahl der Segmente
@@ -2848,26 +2877,155 @@
 #define     NEO_NEOSegmentStartupBehaviorMask 0x38
 #define     NEO_NEOSegmentStartupBehaviorShift 3
 #define NEO_NEONEOEffectType                    11      // 8 Bits, Bit 7-0
-#define NEO_NEOEffectSpeed                      12      // uint8_t
-#define NEO_NEOEffectIntensity                  13      // uint8_t
-#define NEO_NEOEffectOption1                    14      // uint8_t
-#define NEO_NEOEffectOption2                    15      // uint8_t
-#define NEO_NEOEffectOption3                    16      // uint8_t
-#define NEO_NEOEffectFeature1                   17      // 1 Bit, Bit 0
-#define     NEO_NEOEffectFeature1Mask 0x01
-#define     NEO_NEOEffectFeature1Shift 0
-#define NEO_NEOEffectFeature2                   18      // 1 Bit, Bit 0
-#define     NEO_NEOEffectFeature2Mask 0x01
-#define     NEO_NEOEffectFeature2Shift 0
-#define NEO_NEOEffectFeature3                   19      // 1 Bit, Bit 0
-#define     NEO_NEOEffectFeature3Mask 0x01
-#define     NEO_NEOEffectFeature3Shift 0
 #define NEO_NEOSegmentStartupR                  24      // uint8_t
 #define NEO_NEOSegmentStartupG                  25      // uint8_t
 #define NEO_NEOSegmentStartupB                  26      // uint8_t
 #define NEO_NEOSegmentStartupW                  27      // uint8_t
 #define NEO_NEOSegmentStartupBrightness         28      // uint8_t
 #define NEO_NEOSegmentStartupEffect             29      // 8 Bits, Bit 7-0
+#define NEO_NEOWipeSpeed                        30      // uint8_t
+#define NEO_NEOWipeDirection                    31      // uint8_t
+#define NEO_NEORainbowSpeed                     32      // uint8_t
+#define NEO_NEORainbowDelta                     33      // uint8_t
+#define NEO_NEORainbowCycleSpeed                34      // uint8_t
+#define NEO_NEORainbowCycleSaturation           35      // uint8_t
+#define NEO_NEORainbowCycleDensity              36      // uint8_t
+#define NEO_NEORainbowCycleReverse              37      // 1 Bit, Bit 0
+#define     NEO_NEORainbowCycleReverseMask 0x01
+#define     NEO_NEORainbowCycleReverseShift 0
+#define NEO_NEOPride2015Speed                   38      // uint8_t
+#define NEO_NEOConfettiFadeSpeed                39      // uint8_t
+#define NEO_NEOConfettiSaturation               40      // uint8_t
+#define NEO_NEOJuggleSpeed                      41      // uint8_t
+#define NEO_NEOJuggleNumDots                    42      // uint8_t
+#define NEO_NEOJuggleFadeSpeed                  43      // uint8_t
+#define NEO_NEOJuggleHueOffset                  44      // uint8_t
+#define NEO_NEOBPMBPM                           45      // uint8_t
+#define NEO_NEOBPMHue                           46      // uint8_t
+#define NEO_NEOCylonSpeed                       47      // uint8_t
+#define NEO_NEOCylonHue                         48      // uint8_t
+#define NEO_NEOCylonEyeSize                     49      // uint8_t
+#define NEO_NEOCylonFadeAmount                  50      // uint8_t
+#define NEO_NEORGBWTestPhaseDuration            51      // uint8_t
+#define NEO_NEOGarageDoorPhase                  52      // uint8_t
+#define NEO_NEOGarageDoorArrowSize              53      // uint8_t
+#define NEO_NEOGarageDoorArrowSpeed             54      // uint8_t
+#define NEO_NEOGarageDoorRunwayGroupSize        55      // uint8_t
+#define NEO_NEOGarageDoorRunwaySpeed            56      // uint8_t
+#define NEO_NEOGarageDoorBreathingSpeed         57      // uint8_t
+#define NEO_NEOGarageDoorOpeningDuration        58      // uint8_t
+#define NEO_NEOGarageDoorRunwayDuration         59      // uint8_t
+#define NEO_NEOFireSpeed                        60      // uint8_t
+#define NEO_NEOFireCooling                      61      // uint8_t
+#define NEO_NEOFireSparking                     62      // uint8_t
+#define NEO_NEOFireReverseDirection             63      // 1 Bit, Bit 0
+#define     NEO_NEOFireReverseDirectionMask 0x01
+#define     NEO_NEOFireReverseDirectionShift 0
+#define NEO_NEOFireBlueFireMode                 64      // 1 Bit, Bit 0
+#define     NEO_NEOFireBlueFireModeMask 0x01
+#define     NEO_NEOFireBlueFireModeShift 0
+#define NEO_NEOTheaterChaseSpeed                65      // uint8_t
+#define NEO_NEOTheaterChaseSpacing              66      // uint8_t
+#define NEO_NEOTheaterChaseDotSize              67      // uint8_t
+#define NEO_NEOTheaterChaseTrailMode            68      // 1 Bit, Bit 0
+#define     NEO_NEOTheaterChaseTrailModeMask 0x01
+#define     NEO_NEOTheaterChaseTrailModeShift 0
+#define NEO_NEOTheaterChaseRainbowSpeed         69      // uint8_t
+#define NEO_NEOTheaterChaseRainbowSpacing       70      // uint8_t
+#define NEO_NEOTheaterChaseRainbowDotSize       71      // uint8_t
+#define NEO_NEOTheaterChaseRainbowColorSpeed    72      // uint8_t
+#define NEO_NEOTheaterChaseRainbowTrailMode     73      // 1 Bit, Bit 0
+#define     NEO_NEOTheaterChaseRainbowTrailModeMask 0x01
+#define     NEO_NEOTheaterChaseRainbowTrailModeShift 0
+#define NEO_NEOSinelonSpeed                     74      // uint8_t
+#define NEO_NEOSinelonFadeRate                  75      // uint8_t
+#define NEO_NEOSinelonDotSize                   76      // uint8_t
+#define NEO_NEOSinelonRainbowMode               77      // 1 Bit, Bit 0
+#define     NEO_NEOSinelonRainbowModeMask 0x01
+#define     NEO_NEOSinelonRainbowModeShift 0
+#define NEO_NEOSinelonBounceMode                78      // 1 Bit, Bit 0
+#define     NEO_NEOSinelonBounceModeMask 0x01
+#define     NEO_NEOSinelonBounceModeShift 0
+#define NEO_NEOTwinkleSpeed                     79      // uint8_t
+#define NEO_NEOTwinkleFadeRate                  80      // uint8_t
+#define NEO_NEOTwinkleDensity                   81      // uint8_t
+#define NEO_NEOTwinkleRainbowMode               82      // 1 Bit, Bit 0
+#define     NEO_NEOTwinkleRainbowModeMask 0x01
+#define     NEO_NEOTwinkleRainbowModeShift 0
+#define NEO_NEOTwinkleVariableBrightness        83      // 1 Bit, Bit 0
+#define     NEO_NEOTwinkleVariableBrightnessMask 0x01
+#define     NEO_NEOTwinkleVariableBrightnessShift 0
+#define NEO_NEOSparkleSpeed                     84      // uint8_t
+#define NEO_NEOSparkleFadeRate                  85      // uint8_t
+#define NEO_NEOSparkleSparkleCount              86      // uint8_t
+#define NEO_NEOSparkleProbability               87      // uint8_t
+#define NEO_NEOSparkleWhiteOnly                 88      // 1 Bit, Bit 0
+#define     NEO_NEOSparkleWhiteOnlyMask 0x01
+#define     NEO_NEOSparkleWhiteOnlyShift 0
+#define NEO_NEOSparkleBurstMode                 89      // 1 Bit, Bit 0
+#define     NEO_NEOSparkleBurstModeMask 0x01
+#define     NEO_NEOSparkleBurstModeShift 0
+#define NEO_NEOBreathingSpeed                   90      // uint8_t
+#define NEO_NEOBreathingMinBrightness           91      // uint8_t
+#define NEO_NEOBreathingCurve                   92      // 1 Bit, Bit 0
+#define     NEO_NEOBreathingCurveMask 0x01
+#define     NEO_NEOBreathingCurveShift 0
+#define NEO_NEOBreathingHoldAtPeak              93      // 1 Bit, Bit 0
+#define     NEO_NEOBreathingHoldAtPeakMask 0x01
+#define     NEO_NEOBreathingHoldAtPeakShift 0
+#define NEO_NEOBreathingRainbowBreathing        94      // uint8_t
+#define NEO_NEOStrobeSpeed                      95      // uint8_t
+#define NEO_NEOStrobeOnRatio                    96      // uint8_t
+#define NEO_NEOStrobeMinBrightness              97      // uint8_t
+#define NEO_NEOStrobeRandomTiming               98      // 1 Bit, Bit 0
+#define     NEO_NEOStrobeRandomTimingMask 0x01
+#define     NEO_NEOStrobeRandomTimingShift 0
+#define NEO_NEOStrobeRainbowStrobe              99      // 1 Bit, Bit 0
+#define     NEO_NEOStrobeRainbowStrobeMask 0x01
+#define     NEO_NEOStrobeRainbowStrobeShift 0
+#define NEO_NEOPulseSpeed                       100      // uint8_t
+#define NEO_NEOPulsePulseWidth                  101      // uint8_t
+#define NEO_NEOPulseGamma                       102      // uint8_t
+#define NEO_NEOPulseSharpPulse                  103      // 1 Bit, Bit 0
+#define     NEO_NEOPulseSharpPulseMask 0x01
+#define     NEO_NEOPulseSharpPulseShift 0
+#define NEO_NEOPulseRainbowPulse                104      // 1 Bit, Bit 0
+#define     NEO_NEOPulseRainbowPulseMask 0x01
+#define     NEO_NEOPulseRainbowPulseShift 0
+#define NEO_NEOCometSpeed                       105      // uint8_t
+#define NEO_NEOCometFadeRate                    106      // uint8_t
+#define NEO_NEOCometTailLength                  107      // uint8_t
+#define NEO_NEOCometBounceMode                  108      // 1 Bit, Bit 0
+#define     NEO_NEOCometBounceModeMask 0x01
+#define     NEO_NEOCometBounceModeShift 0
+#define NEO_NEOCometRainbowMode                 109      // 1 Bit, Bit 0
+#define     NEO_NEOCometRainbowModeMask 0x01
+#define     NEO_NEOCometRainbowModeShift 0
+#define NEO_NEOMeteorSpeed                      110      // uint8_t
+#define NEO_NEOMeteorMeteorSize                 111      // uint8_t
+#define NEO_NEOMeteorFrequency                  112      // uint8_t
+#define NEO_NEOMeteorRandomColors               113      // 1 Bit, Bit 0
+#define     NEO_NEOMeteorRandomColorsMask 0x01
+#define     NEO_NEOMeteorRandomColorsShift 0
+#define NEO_NEOMeteorMultiMeteor                114      // 1 Bit, Bit 0
+#define     NEO_NEOMeteorMultiMeteorMask 0x01
+#define     NEO_NEOMeteorMultiMeteorShift 0
+#define NEO_NEONoiseSpeed                       115      // uint8_t
+#define NEO_NEONoiseScale                       116      // uint8_t
+#define NEO_NEONoiseSaturation                  117      // uint8_t
+#define NEO_NEONoiseHueOffset                   118      // uint8_t
+#define NEO_NEOPaletteSpeed                     119      // uint8_t
+#define NEO_NEOPalettePalette                   120      // uint8_t
+#define NEO_NEOPaletteBlend                     121      // uint8_t
+#define NEO_NEOPaletteSpacing                   122      // uint8_t
+#define NEO_NEOBlitzSpeed                       123      // uint8_t
+#define NEO_NEOBlitzWidth                       124      // uint8_t
+#define NEO_NEOBlitzDecay                       125      // uint8_t
+#define NEO_NEOBlitzHue                         126      // uint8_t
+#define NEO_NEOGradientSpeed                    127      // uint8_t
+#define NEO_NEOGradientStartHue                 128      // uint8_t
+#define NEO_NEOGradientEndHue                   129      // uint8_t
+#define NEO_NEOGradientSaturation               130      // uint8_t
 
 // Start LED
 #define ParamNEO_NEOSegmentStart                     ((knx.paramWord(NEO_ParamCalcIndex(NEO_NEOSegmentStart)) & NEO_NEOSegmentStartMask) >> NEO_NEOSegmentStartShift)
@@ -2887,22 +3045,6 @@
 #define ParamNEO_NEOSegmentStartupBehavior           ((knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupBehavior)) & NEO_NEOSegmentStartupBehaviorMask) >> NEO_NEOSegmentStartupBehaviorShift)
 // Effekt Typ
 #define ParamNEO_NEONEOEffectType                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEONEOEffectType)))
-// Effekt Speed
-#define ParamNEO_NEOEffectSpeed                      (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectSpeed)))
-// Effekt Intensität
-#define ParamNEO_NEOEffectIntensity                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectIntensity)))
-// Effekt Option 1
-#define ParamNEO_NEOEffectOption1                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectOption1)))
-// Effekt Option 2
-#define ParamNEO_NEOEffectOption2                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectOption2)))
-// Effekt Option 3
-#define ParamNEO_NEOEffectOption3                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectOption3)))
-// Effekt Feature 1
-#define ParamNEO_NEOEffectFeature1                   ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectFeature1)) & NEO_NEOEffectFeature1Mask))
-// Effekt Feature 2
-#define ParamNEO_NEOEffectFeature2                   ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectFeature2)) & NEO_NEOEffectFeature2Mask))
-// Effekt Feature 3
-#define ParamNEO_NEOEffectFeature3                   ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOEffectFeature3)) & NEO_NEOEffectFeature3Mask))
 // Standard-Farbe R
 #define ParamNEO_NEOSegmentStartupR                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupR)))
 // Standard-Farbe G
@@ -2915,6 +3057,208 @@
 #define ParamNEO_NEOSegmentStartupBrightness         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupBrightness)))
 // Standard-Effekt
 #define ParamNEO_NEOSegmentStartupEffect             (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSegmentStartupEffect)))
+// Speed (Wipe)
+#define ParamNEO_NEOWipeSpeed                        (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOWipeSpeed)))
+// Direction (Wipe)
+#define ParamNEO_NEOWipeDirection                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOWipeDirection)))
+// Speed (Rainbow)
+#define ParamNEO_NEORainbowSpeed                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORainbowSpeed)))
+// Delta (Rainbow)
+#define ParamNEO_NEORainbowDelta                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORainbowDelta)))
+// Speed (Rainbow Cycle)
+#define ParamNEO_NEORainbowCycleSpeed                (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORainbowCycleSpeed)))
+// Saturation (Rainbow Cycle)
+#define ParamNEO_NEORainbowCycleSaturation           (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORainbowCycleSaturation)))
+// Density (Rainbow Cycle)
+#define ParamNEO_NEORainbowCycleDensity              (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORainbowCycleDensity)))
+// Reverse (Rainbow Cycle)
+#define ParamNEO_NEORainbowCycleReverse              ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEORainbowCycleReverse)) & NEO_NEORainbowCycleReverseMask))
+// Speed (Pride2015)
+#define ParamNEO_NEOPride2015Speed                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPride2015Speed)))
+// FadeSpeed (Confetti)
+#define ParamNEO_NEOConfettiFadeSpeed                (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOConfettiFadeSpeed)))
+// Saturation (Confetti)
+#define ParamNEO_NEOConfettiSaturation               (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOConfettiSaturation)))
+// Speed (Juggle)
+#define ParamNEO_NEOJuggleSpeed                      (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOJuggleSpeed)))
+// NumDots (Juggle)
+#define ParamNEO_NEOJuggleNumDots                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOJuggleNumDots)))
+// FadeSpeed (Juggle)
+#define ParamNEO_NEOJuggleFadeSpeed                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOJuggleFadeSpeed)))
+// HueOffset (Juggle)
+#define ParamNEO_NEOJuggleHueOffset                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOJuggleHueOffset)))
+// BPM (BPM)
+#define ParamNEO_NEOBPMBPM                           (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBPMBPM)))
+// Hue (BPM)
+#define ParamNEO_NEOBPMHue                           (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBPMHue)))
+// Speed (Cylon)
+#define ParamNEO_NEOCylonSpeed                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCylonSpeed)))
+// Hue (Cylon)
+#define ParamNEO_NEOCylonHue                         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCylonHue)))
+// EyeSize (Cylon)
+#define ParamNEO_NEOCylonEyeSize                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCylonEyeSize)))
+// FadeAmount (Cylon)
+#define ParamNEO_NEOCylonFadeAmount                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCylonFadeAmount)))
+// PhaseDuration (RGBWTest)
+#define ParamNEO_NEORGBWTestPhaseDuration            (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORGBWTestPhaseDuration)))
+// Phase (GarageDoor)
+#define ParamNEO_NEOGarageDoorPhase                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorPhase)))
+// ArrowSize (GarageDoor)
+#define ParamNEO_NEOGarageDoorArrowSize              (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorArrowSize)))
+// ArrowSpeed (GarageDoor)
+#define ParamNEO_NEOGarageDoorArrowSpeed             (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorArrowSpeed)))
+// RunwayGroupSize (GarageDoor)
+#define ParamNEO_NEOGarageDoorRunwayGroupSize        (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorRunwayGroupSize)))
+// RunwaySpeed (GarageDoor)
+#define ParamNEO_NEOGarageDoorRunwaySpeed            (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorRunwaySpeed)))
+// BreathingSpeed (GarageDoor)
+#define ParamNEO_NEOGarageDoorBreathingSpeed         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorBreathingSpeed)))
+// OpeningDuration (GarageDoor)
+#define ParamNEO_NEOGarageDoorOpeningDuration        (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorOpeningDuration)))
+// RunwayDuration (GarageDoor)
+#define ParamNEO_NEOGarageDoorRunwayDuration         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGarageDoorRunwayDuration)))
+// Speed (Fire)
+#define ParamNEO_NEOFireSpeed                        (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOFireSpeed)))
+// Cooling (Fire)
+#define ParamNEO_NEOFireCooling                      (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOFireCooling)))
+// Sparking (Fire)
+#define ParamNEO_NEOFireSparking                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOFireSparking)))
+// ReverseDirection (Fire)
+#define ParamNEO_NEOFireReverseDirection             ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOFireReverseDirection)) & NEO_NEOFireReverseDirectionMask))
+// BlueFireMode (Fire)
+#define ParamNEO_NEOFireBlueFireMode                 ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOFireBlueFireMode)) & NEO_NEOFireBlueFireModeMask))
+// Speed (Theater Chase)
+#define ParamNEO_NEOTheaterChaseSpeed                (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseSpeed)))
+// Spacing (Theater Chase)
+#define ParamNEO_NEOTheaterChaseSpacing              (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseSpacing)))
+// DotSize (Theater Chase)
+#define ParamNEO_NEOTheaterChaseDotSize              (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseDotSize)))
+// TrailMode (Theater Chase)
+#define ParamNEO_NEOTheaterChaseTrailMode            ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseTrailMode)) & NEO_NEOTheaterChaseTrailModeMask))
+// Speed (Theater Chase Rainbow)
+#define ParamNEO_NEOTheaterChaseRainbowSpeed         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseRainbowSpeed)))
+// Spacing (Theater Chase Rainbow)
+#define ParamNEO_NEOTheaterChaseRainbowSpacing       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseRainbowSpacing)))
+// DotSize (Theater Chase Rainbow)
+#define ParamNEO_NEOTheaterChaseRainbowDotSize       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseRainbowDotSize)))
+// ColorSpeed (Theater Chase Rainbow)
+#define ParamNEO_NEOTheaterChaseRainbowColorSpeed    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseRainbowColorSpeed)))
+// TrailMode (Theater Chase Rainbow)
+#define ParamNEO_NEOTheaterChaseRainbowTrailMode     ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTheaterChaseRainbowTrailMode)) & NEO_NEOTheaterChaseRainbowTrailModeMask))
+// Speed (Sinelon)
+#define ParamNEO_NEOSinelonSpeed                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSinelonSpeed)))
+// FadeRate (Sinelon)
+#define ParamNEO_NEOSinelonFadeRate                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSinelonFadeRate)))
+// DotSize (Sinelon)
+#define ParamNEO_NEOSinelonDotSize                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSinelonDotSize)))
+// RainbowMode (Sinelon)
+#define ParamNEO_NEOSinelonRainbowMode               ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSinelonRainbowMode)) & NEO_NEOSinelonRainbowModeMask))
+// BounceMode (Sinelon)
+#define ParamNEO_NEOSinelonBounceMode                ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSinelonBounceMode)) & NEO_NEOSinelonBounceModeMask))
+// Speed (Twinkle)
+#define ParamNEO_NEOTwinkleSpeed                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTwinkleSpeed)))
+// FadeRate (Twinkle)
+#define ParamNEO_NEOTwinkleFadeRate                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTwinkleFadeRate)))
+// Density (Twinkle)
+#define ParamNEO_NEOTwinkleDensity                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTwinkleDensity)))
+// RainbowMode (Twinkle)
+#define ParamNEO_NEOTwinkleRainbowMode               ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTwinkleRainbowMode)) & NEO_NEOTwinkleRainbowModeMask))
+// VariableBrightness (Twinkle)
+#define ParamNEO_NEOTwinkleVariableBrightness        ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOTwinkleVariableBrightness)) & NEO_NEOTwinkleVariableBrightnessMask))
+// Speed (Sparkle)
+#define ParamNEO_NEOSparkleSpeed                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSparkleSpeed)))
+// FadeRate (Sparkle)
+#define ParamNEO_NEOSparkleFadeRate                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSparkleFadeRate)))
+// SparkleCount (Sparkle)
+#define ParamNEO_NEOSparkleSparkleCount              (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSparkleSparkleCount)))
+// Probability (Sparkle)
+#define ParamNEO_NEOSparkleProbability               (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSparkleProbability)))
+// WhiteOnly (Sparkle)
+#define ParamNEO_NEOSparkleWhiteOnly                 ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSparkleWhiteOnly)) & NEO_NEOSparkleWhiteOnlyMask))
+// BurstMode (Sparkle)
+#define ParamNEO_NEOSparkleBurstMode                 ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOSparkleBurstMode)) & NEO_NEOSparkleBurstModeMask))
+// Speed (Breathing)
+#define ParamNEO_NEOBreathingSpeed                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBreathingSpeed)))
+// MinBrightness (Breathing)
+#define ParamNEO_NEOBreathingMinBrightness           (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBreathingMinBrightness)))
+// Curve (Breathing)
+#define ParamNEO_NEOBreathingCurve                   ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBreathingCurve)) & NEO_NEOBreathingCurveMask))
+// HoldAtPeak (Breathing)
+#define ParamNEO_NEOBreathingHoldAtPeak              ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBreathingHoldAtPeak)) & NEO_NEOBreathingHoldAtPeakMask))
+// RainbowBreathing (Breathing)
+#define ParamNEO_NEOBreathingRainbowBreathing        (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBreathingRainbowBreathing)))
+// Speed (Strobe)
+#define ParamNEO_NEOStrobeSpeed                      (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOStrobeSpeed)))
+// OnRatio (Strobe)
+#define ParamNEO_NEOStrobeOnRatio                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOStrobeOnRatio)))
+// MinBrightness (Strobe)
+#define ParamNEO_NEOStrobeMinBrightness              (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOStrobeMinBrightness)))
+// RandomTiming (Strobe)
+#define ParamNEO_NEOStrobeRandomTiming               ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOStrobeRandomTiming)) & NEO_NEOStrobeRandomTimingMask))
+// RainbowStrobe (Strobe)
+#define ParamNEO_NEOStrobeRainbowStrobe              ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOStrobeRainbowStrobe)) & NEO_NEOStrobeRainbowStrobeMask))
+// Speed (Pulse)
+#define ParamNEO_NEOPulseSpeed                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPulseSpeed)))
+// PulseWidth (Pulse)
+#define ParamNEO_NEOPulsePulseWidth                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPulsePulseWidth)))
+// Gamma (Pulse)
+#define ParamNEO_NEOPulseGamma                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPulseGamma)))
+// SharpPulse (Pulse)
+#define ParamNEO_NEOPulseSharpPulse                  ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPulseSharpPulse)) & NEO_NEOPulseSharpPulseMask))
+// RainbowPulse (Pulse)
+#define ParamNEO_NEOPulseRainbowPulse                ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPulseRainbowPulse)) & NEO_NEOPulseRainbowPulseMask))
+// Speed (Comet)
+#define ParamNEO_NEOCometSpeed                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCometSpeed)))
+// FadeRate (Comet)
+#define ParamNEO_NEOCometFadeRate                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCometFadeRate)))
+// TailLength (Comet)
+#define ParamNEO_NEOCometTailLength                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCometTailLength)))
+// BounceMode (Comet)
+#define ParamNEO_NEOCometBounceMode                  ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCometBounceMode)) & NEO_NEOCometBounceModeMask))
+// RainbowMode (Comet)
+#define ParamNEO_NEOCometRainbowMode                 ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOCometRainbowMode)) & NEO_NEOCometRainbowModeMask))
+// Speed (Meteor)
+#define ParamNEO_NEOMeteorSpeed                      (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOMeteorSpeed)))
+// MeteorSize (Meteor)
+#define ParamNEO_NEOMeteorMeteorSize                 (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOMeteorMeteorSize)))
+// Frequency (Meteor)
+#define ParamNEO_NEOMeteorFrequency                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOMeteorFrequency)))
+// RandomColors (Meteor)
+#define ParamNEO_NEOMeteorRandomColors               ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOMeteorRandomColors)) & NEO_NEOMeteorRandomColorsMask))
+// MultiMeteor (Meteor)
+#define ParamNEO_NEOMeteorMultiMeteor                ((bool)(knx.paramByte(NEO_ParamCalcIndex(NEO_NEOMeteorMultiMeteor)) & NEO_NEOMeteorMultiMeteorMask))
+// Speed (Noise)
+#define ParamNEO_NEONoiseSpeed                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEONoiseSpeed)))
+// Scale (Noise)
+#define ParamNEO_NEONoiseScale                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEONoiseScale)))
+// Saturation (Noise)
+#define ParamNEO_NEONoiseSaturation                  (knx.paramByte(NEO_ParamCalcIndex(NEO_NEONoiseSaturation)))
+// HueOffset (Noise)
+#define ParamNEO_NEONoiseHueOffset                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEONoiseHueOffset)))
+// Speed (Palette)
+#define ParamNEO_NEOPaletteSpeed                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPaletteSpeed)))
+// Palette (Palette)
+#define ParamNEO_NEOPalettePalette                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPalettePalette)))
+// Blend (Palette)
+#define ParamNEO_NEOPaletteBlend                     (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPaletteBlend)))
+// Spacing (Palette)
+#define ParamNEO_NEOPaletteSpacing                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOPaletteSpacing)))
+// Speed (Blitz)
+#define ParamNEO_NEOBlitzSpeed                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBlitzSpeed)))
+// Width (Blitz)
+#define ParamNEO_NEOBlitzWidth                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBlitzWidth)))
+// Decay (Blitz)
+#define ParamNEO_NEOBlitzDecay                       (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBlitzDecay)))
+// Hue (Blitz)
+#define ParamNEO_NEOBlitzHue                         (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOBlitzHue)))
+// Speed (Gradient)
+#define ParamNEO_NEOGradientSpeed                    (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGradientSpeed)))
+// StartHue (Gradient)
+#define ParamNEO_NEOGradientStartHue                 (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGradientStartHue)))
+// EndHue (Gradient)
+#define ParamNEO_NEOGradientEndHue                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGradientEndHue)))
+// Saturation (Gradient)
+#define ParamNEO_NEOGradientSaturation               (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGradientSaturation)))
 
 // deprecated
 #define NEO_KoOffset 600
@@ -2927,46 +3271,54 @@
 #define NEO_KoCalcIndex(number) ((number >= NEO_KoCalcNumber(0) && number < NEO_KoCalcNumber(NEO_KoBlockSize)) ? (number - NEO_KoBlockOffset) % NEO_KoBlockSize : -1)
 #define NEO_KoCalcChannel(number) ((number >= NEO_KoBlockOffset && number < NEO_KoBlockOffset + NEO_ChannelCount * NEO_KoBlockSize) ? (number - NEO_KoBlockOffset) / NEO_KoBlockSize : -1)
 
-#define NEO_KoR 0
-#define NEO_KoG 1
-#define NEO_KoB 2
-#define NEO_KoW 3
-#define NEO_KoCCT 4
-#define NEO_KoCCTState 5
-#define NEO_KoWW 6
-#define NEO_KoCW 7
-#define NEO_KoH 8
-#define NEO_KoS 9
-#define NEO_KoV 10
-#define NEO_KoFx 11
-#define NEO_KoFxState 12
-#define NEO_KoPreset 13
-#define NEO_KoPresetState 14
-#define NEO_KoRGB 15
-#define NEO_KoRGBState 16
-#define NEO_KoHSV 17
-#define NEO_KoHSVState 18
-#define NEO_KoRGBW 19
-#define NEO_KoRGBWState 20
-#define NEO_KoBriRel 21
-#define NEO_KoRRel 22
-#define NEO_KoGRel 23
-#define NEO_KoBRel 24
-#define NEO_KoWRel 25
-#define NEO_KoWWRel 26
-#define NEO_KoCWRel 27
-#define NEO_KoHRel 28
-#define NEO_KoSRel 29
-#define NEO_KoVRel 30
-#define NEO_KoFxRel 31
-#define NEO_KoRGBRel 32
-#define NEO_KoHSVRel 33
-#define NEO_KoRGBWRel 34
-#define NEO_KoSegmentPower 35
-#define NEO_KoSegmentPowerState 36
-#define NEO_KoSegmentBrightness 37
-#define NEO_KoSegmentBrightnessState 38
+#define NEO_KoSegmentPower 0
+#define NEO_KoSegmentPowerState 1
+#define NEO_KoSegmentBrightness 2
+#define NEO_KoSegmentBrightnessState 3
+#define NEO_KoR 4
+#define NEO_KoG 5
+#define NEO_KoB 6
+#define NEO_KoW 7
+#define NEO_KoCCT 8
+#define NEO_KoCCTState 9
+#define NEO_KoWW 10
+#define NEO_KoCW 11
+#define NEO_KoH 12
+#define NEO_KoS 13
+#define NEO_KoV 14
+#define NEO_KoFx 15
+#define NEO_KoFxState 16
+#define NEO_KoPreset 17
+#define NEO_KoPresetState 18
+#define NEO_KoRGB 19
+#define NEO_KoRGBState 20
+#define NEO_KoHSV 21
+#define NEO_KoHSVState 22
+#define NEO_KoRGBW 23
+#define NEO_KoRGBWState 24
+#define NEO_KoBriRel 25
+#define NEO_KoRRel 26
+#define NEO_KoGRel 27
+#define NEO_KoBRel 28
+#define NEO_KoWRel 29
+#define NEO_KoWWRel 30
+#define NEO_KoCWRel 31
+#define NEO_KoHRel 32
+#define NEO_KoSRel 33
+#define NEO_KoVRel 34
+#define NEO_KoFxRel 35
+#define NEO_KoRGBRel 36
+#define NEO_KoHSVRel 37
+#define NEO_KoRGBWRel 38
 
+// Segment Ein/Aus
+#define KoNEO_SegmentPower                        (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentPower)))
+// Segment Ein/Aus Status
+#define KoNEO_SegmentPowerState                   (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentPowerState)))
+// Segment Helligkeit
+#define KoNEO_SegmentBrightness                   (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentBrightness)))
+// Segment Helligkeit Status
+#define KoNEO_SegmentBrightnessState              (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentBrightnessState)))
 // Rot
 #define KoNEO_R                                   (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoR)))
 // Grün
@@ -3037,14 +3389,6 @@
 #define KoNEO_HSVRel                              (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoHSVRel)))
 // RGBW Relativ
 #define KoNEO_RGBWRel                             (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoRGBWRel)))
-// Segment Ein/Aus
-#define KoNEO_SegmentPower                        (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentPower)))
-// Segment Ein/Aus Status
-#define KoNEO_SegmentPowerState                   (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentPowerState)))
-// Segment Helligkeit
-#define KoNEO_SegmentBrightness                   (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentBrightness)))
-// Segment Helligkeit Status
-#define KoNEO_SegmentBrightnessState              (knx.getGroupObject(NEO_KoCalcNumber(NEO_KoSegmentBrightnessState)))
 
 #define NEOSTRIP_ChannelCount 6
 

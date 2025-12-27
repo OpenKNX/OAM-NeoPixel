@@ -57,8 +57,13 @@ class ColorManagement
     // ============================================================================
 
     /**
-     * @brief Apply HCL color temperature to all segments
-     * @param kelvin Color temperature in Kelvin (2000K-10000K)
+     * @brief Set target HCL color temperature in Kelvin.
+     *
+     * This enables "true HCL" post-processing: we do NOT overwrite the active
+     * effect/scenes. Instead we post-process the rendered pixels and apply a
+     * Kelvin whitepoint mainly to white/low-saturation pixels (configurable).
+     *
+     * @param kelvin Color temperature in Kelvin (0 disables HCL; typical 1000..10000)
      */
     void applyHclColorTemperature(uint16_t kelvin);
 
@@ -66,6 +71,13 @@ class ColorManagement
      * @brief Disable HCL mode and restore original colors
      */
     void disableHclMode();
+
+    /**
+     * @brief Apply HCL post-processing to rendered pixels ("true HCL").
+     *
+     * Call this once per frame AFTER effects/scenes rendered their pixels.
+     */
+    void applyHclPostProcess();
 
     // ============================================================================
     // Color Correction Configuration
@@ -106,4 +118,10 @@ class ColorManagement
 
   private:
     NeoPixelBusModule* _module; ///< Pointer to parent NeoPixelBusModule
+
+    // HCL state
+    bool _hclEnabled = false;
+    uint16_t _hclTargetKelvin = 0;
+    uint16_t _hclAppliedKelvin = 0;
+    unsigned long _lastHclApplyMs = 0;
 };

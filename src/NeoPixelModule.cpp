@@ -1,6 +1,7 @@
 #include "NeoPixelModule.h"
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
+#include "HclCurve.h"
 #include "SegmentController.h"
 #include "StripConfiguration.h"
 // Include generated effect parameters if available
@@ -74,12 +75,13 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
 NeoPixelBusModule openknxNeoPixelModule;
 
 NeoPixelBusModule::NeoPixelBusModule()
-    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr)
+    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _hclCurve(nullptr)
 {
     _flashPersistence = new NeoPixelFlashPersistence(this);
     _effectConfiguration = new EffectConfiguration(this);
     _colorManagement = new ColorManagement(this);
     _segmentController = new SegmentController(this);
+    _hclCurve = new HclCurve();
 }
 
 NeoPixelBusModule::~NeoPixelBusModule()
@@ -88,6 +90,7 @@ NeoPixelBusModule::~NeoPixelBusModule()
     delete _effectConfiguration;
     delete _colorManagement;
     delete _segmentController;
+    delete _hclCurve;
 }
 
 void NeoPixelBusModule::setup(bool configured)
@@ -113,6 +116,13 @@ void NeoPixelBusModule::setup(bool configured)
         configureFromETS();
         _initialized = true;
         _neoPixel.setup(configured);
+
+        // Setup HCL curve for automatic Kelvin scheduling
+        if (_hclCurve)
+        {
+            logInfoP("Initializing HCL curve for automatic Kelvin scheduling");
+            _hclCurve->setup(0); // Index 0 for global HCL
+        }
     }
 #endif
 }
@@ -121,7 +131,14 @@ void NeoPixelBusModule::loop(bool configured)
 {
     if (!configured || !_initialized) return;
 
-    // If global power is OFF, skip all processing (no effects, no dimming, no updates)
+    // Process HCL curve scheduling (updates Kelvin target based on sun position or time)
+    // This runs even when power is OFF to maintain the curve state
+    if (_hclCurve)
+    {
+        _hclCurve->loop();
+    }
+
+    // If global power is OFF, skip all effect processing and pixel updates
     if (!_globalPowerOn) return;
 
     // Process active DPT 3.007 start/stop dimming
@@ -129,6 +146,14 @@ void NeoPixelBusModule::loop(bool configured)
 
     // Call library loop() for auto-update timer and effect processing
     _neoPixel.loop(configured);
+
+    // Apply HCL post-processing to rendered pixels (color temperature correction)
+    // This must happen AFTER effects are rendered but BEFORE pixels are sent to hardware
+    if (_colorManagement)
+    {
+        logDebugP("Applying HCL post-processing");
+        _colorManagement->applyHclPostProcess();
+    }
 }
 
 void NeoPixelBusModule::processBeforeRestart()
@@ -227,12 +252,18 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
         if (powerState == false)
         {
-            // Power off - turn off all LEDs immediately
-            auto mgr = neoPixelModule.getManager();
-            if (mgr)
+            // Power off - turn off all LEDs immediately by clearing all segments
+            if (!_segments.empty() && _virtualStrip)
             {
-                mgr->clearAll();
-                mgr->showAll(); // Must explicitly show after clear
+                // Clear each segment individually
+                for (auto& segConfig : _segments)
+                {
+                    if (segConfig.segment)
+                    {
+                        segConfig.segment->clearAll(); // Clear RGBW pixels
+                    }
+                }
+                _virtualStrip->show();
             }
         }
 

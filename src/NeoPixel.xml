@@ -40,6 +40,10 @@
 
   <!-- BEGIN AUTO-GENERATED: NEOEFF Module -->
   <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
+  <!-- Effect Parameter Types - MUST be loaded BEFORE NEO module! -->
+  <op:define prefix="NEOEFF" ModuleType="40"
+    share="NeoPixel.Effects.ParameterTypes.generated.xml">
+  </op:define>
   <!-- END AUTO-GENERATED: NEOEFF Module -->
 
   <op:define prefix="NEO" ModuleType="40"

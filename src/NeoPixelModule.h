@@ -14,6 +14,7 @@ class EffectConfiguration;
 class ColorManagement;
 class StripConfiguration;
 class SegmentController;
+class HclCurve;
 
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
@@ -185,6 +186,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void restoreOriginalBrightness();
     void applyHclColorTemperature(uint16_t kelvin);
     void disableHclMode();
+    void applyHclPostProcess();
 
     // Effects status
     bool areEffectsEnabled() const { return _effectsEnabled; }
@@ -194,7 +196,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool isWhiteBalanceEnabled() const { return _whiteBalanceEnabled; }
     float getGammaValue() const { return _gammaValue; }
     uint8_t getGlobalBrightness() const { return _globalBrightness; }
-    uint16_t getCurrentHclTemperature() const { return _currentHclTemperature; }
+    uint16_t getCurrentHclTemperature() const { return _hclAppliedKelvin; }
     bool isHclModeEnabled() const { return _hclModeEnabled; }
 
     // Color correction functions (inline helpers - not delegated)
@@ -247,6 +249,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Sub-module: Segment Controller
     class SegmentController* _segmentController;
 
+    // Sub-module: HCL Curve (automatic Kelvin scheduling)
+    class HclCurve* _hclCurve;
+
     // Global Brightness Control
     uint8_t _globalBrightness = 255;          // Global brightness multiplier (0-255, default full)
     std::vector<uint8_t> _originalBrightness; // Store original segment brightness levels
@@ -254,10 +259,17 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Global Power Control
     bool _globalPowerOn = true; // Global power state (default ON)
 
-    // HCL Color Temperature Control
-    bool _hclModeEnabled = false;                        // Whether HCL mode is active
-    uint16_t _currentHclTemperature = 6500;              // Current HCL temperature in Kelvin (default daylight)
-    std::vector<std::array<uint8_t, 3>> _originalColors; // Store original segment RGB colors for HCL restoration
+    // HCL (Human Centric Lighting) / Circadian whitepoint control
+    //
+    // Design goal (like many commercial systems):
+    //  - Do NOT overwrite effect/scene colors.
+    //  - Apply Kelvin whitepoint correction mainly to white / low-saturation pixels.
+    //  - Optionally extract neutral component into W for RGBW/RGBCCT strips.
+    //
+    bool _hclModeEnabled = false;      // Whether HCL post-processing is active
+    uint16_t _hclTargetKelvin = 6500;  // Target Kelvin (from KO / curve)
+    uint16_t _hclAppliedKelvin = 6500; // Slewed Kelvin applied to output (for TransitionTime)
+    unsigned long _lastHclApplyMs = 0; // Rate limiting for post-processing
 
     // Performance & Rate Limiting
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp

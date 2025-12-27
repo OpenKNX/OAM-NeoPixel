@@ -1,0 +1,152 @@
+
+                <!-- Wipe Effect (ID 1) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%073" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed (Wipe)" Value="25"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%074" Offset="31" BitOffset="0" Name="NEO%C%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction (Wipe)" Value="0"/>
+
+                <!-- Rainbow Effect (ID 2) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%075" Offset="32" BitOffset="0" Name="NEO%C%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed (Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%076" Offset="33" BitOffset="0" Name="NEO%C%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta (Rainbow)" Value="7"/>
+
+                <!-- Rainbow Cycle Effect (ID 3) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%077" Offset="34" BitOffset="0" Name="NEO%C%RainbowCycleSpeed" ParameterType="%AID%_PT-RainbowCycleSpeed" Text="Speed (Rainbow Cycle)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%078" Offset="35" BitOffset="0" Name="NEO%C%RainbowCycleSaturation" ParameterType="%AID%_PT-RainbowCycleSaturation" Text="Saturation (Rainbow Cycle)" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%079" Offset="36" BitOffset="0" Name="NEO%C%RainbowCycleDensity" ParameterType="%AID%_PT-RainbowCycleDensity" Text="Density (Rainbow Cycle)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%080" Offset="37" BitOffset="7" Name="NEO%C%RainbowCycleReverse" ParameterType="%AID%_PT-RainbowCycleReverse" Text="Reverse (Rainbow Cycle)" Value="0"/>
+
+                <!-- Pride2015 Effect (ID 4) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%081" Offset="38" BitOffset="0" Name="NEO%C%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed (Pride2015)" Value="128"/>
+
+                <!-- Confetti Effect (ID 5) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%082" Offset="39" BitOffset="0" Name="NEO%C%ConfettiFadeSpeed" ParameterType="%AID%_PT-ConfettiFadeSpeed" Text="FadeSpeed (Confetti)" Value="10"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%083" Offset="40" BitOffset="0" Name="NEO%C%ConfettiSaturation" ParameterType="%AID%_PT-ConfettiSaturation" Text="Saturation (Confetti)" Value="200"/>
+
+                <!-- Juggle Effect (ID 6) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%084" Offset="41" BitOffset="0" Name="NEO%C%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed (Juggle)" Value="80"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%085" Offset="42" BitOffset="0" Name="NEO%C%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots (Juggle)" Value="8"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%086" Offset="43" BitOffset="0" Name="NEO%C%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed (Juggle)" Value="20"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%087" Offset="44" BitOffset="0" Name="NEO%C%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset (Juggle)" Value="0"/>
+
+                <!-- BPM Effect (ID 7) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%088" Offset="45" BitOffset="0" Name="NEO%C%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM (BPM)" Value="62"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%089" Offset="46" BitOffset="0" Name="NEO%C%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue (BPM)" Value="0"/>
+
+                <!-- Cylon Effect (ID 8) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%090" Offset="47" BitOffset="0" Name="NEO%C%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed (Cylon)" Value="20"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%091" Offset="48" BitOffset="0" Name="NEO%C%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%092" Offset="49" BitOffset="0" Name="NEO%C%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize (Cylon)" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%093" Offset="50" BitOffset="0" Name="NEO%C%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount (Cylon)" Value="50"/>
+
+                <!-- RGBWTest Effect (ID 9) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%094" Offset="51" BitOffset="0" Name="NEO%C%RGBWTestPhaseDuration" ParameterType="%AID%_PT-RGBWTestPhaseDuration" Text="PhaseDuration (RGBWTest)" Value="5"/>
+
+                <!-- GarageDoor Effect (ID 10) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%095" Offset="52" BitOffset="0" Name="NEO%C%GarageDoorPhase" ParameterType="%AID%_PT-GarageDoorPhase" Text="Phase (GarageDoor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%096" Offset="53" BitOffset="0" Name="NEO%C%GarageDoorArrowSize" ParameterType="%AID%_PT-GarageDoorArrowSize" Text="ArrowSize (GarageDoor)" Value="6"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%097" Offset="54" BitOffset="0" Name="NEO%C%GarageDoorArrowSpeed" ParameterType="%AID%_PT-GarageDoorArrowSpeed" Text="ArrowSpeed (GarageDoor)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%098" Offset="55" BitOffset="0" Name="NEO%C%GarageDoorRunwayGroupSize" ParameterType="%AID%_PT-GarageDoorRunwayGroupSize" Text="RunwayGroupSize (GarageDoor)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%099" Offset="56" BitOffset="0" Name="NEO%C%GarageDoorRunwaySpeed" ParameterType="%AID%_PT-GarageDoorRunwaySpeed" Text="RunwaySpeed (GarageDoor)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%100" Offset="57" BitOffset="0" Name="NEO%C%GarageDoorBreathingSpeed" ParameterType="%AID%_PT-GarageDoorBreathingSpeed" Text="BreathingSpeed (GarageDoor)" Value="50"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%101" Offset="58" BitOffset="0" Name="NEO%C%GarageDoorOpeningDuration" ParameterType="%AID%_PT-GarageDoorOpeningDuration" Text="OpeningDuration (GarageDoor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%102" Offset="59" BitOffset="0" Name="NEO%C%GarageDoorRunwayDuration" ParameterType="%AID%_PT-GarageDoorRunwayDuration" Text="RunwayDuration (GarageDoor)" Value="0"/>
+
+                <!-- Fire Effect (ID 11) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%103" Offset="60" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed (Fire)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%104" Offset="61" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling (Fire)" Value="90"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%105" Offset="62" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking (Fire)" Value="120"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%106" Offset="63" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection (Fire)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%107" Offset="64" BitOffset="7" Name="NEO%C%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode (Fire)" Value="0"/>
+
+                <!-- Theater Chase Effect (ID 12) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%108" Offset="65" BitOffset="0" Name="NEO%C%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed (Theater Chase)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%109" Offset="66" BitOffset="0" Name="NEO%C%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing (Theater Chase)" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%110" Offset="67" BitOffset="0" Name="NEO%C%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize (Theater Chase)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%111" Offset="68" BitOffset="7" Name="NEO%C%TheaterChaseTrailMode" ParameterType="%AID%_PT-TheaterChaseTrailMode" Text="TrailMode (Theater Chase)" Value="0"/>
+
+                <!-- Theater Chase Rainbow Effect (ID 13) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%112" Offset="69" BitOffset="0" Name="NEO%C%TheaterChaseRainbowSpeed" ParameterType="%AID%_PT-TheaterChaseRainbowSpeed" Text="Speed (Theater Chase Rainbow)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%113" Offset="70" BitOffset="0" Name="NEO%C%TheaterChaseRainbowSpacing" ParameterType="%AID%_PT-TheaterChaseRainbowSpacing" Text="Spacing (Theater Chase Rainbow)" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%114" Offset="71" BitOffset="0" Name="NEO%C%TheaterChaseRainbowDotSize" ParameterType="%AID%_PT-TheaterChaseRainbowDotSize" Text="DotSize (Theater Chase Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%115" Offset="72" BitOffset="0" Name="NEO%C%TheaterChaseRainbowColorSpeed" ParameterType="%AID%_PT-TheaterChaseRainbowColorSpeed" Text="ColorSpeed (Theater Chase Rainbow)" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%116" Offset="73" BitOffset="7" Name="NEO%C%TheaterChaseRainbowTrailMode" ParameterType="%AID%_PT-TheaterChaseRainbowTrailMode" Text="TrailMode (Theater Chase Rainbow)" Value="0"/>
+
+                <!-- Sinelon Effect (ID 14) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%117" Offset="74" BitOffset="0" Name="NEO%C%SinelonSpeed" ParameterType="%AID%_PT-SinelonSpeed" Text="Speed (Sinelon)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%118" Offset="75" BitOffset="0" Name="NEO%C%SinelonFadeRate" ParameterType="%AID%_PT-SinelonFadeRate" Text="FadeRate (Sinelon)" Value="175"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%119" Offset="76" BitOffset="0" Name="NEO%C%SinelonDotSize" ParameterType="%AID%_PT-SinelonDotSize" Text="DotSize (Sinelon)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%120" Offset="77" BitOffset="7" Name="NEO%C%SinelonRainbowMode" ParameterType="%AID%_PT-SinelonRainbowMode" Text="RainbowMode (Sinelon)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%121" Offset="78" BitOffset="7" Name="NEO%C%SinelonBounceMode" ParameterType="%AID%_PT-SinelonBounceMode" Text="BounceMode (Sinelon)" Value="0"/>
+
+                <!-- Twinkle Effect (ID 15) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%122" Offset="79" BitOffset="0" Name="NEO%C%TwinkleSpeed" ParameterType="%AID%_PT-TwinkleSpeed" Text="Speed (Twinkle)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%123" Offset="80" BitOffset="0" Name="NEO%C%TwinkleFadeRate" ParameterType="%AID%_PT-TwinkleFadeRate" Text="FadeRate (Twinkle)" Value="120"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%124" Offset="81" BitOffset="0" Name="NEO%C%TwinkleDensity" ParameterType="%AID%_PT-TwinkleDensity" Text="Density (Twinkle)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%125" Offset="82" BitOffset="7" Name="NEO%C%TwinkleRainbowMode" ParameterType="%AID%_PT-TwinkleRainbowMode" Text="RainbowMode (Twinkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%126" Offset="83" BitOffset="7" Name="NEO%C%TwinkleVariableBrightness" ParameterType="%AID%_PT-TwinkleVariableBrightness" Text="VariableBrightness (Twinkle)" Value="0"/>
+
+                <!-- Sparkle Effect (ID 16) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%127" Offset="84" BitOffset="0" Name="NEO%C%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed (Sparkle)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%128" Offset="85" BitOffset="0" Name="NEO%C%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate (Sparkle)" Value="120"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%129" Offset="86" BitOffset="0" Name="NEO%C%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount (Sparkle)" Value="64"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%130" Offset="87" BitOffset="0" Name="NEO%C%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability (Sparkle)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%131" Offset="88" BitOffset="7" Name="NEO%C%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%132" Offset="89" BitOffset="7" Name="NEO%C%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode (Sparkle)" Value="0"/>
+
+                <!-- Breathing Effect (ID 17) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%133" Offset="90" BitOffset="0" Name="NEO%C%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed (Breathing)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%134" Offset="91" BitOffset="0" Name="NEO%C%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%135" Offset="92" BitOffset="7" Name="NEO%C%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%136" Offset="93" BitOffset="7" Name="NEO%C%BreathingHoldAtPeak" ParameterType="%AID%_PT-BreathingHoldAtPeak" Text="HoldAtPeak (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%137" Offset="94" BitOffset="0" Name="NEO%C%BreathingRainbowBreathing" ParameterType="%AID%_PT-BreathingRainbowBreathing" Text="RainbowBreathing (Breathing)" Value="0"/>
+
+                <!-- Strobe Effect (ID 18) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%138" Offset="95" BitOffset="0" Name="NEO%C%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed (Strobe)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%139" Offset="96" BitOffset="0" Name="NEO%C%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio (Strobe)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%140" Offset="97" BitOffset="0" Name="NEO%C%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%141" Offset="98" BitOffset="7" Name="NEO%C%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%142" Offset="99" BitOffset="7" Name="NEO%C%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe (Strobe)" Value="0"/>
+
+                <!-- Pulse Effect (ID 19) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%143" Offset="100" BitOffset="0" Name="NEO%C%PulseSpeed" ParameterType="%AID%_PT-PulseSpeed" Text="Speed (Pulse)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%144" Offset="101" BitOffset="0" Name="NEO%C%PulsePulseWidth" ParameterType="%AID%_PT-PulsePulseWidth" Text="PulseWidth (Pulse)" Value="100"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%145" Offset="102" BitOffset="0" Name="NEO%C%PulseGamma" ParameterType="%AID%_PT-PulseGamma" Text="Gamma (Pulse)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%146" Offset="103" BitOffset="7" Name="NEO%C%PulseSharpPulse" ParameterType="%AID%_PT-PulseSharpPulse" Text="SharpPulse (Pulse)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%147" Offset="104" BitOffset="7" Name="NEO%C%PulseRainbowPulse" ParameterType="%AID%_PT-PulseRainbowPulse" Text="RainbowPulse (Pulse)" Value="0"/>
+
+                <!-- Comet Effect (ID 20) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%148" Offset="105" BitOffset="0" Name="NEO%C%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed (Comet)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%149" Offset="106" BitOffset="0" Name="NEO%C%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate (Comet)" Value="150"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%150" Offset="107" BitOffset="0" Name="NEO%C%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength (Comet)" Value="10"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%151" Offset="108" BitOffset="7" Name="NEO%C%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%152" Offset="109" BitOffset="7" Name="NEO%C%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode (Comet)" Value="0"/>
+
+                <!-- Meteor Effect (ID 21) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%153" Offset="110" BitOffset="0" Name="NEO%C%MeteorSpeed" ParameterType="%AID%_PT-MeteorSpeed" Text="Speed (Meteor)" Value="128"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%154" Offset="111" BitOffset="0" Name="NEO%C%MeteorMeteorSize" ParameterType="%AID%_PT-MeteorMeteorSize" Text="MeteorSize (Meteor)" Value="20"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%155" Offset="112" BitOffset="0" Name="NEO%C%MeteorFrequency" ParameterType="%AID%_PT-MeteorFrequency" Text="Frequency (Meteor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%156" Offset="113" BitOffset="7" Name="NEO%C%MeteorRandomColors" ParameterType="%AID%_PT-MeteorRandomColors" Text="RandomColors (Meteor)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%157" Offset="114" BitOffset="7" Name="NEO%C%MeteorMultiMeteor" ParameterType="%AID%_PT-MeteorMultiMeteor" Text="MultiMeteor (Meteor)" Value="0"/>
+
+                <!-- Noise Effect (ID 22) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%158" Offset="115" BitOffset="0" Name="NEO%C%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed (Noise)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%159" Offset="116" BitOffset="0" Name="NEO%C%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale (Noise)" Value="48"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%160" Offset="117" BitOffset="0" Name="NEO%C%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation (Noise)" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%161" Offset="118" BitOffset="0" Name="NEO%C%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset (Noise)" Value="0"/>
+
+                <!-- Palette Effect (ID 23) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%162" Offset="119" BitOffset="0" Name="NEO%C%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed (Palette)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%163" Offset="120" BitOffset="0" Name="NEO%C%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette (Palette)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%164" Offset="121" BitOffset="0" Name="NEO%C%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend (Palette)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%165" Offset="122" BitOffset="0" Name="NEO%C%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing (Palette)" Value="0"/>
+
+                <!-- Blitz Effect (ID 24) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%166" Offset="123" BitOffset="0" Name="NEO%C%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed (Blitz)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%167" Offset="124" BitOffset="0" Name="NEO%C%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width (Blitz)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%168" Offset="125" BitOffset="0" Name="NEO%C%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay (Blitz)" Value="40"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%169" Offset="126" BitOffset="0" Name="NEO%C%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue (Blitz)" Value="0"/>
+
+                <!-- Gradient Effect (ID 25) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%170" Offset="127" BitOffset="0" Name="NEO%C%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed (Gradient)" Value="32"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%171" Offset="128" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue (Gradient)" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%172" Offset="129" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%173" Offset="130" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
+
