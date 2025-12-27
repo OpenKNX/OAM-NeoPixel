@@ -2601,9 +2601,6 @@
 #define NEO_HCLoffsetSunset                     4946      // 10 Bits, Bit 15-6
 #define     NEO_HCLoffsetSunsetMask 0xFFC0
 #define     NEO_HCLoffsetSunsetShift 6
-#define NEO_HCLenableKelvin                     4947      // 1 Bit, Bit 4
-#define     NEO_HCLenableKelvinMask 0x10
-#define     NEO_HCLenableKelvinShift 4
 #define NEO_HCLPreserveCurve                    4947      // 3 Bits, Bit 3-1
 #define     NEO_HCLPreserveCurveMask 0x0E
 #define     NEO_HCLPreserveCurveShift 1
@@ -2735,8 +2732,6 @@
 #define ParamNEO_HclApplyMode                        ((knx.paramByte(NEO_HclApplyMode) & NEO_HclApplyModeMask) >> NEO_HclApplyModeShift)
 // Verschiebe Sonnenuntergang
 #define ParamNEO_HCLoffsetSunset                     (((int16_t)knx.paramWord(NEO_HCLoffsetSunset) & NEO_HCLoffsetSunsetMask) >> NEO_HCLoffsetSunsetShift)
-// Farbtemperatur aktivieren
-#define ParamNEO_HCLenableKelvin                     ((bool)(knx.paramByte(NEO_HCLenableKelvin) & NEO_HCLenableKelvinMask))
 // Form der Abblendung
 #define ParamNEO_HCLPreserveCurve                    ((knx.paramByte(NEO_HCLPreserveCurve) & NEO_HCLPreserveCurveMask) >> NEO_HCLPreserveCurveShift)
 // Sättigungs Schwelle

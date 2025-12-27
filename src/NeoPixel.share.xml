@@ -380,8 +380,7 @@
                 <!-- Byte 7..8 -->
                 <!-- HCLoffsetSunset: Byte7[0..7] + Byte8[0..1] => 10b signed -->
                 <Parameter Id="%AID%_UP-%TT%00005" Offset="7" BitOffset="0" Name="HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
-                <!-- HCLenableKelvin: Byte8[3] => 1b -->
-                <Parameter Id="%AID%_UP-%TT%00008" Offset="8" BitOffset="3" Name="HCLenableKelvin" ParameterType="%AID%_PT-Boolean" Text="Farbtemperatur aktivieren" Value="1"/>
+                <!-- Byte8[3] => 1b frei -->
                 <!-- HCLPreserveCurve: Byte8[4..6] => 3b enum -->
                 <!-- Byte8 freie Bits: 2,7 -->
                 <Parameter Id="%AID%_UP-%TT%00006" Offset="8" BitOffset="4" Name="HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
@@ -489,7 +488,6 @@
               <ParameterRef Id="%AID%_UP-%TT%00005_R-%TT%0000501" RefId="%AID%_UP-%TT%00005" />
               <ParameterRef Id="%AID%_UP-%TT%00006_R-%TT%0000601" RefId="%AID%_UP-%TT%00006" />
               <ParameterRef Id="%AID%_UP-%TT%00007_R-%TT%0000701" RefId="%AID%_UP-%TT%00007" />
-              <ParameterRef Id="%AID%_UP-%TT%00008_R-%TT%0000801" RefId="%AID%_UP-%TT%00008" />
               <ParameterRef Id="%AID%_UP-%TT%00009_R-%TT%0000901" RefId="%AID%_UP-%TT%00009" />
               <ParameterRef Id="%AID%_UP-%TT%00010_R-%TT%0001001" RefId="%AID%_UP-%TT%00010" />
               <ParameterRef Id="%AID%_UP-%TT%00061_R-%TT%0006101" RefId="%AID%_UP-%TT%00061" />
@@ -742,14 +740,9 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%00006_R-%TT%0000601" IndentLevel="2" HelpContext="%DOC%"/>
                       <!-- Saturation Threshold -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00007_R-%TT%0000701" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Kelvin enable + Min/Max Kelvin (nur wenn Kelvin aktiv) -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00008_R-%TT%0000801" IndentLevel="2" HelpContext="%DOC%"/>
-                      <choose ParamRefId="%AID%_UP-%TT%00008_R-%TT%0000801">
-                        <when test="=1">
-                          <ParameterRefRef RefId="%AID%_UP-%TT%00009_R-%TT%0000901" IndentLevel="2" HelpContext="%DOC%"/>
-                          <ParameterRefRef RefId="%AID%_UP-%TT%00010_R-%TT%0001001" IndentLevel="2" HelpContext="%DOC%"/>
-                        </when>
-                      </choose>
+                      <!-- Min/Max Kelvin -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00009_R-%TT%0000901" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00010_R-%TT%0001001" IndentLevel="2" HelpContext="%DOC%"/>
                       <!-- Apply mode -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" HelpContext="%DOC%"/>
                       <!-- Strength / Mix -->
