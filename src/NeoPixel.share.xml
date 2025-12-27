@@ -163,6 +163,7 @@
                 <Enumeration Text="LPD8806"              Value="22" Id="%ENID%"/>
                 <Enumeration Text="LPD6803"              Value="23" Id="%ENID%"/>
                 <Enumeration Text="P9813"                Value="24" Id="%ENID%"/>
+                <Enumeration Text="APA102-Clone"         Value="25" Id="%ENID%"/>
                 <Enumeration Text="CUSTOM"               Value="99" Id="%ENID%"/>
               </TypeRestriction>
               </ParameterType>
@@ -293,6 +294,7 @@
                   <Enumeration Text="Aus" Value="0" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="1" Id="%ENID%" />
                   <Enumeration Text="Standard-Farbe" Value="2" Id="%ENID%" />
+                  <Enumeration Text="ETS-Werte" Value="3" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <ParameterType Id="%AID%_PT-SegmentStartupBehavior" Name="SegmentStartupBehavior">
@@ -301,6 +303,7 @@
                   <Enumeration Text="Aus" Value="1" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="2" Id="%ENID%" />
                   <Enumeration Text="Standard-Farbe (eigene)" Value="3" Id="%ENID%" />
+                  <Enumeration Text="ETS-Werte" Value="4" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Virtual Strip Selection for exactly 1 strip -->

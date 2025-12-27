@@ -151,7 +151,6 @@ void NeoPixelBusModule::loop(bool configured)
     // This must happen AFTER effects are rendered but BEFORE pixels are sent to hardware
     if (_colorManagement)
     {
-        logDebugP("Applying HCL post-processing");
         _colorManagement->applyHclPostProcess();
     }
 }
@@ -1854,7 +1853,7 @@ void NeoPixelBusModule::configureFromETS()
         {
             _effectConfiguration->configureEffects();
             logInfoP("Applied effects to %d segments", _numberOfSegments);
-            
+
             // Turn off all segments after configuration to prevent showing ETS defaults
             // They will be restored to correct state in processAfterStartupDelay()
             for (auto& segConfig : _segments)
@@ -1894,20 +1893,34 @@ LedProtocol NeoPixelBusModule::mapProtocol(uint8_t p)
     // Based on NEOLedType enumeration from NeoPixelBus.share.xml
     switch (p)
     {
-        case 0: return LedProtocol::WS2812B;  // WS2812B
-        case 1: return LedProtocol::WS2805;   // WS2805
-        case 2: return LedProtocol::WS2811;   // WS2811
-        case 3: return LedProtocol::WS2813;   // WS2813
-        case 4: return LedProtocol::SK6812;   // SK6812
-        case 5: return LedProtocol::APA102;   // APA102
-        case 6: return LedProtocol::SK9822;   // SK9822
-        case 7: return LedProtocol::WS2812B;  // WS281x (mapped to WS2812B)
-        case 8: return LedProtocol::SK6812;   // SK6812/WS2814 (RGBW)
-        case 9: return LedProtocol::TM1814;   // TM1814
-        case 10: return LedProtocol::WS2811;  // WS2812_400kHz (mapped to WS2811)
-        case 21: return LedProtocol::WS2801;  // WS2801
-        case 22: return LedProtocol::LPD8806; // LPD8806
-        default: return LedProtocol::WS2812B; // Default to most common
+        case 0: return LedProtocol::WS2812B;       // WS2812B
+        case 1: return LedProtocol::WS2805;        // WS2805
+        case 2: return LedProtocol::WS2811;        // WS2811
+        case 3: return LedProtocol::WS2813;        // WS2813
+        case 4: return LedProtocol::SK6812;        // SK6812
+        case 5: return LedProtocol::APA102;        // APA102
+        case 6: return LedProtocol::SK9822;        // SK9822
+        case 7: return LedProtocol::WS2812B;       // WS281x (mapped to WS2812B)
+        case 8: return LedProtocol::SK6812;        // SK6812/WS2814 (RGBW)
+        case 9: return LedProtocol::TM1814;        // TM1814
+        case 10: return LedProtocol::WS2811;       // WS2812_400kHz (mapped to WS2811)
+        case 11: return LedProtocol::TM1814;       // TM1829 (mapped to TM1814)
+        case 12: return LedProtocol::WS2812B;      // UCS8903 (mapped to WS2812B)
+        case 13: return LedProtocol::WS2812B;      // APA106/PL9823 (mapped to WS2812B)
+        case 14: return LedProtocol::TM1814;       // TM1914 (mapped to TM1814)
+        case 15: return LedProtocol::WS2811;       // FW1906 (mapped to WS2811)
+        case 16: return LedProtocol::WS2812B;      // UCS8904 (mapped to WS2812B)
+        case 17: return LedProtocol::WS2805;       // WS2805_RGBCW
+        case 18: return LedProtocol::WS2815;       // SM16825 (mapped to WS2815)
+        case 19: return LedProtocol::WS2811;       // WS2811_WHITE
+        case 20: return LedProtocol::WS2812B;      // WS281x_WWA (mapped to WS2812B)
+        case 21: return LedProtocol::WS2801;       // WS2801
+        case 22: return LedProtocol::LPD8806;      // LPD8806
+        case 23: return LedProtocol::LPD8806;      // LPD6803 (mapped to LPD8806)
+        case 24: return LedProtocol::WS2801;       // P9813 (mapped to WS2801)
+        case 25: return LedProtocol::APA102_CLONE; // APA102-Clone
+        case 99: return LedProtocol::WS2812B;      // CUSTOM (default to WS2812B)
+        default: return LedProtocol::WS2812B;      // Default to most common
     }
 }
 
