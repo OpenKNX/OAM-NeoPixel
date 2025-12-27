@@ -1854,6 +1854,19 @@ void NeoPixelBusModule::configureFromETS()
         {
             _effectConfiguration->configureEffects();
             logInfoP("Applied effects to %d segments", _numberOfSegments);
+            
+            // Turn off all segments after configuration to prevent showing ETS defaults
+            // They will be restored to correct state in processAfterStartupDelay()
+            for (auto& segConfig : _segments)
+            {
+                if (segConfig.segment)
+                {
+                    segConfig.segment->setBrightness(0);
+                    segConfig.segment->clearAll();
+                }
+            }
+            _virtualStrip->show();
+            logInfoP("LEDs cleared - will restore saved state after startup delay");
         }
 
         // Configure power management using OFM PowerManager

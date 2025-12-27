@@ -358,15 +358,21 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 
                 // Apply default color
                 seg->setBrightness(brightness);
+                
+                // Always apply the effect type (including 0 for Solid) to clear any previous effect
+                _module->applyEffectToSegment(seg, effectType);
+                
                 if (effectType > 0)
                 {
-                    _module->applyEffectToSegment(seg, effectType);
+                    // Load effect parameters from ETS for active effects
+                    _module->setupEffectConfiguration(seg);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] APPLIED: Default effect (Type=%d, Brightness=%d)", i, effectType, brightness);
 #endif
                 }
                 else
                 {
+                    // Solid color mode - apply the color
                     seg->setPrimaryColor(r, g, b, w);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] APPLIED: Default color (R=%d,G=%d,B=%d,W=%d, Brightness=%d)",
