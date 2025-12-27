@@ -1,12 +1,30 @@
-# Farbtemperatur-Min
+# Farbtemperatur Min (Minimum Kelvin)
 
 Minimale Farbtemperatur der HCL-Kurve in Kelvin (1000-10000K).
 
-Diese Einstellung bestimmt die kälteste (niedrigste) Farbtemperatur, die während des HCL-Kurvenverlaufs verwendet wird. Typische Werte:
+## Bedeutung
+Diese Einstellung bestimmt die **wärmste (niedrigste)** Farbtemperatur, die während des HCL-Kurvenverlaufs verwendet wird.
 
-- **2200K**: Sehr warmes, kerzenlichtähnliches Licht
-- **2700K**: Warmes Wohnlicht (Standardglühlampe)
-- **3000K**: Warmweiss für gemütliche Atmosphäre
-- **4000K**: Neutralweiss für Arbeitsplätze
+## Wann wird dieser Wert verwendet?
 
-**Wichtig**: Der Minimalwert muss kleiner sein als der Maximalwert der Farbtemperatur.
+### Zeit-Modus
+- Am **Anfang** und **Ende** des Zeitfensters (Startzeit/Endzeit)
+- **Außerhalb** des Zeitfensters (konstant)
+
+### Sonnen-Modus
+- Bei **Sonnenaufgang** und **Sonnenuntergang** (inkl. Offsets)
+- **Außerhalb** der Sonnenzeiten (vor Aufgang, nach Untergang)
+
+## Typische Werte
+- **2200K**: Sehr warmes, kerzenlichtähnliches Licht (Abend/Nacht)
+- **2700K**: Warmes Wohnlicht (Standardglühlampe) - *Empfohlen*
+- **3000K**: Warmweiß für gemütliche Atmosphäre
+- **3500K**: Neutralwarm für Arbeitsbereich mit Wohlfühlfaktor
+
+## Wichtig
+- Der Minimalwert **muss kleiner** sein als der Maximalwert
+- Werte unter 1000K werden automatisch auf 1000K begrenzt
+- **Wert 0 wird als "nicht konfiguriert" interpretiert** und löst eine Warnung aus (Standard 1000K wird verwendet)
+
+## Empfehlung für circadianes Licht
+**2700K** als Minimum für angenehmes Abend-/Morgenlicht

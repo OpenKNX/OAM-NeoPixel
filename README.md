@@ -21,6 +21,7 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 - **RGB Direct Control**: Set exact RGB values
 - **HSV Control**: Hue, Saturation, Value for intuitive color selection
 - **Color Temperature (CCT)**: Kelvin-based warm/cool white adjustment
+- **HCL (Human Centric Lighting)**: Automatic color temperature adjustment with sun-position curves or time-based scheduling for circadian rhythm support
 - **White Channels**: Dedicated warm white (WW) and cool white (CW) control for RGBW strips
 - **Brightness Scaling**: Per-segment brightness with DPT 5.001 (percentage 0–100%)
 - **Gamma Correction**: Configurable gamma curve for natural brightness perception
@@ -33,6 +34,7 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 - **Power Limiting**: Global and per-channel current limiting to prevent brownouts
 - **Hardware Flexibility**: GPIO and SPI clock configuration for custom wiring
 - **Virtual Strip Architecture**: Internal virtual strip allows flexible physical strip ordering and rearrangement
+- **HCL (Human Centric Lighting)**: Automatic color temperature adjustment based on sun position or time-of-day curves for circadian rhythm support
 
 ## Installation & Setup
 
@@ -92,27 +94,53 @@ pio run -e develop_OpenKNXiaoMiniRP2040_TP -t upload
 ## Group Objects (KOs)
 
 ### Global KOs
-- **Power** (KO 600): DPT 1.001 — Turn all segments on/off
-- **Brightness** (KO 601): DPT 5.001 — Global brightness 0–100%
-- **HCL State** (KO 602): DPT 7.600 — Color temperature 0–65535 K
+- **Power** (KO 400): DPT 1.001 — Turn all segments on/off
+- **Power Status** (KO 401): DPT 1.001 — Power state feedback
+- **Color Temperature** (KO 402): DPT 7.600 — Color temperature in Kelvin (2700K–6500K) for HCL functionality
+- **Brightness** (KO 403): DPT 5.001 — Global brightness 0–100%
+- **Brightness Status** (KO 404): DPT 5.001 — Brightness state feedback
 
 ### Per-Segment KOs (Block Size 39)
 For segment N (0-indexed), KOs = 600 + N×39:
-- **KO+0**: RGB (DPT_Colour_RGB)
-- **KO+1**: HSV (DPT_Colour_RGB, H/S/V packed)
-- **KO+2**: Warm White (DPT 5.010, 0–255)
-- **KO+3**: Cool White (DPT 5.010, 0–255)
-- **KO+4**: Color Temperature (DPT 5.010)
-- **KO+5**: RGBW (DPT_Colour_RGBW)
-- **KO+15**: RGB (DPT_Colour_RGB, direct set)
-- **KO+16**: RGB Status (DPT_Colour_RGB)
-- **KO+23**: Effect (DPT 5.010)
-- **KO+24**: Effect Status (DPT_Colour_RGB)
-- **KO+25**: Preset (DPT 5.010, 0–8)
-- **KO+35**: Segment Power (DPT 1.001)
-- **KO+36**: Segment Power Status (DPT 1.001)
-- **KO+37**: Brightness (DPT 5.001, 0–100%)
-- **KO+38**: Brightness Status (DPT 5.001)
+- **KO+0**: Segment Power (DPT 1.001)
+- **KO+1**: Segment Power Status (DPT 1.001)
+- **KO+2**: Segment Brightness (DPT 5.001, 0–100%)
+- **KO+3**: Segment Brightness Status (DPT 5.001)
+- **KO+4**: R (Red channel, DPT 5.001)
+- **KO+5**: G (Green channel, DPT 5.001)
+- **KO+6**: B (Blue channel, DPT 5.001)
+- **KO+7**: W (White channel, DPT 5.001)
+- **KO+8**: CCT (Color Temperature, DPT 5.001)
+- **KO+9**: CCT Status (DPT 5.001)
+- **KO+10**: WW (Warm White, DPT 5.001)
+- **KO+11**: CW (Cool White, DPT 5.001)
+- **KO+12**: H (Hue, DPT 5.001)
+- **KO+13**: S (Saturation, DPT 5.001)
+- **KO+14**: V (Value, DPT 5.001)
+- **KO+15**: Effect (Effect ID, DPT 5.010)
+- **KO+16**: Effect Status (DPT 5.010)
+- **KO+17**: Preset (Preset ID, DPT 5.010)
+- **KO+18**: Preset Status (DPT 5.010)
+- **KO+19**: RGB (DPT_Colour_RGB)
+- **KO+20**: RGB Status (DPT_Colour_RGB)
+- **KO+21**: HSV (DPT_Colour_RGB, H/S/V packed)
+- **KO+22**: HSV Status (DPT_Colour_RGB)
+- **KO+23**: RGBW (DPT_Colour_RGBW)
+- **KO+24**: RGBW Status (DPT_Colour_RGBW)
+- **KO+25**: Brightness Relative (DPT 3.007, dimming steps)
+- **KO+26**: R Relative (DPT 3.007)
+- **KO+27**: G Relative (DPT 3.007)
+- **KO+28**: B Relative (DPT 3.007)
+- **KO+29**: W Relative (DPT 3.007)
+- **KO+30**: WW Relative (DPT 3.007)
+- **KO+31**: CW Relative (DPT 3.007)
+- **KO+32**: H Relative (DPT 3.007)
+- **KO+33**: S Relative (DPT 3.007)
+- **KO+34**: V Relative (DPT 3.007)
+- **KO+35**: Effect Relative (DPT 3.007)
+- **KO+36**: RGB Relative (DPT 3.007)
+- **KO+37**: HSV Relative (DPT 3.007)
+- **KO+38**: RGBW Relative (DPT 3.007)
 
 **Note**: KO indices are offsets within each segment's 39-KO block. Actual KO number = 600 + segment_index×39 + index.
 
