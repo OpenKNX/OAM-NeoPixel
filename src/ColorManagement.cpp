@@ -130,6 +130,25 @@ void ColorManagement::applyHclColorTemperature(uint16_t kelvin)
     logInfoP("HCL target set to %dK (post-processing enabled)", (int)_hclTargetKelvin);
 }
 
+// ============================================================================
+// HCL Callback Data (forward declaration for disableHclMode)
+// ============================================================================
+
+// Structure to pass HCL parameters to the callback
+struct HclCallbackData
+{
+    uint16_t kelvin;
+    uint8_t applyMode;
+    uint8_t satThreshold;
+    uint8_t preserveCurve;
+    uint8_t strength;
+    uint8_t brightnessComp;
+    uint8_t whiteMix;
+};
+
+// Static storage for HCL callback data (one global HCL state)
+static HclCallbackData s_hclData = {0, 0, 128, 0, 100, 50, 50};
+
 void ColorManagement::disableHclMode()
 {
     if (!_hclEnabled && !_module->_hclModeEnabled)
@@ -146,6 +165,9 @@ void ColorManagement::disableHclMode()
     _module->_hclModeEnabled = false;
     _module->_hclTargetKelvin = 6500;
     _module->_hclAppliedKelvin = 6500;
+
+    // Clear the HCL callback data (kelvin=0 disables the callback)
+    s_hclData.kelvin = 0;
 
     logInfoP("HCL disabled");
 }
@@ -341,6 +363,33 @@ namespace
     }
 } // namespace
 
+// ============================================================================
+// HCL Pixel Transform Callback (called from VirtualStrip::syncToPhysical)
+// ============================================================================
+
+/**
+ * @brief Static callback for HCL pixel transformation
+ *
+ * This is called from VirtualStrip::syncToPhysical() for each pixel,
+ * AFTER effects have rendered but BEFORE sending to hardware.
+ * The effect buffer is NOT modified, so effects that read back pixels work correctly.
+ */
+static void hclPixelTransformCallback(uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* w, void* userData)
+{
+    (void)userData; // Use static data instead
+
+    if (s_hclData.kelvin == 0) return; // HCL disabled
+
+    apply_hcl_pixel(s_hclData.kelvin,
+                    s_hclData.applyMode,
+                    s_hclData.satThreshold,
+                    s_hclData.preserveCurve,
+                    s_hclData.strength,
+                    s_hclData.brightnessComp,
+                    s_hclData.whiteMix,
+                    r, g, b, w);
+}
+
 void ColorManagement::applyHclPostProcess()
 {
     if (!_module || !_module->_initialized) return;
@@ -394,37 +443,24 @@ void ColorManagement::applyHclPostProcess()
     _module->_hclAppliedKelvin = applied;
     _module->_hclModeEnabled = true;
 
-    // Parameters
-    const uint8_t applyMode = (uint8_t)ParamNEO_HclApplyMode;
-    const uint8_t satThr = (uint8_t)ParamNEO_HCLSatThreshold;
-    const uint8_t curve = (uint8_t)ParamNEO_HCLPreserveCurve;
-    const uint8_t strength = (uint8_t)ParamNEO_HCLStrength;
-    const uint8_t comp = (uint8_t)ParamNEO_HCLBrightnessCompensation;
-    const uint8_t whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
+    // Update HCL callback parameters (used during syncToPhysical)
+    s_hclData.kelvin = applied;
+    s_hclData.applyMode = (uint8_t)ParamNEO_HclApplyMode;
+    s_hclData.satThreshold = (uint8_t)ParamNEO_HCLSatThreshold;
+    s_hclData.preserveCurve = (uint8_t)ParamNEO_HCLPreserveCurve;
+    s_hclData.strength = (uint8_t)ParamNEO_HCLStrength;
+    s_hclData.brightnessComp = (uint8_t)ParamNEO_HCLBrightnessCompensation;
+    s_hclData.whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
 
-    // Apply to all segments, in-place (post-processing)
-    for (auto& segCfg : _module->_segments)
+    // Register the HCL callback on VirtualStrip (if not already done)
+    // The callback is called during syncToPhysical() for each pixel
+    if (_module->_virtualStrip)
     {
-        Segment* seg = segCfg.segment;
-        if (!seg) continue;
-
-        const uint16_t len = seg->getLength();
-        for (uint16_t i = 0; i < len; i++)
-        {
-            uint8_t r, g, b;
-            uint8_t w;
-            if (seg->getPixel(i, r, g, b, w))
-            {
-                apply_hcl_pixel(applied, applyMode, satThr, curve, strength, comp, whiteMix, r, g, b, &w);
-                seg->setPixel(i, r, g, b, w);
-            }
-            else if (seg->getPixel(i, r, g, b))
-            {
-                apply_hcl_pixel(applied, applyMode, satThr, curve, strength, comp, whiteMix, r, g, b, nullptr);
-                seg->setPixel(i, r, g, b);
-            }
-        }
+        _module->_virtualStrip->setPixelTransformCallback(hclPixelTransformCallback, nullptr);
     }
+
+    // NOTE: Pixel transformation now happens in VirtualStrip::syncToPhysical()
+    // This preserves the effect buffer, so effects like Cylon that read back pixels work correctly
 }
 
 // ============================================================================

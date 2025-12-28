@@ -179,8 +179,9 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         cfg.savedEffectType = state.effectType;
         // Note: Effect-specific parameters are now loaded from ETS, not from flash
         cfg.savedValid = true;
-        cfg.savedEffectValid = (state.effectType > 0);
-        cfg.savedLastWasEffect = (state.effectType > 0);
+        // Effect type 0 (Solid) is also valid - any saved state from flash is valid
+        cfg.savedEffectValid = true;
+        cfg.savedLastWasEffect = true;
 
 #ifdef OPENKNX_DEBUG
         logInfoP("  -> Stored in config for later restoration");
@@ -273,46 +274,85 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         // Apply behavior
         switch (effectiveBehavior)
         {
-            case 0: // OFF
-                seg->setBrightness(0);
-                seg->setPrimaryColor(0, 0, 0, 0);
+            case 0: // OFF - Keep configuration but set power off
+            {
+                // Restore saved configuration if available, but keep power OFF
+                // This preserves brightness/color for when user turns it back on
+                if (cfg.savedValid)
+                {
+                    // Restore effect type and color (but not visible until power on)
+                    _module->applyEffectToSegment(seg, cfg.savedEffectType);
+                    if (cfg.savedEffectType > 0)
+                    {
+                        _module->setupEffectConfiguration(seg);
+                    }
+                    seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                    // Store the saved brightness internally but set display to 0
+                    // The segment will remember this brightness for when power is restored
+                    seg->setBrightness(0);
+                    // Store the original brightness in savedBrightness for later use
 #ifdef OPENKNX_DEBUG
-                logInfoP("[Segment %d] APPLIED: OFF (brightness=0)", i);
+                    logInfoP("[Segment %d] APPLIED: OFF (Effect=%d, Color=R:%d,G:%d,B:%d,W:%d configured, brightness=0, saved brightness=%d)",
+                             i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+#endif
+                }
+                else
+                {
+                    // No saved data - just turn off
+                    seg->setBrightness(0);
+                    seg->setPrimaryColor(0, 0, 0, 0);
+#ifdef OPENKNX_DEBUG
+                    logInfoP("[Segment %d] APPLIED: OFF (no saved data, brightness=0)", i);
+#endif
+                }
+#ifdef OPENKNX_DEBUG
                 restoredCount++;
 #endif
-                break;
+            }
+            break;
 
             case 1: // LAST STATE (flash restore)
                 if (cfg.savedValid)
                 {
-                    // Check power state
+                    // Check power state first
                     if (cfg.savedPower == 0)
                     {
-                        seg->setBrightness(0);
-                        seg->setPrimaryColor(0, 0, 0, 0);
-#ifdef OPENKNX_DEBUG
-                        logInfoP("[Segment %d] RESTORED: Last state was OFF", i);
-#endif
-                    }
-                    else if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0)
-                    {
-                        // Restore effect (parameters loaded from ETS automatically)
+                        // Restore effect/color configuration but keep power off
                         _module->applyEffectToSegment(seg, cfg.savedEffectType);
-                        _module->setupEffectConfiguration(seg);
-                        seg->setBrightness(cfg.savedBrightness);
+                        if (cfg.savedEffectType > 0)
+                        {
+                            _module->setupEffectConfiguration(seg);
+                        }
+                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                        seg->setBrightness(0); // Power off
 #ifdef OPENKNX_DEBUG
-                        logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Brightness=%d)",
-                                 i, cfg.savedEffectType, cfg.savedBrightness);
+                        logInfoP("[Segment %d] RESTORED: Last state was OFF (Effect=%d configured but brightness=0)",
+                                 i, cfg.savedEffectType);
 #endif
                     }
                     else
                     {
-                        // Restore solid color
-                        seg->setBrightness(cfg.savedBrightness);
+                        // Power is ON - restore effect (including Solid/0) and color
+                        _module->applyEffectToSegment(seg, cfg.savedEffectType);
+                        if (cfg.savedEffectType > 0)
+                        {
+                            // Active effect - load parameters from ETS
+                            _module->setupEffectConfiguration(seg);
+                        }
+                        // Always restore color (effects use primary color, Solid needs it)
                         seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                        seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
-                        logInfoP("[Segment %d] RESTORED: Last color (R=%d,G=%d,B=%d,W=%d, Brightness=%d)",
-                                 i, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+                        if (cfg.savedEffectType > 0)
+                        {
+                            logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Color=R:%d,G:%d,B:%d,W:%d, Brightness=%d)",
+                                     i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+                        }
+                        else
+                        {
+                            logInfoP("[Segment %d] RESTORED: Last solid color (R=%d,G=%d,B=%d,W=%d, Brightness=%d)",
+                                     i, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+                        }
 #endif
                     }
 #ifdef OPENKNX_DEBUG
@@ -330,56 +370,63 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 }
                 break;
 
-            case 2: // DEFAULT COLOR
+            case 2: // DEFAULT COLOR (Standard-Farbe)
             {
                 uint8_t r, g, b, w, brightness, effectType;
 
                 // Get default color params (segment-specific or global)
                 if (segmentBehavior == 3)
                 {
-                    // Segment has own default color
+                    // Segment has own default color - _channelIndex must be set correctly for macros
+                    logDebugP("[Segment %d] Reading segment-specific startup params with _channelIndex=%d", i, _channelIndex);
                     r = ParamNEO_NEOSegmentStartupR;
                     g = ParamNEO_NEOSegmentStartupG;
                     b = ParamNEO_NEOSegmentStartupB;
                     w = ParamNEO_NEOSegmentStartupW;
                     brightness = ParamNEO_NEOSegmentStartupBrightness;
                     effectType = ParamNEO_NEOSegmentStartupEffect;
+                    logDebugP("[Segment %d] Read from ETS: R=%d,G=%d,B=%d,W=%d,Br=%d,Eff=%d",
+                              i, r, g, b, w, brightness, effectType);
                 }
                 else
                 {
                     // Use global default color
+                    logDebugP("[Segment %d] Reading GLOBAL startup params (segmentBehavior=%d)", i, segmentBehavior);
                     r = ParamNEO_NEOGlobalStartupR;
                     g = ParamNEO_NEOGlobalStartupG;
                     b = ParamNEO_NEOGlobalStartupB;
                     w = ParamNEO_NEOGlobalStartupW;
                     brightness = ParamNEO_NEOGlobalStartupBrightness;
                     effectType = ParamNEO_NEOGlobalStartupEffect;
+                    logDebugP("[Segment %d] Read from ETS: R=%d,G=%d,B=%d,W=%d,Br=%d,Eff=%d",
+                              i, r, g, b, w, brightness, effectType);
                 }
 
-                // Apply default color
-                seg->setBrightness(brightness);
-                
-                // Always apply the effect type (including 0 for Solid) to clear any previous effect
+                // Apply effect FIRST (this clears color), then color, then brightness
                 _module->applyEffectToSegment(seg, effectType);
-                
+
                 if (effectType > 0)
                 {
                     // Load effect parameters from ETS for active effects
                     _module->setupEffectConfiguration(seg);
+                }
+
+                // Always set color (effects use primary color, Solid needs it)
+                seg->setPrimaryColor(r, g, b, w);
+                // Set brightness LAST
+                seg->setBrightness(brightness);
+
 #ifdef OPENKNX_DEBUG
-                    logInfoP("[Segment %d] APPLIED: Default effect (Type=%d, Brightness=%d)", i, effectType, brightness);
-#endif
+                if (effectType > 0)
+                {
+                    logInfoP("[Segment %d] APPLIED: Default effect (Type=%d, Color=R:%d,G:%d,B:%d,W:%d, Brightness=%d)",
+                             i, effectType, r, g, b, w, brightness);
                 }
                 else
                 {
-                    // Solid color mode - apply the color
-                    seg->setPrimaryColor(r, g, b, w);
-#ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] APPLIED: Default color (R=%d,G=%d,B=%d,W=%d, Brightness=%d)",
                              i, r, g, b, w, brightness);
-#endif
                 }
-#ifdef OPENKNX_DEBUG
                 restoredCount++;
 #endif
             }
