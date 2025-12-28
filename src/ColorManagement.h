@@ -124,4 +124,5 @@ class ColorManagement
     uint16_t _hclTargetKelvin = 0;
     uint16_t _hclAppliedKelvin = 0;
     unsigned long _lastHclApplyMs = 0;
+    uint32_t _hclSlewAccumulatorMs = 0; ///< Accumulated time for fractional K steps
 };

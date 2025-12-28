@@ -402,7 +402,7 @@
                 <!-- 7b: Byte14[0..6]; Bit7 frei -->
                 <Parameter Id="%AID%_UP-%TT%00062" Offset="14" BitOffset="0" Name="HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
                 <!-- Byte 15 -->
-                <Parameter Id="%AID%_UP-%TT%00063" Offset="15" BitOffset="0" Name="HCLTransitionTime" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew / Transition Time" Value="100" SuffixText=" s"/>
+                <Parameter Id="%AID%_UP-%TT%00063" Offset="15" BitOffset="0" Name="HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
                 <!-- Byte 16 -->
                 <!-- 7b: Byte16[0..6]; Bit7 frei -->
                 <Parameter Id="%AID%_UP-%TT%00064" Offset="16" BitOffset="0" Name="HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>

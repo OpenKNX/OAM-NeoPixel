@@ -115,6 +115,7 @@ void ColorManagement::applyHclColorTemperature(uint16_t kelvin)
         _hclEnabled = true;
         _hclAppliedKelvin = _hclTargetKelvin;
         _lastHclApplyMs = 0;
+        _hclSlewAccumulatorMs = 0;
         logInfoP("HCL post-processing enabled: %d K target", (int)_hclTargetKelvin);
     }
     else if (_hclTargetKelvin != kelvin)
@@ -161,6 +162,7 @@ void ColorManagement::disableHclMode()
     _hclTargetKelvin = 0;
     _hclAppliedKelvin = 0;
     _lastHclApplyMs = 0;
+    _hclSlewAccumulatorMs = 0;
 
     _module->_hclModeEnabled = false;
     _module->_hclTargetKelvin = 6500;
@@ -406,36 +408,65 @@ void ColorManagement::applyHclPostProcess()
     const unsigned long dtMs = (_lastHclApplyMs == 0) ? kMinIntervalMs : (now - _lastHclApplyMs);
     _lastHclApplyMs = now;
 
-    // Kelvin slew / transition
+    // Kelvin slew rate (K/min)
     uint16_t target = _hclTargetKelvin;
     uint16_t applied = _hclAppliedKelvin;
 
-    uint16_t transitionSec = (uint16_t)ParamNEO_HCLTransitionTime;
-    if (transitionSec == 0)
+    uint16_t slewRateKPerMin = (uint16_t)ParamNEO_HCLSlewRate;
+    
+    // Calculate difference for jump detection
+    int32_t diff = (int32_t)target - (int32_t)applied;
+    uint32_t adiff = (uint32_t)((diff < 0) ? -diff : diff);
+    
+    // Threshold for instant jump (e.g., first time sync, large changes)
+    // Skip slewing for differences > 500K to quickly reach correct value after time sync
+    constexpr uint32_t kInstantJumpThresholdK = 500u;
+    
+    if (slewRateKPerMin == 0 || adiff > kInstantJumpThresholdK)
     {
+        // Slew rate 0 = instant change
+        // Large difference = instant jump (e.g., after first time sync)
+        if (adiff > kInstantJumpThresholdK && applied != 0)
+        {
+            logInfoP("HCL: Large Kelvin jump detected (%u K), applying instantly", (unsigned)adiff);
+        }
         applied = target;
+        _hclSlewAccumulatorMs = 0;
+    }
+    else if (diff != 0)
+    {
+        // Calculate milliseconds per 1 Kelvin step from slew rate (K/min)
+        // msPerKelvin = 60000 / slewRateKPerMin
+        // For 100 K/min: 60000 / 100 = 600ms per Kelvin
+        // For 10 K/min: 60000 / 10 = 6000ms (6s) per Kelvin
+        uint32_t msPerKelvin = 60000u / (uint32_t)slewRateKPerMin;
+        if (msPerKelvin == 0) msPerKelvin = 1;
+        
+        // Accumulate time until we have enough for at least 1K step
+        _hclSlewAccumulatorMs += dtMs;
+        
+        if (_hclSlewAccumulatorMs >= msPerKelvin)
+        {
+            uint32_t steps = _hclSlewAccumulatorMs / msPerKelvin;
+            if (steps > adiff) steps = adiff; // Don't overshoot
+            
+            applied = (uint16_t)((int32_t)applied + ((diff < 0) ? -(int32_t)steps : (int32_t)steps));
+            _hclSlewAccumulatorMs -= steps * msPerKelvin; // Keep remainder for next iteration
+        }
     }
     else
     {
-        int32_t diff = (int32_t)target - (int32_t)applied;
-        if (diff != 0)
-        {
-            uint32_t denom = (uint32_t)transitionSec * 1000u;
-            uint32_t adiff = (uint32_t)((diff < 0) ? -diff : diff);
-            uint32_t step = (adiff * (uint32_t)dtMs) / denom;
-            if (step == 0) step = 1;
-            if (step > adiff) step = adiff;
-            applied = (uint16_t)((int32_t)applied + ((diff < 0) ? -(int32_t)step : (int32_t)step));
-        }
+        // diff == 0: already at target
+        _hclSlewAccumulatorMs = 0;
     }
     _hclAppliedKelvin = applied;
 
     // Log Kelvin transitions
     if (applied != _module->_hclAppliedKelvin)
     {
-        logDebugP("HCL Kelvin slewed: %u K → %u K (target=%u K, transition=%us)",
+        logDebugP("HCL Kelvin slewed: %u K → %u K (target=%u K, rate=%u K/min)",
                   (unsigned)_module->_hclAppliedKelvin, (unsigned)applied,
-                  (unsigned)target, (unsigned)transitionSec);
+                  (unsigned)target, (unsigned)slewRateKPerMin);
     }
 
     // Keep module state in sync for status getters / diagnostics

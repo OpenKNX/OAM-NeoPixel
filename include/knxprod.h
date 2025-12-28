@@ -2614,7 +2614,7 @@
 #define NEO_HCLStrength                         4953      // 7 Bits, Bit 7-1
 #define     NEO_HCLStrengthMask 0xFE
 #define     NEO_HCLStrengthShift 1
-#define NEO_HCLTransitionTime                   4954      // uint8_t
+#define NEO_HCLSlewRate                         4954      // uint8_t
 #define NEO_HCLBrightnessCompensation           4955      // 7 Bits, Bit 7-1
 #define     NEO_HCLBrightnessCompensationMask 0xFE
 #define     NEO_HCLBrightnessCompensationShift 1
@@ -2742,8 +2742,8 @@
 #define ParamNEO_HCLmaxKelvin                        ((knx.paramWord(NEO_HCLmaxKelvin) & NEO_HCLmaxKelvinMask) >> NEO_HCLmaxKelvinShift)
 // HCL Strength / Mix
 #define ParamNEO_HCLStrength                         ((knx.paramByte(NEO_HCLStrength) & NEO_HCLStrengthMask) >> NEO_HCLStrengthShift)
-// Kelvin Slew / Transition Time
-#define ParamNEO_HCLTransitionTime                   (knx.paramByte(NEO_HCLTransitionTime))
+// Kelvin Slew Rate
+#define ParamNEO_HCLSlewRate                         (knx.paramByte(NEO_HCLSlewRate))
 // HCL Helligkeitskompensation
 #define ParamNEO_HCLBrightnessCompensation           ((knx.paramByte(NEO_HCLBrightnessCompensation) & NEO_HCLBrightnessCompensationMask) >> NEO_HCLBrightnessCompensationShift)
 // HCL Weiß Mix
