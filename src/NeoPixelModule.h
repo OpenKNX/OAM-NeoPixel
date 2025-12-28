@@ -226,7 +226,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Color Correction
     bool _gammaCorrectionEnabled = false; // Gamma correction enabled
     bool _whiteBalanceEnabled = false;    // White balance enabled
-    float _gammaValue = 2.2f;             // Gamma value (default 2.2)
+    float _gammaValue = 2.0f;             // Gamma value (default 2.0, ETS param 8)
     uint8_t _whiteBalanceRed = 255;       // Red channel balance (0-255)
     uint8_t _whiteBalanceGreen = 255;     // Green channel balance (0-255)
     uint8_t _whiteBalanceBlue = 255;      // Blue channel balance (0-255)

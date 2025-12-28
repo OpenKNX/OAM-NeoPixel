@@ -472,7 +472,7 @@ void ColorManagement::configureColorCorrection()
     // Local variable for ETS parameter macros
     uint8_t _channelIndex = _module->getChannelIndex();
 
-    // Gamma correction configuration
+    // Gamma correction configuration (for colors)
     _module->_gammaCorrectionEnabled = (bool)ParamNEOSTRIP_NEOGammaCorrection;
     if (_module->_gammaCorrectionEnabled)
     {
@@ -521,19 +521,19 @@ void ColorManagement::forceColorCorrectionUpdate()
 
 float ColorManagement::mapGammaValue(uint8_t paramValue)
 {
-    // Map ETS parameter (0-10) to gamma value range (2.0-3.0)
-    // ETS XML configuration:
-    // Value 0 -> 2.0, Value 1 -> 2.1, ..., Value 10 -> 3.0
+    // Map ETS parameter (0-15) to gamma value range (1.2-2.7)
+    // ETS XML configuration (4 bits):
+    // Value 0 -> 1.2, Value 1 -> 1.3, ..., Value 15 -> 2.7
     // Each step represents 0.1 gamma increment
 
-    // Clamp parameter value to valid range
-    if (paramValue > 10)
+    // Clamp parameter value to valid range (4 bits = 0-15)
+    if (paramValue > 15)
     {
-        paramValue = 10;
+        paramValue = 15;
     }
 
-    // Convert: gamma = 2.0 + (paramValue * 0.1)
-    float gammaValue = 2.0f + (paramValue * 0.1f);
+    // Convert: gamma = 1.2 + (paramValue * 0.1)
+    float gammaValue = 1.2f + (paramValue * 0.1f);
 
     return gammaValue;
 }
