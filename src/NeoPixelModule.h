@@ -253,8 +253,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     class HclCurve* _hclCurve;
 
     // Global Brightness Control
-    uint8_t _globalBrightness = 255;          // Global brightness multiplier (0-255, default full)
-    std::vector<uint8_t> _originalBrightness; // Store original segment brightness levels
+    uint8_t _globalBrightness = 255; // Global brightness multiplier (0-255, default full)
 
     // Global Power Control
     bool _globalPowerOn = true; // Global power state (default ON)

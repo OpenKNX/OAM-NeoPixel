@@ -23,63 +23,65 @@ void ColorManagement::applyGlobalBrightness(uint8_t brightness)
 
     _module->_globalBrightness = brightness;
 
-    logInfoP("Applying global brightness: %d%% to all segments", (brightness * 100) / 255);
-
-    // Initialize original brightness storage if needed
-    if (_module->_originalBrightness.size() != _module->_segments.size())
-    {
-        _module->_originalBrightness.resize(_module->_segments.size());
-
-        // Store current brightness levels as original if not done yet
-        for (size_t i = 0; i < _module->_segments.size(); i++)
-        {
-            if (_module->_segments[i].segment)
-            {
-                _module->_originalBrightness[i] = _module->_segments[i].segment->getBrightness();
-                logDebugP("Stored original brightness for segment %zu: %d%%",
-                          i, (_module->_originalBrightness[i] * 100) / 255);
-            }
-        }
-    }
+    logInfoP("Applying global brightness: %d%% to all segments", (brightness * 100 + 127) / 255);
 
     // Apply brightness to all configured segments
+    // Use savedBrightness from SegmentConfig (always kept up-to-date when segment brightness changes)
     for (size_t i = 0; i < _module->_segments.size(); i++)
     {
-        if (_module->_segments[i].segment)
+        NeoPixelBusModule::SegmentConfig& cfg = _module->_segments[i];
+        if (cfg.segment)
         {
-            // Use stored original brightness, not current (to avoid cumulative effects)
-            uint8_t originalBrightness = _module->_originalBrightness[i];
+            // Use savedBrightness as the "desired" brightness before global scaling
+            // savedBrightness is updated whenever segment brightness is set via KO
+            uint8_t originalBrightness = cfg.savedBrightness;
+            
+            // If savedBrightness is 0 but segment is on, use current brightness as fallback
+            if (originalBrightness == 0 && cfg.segment->getBrightness() > 0)
+            {
+                originalBrightness = cfg.segment->getBrightness();
+            }
+            
             uint8_t effectiveBrightness = (originalBrightness * brightness) / 255;
 
             // Apply effective brightness to segment
-            _module->_segments[i].segment->setBrightness(effectiveBrightness);
+            cfg.segment->setBrightness(effectiveBrightness);
 
-            logDebugP("Segment %zu brightness: original=%d%%, global=%d%%, effective=%d%%",
+            logDebugP("Segment %zu brightness: saved=%d%%, global=%d%%, effective=%d%%",
                       i,
-                      (originalBrightness * 100) / 255,
-                      (brightness * 100) / 255,
-                      (effectiveBrightness * 100) / 255);
+                      (originalBrightness * 100 + 127) / 255,
+                      (brightness * 100 + 127) / 255,
+                      (effectiveBrightness * 100 + 127) / 255);
         }
     }
 
     logInfoP("Global brightness %d%% applied to %d segments",
-             (brightness * 100) / 255, (int)_module->_segments.size());
+             (brightness * 100 + 127) / 255, (int)_module->_segments.size());
 }
 
 void ColorManagement::restoreOriginalBrightness()
 {
     logInfoP("Restoring original brightness levels for all segments");
 
-    // Restore original brightness levels for all segments
-    for (size_t i = 0; i < _module->_segments.size() && i < _module->_originalBrightness.size(); i++)
+    // Restore original brightness levels for all segments using savedBrightness
+    for (size_t i = 0; i < _module->_segments.size(); i++)
     {
-        if (_module->_segments[i].segment)
+        NeoPixelBusModule::SegmentConfig& cfg = _module->_segments[i];
+        if (cfg.segment)
         {
-            uint8_t originalBrightness = _module->_originalBrightness[i];
-            _module->_segments[i].segment->setBrightness(originalBrightness);
+            // Restore to savedBrightness (the desired brightness before global scaling)
+            uint8_t originalBrightness = cfg.savedBrightness;
+            
+            // If savedBrightness is 0, default to full brightness
+            if (originalBrightness == 0)
+            {
+                originalBrightness = 255;
+            }
+            
+            cfg.segment->setBrightness(originalBrightness);
 
-            logDebugP("Restored segment %zu brightness to original: %d%%",
-                      i, (originalBrightness * 100) / 255);
+            logDebugP("Restored segment %zu brightness to saved: %d%%",
+                      i, (originalBrightness * 100 + 127) / 255);
         }
     }
 

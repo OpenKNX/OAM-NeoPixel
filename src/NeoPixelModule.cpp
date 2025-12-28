@@ -1088,11 +1088,23 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // Get segment config to access saved colors
                 SegmentConfig& cfgB = _segments[channel];
 
-                // Set the new brightness level
-                targetSegment->setBrightness(brightness);
-
-                // Persist desired brightness for power-restore
+                // Persist desired brightness for power-restore (before global scaling)
                 cfgB.savedBrightness = brightness;
+
+                // Apply global brightness scaling if active (< 255)
+                uint8_t effectiveBrightness = brightness;
+                if (_globalBrightness < 255)
+                {
+                    effectiveBrightness = (brightness * _globalBrightness) / 255;
+                    logDebugP("Segment %d: desired=%d%%, global=%d%%, effective=%d%%",
+                              channel,
+                              (brightness * 100 + 127) / 255,
+                              (_globalBrightness * 100 + 127) / 255,
+                              (effectiveBrightness * 100 + 127) / 255);
+                }
+
+                // Set the effective brightness level
+                targetSegment->setBrightness(effectiveBrightness);
 
                 // Send status feedback (send back percentage)
                 _channelIndex = channel;
