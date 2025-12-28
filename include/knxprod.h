@@ -21,7 +21,7 @@
 #define MAIN_ApplicationNumber 1
 #define MAIN_ApplicationVersion 1
 #define MAIN_ApplicationEncoding iso-8859-15
-#define MAIN_ParameterSize 7358
+#define MAIN_ParameterSize 7406
 #define MAIN_MaxKoNumber 1223
 #define MAIN_OrderNumber "NeoPixel"
 #define BASE_ModuleVersion 22
@@ -3389,7 +3389,7 @@
 
 // Parameter per channel
 #define NEOSTRIP_ParamBlockOffset 7226
-#define NEOSTRIP_ParamBlockSize 22
+#define NEOSTRIP_ParamBlockSize 30
 #define NEOSTRIP_ParamCalcIndex(index) (index + NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize)
 
 #define NEOSTRIP_NEOLEDType                           0      // 8 Bits, Bit 7-0
@@ -3552,7 +3552,7 @@
 #define BASE_KommentarModuleModuleParamSize 0
 #define BASE_KommentarModuleSubmodulesParamSize 0
 #define BASE_KommentarModuleParamSize 0
-#define BASE_KommentarModuleParamOffset 7358
+#define BASE_KommentarModuleParamOffset 7406
 #define BASE_KommentarModuleCalcIndex(index, m1) (index + BASE_KommentarModuleParamOffset + _channelIndex * BASE_KommentarModuleCount * BASE_KommentarModuleParamSize + m1 * BASE_KommentarModuleParamSize)
 
 

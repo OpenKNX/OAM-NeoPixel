@@ -1796,14 +1796,21 @@ void NeoPixelBusModule::configureFromETS()
                 configureColorCorrection();
                 updateColorCorrection(); // Set correction parameters on VirtualStrip once
 
-                // Configure gamma correction in the physical strip config
-                if (_gammaCorrectionEnabled)
+                auto* cfg = phys->getConfig();
+                if (cfg)
                 {
-                    auto* cfg = phys->getConfig();
-                    if (cfg)
+                    // Configure gamma correction in the physical strip config
+                    if (_gammaCorrectionEnabled)
                     {
                         cfg->setGammaCorrection(_gammaValue);
                         logInfoP("Strip %d: Gamma correction enabled (value=%.2f)", i, _gammaValue);
+                    }
+
+                    // Configure white balance in the physical strip config
+                    if (_whiteBalanceEnabled)
+                    {
+                        cfg->setWhiteBalance(_whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue);
+                        logInfoP("Strip %d: White balance enabled (R:%d G:%d B:%d)", i, _whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue);
                     }
                 }
 

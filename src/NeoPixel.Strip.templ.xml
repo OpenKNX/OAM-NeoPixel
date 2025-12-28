@@ -11,7 +11,7 @@
               <!-- Strip Name -->
               <Parameter Id="%AID%_P-%TT%9%C%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Strip Parameters -->
-              <Union SizeInBit="176">
+              <Union SizeInBit="240">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: 0..7 (8b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>

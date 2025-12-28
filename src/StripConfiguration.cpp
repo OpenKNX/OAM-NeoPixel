@@ -377,14 +377,21 @@ void StripConfiguration::configureFromETS()
                 _module->configureColorCorrection();
                 _module->updateColorCorrection(); // Set correction parameters on VirtualStrip once
 
-                // Configure gamma correction in the physical strip config
-                if (_module->_gammaCorrectionEnabled)
+                auto* cfg = phys->getConfig();
+                if (cfg)
                 {
-                    auto* cfg = phys->getConfig();
-                    if (cfg)
+                    // Configure gamma correction in the physical strip config
+                    if (_module->_gammaCorrectionEnabled)
                     {
                         cfg->setGammaCorrection(_module->_gammaValue);
                         logInfoP("Strip %d: Gamma correction enabled (value=%.2f)", i, _module->_gammaValue);
+                    }
+
+                    // Configure white balance in the physical strip config
+                    if (_module->_whiteBalanceEnabled)
+                    {
+                        cfg->setWhiteBalance(_module->_whiteBalanceRed, _module->_whiteBalanceGreen, _module->_whiteBalanceBlue);
+                        logInfoP("Strip %d: White balance enabled (R:%d G:%d B:%d)", i, _module->_whiteBalanceRed, _module->_whiteBalanceGreen, _module->_whiteBalanceBlue);
                     }
                 }
 
