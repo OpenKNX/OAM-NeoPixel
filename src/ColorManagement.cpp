@@ -413,15 +413,15 @@ void ColorManagement::applyHclPostProcess()
     uint16_t applied = _hclAppliedKelvin;
 
     uint16_t slewRateKPerMin = (uint16_t)ParamNEO_HCLSlewRate;
-    
+
     // Calculate difference for jump detection
     int32_t diff = (int32_t)target - (int32_t)applied;
     uint32_t adiff = (uint32_t)((diff < 0) ? -diff : diff);
-    
+
     // Threshold for instant jump (e.g., first time sync, large changes)
     // Skip slewing for differences > 500K to quickly reach correct value after time sync
     constexpr uint32_t kInstantJumpThresholdK = 500u;
-    
+
     if (slewRateKPerMin == 0 || adiff > kInstantJumpThresholdK)
     {
         // Slew rate 0 = instant change
@@ -441,15 +441,15 @@ void ColorManagement::applyHclPostProcess()
         // For 10 K/min: 60000 / 10 = 6000ms (6s) per Kelvin
         uint32_t msPerKelvin = 60000u / (uint32_t)slewRateKPerMin;
         if (msPerKelvin == 0) msPerKelvin = 1;
-        
+
         // Accumulate time until we have enough for at least 1K step
         _hclSlewAccumulatorMs += dtMs;
-        
+
         if (_hclSlewAccumulatorMs >= msPerKelvin)
         {
             uint32_t steps = _hclSlewAccumulatorMs / msPerKelvin;
             if (steps > adiff) steps = adiff; // Don't overshoot
-            
+
             applied = (uint16_t)((int32_t)applied + ((diff < 0) ? -(int32_t)steps : (int32_t)steps));
             _hclSlewAccumulatorMs -= steps * msPerKelvin; // Keep remainder for next iteration
         }

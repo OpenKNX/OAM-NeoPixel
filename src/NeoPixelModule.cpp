@@ -367,17 +367,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
+                // Always update primary color so running effects can use it immediately
                 {
                     uint8_t g = cfg.savedG;
                     uint8_t b = cfg.savedB;
                     targetSegment->setPrimaryColor(red, g, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (Red=%d)", channel, red);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending Red=%d (will apply when effect stops)", channel, red);
+                    logInfoP("Segment %d: Updated primary color (Red=%d)", channel, red);
                 }
 
                 // Send combined RGB/RGBW status feedback
@@ -430,17 +425,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
+                // Always update primary color so running effects can use it immediately
                 {
                     uint8_t r = cfg.savedR;
                     uint8_t b = cfg.savedB;
                     targetSegment->setPrimaryColor(r, green, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (Green=%d)", channel, green);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending Green=%d (will apply when effect stops)", channel, green);
+                    logInfoP("Segment %d: Updated primary color (Green=%d)", channel, green);
                 }
 
                 // Send combined RGB/RGBW status feedback
@@ -493,17 +483,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
+                // Always update primary color so running effects can use it immediately
                 {
                     uint8_t r = cfg.savedR;
                     uint8_t g = cfg.savedG;
                     targetSegment->setPrimaryColor(r, g, blue, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (Blue=%d)", channel, blue);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending Blue=%d (will apply when effect stops)", channel, blue);
+                    logInfoP("Segment %d: Updated primary color (Blue=%d)", channel, blue);
                 }
 
                 // Send combined RGB/RGBW status feedback
@@ -556,18 +541,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
+                // Always update primary color so running effects can use it immediately
                 {
                     uint8_t r = cfg.savedR;
                     uint8_t g = cfg.savedG;
                     uint8_t b = cfg.savedB;
                     targetSegment->setPrimaryColor(r, g, b, white);
-                    logInfoP("Segment %d: Updated Solid effect color (White=%d)", channel, white);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending White=%d (will apply when effect stops)", channel, white);
+                    logInfoP("Segment %d: Updated primary color (White=%d)", channel, white);
                 }
 
                 // Send RGBW status feedback (white channel update)
@@ -660,16 +640,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
-                {
-                    targetSegment->setPrimaryColor(r, g, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (Hue)", channel);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending Hue (will apply when effect stops)", channel);
-                }
+                // Always update primary color so running effects can use it immediately
+                targetSegment->setPrimaryColor(r, g, b, 0);
+                logInfoP("Segment %d: Updated primary color (Hue)", channel);
 
                 // Store and persist HSV values
                 cfg.currentH = hue;
@@ -728,16 +701,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
-                {
-                    targetSegment->setPrimaryColor(r, g, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (Saturation)", channel);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending Saturation (will apply when effect stops)", channel);
-                }
+                // Always update primary color so running effects can use it immediately
+                targetSegment->setPrimaryColor(r, g, b, 0);
+                logInfoP("Segment %d: Updated primary color (Saturation)", channel);
 
                 // Store HSV values
                 cfg.currentH = h;
@@ -791,16 +757,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
-                {
-                    targetSegment->setPrimaryColor(r, g, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (Value)", channel);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending Value (will apply when effect stops)", channel);
-                }
+                // Always update primary color so running effects can use it immediately
+                targetSegment->setPrimaryColor(r, g, b, 0);
+                logInfoP("Segment %d: Updated primary color (Value)", channel);
 
                 // Store HSV values
                 cfg.currentH = h;
@@ -847,16 +806,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
-                {
-                    targetSegment->setPrimaryColor(r, g, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (RGB)", channel);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending RGB (will apply when effect stops)", channel);
-                }
+                // Always update primary color so running effects can use it immediately
+                targetSegment->setPrimaryColor(r, g, b, 0);
+                logInfoP("Segment %d: Updated primary color (RGB)", channel);
 
                 // Send status feedback
                 _channelIndex = channel;
@@ -904,16 +856,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
-                // If Solid effect is running, also update config so it renders on next cycle
-                if (targetSegment->getEffect() == EffectPool::getSolid())
-                {
-                    targetSegment->setPrimaryColor(r, g, b, 0);
-                    logInfoP("Segment %d: Updated Solid effect color (HSV)", channel);
-                }
-                else
-                {
-                    logInfoP("Segment %d: Stored pending HSV (will apply when effect stops)", channel);
-                }
+                // Always update primary color so running effects can use it immediately
+                targetSegment->setPrimaryColor(r, g, b, 0);
+                logInfoP("Segment %d: Updated primary color (HSV)", channel);
 
                 // Send status feedback
                 _channelIndex = channel;
