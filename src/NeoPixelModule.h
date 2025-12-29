@@ -216,6 +216,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     NeoPixel _neoPixel;
 
     bool _initialized = false;
+    bool _clearLedsAfterSetup = false; // Flag to clear LEDs after hardware initialization
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
     VirtualStrip* _virtualStrip = nullptr;

@@ -115,9 +115,19 @@ void NeoPixelBusModule::setup(bool configured)
             _neoPixel.init();
         }
 
+        // Configure strips, segments and effects from ETS parameters
         configureFromETS();
         _initialized = true;
+        // Initialize all physical strips (PIO, DMA, etc.) - MUST be after configureFromETS()
+        // which creates the PhysicalStrip objects, but BEFORE any show() calls
         _neoPixel.setup(configured);
+        // Now that hardware is initialized, clear LEDs if requested during configuration
+        if (_clearLedsAfterSetup && _virtualStrip)
+        {
+            _virtualStrip->show();
+            logInfoP("LEDs cleared - will restore saved state after startup delay");
+            _clearLedsAfterSetup = false;
+        }
 
         // Setup HCL curve for automatic Kelvin scheduling
         if (_hclCurve)
@@ -1822,6 +1832,7 @@ void NeoPixelBusModule::configureFromETS()
 
             // Turn off all segments after configuration to prevent showing ETS defaults
             // They will be restored to correct state in processAfterStartupDelay()
+            // Note: show() is called later in setup() after _neoPixel.setup() initializes hardware
             for (auto& segConfig : _segments)
             {
                 if (segConfig.segment)
@@ -1830,8 +1841,8 @@ void NeoPixelBusModule::configureFromETS()
                     segConfig.segment->clearAll();
                 }
             }
-            _virtualStrip->show();
-            logInfoP("LEDs cleared - will restore saved state after startup delay");
+            _clearLedsAfterSetup = true; // Flag to call show() after hardware init
+            logInfoP("LEDs prepared for clearing - will show after hardware init");
         }
 
         // Configure power management using OFM PowerManager
