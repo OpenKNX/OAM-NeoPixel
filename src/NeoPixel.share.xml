@@ -208,8 +208,8 @@
               <ParameterType Id="%AID%_PT-NEOPowerLimitType" Name="NEOPowerLimitType">
                 <TypeRestriction Base="Value" SizeInBit="3">
                   <Enumeration Text="Global"      Value="0" Id="%ENID%" />
-                  <!-- <Enumeration Text="Per Channel" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Per LED"     Value="2" Id="%ENID%" /> -->
+                  <Enumeration Text="Per Channel" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Per LED"     Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit -->
@@ -412,7 +412,7 @@
               </Union>
 
               <!-- NeoPixel allgemeine Parameters -->
-              <Union SizeInBit="24">
+              <Union SizeInBit="112">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="20" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
                 <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 6"/>
@@ -421,10 +421,30 @@
                 <Parameter Id="%AID%_UP-%TT%00023" Offset="1" BitOffset="5" Name="NEOTurnOffBeforeRestart" ParameterType="%AID%_PT-Boolean" Text="LEDs vor Upload/Neustart ausschalten" Value="1"/>
                 <!-- Byte 2: 8b -->
                 <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEOUpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Update Speed" Value="50"/>
+                <!-- Byte 3..4: 16b -->
+                <Parameter Id="%AID%_UP-%TT%00068" Offset="3" BitOffset="0" Name="NEOpowerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
+                <!-- Byte 5: 0..6 (7b) -->
+                <Parameter Id="%AID%_UP-%TT%00069" Offset="5" BitOffset="0" Name="NEOcurrentPerLED" ParameterType="%AID%_PT-NEOPowerLimitLED" Text="Strom pro LED (mA)" Value="60"/>
+                <!-- Byte 5: 7 (1b) -->
+                <Parameter Id="%AID%_UP-%TT%00074" Offset="5" BitOffset="7" Name="NEOpowerLimitEnabled" ParameterType="%AID%_PT-Boolean" Text="Strombegrenzung aktiviert" Value="0"/>
+                <!-- Byte 6..7: 16b -->
+                <Parameter Id="%AID%_UP-%TT%00070" Offset="6" BitOffset="0" Name="NEOcurrentPerChannel" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Strom pro Kanal (mA)" Value="500"/>
+                <!-- Byte 8: 0..2 (3b) - Power Limit Type -->
+                <Parameter Id="%AID%_UP-%TT%00075" Offset="8" BitOffset="0" Name="NEOpowerLimitType" ParameterType="%AID%_PT-NEOPowerLimitType" Text="Strombegrenzung Typ" Value="0"/>
+                <!-- Byte 8: 3..7 (5b) - frei -->
+                <!-- Byte 9: 0..6 (7b) -->
+                <Parameter Id="%AID%_UP-%TT%00071" Offset="9" BitOffset="0" Name="NEOautoBrightnessLimit" ParameterType="%AID%_PT-NEOPercent" Text="Auto-Helligkeitsbegrenzung (%)" Value="100"/>
+                <!-- Byte 9: 7 (1b) - frei -->
+                <!-- Byte 10: 0..6 (7b) -->
+                <Parameter Id="%AID%_UP-%TT%00072" Offset="10" BitOffset="0" Name="NEOpowerLimitThreshold" ParameterType="%AID%_PT-NEOPercent" Text="Strombegrenzung Schwellwert (%)" Value="80"/>
+                <!-- Byte 10: Bit 7 frei -->
+                <!-- Byte 11: -->
+                <Parameter Id="%AID%_UP-%TT%00073" Offset="11" BitOffset="0" Name="NEOablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
+                 <!-- Byte 12-13: frei-->
               </Union>
               <!-- Global Startup Behavior Union -->
               <Union SizeInBit="56">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="23" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="34" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
@@ -435,7 +455,7 @@
               </Union>
               <!-- Virtual Strip Configuration -->
               <Union SizeInBit="24">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="30" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="41" BitOffset="0" />
                 <!-- Canonical (full 1..6) -->
                 <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
@@ -474,7 +494,7 @@
 
               <!-- Virtual Strip Start Indices (for UI only) -->
               <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="35" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="46" BitOffset="0" />
                 <!-- 6 * 16 bit = 96 bit -->
                 <Parameter Id="%AID%_UP-%TT%00051" Offset="0" BitOffset="0"  Name="VirtualStripStart1" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 1" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00052" Offset="2" BitOffset="0"  Name="VirtualStripStart2" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 2" Value="1" Access="Read"/>
@@ -503,11 +523,20 @@
               <ParameterRef Id="%AID%_UP-%TT%00065_R-%TT%0006501" RefId="%AID%_UP-%TT%00065" />
               <ParameterRef Id="%AID%_UP-%TT%00066_R-%TT%0006601" RefId="%AID%_UP-%TT%00066" />
               <ParameterRef Id="%AID%_UP-%TT%00067_R-%TT%0006701" RefId="%AID%_UP-%TT%00067" />
-              <!-- NEO Parameter References -->
+               <!-- NEO Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00020_R-%TT%0002001" RefId="%AID%_UP-%TT%00020" />
               <ParameterRef Id="%AID%_UP-%TT%00021_R-%TT%0002101" RefId="%AID%_UP-%TT%00021" />
               <ParameterRef Id="%AID%_UP-%TT%00022_R-%TT%0002201" RefId="%AID%_UP-%TT%00022" />
               <ParameterRef Id="%AID%_UP-%TT%00023_R-%TT%0002301" RefId="%AID%_UP-%TT%00023" />
+              <ParameterRef Id="%AID%_UP-%TT%00068_R-%TT%0006801" RefId="%AID%_UP-%TT%00068" />
+              <ParameterRef Id="%AID%_UP-%TT%00069_R-%TT%0006901" RefId="%AID%_UP-%TT%00069" />
+              <ParameterRef Id="%AID%_UP-%TT%00070_R-%TT%0007001" RefId="%AID%_UP-%TT%00070" />
+              <ParameterRef Id="%AID%_UP-%TT%00071_R-%TT%0007101" RefId="%AID%_UP-%TT%00071" />
+              <ParameterRef Id="%AID%_UP-%TT%00072_R-%TT%0007201" RefId="%AID%_UP-%TT%00072" />
+              <ParameterRef Id="%AID%_UP-%TT%00073_R-%TT%0007301" RefId="%AID%_UP-%TT%00073" />
+              <ParameterRef Id="%AID%_UP-%TT%00074_R-%TT%0007401" RefId="%AID%_UP-%TT%00074" />
+              <ParameterRef Id="%AID%_UP-%TT%00075_R-%TT%0007501" RefId="%AID%_UP-%TT%00075" />
+
               <!-- Global Startup Behavior Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00024_R-%TT%0002401" RefId="%AID%_UP-%TT%00024" />
               <ParameterRef Id="%AID%_UP-%TT%00025_R-%TT%0002501" RefId="%AID%_UP-%TT%00025" />
@@ -1357,6 +1386,37 @@
                     <!-- <ParameterSeparator Id="%AID%_PS-nnn" Text="✓ Alle virtuellen Streifen sind eindeutig konfiguriert" UIHint="Information" /> -->
                   </when>
                 </choose>
+                <!-- ========================================================================================================= -->
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Strom-Einstellungen" UIHint="Headline" />
+                    <!-- powerLimitEnabled -->
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" HelpContext="%DOC%"/>
+                    <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
+                    <when test="!=0">
+                        <!-- powerLimitType -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00075_R-%TT%0007501" IndentLevel="1" HelpContext="%DOC%"/>
+                        <choose ParamRefId="%AID%_UP-%TT%00075_R-%TT%0007501">
+                        <when test="0">
+                            <!-- powerLimitGlobal -->
+                            <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="1" HelpContext="%DOC%"/>
+                        </when>
+                        <when test="1">
+                            <!-- currentPerChannel -->
+                            <ParameterRefRef RefId="%AID%_UP-%TT%00070_R-%TT%0007001" IndentLevel="1" HelpContext="%DOC%"/>
+                        </when>
+                        <when test="2">
+                            <!-- powerLimitPerLED -->
+                            <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="1" HelpContext="%DOC%"/>
+                        </when>
+                        </choose>
+                        <!-- autoBrightnessLimit -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="1" HelpContext="%DOC%"/>
+                        <!-- powerLimitThreshold -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="1" HelpContext="%DOC%"/>
+                        <!-- ablSlewRatePercent -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="1" HelpContext="%DOC%"/>
+                  </when>
+                  </choose>
                 <!-- ========================================================================================================= -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Segment Parameter" UIHint="Headline" />

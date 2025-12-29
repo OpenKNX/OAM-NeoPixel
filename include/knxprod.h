@@ -21,7 +21,7 @@
 #define MAIN_ApplicationNumber 1
 #define MAIN_ApplicationVersion 1
 #define MAIN_ApplicationEncoding iso-8859-15
-#define MAIN_ParameterSize 7406
+#define MAIN_ParameterSize 7345
 #define MAIN_MaxKoNumber 1223
 #define MAIN_OrderNumber "NeoPixel"
 #define BASE_ModuleVersion 22
@@ -2631,90 +2631,110 @@
 #define     NEO_NEOTurnOffBeforeRestartMask 0x04
 #define     NEO_NEOTurnOffBeforeRestartShift 2
 #define NEO_NEOUpdateSpeed                      4961      // 8 Bits, Bit 7-0
-#define NEO_NEOGlobalStartupBehavior            4962      // 2 Bits, Bit 7-6
+#define NEO_NEOpowerLimitGlobal                 4962      // uint16_t
+#define NEO_NEOcurrentPerLED                    4964      // 7 Bits, Bit 7-1
+#define     NEO_NEOcurrentPerLEDMask 0xFE
+#define     NEO_NEOcurrentPerLEDShift 1
+#define NEO_NEOpowerLimitEnabled                4964      // 1 Bit, Bit 0
+#define     NEO_NEOpowerLimitEnabledMask 0x01
+#define     NEO_NEOpowerLimitEnabledShift 0
+#define NEO_NEOcurrentPerChannel                4965      // uint16_t
+#define NEO_NEOpowerLimitType                   4967      // 3 Bits, Bit 7-5
+#define     NEO_NEOpowerLimitTypeMask 0xE0
+#define     NEO_NEOpowerLimitTypeShift 5
+#define NEO_NEOautoBrightnessLimit              4968      // 7 Bits, Bit 7-1
+#define     NEO_NEOautoBrightnessLimitMask 0xFE
+#define     NEO_NEOautoBrightnessLimitShift 1
+#define NEO_NEOpowerLimitThreshold              4969      // 7 Bits, Bit 7-1
+#define     NEO_NEOpowerLimitThresholdMask 0xFE
+#define     NEO_NEOpowerLimitThresholdShift 1
+#define NEO_NEOablSlewRatePercent               4970      // 7 Bits, Bit 7-1
+#define     NEO_NEOablSlewRatePercentMask 0xFE
+#define     NEO_NEOablSlewRatePercentShift 1
+#define NEO_NEOGlobalStartupBehavior            4973      // 2 Bits, Bit 7-6
 #define     NEO_NEOGlobalStartupBehaviorMask 0xC0
 #define     NEO_NEOGlobalStartupBehaviorShift 6
-#define NEO_NEOGlobalStartupR                   4963      // uint8_t
-#define NEO_NEOGlobalStartupG                   4964      // uint8_t
-#define NEO_NEOGlobalStartupB                   4965      // uint8_t
-#define NEO_NEOGlobalStartupW                   4966      // uint8_t
-#define NEO_NEOGlobalStartupBrightness          4967      // uint8_t
-#define NEO_NEOGlobalStartupEffect              4968      // 8 Bits, Bit 7-0
-#define NEO_VirtualStripPos1                    4969      // 4 Bits, Bit 7-4
+#define NEO_NEOGlobalStartupR                   4974      // uint8_t
+#define NEO_NEOGlobalStartupG                   4975      // uint8_t
+#define NEO_NEOGlobalStartupB                   4976      // uint8_t
+#define NEO_NEOGlobalStartupW                   4977      // uint8_t
+#define NEO_NEOGlobalStartupBrightness          4978      // uint8_t
+#define NEO_NEOGlobalStartupEffect              4979      // 8 Bits, Bit 7-0
+#define NEO_VirtualStripPos1                    4980      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1Mask 0xF0
 #define     NEO_VirtualStripPos1Shift 4
-#define NEO_VirtualStripPos2                    4969      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos2                    4980      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos2Mask 0x0F
 #define     NEO_VirtualStripPos2Shift 0
-#define NEO_VirtualStripPos3                    4970      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos3                    4981      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos3Mask 0xF0
 #define     NEO_VirtualStripPos3Shift 4
-#define NEO_VirtualStripPos4                    4970      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos4                    4981      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos4Mask 0x0F
 #define     NEO_VirtualStripPos4Shift 0
-#define NEO_VirtualStripPos5                    4971      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos5                    4982      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos5Mask 0xF0
 #define     NEO_VirtualStripPos5Shift 4
-#define NEO_VirtualStripPos6                    4971      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos6                    4982      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos6Mask 0x0F
 #define     NEO_VirtualStripPos6Shift 0
-#define NEO_VirtualStripPos1_1                  4969      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos1_1                  4980      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1_1Mask 0xF0
 #define     NEO_VirtualStripPos1_1Shift 4
-#define NEO_VirtualStripPos1_2                  4969      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos1_2                  4980      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1_2Mask 0xF0
 #define     NEO_VirtualStripPos1_2Shift 4
-#define NEO_VirtualStripPos1_3                  4969      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos1_3                  4980      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1_3Mask 0xF0
 #define     NEO_VirtualStripPos1_3Shift 4
-#define NEO_VirtualStripPos1_4                  4969      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos1_4                  4980      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1_4Mask 0xF0
 #define     NEO_VirtualStripPos1_4Shift 4
-#define NEO_VirtualStripPos1_5                  4969      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos1_5                  4980      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos1_5Mask 0xF0
 #define     NEO_VirtualStripPos1_5Shift 4
-#define NEO_VirtualStripPos2_2                  4969      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos2_2                  4980      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos2_2Mask 0x0F
 #define     NEO_VirtualStripPos2_2Shift 0
-#define NEO_VirtualStripPos2_3                  4969      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos2_3                  4980      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos2_3Mask 0x0F
 #define     NEO_VirtualStripPos2_3Shift 0
-#define NEO_VirtualStripPos2_4                  4969      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos2_4                  4980      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos2_4Mask 0x0F
 #define     NEO_VirtualStripPos2_4Shift 0
-#define NEO_VirtualStripPos2_5                  4969      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos2_5                  4980      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos2_5Mask 0x0F
 #define     NEO_VirtualStripPos2_5Shift 0
-#define NEO_VirtualStripPos3_3                  4970      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos3_3                  4981      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos3_3Mask 0xF0
 #define     NEO_VirtualStripPos3_3Shift 4
-#define NEO_VirtualStripPos3_4                  4970      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos3_4                  4981      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos3_4Mask 0xF0
 #define     NEO_VirtualStripPos3_4Shift 4
-#define NEO_VirtualStripPos3_5                  4970      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos3_5                  4981      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos3_5Mask 0xF0
 #define     NEO_VirtualStripPos3_5Shift 4
-#define NEO_VirtualStripPos4_4                  4970      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos4_4                  4981      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos4_4Mask 0x0F
 #define     NEO_VirtualStripPos4_4Shift 0
-#define NEO_VirtualStripPos4_5                  4970      // 4 Bits, Bit 3-0
+#define NEO_VirtualStripPos4_5                  4981      // 4 Bits, Bit 3-0
 #define     NEO_VirtualStripPos4_5Mask 0x0F
 #define     NEO_VirtualStripPos4_5Shift 0
-#define NEO_VirtualStripPos5_5                  4971      // 4 Bits, Bit 7-4
+#define NEO_VirtualStripPos5_5                  4982      // 4 Bits, Bit 7-4
 #define     NEO_VirtualStripPos5_5Mask 0xF0
 #define     NEO_VirtualStripPos5_5Shift 4
-#define NEO_VirtualStripHasDuplicates           4972      // 1 Bit, Bit 7
+#define NEO_VirtualStripHasDuplicates           4983      // 1 Bit, Bit 7
 #define     NEO_VirtualStripHasDuplicatesMask 0x80
 #define     NEO_VirtualStripHasDuplicatesShift 7
-#define NEO_SegmentStartEndError                4972      // 1 Bit, Bit 6
+#define NEO_SegmentStartEndError                4983      // 1 Bit, Bit 6
 #define     NEO_SegmentStartEndErrorMask 0x40
 #define     NEO_SegmentStartEndErrorShift 6
-#define NEO_VirtualStripStart1                  4974      // uint16_t
-#define NEO_VirtualStripStart2                  4976      // uint16_t
-#define NEO_VirtualStripStart3                  4978      // uint16_t
-#define NEO_VirtualStripStart4                  4980      // uint16_t
-#define NEO_VirtualStripStart5                  4982      // uint16_t
-#define NEO_VirtualStripStart6                  4984      // uint16_t
+#define NEO_VirtualStripStart1                  4985      // uint16_t
+#define NEO_VirtualStripStart2                  4987      // uint16_t
+#define NEO_VirtualStripStart3                  4989      // uint16_t
+#define NEO_VirtualStripStart4                  4991      // uint16_t
+#define NEO_VirtualStripStart5                  4993      // uint16_t
+#define NEO_VirtualStripStart6                  4995      // uint16_t
 
 // HCL Kurve Typ
 #define ParamNEO_HCLtype                             ((knx.paramByte(NEO_HCLtype) & NEO_HCLtypeMask) >> NEO_HCLtypeShift)
@@ -2756,6 +2776,22 @@
 #define ParamNEO_NEOTurnOffBeforeRestart             ((bool)(knx.paramByte(NEO_NEOTurnOffBeforeRestart) & NEO_NEOTurnOffBeforeRestartMask))
 // Update Speed
 #define ParamNEO_NEOUpdateSpeed                      (knx.paramByte(NEO_NEOUpdateSpeed))
+// Globale Strombegrenzung (mA)
+#define ParamNEO_NEOpowerLimitGlobal                 (knx.paramWord(NEO_NEOpowerLimitGlobal))
+// Strom pro LED (mA)
+#define ParamNEO_NEOcurrentPerLED                    ((knx.paramByte(NEO_NEOcurrentPerLED) & NEO_NEOcurrentPerLEDMask) >> NEO_NEOcurrentPerLEDShift)
+// Strombegrenzung aktiviert
+#define ParamNEO_NEOpowerLimitEnabled                ((bool)(knx.paramByte(NEO_NEOpowerLimitEnabled) & NEO_NEOpowerLimitEnabledMask))
+// Strom pro Kanal (mA)
+#define ParamNEO_NEOcurrentPerChannel                (knx.paramWord(NEO_NEOcurrentPerChannel))
+// Strombegrenzung Typ
+#define ParamNEO_NEOpowerLimitType                   ((knx.paramByte(NEO_NEOpowerLimitType) & NEO_NEOpowerLimitTypeMask) >> NEO_NEOpowerLimitTypeShift)
+// Auto-Helligkeitsbegrenzung (%)
+#define ParamNEO_NEOautoBrightnessLimit              ((knx.paramByte(NEO_NEOautoBrightnessLimit) & NEO_NEOautoBrightnessLimitMask) >> NEO_NEOautoBrightnessLimitShift)
+// Strombegrenzung Schwellwert (%)
+#define ParamNEO_NEOpowerLimitThreshold              ((knx.paramByte(NEO_NEOpowerLimitThreshold) & NEO_NEOpowerLimitThresholdMask) >> NEO_NEOpowerLimitThresholdShift)
+// Anstiegszeit ABL (%)
+#define ParamNEO_NEOablSlewRatePercent               ((knx.paramByte(NEO_NEOablSlewRatePercent) & NEO_NEOablSlewRatePercentMask) >> NEO_NEOablSlewRatePercentShift)
 // Verhalten nach Neustart (Global)
 #define ParamNEO_NEOGlobalStartupBehavior            ((knx.paramByte(NEO_NEOGlobalStartupBehavior) & NEO_NEOGlobalStartupBehaviorMask) >> NEO_NEOGlobalStartupBehaviorShift)
 // Standard-Farbe R
@@ -2849,7 +2885,7 @@
 #define NEO_ChannelCount 16
 
 // Parameter per channel
-#define NEO_ParamBlockOffset 4986
+#define NEO_ParamBlockOffset 4997
 #define NEO_ParamBlockSize 140
 #define NEO_ParamCalcIndex(index) (index + NEO_ParamBlockOffset + _channelIndex * NEO_ParamBlockSize)
 
@@ -3388,8 +3424,8 @@
 #define NEOSTRIP_ChannelCount 6
 
 // Parameter per channel
-#define NEOSTRIP_ParamBlockOffset 7226
-#define NEOSTRIP_ParamBlockSize 30
+#define NEOSTRIP_ParamBlockOffset 7237
+#define NEOSTRIP_ParamBlockSize 18
 #define NEOSTRIP_ParamCalcIndex(index) (index + NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize)
 
 #define NEOSTRIP_NEOLEDType                           0      // 8 Bits, Bit 7-0
@@ -3421,45 +3457,25 @@
 #define     NEOSTRIP_NEOLengthMask 0xFFFC
 #define     NEOSTRIP_NEOLengthShift 2
 #define NEOSTRIP_NEOSkipFirstLEDs                     8      // uint16_t
-#define NEOSTRIP_NEOpowerLimitEnabled                10      // 1 Bit, Bit 7
-#define     NEOSTRIP_NEOpowerLimitEnabledMask 0x80
-#define     NEOSTRIP_NEOpowerLimitEnabledShift 7
-#define NEOSTRIP_NEOpowerLimitType                   10      // 3 Bits, Bit 6-4
-#define     NEOSTRIP_NEOpowerLimitTypeMask 0x70
-#define     NEOSTRIP_NEOpowerLimitTypeShift 4
-#define NEOSTRIP_NEOTiming                           10      // 4 Bits, Bit 5-2
-#define     NEOSTRIP_NEOTimingMask 0x3C
-#define     NEOSTRIP_NEOTimingShift 2
-#define NEOSTRIP_NEOpowerLimitGlobal                 11      // uint16_t
-#define NEOSTRIP_NEOcurrentPerLED                    13      // 7 Bits, Bit 7-1
-#define     NEOSTRIP_NEOcurrentPerLEDMask 0xFE
-#define     NEOSTRIP_NEOcurrentPerLEDShift 1
-#define NEOSTRIP_NEOcurrentPerChannel                14      // uint16_t
-#define NEOSTRIP_NEOautoBrightnessLimit              16      // 7 Bits, Bit 7-1
-#define     NEOSTRIP_NEOautoBrightnessLimitMask 0xFE
-#define     NEOSTRIP_NEOautoBrightnessLimitShift 1
-#define NEOSTRIP_NEOpowerLimitThreshold              17      // 7 Bits, Bit 7-1
-#define     NEOSTRIP_NEOpowerLimitThresholdMask 0xFE
-#define     NEOSTRIP_NEOpowerLimitThresholdShift 1
-#define NEOSTRIP_NEOWhiteBalanceCorrection           18      // 1 Bit, Bit 7
+#define NEOSTRIP_NEOTiming                           10      // 4 Bits, Bit 7-4
+#define     NEOSTRIP_NEOTimingMask 0xF0
+#define     NEOSTRIP_NEOTimingShift 4
+#define NEOSTRIP_NEOWhiteBalanceCorrection           11      // 1 Bit, Bit 7
 #define     NEOSTRIP_NEOWhiteBalanceCorrectionMask 0x80
 #define     NEOSTRIP_NEOWhiteBalanceCorrectionShift 7
-#define NEOSTRIP_NEOGammaCorrection                  18      // 1 Bit, Bit 6
+#define NEOSTRIP_NEOGammaCorrection                  11      // 1 Bit, Bit 6
 #define     NEOSTRIP_NEOGammaCorrectionMask 0x40
 #define     NEOSTRIP_NEOGammaCorrectionShift 6
-#define NEOSTRIP_NEOGammaValue                       18      // 4 Bits, Bit 5-2
+#define NEOSTRIP_NEOGammaValue                       11      // 4 Bits, Bit 5-2
 #define     NEOSTRIP_NEOGammaValueMask 0x3C
 #define     NEOSTRIP_NEOGammaValueShift 2
-#define NEOSTRIP_NEOablSlewRatePercent               19      // 7 Bits, Bit 7-1
-#define     NEOSTRIP_NEOablSlewRatePercentMask 0xFE
-#define     NEOSTRIP_NEOablSlewRatePercentShift 1
-#define NEOSTRIP_NEOWhiteBalanceRed                  20      // 7 Bits, Bit 7-1
+#define NEOSTRIP_NEOWhiteBalanceRed                  12      // 7 Bits, Bit 7-1
 #define     NEOSTRIP_NEOWhiteBalanceRedMask 0xFE
 #define     NEOSTRIP_NEOWhiteBalanceRedShift 1
-#define NEOSTRIP_NEOWhiteBalanceGreen                21      // 7 Bits, Bit 7-1
+#define NEOSTRIP_NEOWhiteBalanceGreen                13      // 7 Bits, Bit 7-1
 #define     NEOSTRIP_NEOWhiteBalanceGreenMask 0xFE
 #define     NEOSTRIP_NEOWhiteBalanceGreenShift 1
-#define NEOSTRIP_NEOWhiteBalanceBlue                 22      // 7 Bits, Bit 7-1
+#define NEOSTRIP_NEOWhiteBalanceBlue                 14      // 7 Bits, Bit 7-1
 #define     NEOSTRIP_NEOWhiteBalanceBlueMask 0xFE
 #define     NEOSTRIP_NEOWhiteBalanceBlueShift 1
 
@@ -3485,30 +3501,14 @@
 #define ParamNEOSTRIP_NEOLength                           ((knx.paramWord(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOLength)) & NEOSTRIP_NEOLengthMask) >> NEOSTRIP_NEOLengthShift)
 // Überspringe erste LEDs
 #define ParamNEOSTRIP_NEOSkipFirstLEDs                    (knx.paramWord(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOSkipFirstLEDs)))
-// Strombegrenzung aktiviert
-#define ParamNEOSTRIP_NEOpowerLimitEnabled                ((bool)(knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitEnabled)) & NEOSTRIP_NEOpowerLimitEnabledMask))
-// Strombegrenzung Typ
-#define ParamNEOSTRIP_NEOpowerLimitType                   ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitType)) & NEOSTRIP_NEOpowerLimitTypeMask) >> NEOSTRIP_NEOpowerLimitTypeShift)
 // Timing
 #define ParamNEOSTRIP_NEOTiming                           ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOTiming)) & NEOSTRIP_NEOTimingMask) >> NEOSTRIP_NEOTimingShift)
-// Globale Strombegrenzung (mA)
-#define ParamNEOSTRIP_NEOpowerLimitGlobal                 (knx.paramWord(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitGlobal)))
-// Strom pro LED (mA)
-#define ParamNEOSTRIP_NEOcurrentPerLED                    ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOcurrentPerLED)) & NEOSTRIP_NEOcurrentPerLEDMask) >> NEOSTRIP_NEOcurrentPerLEDShift)
-// Strom pro Kanal (mA)
-#define ParamNEOSTRIP_NEOcurrentPerChannel                (knx.paramWord(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOcurrentPerChannel)))
-// Auto-Helligkeitsbegrenzung (%)
-#define ParamNEOSTRIP_NEOautoBrightnessLimit              ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOautoBrightnessLimit)) & NEOSTRIP_NEOautoBrightnessLimitMask) >> NEOSTRIP_NEOautoBrightnessLimitShift)
-// Strombegrenzung Schwellwert (%)
-#define ParamNEOSTRIP_NEOpowerLimitThreshold              ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOpowerLimitThreshold)) & NEOSTRIP_NEOpowerLimitThresholdMask) >> NEOSTRIP_NEOpowerLimitThresholdShift)
 // Weißabgleich
 #define ParamNEOSTRIP_NEOWhiteBalanceCorrection           ((bool)(knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOWhiteBalanceCorrection)) & NEOSTRIP_NEOWhiteBalanceCorrectionMask))
 // Gamma Korrektur (empfohlen!)
 #define ParamNEOSTRIP_NEOGammaCorrection                  ((bool)(knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOGammaCorrection)) & NEOSTRIP_NEOGammaCorrectionMask))
 // Gamma Wert
 #define ParamNEOSTRIP_NEOGammaValue                       ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOGammaValue)) & NEOSTRIP_NEOGammaValueMask) >> NEOSTRIP_NEOGammaValueShift)
-// Anstiegszeit ABL (%)
-#define ParamNEOSTRIP_NEOablSlewRatePercent               ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOablSlewRatePercent)) & NEOSTRIP_NEOablSlewRatePercentMask) >> NEOSTRIP_NEOablSlewRatePercentShift)
 // Weißabgleich Rot (%)
 #define ParamNEOSTRIP_NEOWhiteBalanceRed                  ((knx.paramByte(NEOSTRIP_ParamCalcIndex(NEOSTRIP_NEOWhiteBalanceRed)) & NEOSTRIP_NEOWhiteBalanceRedMask) >> NEOSTRIP_NEOWhiteBalanceRedShift)
 // Weißabgleich Grün (%)
@@ -3552,7 +3552,7 @@
 #define BASE_KommentarModuleModuleParamSize 0
 #define BASE_KommentarModuleSubmodulesParamSize 0
 #define BASE_KommentarModuleParamSize 0
-#define BASE_KommentarModuleParamOffset 7406
+#define BASE_KommentarModuleParamOffset 7345
 #define BASE_KommentarModuleCalcIndex(index, m1) (index + BASE_KommentarModuleParamOffset + _channelIndex * BASE_KommentarModuleCount * BASE_KommentarModuleParamSize + m1 * BASE_KommentarModuleParamSize)
 
 

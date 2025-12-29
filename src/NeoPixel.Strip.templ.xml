@@ -11,7 +11,7 @@
               <!-- Strip Name -->
               <Parameter Id="%AID%_P-%TT%9%C%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Strip Parameters -->
-              <Union SizeInBit="240">
+              <Union SizeInBit="144">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: 0..7 (8b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>
@@ -39,38 +39,20 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%037" Offset="6" BitOffset="0" Name="NEO%C%Length" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Anzahl an LEDs/LEDs-Gruppen" Value="30"/>
                 <!-- Byte 8..9: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%038" Offset="8" BitOffset="0" Name="NEO%C%SkipFirstLEDs" ParameterType="%AID%_PT-MinMaxValue" Text="Überspringe erste LEDs" Value="0"/>
-                <!-- Byte 10: 0 (1b), 1..3 (3b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%039" Offset="10" BitOffset="0" Name="NEO%C%powerLimitEnabled" ParameterType="%AID%_PT-Boolean" Text="Strombegrenzung aktiviert" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%040" Offset="10" BitOffset="1" Name="NEO%C%powerLimitType" ParameterType="%AID%_PT-NEOPowerLimitType" Text="Strombegrenzung Typ" Value="0"/>
-
-                <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="2" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
-                <!-- Byte 10: Bits 4..7 frei -->
-                <!-- Byte 11..12: 16b -->
-                <Parameter Id="%AID%_UP-%TT%9%C%041" Offset="11" BitOffset="0" Name="NEO%C%powerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
-                <!-- Byte 13: 0..6 (7b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%042" Offset="13" BitOffset="0" Name="NEO%C%currentPerLED" ParameterType="%AID%_PT-NEOPowerLimitLED" Text="Strom pro LED (mA)" Value="60"/>
-                <!-- Byte 13: Bit 7 frei -->
-                <!-- Byte 14..15: 16b -->
-                <Parameter Id="%AID%_UP-%TT%9%C%043" Offset="14" BitOffset="0" Name="NEO%C%currentPerChannel" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Strom pro Kanal (mA)" Value="500"/>
-                <!-- Byte 16: 0..6 (7b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%044" Offset="16" BitOffset="0" Name="NEO%C%autoBrightnessLimit" ParameterType="%AID%_PT-NEOPercent" Text="Auto-Helligkeitsbegrenzung (%)" Value="100"/>
-                <!-- Byte 16: Bit 7 frei -->
-                <!-- Byte 17: 0..6 (7b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%045" Offset="17" BitOffset="0" Name="NEO%C%powerLimitThreshold" ParameterType="%AID%_PT-NEOPercent" Text="Strombegrenzung Schwellwert (%)" Value="80"/>
-                <!-- Byte 17: Bit 7 frei -->
-                <!-- Byte 18: 0 (1b), 1 (1b), 2..5 (4b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%046" Offset="18" BitOffset="0" Name="NEO%C%WhiteBalanceCorrection" ParameterType="%AID%_PT-Boolean" Text="Weißabgleich" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%047" Offset="18" BitOffset="1" Name="NEO%C%GammaCorrection" ParameterType="%AID%_PT-Boolean" Text="Gamma Korrektur (empfohlen!)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%048" Offset="18" BitOffset="2" Name="NEO%C%GammaValue" ParameterType="%AID%_PT-NEOGammaValue" Text="Gamma Wert" Value="8"/>
-                <!-- Byte 18: Bits 6..7 frei -->
-                <!-- Byte 19: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%066" Offset="19" BitOffset="0" Name="NEO%C%ablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
-                <!-- Byte 20: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%067" Offset="20" BitOffset="0" Name="NEO%C%WhiteBalanceRed" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Rot (%)" Value="100"/>
-                <!-- Byte 21: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%068" Offset="21" BitOffset="0" Name="NEO%C%WhiteBalanceGreen" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Grün (%)" Value="100"/>
-                <!-- Byte 22: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="22" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
+                <!-- Byte 10: 0 (1b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="0" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
+                <!-- Byte 10: Bits 2..7 frei -->
+                <!-- Byte 11: 0 (1b), 1 (1b), 2..5 (4b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%046" Offset="11" BitOffset="0" Name="NEO%C%WhiteBalanceCorrection" ParameterType="%AID%_PT-Boolean" Text="Weißabgleich" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%047" Offset="11" BitOffset="1" Name="NEO%C%GammaCorrection" ParameterType="%AID%_PT-Boolean" Text="Gamma Korrektur (empfohlen!)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%048" Offset="11" BitOffset="2" Name="NEO%C%GammaValue" ParameterType="%AID%_PT-NEOGammaValue" Text="Gamma Wert" Value="8"/>
+                <!-- Byte 11: Bits 6..7 frei -->
+                <!-- Byte 12: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%067" Offset="12" BitOffset="0" Name="NEO%C%WhiteBalanceRed" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Rot (%)" Value="100"/>
+                <!-- Byte 13: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%068" Offset="13" BitOffset="0" Name="NEO%C%WhiteBalanceGreen" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Grün (%)" Value="100"/>
+                <!-- Byte 14: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="14" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -85,17 +67,11 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" RefId="%AID%_UP-%TT%9%C%036" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" RefId="%AID%_UP-%TT%9%C%037" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" RefId="%AID%_UP-%TT%9%C%038" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" RefId="%AID%_UP-%TT%9%C%039" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001" RefId="%AID%_UP-%TT%9%C%040" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" RefId="%AID%_UP-%TT%9%C%041" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" RefId="%AID%_UP-%TT%9%C%042" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" RefId="%AID%_UP-%TT%9%C%043" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" RefId="%AID%_UP-%TT%9%C%044" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" RefId="%AID%_UP-%TT%9%C%045" />
+               <!-- 39-45 free -->
               <ParameterRef Id="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601" RefId="%AID%_UP-%TT%9%C%046" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%047_R-%TT%9%C%04701" RefId="%AID%_UP-%TT%9%C%047" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%048_R-%TT%9%C%04801" RefId="%AID%_UP-%TT%9%C%048" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" RefId="%AID%_UP-%TT%9%C%066" />
+              <!-- 49-66 free -->
               <ParameterRef Id="%AID%_UP-%TT%9%C%067_R-%TT%9%C%06701" RefId="%AID%_UP-%TT%9%C%067" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%068_R-%TT%9%C%06801" RefId="%AID%_UP-%TT%9%C%068" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%069_R-%TT%9%C%06901" RefId="%AID%_UP-%TT%9%C%069" />
@@ -191,37 +167,6 @@
                       </choose>
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <!-- ========================================================================================================= -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Strom-Einstellungen" UIHint="Headline" />
-                          <!-- powerLimitEnabled -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" IndentLevel="1" HelpContext="%DOC%"/>
-                          <choose ParamRefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901">
-                          <when test="!=0">
-                              <!-- powerLimitType -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001" IndentLevel="1" HelpContext="%DOC%"/>
-                              <choose ParamRefId="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001">
-                              <when test="0">
-                                  <!-- powerLimitGlobal -->
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              <when test="1">
-                                  <!-- currentPerChannel -->
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              <when test="2">
-                                  <!-- powerLimitPerLED -->
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              </choose>
-                              <!-- autoBrightnessLimit -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" IndentLevel="1" HelpContext="%DOC%"/>
-                              <!-- powerLimitThreshold -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" IndentLevel="1" HelpContext="%DOC%"/>
-                              <!-- ablSlewRatePercent -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" IndentLevel="1" HelpContext="%DOC%"/>
-                        </when>
-                        </choose>
-                      <!-- =====================================...============================================================ -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Experten-Einstellungen" UIHint="Headline" />
 
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">

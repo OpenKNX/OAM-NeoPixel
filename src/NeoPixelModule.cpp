@@ -2195,16 +2195,6 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
 
 void NeoPixelBusModule::configurePowerManagement()
 {
-    // Read from the first strip's parameters (power limiting is usually global)
-    uint8_t oldChannelIndex = _channelIndex;
-    _channelIndex = 0; // Use first strip for global power settings
-
-    // Check if power limiting is enabled in ETS
-    bool powerLimitEnabled = (bool)ParamNEOSTRIP_NEOpowerLimitEnabled;
-
-    // Restore channel index
-    _channelIndex = oldChannelIndex;
-
     auto mgr = _neoPixel.getManager();
     if (!mgr)
     {
@@ -2219,38 +2209,122 @@ void NeoPixelBusModule::configurePowerManagement()
         return;
     }
 
+    // Read GLOBAL power parameters
+    bool powerLimitEnabled = (bool)ParamNEO_NEOpowerLimitEnabled;
+
     // Configure power management in OFM
     powerManager->setEnabled(powerLimitEnabled);
 
     if (powerLimitEnabled)
     {
-        // Read ETS parameters from first strip (power management is typically global)
-        _channelIndex = 0;
-        uint16_t powerLimitMa = (uint16_t)ParamNEOSTRIP_NEOpowerLimitGlobal;
-        uint8_t currentPerLed = (uint8_t)ParamNEOSTRIP_NEOcurrentPerLED;
-        _channelIndex = oldChannelIndex;
+        // Read all ETS parameters
+        uint8_t powerLimitType = (uint8_t)ParamNEO_NEOpowerLimitType; // 0=Global, 1=PerChannel, 2=PerLED
+        uint16_t powerLimitGlobal = (uint16_t)ParamNEO_NEOpowerLimitGlobal;
+        uint16_t currentPerChannel = (uint16_t)ParamNEO_NEOcurrentPerChannel;
+        uint8_t currentPerLed = (uint8_t)ParamNEO_NEOcurrentPerLED;
+        uint8_t autoBrightnessLimit = (uint8_t)ParamNEO_NEOautoBrightnessLimit;
+        uint8_t powerLimitThreshold = (uint8_t)ParamNEO_NEOpowerLimitThreshold;
+        uint8_t ablSlewRate = (uint8_t)ParamNEO_NEOablSlewRatePercent;
 
-        // Set maximum current limit
-        powerManager->setMaxCurrent(powerLimitMa);
-
-        // Configure LED current profile based on ETS settings
-        LedCurrentProfile profile;
-        if (currentPerLed > 0)
+        // Set power limit mode
+        PowerLimitMode mode;
+        switch (powerLimitType)
         {
-            // User specified custom current per LED - assume equal RGB distribution
-            uint16_t currentPerChannel = currentPerLed / 3; // RGB split
-            profile = LedCurrentProfile(currentPerChannel, currentPerChannel, currentPerChannel, 0);
+            case 0: mode = PowerLimitMode::GLOBAL; break;
+            case 1: mode = PowerLimitMode::PER_CHANNEL; break;
+            case 2: mode = PowerLimitMode::PER_LED; break;
+            default: mode = PowerLimitMode::GLOBAL; break;
+        }
+        powerManager->setPowerLimitMode(mode);
+
+        // Configure limits based on mode
+        switch (mode)
+        {
+            case PowerLimitMode::GLOBAL:
+                powerManager->setMaxCurrent(powerLimitGlobal);
+                break;
+
+            case PowerLimitMode::PER_CHANNEL:
+                powerManager->setMaxCurrentPerChannel(currentPerChannel);
+                break;
+
+            case PowerLimitMode::PER_LED:
+                powerManager->setMaxCurrentPerLed(currentPerLed);
+                break;
+        }
+
+        // Set soft-limiting threshold (Phase 2)
+        powerManager->setThresholdPercent(powerLimitThreshold);
+
+        // Set auto brightness limit (Phase 2)
+        powerManager->setMaxBrightnessPercent(autoBrightnessLimit);
+
+        // Set brightness slew rate (Phase 3)
+        powerManager->setBrightnessSlewRate(ablSlewRate);
+
+        // Configure LED current profile based on ETS settings and detected strip type
+        LedCurrentProfile profile;
+
+        // Check if we have any RGBW strips (for White channel current)
+        // ColorOrder enum: RGBW and GRBW are the only 4-channel orders currently defined
+        bool hasRgbwStrip = false;
+        for (const auto& strip : _physicalStrips)
+        {
+            if (strip)
+            {
+                ColorOrder order = strip->getColorOrder();
+                // RGBW (value 7) and GRBW (value 8) are 4-channel orders
+                if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
+                {
+                    hasRgbwStrip = true;
+                    break;
+                }
+            }
+        }
+
+        if (currentPerLed > 0 && mode != PowerLimitMode::PER_LED)
+        {
+            // User specified custom current per LED
+            // For RGB: divide by 3 channels, for RGBW: divide by 4 channels
+            if (hasRgbwStrip)
+            {
+                uint8_t perChannel = currentPerLed / 4;
+                profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel);
+            }
+            else
+            {
+                uint8_t perChannel = currentPerLed / 3;
+                profile = LedCurrentProfile(perChannel, perChannel, perChannel, 0);
+            }
         }
         else
         {
-            // Use default profile based on most common LED type
-            profile = LedProfiles::WS2812B; // Conservative default
+            // Use default profile based on strip type
+            profile = hasRgbwStrip ? LedProfiles::SK6812_RGBW : LedProfiles::WS2812B;
         }
 
         powerManager->setLedProfile(profile);
 
-        logInfoP("Power Management: ENABLED - MaxCurrent=%dmA, LEDProfile=R:%dmA G:%dmA B:%dmA W:%dmA",
-                 powerLimitMa, profile.redMA, profile.greenMA, profile.blueMA, profile.whiteMA);
+        // Log configuration
+        const char* modeNames[] = {"GLOBAL", "PER_CHANNEL", "PER_LED"};
+        switch (mode)
+        {
+            case PowerLimitMode::GLOBAL:
+                logInfoP("Power Management: %s mode - Limit=%dmA, Profile=R:%dmA G:%dmA B:%dmA W:%dmA",
+                         modeNames[0], powerLimitGlobal, profile.redMA, profile.greenMA, profile.blueMA, profile.whiteMA);
+                break;
+            case PowerLimitMode::PER_CHANNEL:
+                logInfoP("Power Management: %s mode - Limit=%dmA per channel, Profile=R:%dmA G:%dmA B:%dmA W:%dmA",
+                         modeNames[1], currentPerChannel, profile.redMA, profile.greenMA, profile.blueMA, profile.whiteMA);
+                break;
+            case PowerLimitMode::PER_LED:
+                logInfoP("Power Management: %s mode - Limit=%dmA per LED",
+                         modeNames[2], currentPerLed);
+                break;
+        }
+
+        logInfoP("  Threshold=%d%%, MaxBrightness=%d%%, SlewRate=%d%%/s",
+                 powerLimitThreshold, autoBrightnessLimit, ablSlewRate);
     }
     else
     {
@@ -2424,6 +2498,13 @@ NeoPixelBusModule::SegmentConfig NeoPixelBusModule::createSegmentConfig(uint8_t 
     }
 
     // Ensure segment fits within total LED count
+    if (config.startLed >= _totalLeds)
+    {
+        logWarningP("Segment %d: Start LED(%d) exceeds total LEDs(%d), clamping to 0",
+                    segmentIndex, config.startLed, _totalLeds);
+        config.startLed = 0;
+    }
+
     if (config.endLed >= _totalLeds)
     {
         logWarningP("Segment %d: End LED(%d) exceeds total LEDs(%d), adjusting",
