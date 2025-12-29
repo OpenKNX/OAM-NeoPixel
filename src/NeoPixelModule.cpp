@@ -4,18 +4,20 @@
 #include "HclCurve.h"
 #include "SegmentController.h"
 #include "StripConfiguration.h"
+
 // Include generated effect parameters if available
-#ifdef __has_include
+#if defined(__has_include)
     #if __has_include("EffectParameterMapping.h")
         #define EFFECT_PARAMETER_MAPPING_GENERATED
         #include "EffectParameterMapping.h"
     #endif
 #else
-    #// Fallback for older compilers: can define via build flags
+    // Fallback for older compilers: can define via build flags
     #ifdef EFFECT_PARAMETER_MAPPING_GENERATED
         #include "EffectParameterMapping.h"
     #endif
 #endif
+
 #include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
 #include "PhysicalStripConfig.h" // For SpiStripConfig

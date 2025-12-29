@@ -4,8 +4,11 @@
 #include "knxprod.h"
 
 // Include auto-generated effect parameter mappings (if available)
-#ifdef EFFECT_PARAMETER_MAPPING_GENERATED
-extern void loadEffectParameters(Effect* effect, Segment* segment, uint8_t effectType, uint8_t channelIndex);
+#if defined(__has_include)
+    #if __has_include("EffectParameterMapping.h")
+        #define EFFECT_PARAMETER_MAPPING_GENERATED
+        #include "EffectParameterMapping.h"
+    #endif
 #endif
 
 EffectConfiguration::EffectConfiguration(NeoPixelBusModule* module)

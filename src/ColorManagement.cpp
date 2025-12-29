@@ -35,13 +35,13 @@ void ColorManagement::applyGlobalBrightness(uint8_t brightness)
             // Use savedBrightness as the "desired" brightness before global scaling
             // savedBrightness is updated whenever segment brightness is set via KO
             uint8_t originalBrightness = cfg.savedBrightness;
-            
+
             // If savedBrightness is 0 but segment is on, use current brightness as fallback
             if (originalBrightness == 0 && cfg.segment->getBrightness() > 0)
             {
                 originalBrightness = cfg.segment->getBrightness();
             }
-            
+
             uint8_t effectiveBrightness = (originalBrightness * brightness) / 255;
 
             // Apply effective brightness to segment
@@ -71,13 +71,13 @@ void ColorManagement::restoreOriginalBrightness()
         {
             // Restore to savedBrightness (the desired brightness before global scaling)
             uint8_t originalBrightness = cfg.savedBrightness;
-            
+
             // If savedBrightness is 0, default to full brightness
             if (originalBrightness == 0)
             {
                 originalBrightness = 255;
             }
-            
+
             cfg.segment->setBrightness(originalBrightness);
 
             logDebugP("Restored segment %zu brightness to saved: %d%%",
