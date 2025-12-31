@@ -139,7 +139,7 @@
               <ParameterType Id="%AID%_PT-NEOLedType" Name="NEOLedType">
               <TypeRestriction Base="Value" SizeInBit="8">
                 <Enumeration Text="WS2812B"              Value="0"  Id="%ENID%"/>
-                <Enumeration Text="WS2805"               Value="1"  Id="%ENID%"/>
+                <Enumeration Text="WS2805 RGBCCT"        Value="1"  Id="%ENID%"/>
                 <Enumeration Text="WS2811"               Value="2"  Id="%ENID%"/>
                 <Enumeration Text="WS2813"               Value="3"  Id="%ENID%"/>
                 <Enumeration Text="SK6812"               Value="4"  Id="%ENID%"/>
@@ -164,18 +164,28 @@
                 <Enumeration Text="LPD6803"              Value="23" Id="%ENID%"/>
                 <Enumeration Text="P9813"                Value="24" Id="%ENID%"/>
                 <Enumeration Text="APA102-Clone"         Value="25" Id="%ENID%"/>
+                <!-- 5-Channel RGBCCT (RGB + Warm White + Cool White) -->
+                <Enumeration Text="SK6812 RGBCCT (5ch)"  Value="30" Id="%ENID%"/>
+                <Enumeration Text="WS2814 RGBCCT (5ch)"  Value="31" Id="%ENID%"/>
                 <Enumeration Text="CUSTOM"               Value="99" Id="%ENID%"/>
               </TypeRestriction>
               </ParameterType>
               <!-- Colour Order Type -->
               <ParameterType Id="%AID%_PT-NEOColourOrder" Name="NEOColourOrder">
-                <TypeRestriction Base="Value" SizeInBit="3">
-                  <Enumeration Text="GRB" Value="0" Id="%ENID%" />
-                  <Enumeration Text="RGB" Value="1" Id="%ENID%" />
-                  <Enumeration Text="BRG" Value="2" Id="%ENID%" />
-                  <Enumeration Text="RBG" Value="3" Id="%ENID%" />
-                  <Enumeration Text="BGR" Value="4" Id="%ENID%" />
-                  <Enumeration Text="GBR" Value="5" Id="%ENID%" />
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Text="GRB"    Value="0" Id="%ENID%" />
+                  <Enumeration Text="RGB"    Value="1" Id="%ENID%" />
+                  <Enumeration Text="BRG"    Value="2" Id="%ENID%" />
+                  <Enumeration Text="RBG"    Value="3" Id="%ENID%" />
+                  <Enumeration Text="BGR"    Value="4" Id="%ENID%" />
+                  <Enumeration Text="GBR"    Value="5" Id="%ENID%" />
+                  <Enumeration Text="RGBW"   Value="6" Id="%ENID%" />
+                  <Enumeration Text="GRBW"   Value="7" Id="%ENID%" />
+                  <!-- 5-Channel Color Orders (CCT = Color Temp) -->
+                  <Enumeration Text="RGBCCT" Value="8"  Id="%ENID%" />
+                  <Enumeration Text="GRBCCT" Value="9"  Id="%ENID%" />
+                  <Enumeration Text="RGBCTW" Value="10" Id="%ENID%" />
+                  <Enumeration Text="GRBCTW" Value="11" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Swap -->

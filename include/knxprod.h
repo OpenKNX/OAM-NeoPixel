@@ -3429,12 +3429,12 @@
 #define NEOSTRIP_ParamCalcIndex(index) (index + NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize)
 
 #define NEOSTRIP_NEOLEDType                           0      // 8 Bits, Bit 7-0
-#define NEOSTRIP_NEOColourOrder                       1      // 3 Bits, Bit 7-5
-#define     NEOSTRIP_NEOColourOrderMask 0xE0
-#define     NEOSTRIP_NEOColourOrderShift 5
-#define NEOSTRIP_NEOSwap                              1      // 3 Bits, Bit 4-2
-#define     NEOSTRIP_NEOSwapMask 0x1C
-#define     NEOSTRIP_NEOSwapShift 2
+#define NEOSTRIP_NEOColourOrder                       1      // 4 Bits, Bit 7-4
+#define     NEOSTRIP_NEOColourOrderMask 0xF0
+#define     NEOSTRIP_NEOColourOrderShift 4
+#define NEOSTRIP_NEOSwap                              1      // 3 Bits, Bit 3-1
+#define     NEOSTRIP_NEOSwapMask 0x0E
+#define     NEOSTRIP_NEOSwapShift 1
 #define NEOSTRIP_NEODataGPIO                          2      // 7 Bits, Bit 7-1
 #define     NEOSTRIP_NEODataGPIOMask 0xFE
 #define     NEOSTRIP_NEODataGPIOShift 1

@@ -1871,7 +1871,7 @@ LedProtocol NeoPixelBusModule::mapProtocol(uint8_t p)
     switch (p)
     {
         case 0: return LedProtocol::WS2812B;       // WS2812B
-        case 1: return LedProtocol::WS2805;        // WS2805
+        case 1: return LedProtocol::WS2805_RGBCCT; // WS2805 (RGBCCT)
         case 2: return LedProtocol::WS2811;        // WS2811
         case 3: return LedProtocol::WS2813;        // WS2813
         case 4: return LedProtocol::SK6812;        // SK6812
@@ -1895,9 +1895,13 @@ LedProtocol NeoPixelBusModule::mapProtocol(uint8_t p)
         case 22: return LedProtocol::LPD8806;      // LPD8806
         case 23: return LedProtocol::LPD8806;      // LPD6803 (mapped to LPD8806)
         case 24: return LedProtocol::WS2801;       // P9813 (mapped to WS2801)
-        case 25: return LedProtocol::APA102_CLONE; // APA102-Clone
-        case 99: return LedProtocol::WS2812B;      // CUSTOM (default to WS2812B)
-        default: return LedProtocol::WS2812B;      // Default to most common
+        case 25:
+            return LedProtocol::APA102_CLONE; // APA102-Clone
+        // 5-Channel RGBCCT protocols (CCT = Correlated Color Temperature)
+        case 30: return LedProtocol::SK6812_RGBCCT; // SK6812 RGBCCT (5-channel)
+        case 31: return LedProtocol::WS2814_RGBCCT; // WS2814 RGBCCT (5-channel)
+        case 99: return LedProtocol::WS2812B;       // CUSTOM (default to WS2812B)
+        default: return LedProtocol::WS2812B;       // Default to most common
     }
 }
 
@@ -1914,8 +1918,14 @@ ColorOrder NeoPixelBusModule::mapColorOrder(uint8_t c)
         case 4: return ColorOrder::BGR;  // BGR (APA102/SK9822 standard)
         case 5: return ColorOrder::GBR;  // GBR (some WS2812B clones)
         case 6: return ColorOrder::RGBW; // RGBW (4-channel, RGB+White)
-        case 7: return ColorOrder::GRBW; // GRBW (4-channel, SK6812 standard)
-        default: return ColorOrder::GRB; // Default to WS2812/SK6812 standard
+        case 7:
+            return ColorOrder::GRBW; // GRBW (4-channel, SK6812 standard)
+        // 5-Channel Color Orders (RGBCCT = RGB + Warm White + Cool White)
+        case 8: return ColorOrder::RGBCCT;  // RGBCCT (5-channel)
+        case 9: return ColorOrder::GRBCCT;  // GRBCCT (5-channel, likely standard)
+        case 10: return ColorOrder::RGBCTW; // RGBCTW (5-channel, CW first)
+        case 11: return ColorOrder::GRBCTW; // GRBCTW (5-channel, CW first)
+        default: return ColorOrder::GRB;    // Default to WS2812/SK6812 standard
     }
 }
 
@@ -2010,19 +2020,44 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
         return;
     }
 
-    // Determine if any physical strip requires RGBW (4 bytes per LED)
+    // Determine if any physical strip requires RGBW (4 bytes) or RGBCCT (5 bytes per LED)
     bool needsRGBW = false;
+    bool needsRGBCCT = false;
     for (const auto* phys : _physicalStrips)
     {
-        if (phys && phys->getColorOrder() >= ColorOrder::RGBW)
+        if (phys)
         {
-            needsRGBW = true;
-            break;
+            ColorOrder order = phys->getColorOrder();
+            // Check for 5-channel first (RGBCCT, GRBCCT, RGBCTW, GRBCTW)
+            if (order == ColorOrder::RGBCCT || order == ColorOrder::GRBCCT ||
+                order == ColorOrder::RGBCTW || order == ColorOrder::GRBCTW)
+            {
+                needsRGBCCT = true;
+                break; // 5-channel is the maximum, no need to check further
+            }
+            // Check for 4-channel (RGBW, GRBW)
+            else if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
+            {
+                needsRGBW = true;
+            }
         }
     }
 
-    // Create virtual strip: RGBW if any strip needs it, otherwise RGB
-    ColorOrder virtualOrder = needsRGBW ? ColorOrder::RGBW : ColorOrder::RGB;
+    // Create virtual strip: RGBCCT if any 5-channel, RGBW if any 4-channel, otherwise RGB
+    ColorOrder virtualOrder;
+    if (needsRGBCCT)
+    {
+        virtualOrder = ColorOrder::GRBCCT; // Standard 5-channel order
+    }
+    else if (needsRGBW)
+    {
+        virtualOrder = ColorOrder::RGBW;
+    }
+    else
+    {
+        virtualOrder = ColorOrder::RGB;
+    }
+
     _virtualStrip = _neoPixel.addVirtualStrip(_totalLeds, virtualOrder);
     if (!_virtualStrip)
     {
@@ -2030,7 +2065,11 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
         return;
     }
 
-    if (needsRGBW)
+    if (needsRGBCCT)
+    {
+        logInfoP("VirtualStrip created with RGBCCT support (5 bytes/LED) for 5-channel physical strips");
+    }
+    else if (needsRGBW)
     {
         logInfoP("VirtualStrip created with RGBW support (4 bytes/LED) for RGBW physical strips");
     }
@@ -2162,6 +2201,11 @@ const char* NeoPixelBusModule::getColorOrderName(ColorOrder order)
         case ColorOrder::BRG: return "BRG";
         case ColorOrder::RGBW: return "RGBW";
         case ColorOrder::GRBW: return "GRBW";
+        // 5-Channel Color Orders
+        case ColorOrder::RGBCCT: return "RGBCCT";
+        case ColorOrder::GRBCCT: return "GRBCCT";
+        case ColorOrder::RGBCTW: return "RGBCTW";
+        case ColorOrder::GRBCTW: return "GRBCTW";
         default: return "UNKNOWN";
     }
 }
@@ -2185,6 +2229,10 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
         case LedProtocol::SK9822: return "SK9822";
         case LedProtocol::WS2801: return "WS2801";
         case LedProtocol::LPD8806: return "LPD8806";
+        // 5-Channel RGBCCT Protocols
+        case LedProtocol::SK6812_RGBCCT: return "SK6812_RGBCCT";
+        case LedProtocol::WS2814_RGBCCT: return "WS2814_RGBCCT";
+        case LedProtocol::WS2805_RGBCCT: return "WS2805_RGBCCT";
         default: return "UNKNOWN";
     }
 }
@@ -2265,19 +2313,25 @@ void NeoPixelBusModule::configurePowerManagement()
         // Configure LED current profile based on ETS settings and detected strip type
         LedCurrentProfile profile;
 
-        // Check if we have any RGBW strips (for White channel current)
-        // ColorOrder enum: RGBW and GRBW are the only 4-channel orders currently defined
+        // Check if we have any RGBW (4-channel) or RGBCCT (5-channel) strips
         bool hasRgbwStrip = false;
+        bool hasRgbcctStrip = false;
         for (const auto& strip : _physicalStrips)
         {
             if (strip)
             {
                 ColorOrder order = strip->getColorOrder();
-                // RGBW (value 7) and GRBW (value 8) are 4-channel orders
-                if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
+                // 5-channel: RGBCCT, GRBCCT, RGBCTW, GRBCTW
+                if (order == ColorOrder::RGBCCT || order == ColorOrder::GRBCCT ||
+                    order == ColorOrder::RGBCTW || order == ColorOrder::GRBCTW)
+                {
+                    hasRgbcctStrip = true;
+                    break; // 5-channel is the maximum
+                }
+                // 4-channel: RGBW, GRBW
+                else if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
                 {
                     hasRgbwStrip = true;
-                    break;
                 }
             }
         }
@@ -2285,8 +2339,13 @@ void NeoPixelBusModule::configurePowerManagement()
         if (currentPerLed > 0 && mode != PowerLimitMode::PER_LED)
         {
             // User specified custom current per LED
-            // For RGB: divide by 3 channels, for RGBW: divide by 4 channels
-            if (hasRgbwStrip)
+            // For RGB: divide by 3, RGBW: divide by 4, RGBCCT: divide by 5
+            if (hasRgbcctStrip)
+            {
+                uint8_t perChannel = currentPerLed / 5;
+                profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel, perChannel);
+            }
+            else if (hasRgbwStrip)
             {
                 uint8_t perChannel = currentPerLed / 4;
                 profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel);
@@ -2300,7 +2359,18 @@ void NeoPixelBusModule::configurePowerManagement()
         else
         {
             // Use default profile based on strip type
-            profile = hasRgbwStrip ? LedProfiles::SK6812_RGBW : LedProfiles::WS2812B;
+            if (hasRgbcctStrip)
+            {
+                profile = LedProfiles::SK6812_RGBCCT;
+            }
+            else if (hasRgbwStrip)
+            {
+                profile = LedProfiles::SK6812_RGBW;
+            }
+            else
+            {
+                profile = LedProfiles::WS2812B;
+            }
         }
 
         powerManager->setLedProfile(profile);
@@ -2310,12 +2380,12 @@ void NeoPixelBusModule::configurePowerManagement()
         switch (mode)
         {
             case PowerLimitMode::GLOBAL:
-                logInfoP("Power Management: %s mode - Limit=%dmA, Profile=R:%dmA G:%dmA B:%dmA W:%dmA",
-                         modeNames[0], powerLimitGlobal, profile.redMA, profile.greenMA, profile.blueMA, profile.whiteMA);
+                logInfoP("Power Management: %s mode - Limit=%dmA, Profile=R:%dmA G:%dmA B:%dmA WW:%dmA CW:%dmA",
+                         modeNames[0], powerLimitGlobal, profile.redMA, profile.greenMA, profile.blueMA, profile.warmWhiteMA, profile.coolWhiteMA);
                 break;
             case PowerLimitMode::PER_CHANNEL:
-                logInfoP("Power Management: %s mode - Limit=%dmA per channel, Profile=R:%dmA G:%dmA B:%dmA W:%dmA",
-                         modeNames[1], currentPerChannel, profile.redMA, profile.greenMA, profile.blueMA, profile.whiteMA);
+                logInfoP("Power Management: %s mode - Limit=%dmA per channel, Profile=R:%dmA G:%dmA B:%dmA WW:%dmA CW:%dmA",
+                         modeNames[1], currentPerChannel, profile.redMA, profile.greenMA, profile.blueMA, profile.warmWhiteMA, profile.coolWhiteMA);
                 break;
             case PowerLimitMode::PER_LED:
                 logInfoP("Power Management: %s mode - Limit=%dmA per LED",

@@ -15,9 +15,9 @@
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: 0..7 (8b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>
-                <!-- Byte 1: 0..2 (3b), 3..5 (3b) -->
+                <!-- Byte 1: 0..3 (4b), 4..5 (2b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%031" Offset="1" BitOffset="0" Name="NEO%C%ColourOrder" ParameterType="%AID%_PT-NEOColourOrder" Text="LED Farbordnung" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%032" Offset="1" BitOffset="3" Name="NEO%C%Swap" ParameterType="%AID%_PT-NEOSwap" Text="Swap" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%032" Offset="1" BitOffset="4" Name="NEO%C%Swap" ParameterType="%AID%_PT-NEOSwap" Text="Swap" Value="0"/>
                 <!-- Byte 1: Bits 6..7 frei -->
                 <!-- Byte 2: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%033" Offset="2" BitOffset="0" Name="NEO%C%DataGPIO" ParameterType="%AID%_PT-NEODataGPIO" Text="Daten GPIO" Value="6"/>
