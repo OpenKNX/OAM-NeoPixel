@@ -83,37 +83,109 @@ void SegmentController::processActiveDimming()
             }
 
             case NeoPixelBusModule::SegmentConfig::RED:
-                if (seg->getPixel(0, r, g, b))
+            {
+                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+                if (bytesPerLed == 5)
+                {
+                    uint8_t ww, cw;
+                    if (seg->getPixel(0, r, g, b, ww, cw))
+                    {
+                        int16_t newR = r + delta;
+                        newR = constrain(newR, 0, 255);
+                        seg->setPrimaryColor((uint8_t)newR, g, b, ww, cw);
+                    }
+                }
+                else if (bytesPerLed == 4)
+                {
+                    uint8_t w;
+                    if (seg->getPixel(0, r, g, b, w))
+                    {
+                        int16_t newR = r + delta;
+                        newR = constrain(newR, 0, 255);
+                        seg->setPrimaryColor((uint8_t)newR, g, b, w);
+                    }
+                }
+                else if (seg->getPixel(0, r, g, b))
                 {
                     int16_t newR = r + delta;
                     newR = constrain(newR, 0, 255);
                     seg->setPrimaryColor((uint8_t)newR, g, b, 0);
                 }
                 break;
+            }
 
             case NeoPixelBusModule::SegmentConfig::GREEN:
-                if (seg->getPixel(0, r, g, b))
+            {
+                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+                if (bytesPerLed == 5)
+                {
+                    uint8_t ww, cw;
+                    if (seg->getPixel(0, r, g, b, ww, cw))
+                    {
+                        int16_t newG = g + delta;
+                        newG = constrain(newG, 0, 255);
+                        seg->setPrimaryColor(r, (uint8_t)newG, b, ww, cw);
+                    }
+                }
+                else if (bytesPerLed == 4)
+                {
+                    uint8_t w;
+                    if (seg->getPixel(0, r, g, b, w))
+                    {
+                        int16_t newG = g + delta;
+                        newG = constrain(newG, 0, 255);
+                        seg->setPrimaryColor(r, (uint8_t)newG, b, w);
+                    }
+                }
+                else if (seg->getPixel(0, r, g, b))
                 {
                     int16_t newG = g + delta;
                     newG = constrain(newG, 0, 255);
                     seg->setPrimaryColor(r, (uint8_t)newG, b, 0);
                 }
                 break;
+            }
 
             case NeoPixelBusModule::SegmentConfig::BLUE:
-                if (seg->getPixel(0, r, g, b))
+            {
+                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+                if (bytesPerLed == 5)
+                {
+                    uint8_t ww, cw;
+                    if (seg->getPixel(0, r, g, b, ww, cw))
+                    {
+                        int16_t newB = b + delta;
+                        newB = constrain(newB, 0, 255);
+                        seg->setPrimaryColor(r, g, (uint8_t)newB, ww, cw);
+                    }
+                }
+                else if (bytesPerLed == 4)
+                {
+                    uint8_t w;
+                    if (seg->getPixel(0, r, g, b, w))
+                    {
+                        int16_t newB = b + delta;
+                        newB = constrain(newB, 0, 255);
+                        seg->setPrimaryColor(r, g, (uint8_t)newB, w);
+                    }
+                }
+                else if (seg->getPixel(0, r, g, b))
                 {
                     int16_t newB = b + delta;
                     newB = constrain(newB, 0, 255);
                     seg->setPrimaryColor(r, g, (uint8_t)newB, 0);
                 }
                 break;
+            }
 
             case NeoPixelBusModule::SegmentConfig::WHITE:
             case NeoPixelBusModule::SegmentConfig::WARM_WHITE:
             case NeoPixelBusModule::SegmentConfig::COOL_WHITE:
-                if (seg->getVirtualStrip()->getBytesPerLed() == 4)
+            {
+                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+                if (bytesPerLed == 4)
                 {
+                    // 4-channel RGBW: all white channels dim the single W
                     uint8_t w;
                     if (seg->getPixel(0, r, g, b, w))
                     {
@@ -122,7 +194,29 @@ void SegmentController::processActiveDimming()
                         seg->setPrimaryColor(r, g, b, (uint8_t)newW);
                     }
                 }
+                else if (bytesPerLed == 5)
+                {
+                    // 5-channel RGBCCT: separate WW and CW
+                    uint8_t ww, cw;
+                    if (seg->getPixel(0, r, g, b, ww, cw))
+                    {
+                        if (segConfig.activeDimming == NeoPixelBusModule::SegmentConfig::COOL_WHITE)
+                        {
+                            int16_t newCW = cw + delta;
+                            newCW = constrain(newCW, 0, 255);
+                            seg->setPrimaryColor(r, g, b, ww, (uint8_t)newCW);
+                        }
+                        else
+                        {
+                            // WHITE and WARM_WHITE both dim the WW channel
+                            int16_t newWW = ww + delta;
+                            newWW = constrain(newWW, 0, 255);
+                            seg->setPrimaryColor(r, g, b, (uint8_t)newWW, cw);
+                        }
+                    }
+                }
                 break;
+            }
 
             case NeoPixelBusModule::SegmentConfig::HUE:
             case NeoPixelBusModule::SegmentConfig::SATURATION:
@@ -150,13 +244,24 @@ void SegmentController::processActiveDimming()
 
                     uint8_t newR, newG, newB;
                     ColorHelper::hsvToRGB(h, s, v, newR, newG, newB);
-                    seg->setPrimaryColor(newR, newG, newB, 0);
 
-                    if (seg->getVirtualStrip()->getBytesPerLed() == 4)
+                    // Preserve white channel(s) when changing RGB
+                    uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+                    if (bytesPerLed == 5)
+                    {
+                        uint8_t ww, cw;
+                        seg->getPixel(0, r, g, b, ww, cw);
+                        seg->setPrimaryColor(newR, newG, newB, ww, cw);
+                    }
+                    else if (bytesPerLed == 4)
                     {
                         uint8_t w;
                         seg->getPixel(0, r, g, b, w);
                         seg->setPrimaryColor(newR, newG, newB, w);
+                    }
+                    else
+                    {
+                        seg->setPrimaryColor(newR, newG, newB, 0);
                     }
                 }
                 break;
@@ -225,7 +330,7 @@ void SegmentController::processRedKo(uint8_t channel, GroupObject& ko)
     cfg.pendingSolidR = red;
     cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
     cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-    cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
+    cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
 
     // Update saved values
     cfg.savedR = red;
@@ -233,7 +338,7 @@ void SegmentController::processRedKo(uint8_t channel, GroupObject& ko)
     {
         cfg.savedG = 0;
         cfg.savedB = 0;
-        cfg.savedW = 0;
+        cfg.savedWW = 0;
     }
     cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
@@ -259,7 +364,7 @@ void SegmentController::processRedKo(uint8_t channel, GroupObject& ko)
 
     if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
     {
-        uint8_t w = cfg.pendingSolidW;
+        uint8_t w = cfg.pendingSolidWW;
         uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
         bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
         if (changed) KoNEO_RGBWState.objectWritten();
@@ -286,14 +391,14 @@ void SegmentController::processGreenKo(uint8_t channel, GroupObject& ko)
     cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
     cfg.pendingSolidG = green;
     cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-    cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
+    cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
 
     // Update saved values
     if (!cfg.savedValid)
     {
         cfg.savedR = 0;
         cfg.savedB = 0;
-        cfg.savedW = 0;
+        cfg.savedWW = 0;
     }
     cfg.savedG = green;
     cfg.savedBrightness = targetSegment->getBrightness();
@@ -320,7 +425,7 @@ void SegmentController::processGreenKo(uint8_t channel, GroupObject& ko)
 
     if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
     {
-        uint8_t w = cfg.pendingSolidW;
+        uint8_t w = cfg.pendingSolidWW;
         uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
         bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
         if (changed) KoNEO_RGBWState.objectWritten();
@@ -347,14 +452,14 @@ void SegmentController::processBlueKo(uint8_t channel, GroupObject& ko)
     cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
     cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
     cfg.pendingSolidB = blue;
-    cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
+    cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
 
     // Update saved values
     if (!cfg.savedValid)
     {
         cfg.savedR = 0;
         cfg.savedG = 0;
-        cfg.savedW = 0;
+        cfg.savedWW = 0;
     }
     cfg.savedB = blue;
     cfg.savedBrightness = targetSegment->getBrightness();
@@ -381,7 +486,7 @@ void SegmentController::processBlueKo(uint8_t channel, GroupObject& ko)
 
     if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
     {
-        uint8_t w = cfg.pendingSolidW;
+        uint8_t w = cfg.pendingSolidWW;
         uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
         bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
         if (changed) KoNEO_RGBWState.objectWritten();
@@ -408,7 +513,7 @@ void SegmentController::processWhiteKo(uint8_t channel, GroupObject& ko)
     cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
     cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
     cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-    cfg.pendingSolidW = white;
+    cfg.pendingSolidWW = white;
 
     // Update saved values
     if (!cfg.savedValid)
@@ -417,7 +522,7 @@ void SegmentController::processWhiteKo(uint8_t channel, GroupObject& ko)
         cfg.savedG = 0;
         cfg.savedB = 0;
     }
-    cfg.savedW = white;
+    cfg.savedWW = white;
     cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
 
@@ -464,7 +569,7 @@ void SegmentController::processCctKo(uint8_t channel, GroupObject& ko)
     cfg.savedR = r;
     cfg.savedG = g;
     cfg.savedB = b;
-    cfg.savedW = 0;
+    cfg.savedWW = 0;
     cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
     cfg.savedLastWasEffect = false;

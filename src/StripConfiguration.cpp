@@ -136,20 +136,8 @@ void StripConfiguration::configureFromETS()
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = mapProtocol(ledTypeParam);
 
-        // Get color order: use GRBW for RGBW protocols, or user-selected for others
-        ColorOrder order;
-        if (ledTypeParam == 8)
-        { // SK6812/WS2814 (RGBW) - special ETS value
-            // RGBW capable protocols: use GRBW by default (white channel on back)
-            // User can adjust white position with Swap parameter if needed
-            order = ColorOrder::GRBW;
-            logInfoP("Strip %d: RGBW protocol detected (ETS type 8), using GRBW color order", i);
-        }
-        else
-        {
-            // Regular RGB protocols: use user-selected color order
-            order = mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
-        }
+        // Get color order from ETS configuration
+        ColorOrder order = mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
 
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
@@ -464,22 +452,39 @@ void StripConfiguration::configureFromETS()
 LedProtocol StripConfiguration::mapProtocol(uint8_t p)
 {
     // Map ETS LED type enum to OFM's LedProtocol enum
-    // Based on NEOLedType enumeration from NeoPixelBus.share.xml
+    // Based on NEOLedType enumeration from NeoPixel.share.xml
     switch (p)
     {
-        case 0: return LedProtocol::WS2812B;  // WS2812B
-        case 1: return LedProtocol::WS2805;   // WS2805
-        case 2: return LedProtocol::WS2811;   // WS2811
-        case 3: return LedProtocol::WS2813;   // WS2813
-        case 4: return LedProtocol::SK6812;   // SK6812
-        case 5: return LedProtocol::APA102;   // APA102
-        case 6: return LedProtocol::SK9822;   // SK9822
-        case 7: return LedProtocol::WS2812B;  // WS281x (mapped to WS2812B)
-        case 8: return LedProtocol::SK6812;   // SK6812/WS2814 (RGBW)
-        case 9: return LedProtocol::TM1814;   // TM1814
-        case 10: return LedProtocol::WS2811;  // WS2812_400kHz (mapped to WS2811)
-        case 21: return LedProtocol::WS2801;  // WS2801
-        case 22: return LedProtocol::LPD8806; // LPD8806
+        case 0: return LedProtocol::WS2812B;        // WS2812B
+        case 1: return LedProtocol::WS2805_RGBCCT;  // WS2805 RGBCCT (5-channel)
+        case 2: return LedProtocol::WS2811;         // WS2811
+        case 3: return LedProtocol::WS2813;         // WS2813
+        case 4: return LedProtocol::SK6812;         // SK6812
+        case 5: return LedProtocol::APA102;         // APA102
+        case 6: return LedProtocol::SK9822;         // SK9822
+        case 7: return LedProtocol::WS2812B;        // WS281x (generic, mapped to WS2812B)
+        case 8: return LedProtocol::SK6812;         // SK6812/WS2814 (RGBW)
+        case 9: return LedProtocol::TM1814;         // TM1814
+        case 10: return LedProtocol::WS2811;        // WS2812_400kHz (mapped to WS2811)
+        case 11: return LedProtocol::WS2811;        // TM1829 (mapped to WS2811)
+        case 12: return LedProtocol::WS2812B;       // UCS8903 (mapped to WS2812B)
+        case 13: return LedProtocol::WS2811;        // APA106/PL9823 (mapped to WS2811)
+        case 14: return LedProtocol::TM1814;        // TM1914 (mapped to TM1814)
+        case 15: return LedProtocol::WS2812B;       // FW1906 (mapped to WS2812B)
+        case 16: return LedProtocol::SK6812;        // UCS8904 (RGBW, mapped to SK6812)
+        case 17: return LedProtocol::WS2805_RGBCCT; // WS2805_RGBCW (same as RGBCCT)
+        case 18: return LedProtocol::WS2805_RGBCCT; // SM16825 (mapped to WS2805_RGBCCT)
+        case 19: return LedProtocol::WS2811;        // WS2811_WHITE (single channel, mapped to WS2811)
+        case 20: return LedProtocol::WS2812B;       // WS281x_WWA (warm/cool white, mapped to WS2812B)
+        case 21: return LedProtocol::WS2801;        // WS2801
+        case 22: return LedProtocol::LPD8806;       // LPD8806
+        case 23: return LedProtocol::LPD8806;       // LPD6803 (mapped to LPD8806)
+        case 24: return LedProtocol::APA102;        // P9813 (mapped to APA102)
+        case 25: return LedProtocol::APA102_CLONE;  // APA102-Clone
+        case 30: return LedProtocol::SK6812_RGBCCT; // SK6812 RGBCCT (5ch)
+        case 31: return LedProtocol::WS2814_RGBCCT; // WS2814 RGBCCT (5ch)
+        case 99: return LedProtocol::WS2812B;       // CUSTOM (default to WS2812B)
+
         default: return LedProtocol::WS2812B; // Default to most common
     }
 }
@@ -497,8 +502,14 @@ ColorOrder StripConfiguration::mapColorOrder(uint8_t c)
         case 4: return ColorOrder::BGR;  // BGR (APA102/SK9822 standard)
         case 5: return ColorOrder::GBR;  // GBR (some WS2812B clones)
         case 6: return ColorOrder::RGBW; // RGBW (4-channel, RGB+White)
-        case 7: return ColorOrder::GRBW; // GRBW (4-channel, SK6812 standard)
-        default: return ColorOrder::GRB; // Default to WS2812/SK6812 standard
+        case 7:
+            return ColorOrder::GRBW; // GRBW (4-channel, SK6812 standard)
+        // 5-Channel Color Orders (RGBCCT = RGB + Warm White + Cool White)
+        case 8: return ColorOrder::RGBCCT;  // RGBCCT (5-channel)
+        case 9: return ColorOrder::GRBCCT;  // GRBCCT (5-channel, likely standard)
+        case 10: return ColorOrder::RGBCTW; // RGBCTW (5-channel, CW first)
+        case 11: return ColorOrder::GRBCTW; // GRBCTW (5-channel, CW first)
+        default: return ColorOrder::GRB;    // Default to WS2812/SK6812 standard
     }
 }
 
@@ -593,19 +604,44 @@ void StripConfiguration::createVirtualStripWithOrder()
         return;
     }
 
-    // Determine if any physical strip requires RGBW (4 bytes per LED)
+    // Determine if any physical strip requires RGBW (4 bytes) or RGBCCT (5 bytes per LED)
     bool needsRGBW = false;
+    bool needsRGBCCT = false;
     for (const auto* phys : _module->_physicalStrips)
     {
-        if (phys && phys->getColorOrder() >= ColorOrder::RGBW)
+        if (phys)
         {
-            needsRGBW = true;
-            break;
+            ColorOrder order = phys->getColorOrder();
+            // Check for 5-channel first (RGBCCT, GRBCCT, RGBCTW, GRBCTW)
+            if (order == ColorOrder::RGBCCT || order == ColorOrder::GRBCCT ||
+                order == ColorOrder::RGBCTW || order == ColorOrder::GRBCTW)
+            {
+                needsRGBCCT = true;
+                break; // 5-channel takes priority
+            }
+            // Check for 4-channel (RGBW, GRBW, etc.)
+            if (order >= ColorOrder::RGBW)
+            {
+                needsRGBW = true;
+            }
         }
     }
 
-    // Create virtual strip: RGBW if any strip needs it, otherwise RGB
-    ColorOrder virtualOrder = needsRGBW ? ColorOrder::RGBW : ColorOrder::RGB;
+    // Create virtual strip: RGBCCT (5 bytes) > RGBW (4 bytes) > RGB (3 bytes)
+    ColorOrder virtualOrder;
+    if (needsRGBCCT)
+    {
+        virtualOrder = ColorOrder::GRBCCT; // Standard 5-channel order
+    }
+    else if (needsRGBW)
+    {
+        virtualOrder = ColorOrder::RGBW;
+    }
+    else
+    {
+        virtualOrder = ColorOrder::RGB;
+    }
+
     _module->_virtualStrip = _module->_neoPixel.addVirtualStrip(_module->_totalLeds, virtualOrder);
     if (!_module->_virtualStrip)
     {
@@ -613,7 +649,11 @@ void StripConfiguration::createVirtualStripWithOrder()
         return;
     }
 
-    if (needsRGBW)
+    if (needsRGBCCT)
+    {
+        logInfoP("VirtualStrip created with RGBCCT support (5 bytes/LED) for WS2805/RGBCCT physical strips");
+    }
+    else if (needsRGBW)
     {
         logInfoP("VirtualStrip created with RGBW support (4 bytes/LED) for RGBW physical strips");
     }

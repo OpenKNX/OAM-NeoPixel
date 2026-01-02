@@ -366,7 +366,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = red;
                 cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
                 cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-                cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
+                cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
 
                 // Update saved values - preserve existing G, B, W
                 cfg.savedR = red;
@@ -374,7 +374,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     cfg.savedG = 0;
                     cfg.savedB = 0;
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -397,7 +397,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                 {
                     // Has white channel - send RGBW status
-                    uint8_t w = cfg.pendingSolidW;
+                    uint8_t w = cfg.pendingSolidWW;
                     uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
                     bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
                     if (changed) KoNEO_RGBWState.objectWritten();
@@ -424,14 +424,14 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
                 cfg.pendingSolidG = green;
                 cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-                cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
+                cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
 
                 // Update saved values - preserve existing R, B, W
                 if (!cfg.savedValid)
                 {
                     cfg.savedR = 0;
                     cfg.savedB = 0;
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedG = green;
                 cfg.savedBrightness = targetSegment->getBrightness();
@@ -455,7 +455,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                 {
                     // Has white channel - send RGBW status
-                    uint8_t w = cfg.pendingSolidW;
+                    uint8_t w = cfg.pendingSolidWW;
                     uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
                     bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
                     if (changed) KoNEO_RGBWState.objectWritten();
@@ -482,14 +482,14 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
                 cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
                 cfg.pendingSolidB = blue;
-                cfg.pendingSolidW = cfg.savedValid ? cfg.savedW : 0;
+                cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
 
                 // Update saved values - preserve existing R, G, W
                 if (!cfg.savedValid)
                 {
                     cfg.savedR = 0;
                     cfg.savedG = 0;
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedB = blue;
                 cfg.savedBrightness = targetSegment->getBrightness();
@@ -513,7 +513,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                 {
                     // Has white channel - send RGBW status
-                    uint8_t w = cfg.pendingSolidW;
+                    uint8_t w = cfg.pendingSolidWW;
                     uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
                     bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
                     if (changed) KoNEO_RGBWState.objectWritten();
@@ -540,7 +540,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
                 cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
                 cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-                cfg.pendingSolidW = white;
+                cfg.pendingSolidWW = white;
 
                 // Update saved values - preserve existing R, G, B
                 if (!cfg.savedValid)
@@ -549,7 +549,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = 0;
                     cfg.savedB = 0;
                 }
-                cfg.savedW = white;
+                cfg.savedWW = white;
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
@@ -592,7 +592,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedR = r;
                 cfg.savedG = g;
                 cfg.savedB = b;
-                cfg.savedW = 0;
+                cfg.savedWW = 0;
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
@@ -638,7 +638,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidB = b;
                 if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
                 {
-                    cfg.pendingSolidW = 0;
+                    cfg.pendingSolidWW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -647,7 +647,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = b;
                 if (!cfg.savedValid)
                 {
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -699,7 +699,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidB = b;
                 if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
                 {
-                    cfg.pendingSolidW = 0;
+                    cfg.pendingSolidWW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -708,7 +708,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = b;
                 if (!cfg.savedValid)
                 {
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -755,7 +755,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidB = b;
                 if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
                 {
-                    cfg.pendingSolidW = 0;
+                    cfg.pendingSolidWW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -764,7 +764,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = b;
                 if (!cfg.savedValid)
                 {
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -804,7 +804,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidB = b;
                 if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
                 {
-                    cfg.pendingSolidW = 0;
+                    cfg.pendingSolidWW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -813,7 +813,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = b;
                 if (!cfg.savedValid)
                 {
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -854,7 +854,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidB = b;
                 if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
                 {
-                    cfg.pendingSolidW = 0;
+                    cfg.pendingSolidWW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -863,7 +863,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = b;
                 if (!cfg.savedValid)
                 {
-                    cfg.savedW = 0;
+                    cfg.savedWW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -897,31 +897,31 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // This must happen AFTER applyEffectToSegment to avoid the clear wiping our color
 
                 // Determine which color to use
-                bool hasPendingColor = (cfg.pendingSolidR > 0 || cfg.pendingSolidG > 0 || cfg.pendingSolidB > 0 || cfg.pendingSolidW > 0);
+                bool hasPendingColor = (cfg.pendingSolidR > 0 || cfg.pendingSolidG > 0 || cfg.pendingSolidB > 0 || cfg.pendingSolidWW > 0);
 
                 if (hasPendingColor)
                 {
                     // User set colors during the previous effect - use those
-                    targetSegment->setPrimaryColor(cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidW);
+                    targetSegment->setPrimaryColor(cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidWW);
                     logInfoP("Segment %d: Applied pending color (R=%d G=%d B=%d W=%d) to effect %d",
-                             channel, cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidW, effect);
+                             channel, cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidWW, effect);
                     // Clear pending after applying
                     cfg.pendingSolidR = 0;
                     cfg.pendingSolidG = 0;
                     cfg.pendingSolidB = 0;
-                    cfg.pendingSolidW = 0;
+                    cfg.pendingSolidWW = 0;
                 }
                 else if (cfg.savedValid)
                 {
                     // No pending colors - use the saved color
-                    targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                    targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                     if (effect == 0)
                     {
                         // For Solid effect, also restore brightness
                         targetSegment->setBrightness(cfg.savedBrightness);
                     }
                     logInfoP("Segment %d: Applied saved color (R=%d G=%d B=%d W=%d) to effect %d",
-                             channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, effect);
+                             channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, effect);
                 }
                 else
                 {
@@ -1032,8 +1032,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         // IMPORTANT: Set brightness FIRST before setPrimaryColor() to ensure pixels are visible
                         targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
-                        // savedW is always 0 for RGB strips, contains actual value for RGBW strips
-                        targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                        // savedWW is always 0 for RGB strips, contains actual value for RGBW strips
+                        targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                     }
                     else
                     {
@@ -1051,7 +1051,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         uint8_t w = 0;
                         targetSegment->getPixel(0, r, g, b, w);
-                        cfg.savedW = w;
+                        cfg.savedWW = w;
                     }
                     else
                     {
@@ -1070,7 +1070,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedLastWasEffect = (targetSegment->getEffect() != nullptr);
 
                     logDebugP("Segment %d Power OFF: snapshot RGB=(%d,%d,%d), W=%d, Bri=%d, effectType=%d",
-                              channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness, cfg.savedEffectType);
+                              channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedBrightness, cfg.savedEffectType);
 
                     targetSegment->setBrightness(0);
                     if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
@@ -1132,11 +1132,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t ww = ko.value(DPT_Value_1_Ucount); // 5.010
                 logInfoP("Segment %d Warm White: %d", channel, ww);
 
-                // Store warm white in primaryW and apply to all pixels
+                // Store warm white in primaryWW, preserve cool white (5-channel RGBCCT)
                 uint8_t r = targetSegment->getConfig().r();
                 uint8_t g = targetSegment->getConfig().g();
                 uint8_t b = targetSegment->getConfig().b();
-                targetSegment->setPrimaryColor(r, g, b, ww);
+                uint8_t cw = targetSegment->getConfig().cw();
+                targetSegment->setPrimaryColor(r, g, b, ww, cw);
                 break;
             }
 
@@ -1145,11 +1146,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t cw = ko.value(DPT_Value_1_Ucount); // 5.010
                 logInfoP("Segment %d Cool White: %d", channel, cw);
 
-                // For cool white, store in primaryW
+                // Store cool white in primaryCW, preserve warm white (5-channel RGBCCT)
                 uint8_t r = targetSegment->getConfig().r();
                 uint8_t g = targetSegment->getConfig().g();
                 uint8_t b = targetSegment->getConfig().b();
-                targetSegment->setPrimaryColor(r, g, b, cw);
+                uint8_t ww = targetSegment->getConfig().ww();
+                targetSegment->setPrimaryColor(r, g, b, ww, cw);
                 break;
             }
 
@@ -1172,7 +1174,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedR = r;
                     cfg.savedG = g;
                     cfg.savedB = b;
-                    cfg.savedW = w;
+                    cfg.savedWW = w;
                     cfg.savedBrightness = targetSegment->getBrightness();
                     cfg.savedValid = true;
                     cfg.savedLastWasEffect = false;
@@ -1466,7 +1468,7 @@ void NeoPixelBusModule::configureFromETS()
         if (pixels == 0) continue; // Skip strips with 0 LEDs
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
-        const LedProtocol proto = mapProtocol(ledTypeParam);
+        const LedProtocol proto = StripConfiguration::mapProtocol(ledTypeParam);
         const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
         if (gpioManualConfig)
@@ -1522,7 +1524,7 @@ void NeoPixelBusModule::configureFromETS()
         _channelIndex = i;
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
-        const LedProtocol proto = mapProtocol(ledTypeParam);
+        const LedProtocol proto = StripConfiguration::mapProtocol(ledTypeParam);
 
         // Get color order: use GRBW for RGBW protocols, or user-selected for others
         ColorOrder order;
@@ -1536,7 +1538,7 @@ void NeoPixelBusModule::configureFromETS()
         else
         {
             // Regular RGB protocols: use user-selected color order
-            order = mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
+            order = StripConfiguration::mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
         }
 
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
@@ -1864,71 +1866,6 @@ void NeoPixelBusModule::configureFromETS()
 // helpers
 // ============================================================================
 
-LedProtocol NeoPixelBusModule::mapProtocol(uint8_t p)
-{
-    // Map ETS LED type enum to OFM's LedProtocol enum
-    // Based on NEOLedType enumeration from NeoPixelBus.share.xml
-    switch (p)
-    {
-        case 0: return LedProtocol::WS2812B;       // WS2812B
-        case 1: return LedProtocol::WS2805_RGBCCT; // WS2805 (RGBCCT)
-        case 2: return LedProtocol::WS2811;        // WS2811
-        case 3: return LedProtocol::WS2813;        // WS2813
-        case 4: return LedProtocol::SK6812;        // SK6812
-        case 5: return LedProtocol::APA102;        // APA102
-        case 6: return LedProtocol::SK9822;        // SK9822
-        case 7: return LedProtocol::WS2812B;       // WS281x (mapped to WS2812B)
-        case 8: return LedProtocol::SK6812;        // SK6812/WS2814 (RGBW)
-        case 9: return LedProtocol::TM1814;        // TM1814
-        case 10: return LedProtocol::WS2811;       // WS2812_400kHz (mapped to WS2811)
-        case 11: return LedProtocol::TM1814;       // TM1829 (mapped to TM1814)
-        case 12: return LedProtocol::WS2812B;      // UCS8903 (mapped to WS2812B)
-        case 13: return LedProtocol::WS2812B;      // APA106/PL9823 (mapped to WS2812B)
-        case 14: return LedProtocol::TM1814;       // TM1914 (mapped to TM1814)
-        case 15: return LedProtocol::WS2811;       // FW1906 (mapped to WS2811)
-        case 16: return LedProtocol::WS2812B;      // UCS8904 (mapped to WS2812B)
-        case 17: return LedProtocol::WS2805;       // WS2805_RGBCW
-        case 18: return LedProtocol::WS2815;       // SM16825 (mapped to WS2815)
-        case 19: return LedProtocol::WS2811;       // WS2811_WHITE
-        case 20: return LedProtocol::WS2812B;      // WS281x_WWA (mapped to WS2812B)
-        case 21: return LedProtocol::WS2801;       // WS2801
-        case 22: return LedProtocol::LPD8806;      // LPD8806
-        case 23: return LedProtocol::LPD8806;      // LPD6803 (mapped to LPD8806)
-        case 24: return LedProtocol::WS2801;       // P9813 (mapped to WS2801)
-        case 25:
-            return LedProtocol::APA102_CLONE; // APA102-Clone
-        // 5-Channel RGBCCT protocols (CCT = Correlated Color Temperature)
-        case 30: return LedProtocol::SK6812_RGBCCT; // SK6812 RGBCCT (5-channel)
-        case 31: return LedProtocol::WS2814_RGBCCT; // WS2814 RGBCCT (5-channel)
-        case 99: return LedProtocol::WS2812B;       // CUSTOM (default to WS2812B)
-        default: return LedProtocol::WS2812B;       // Default to most common
-    }
-}
-
-ColorOrder NeoPixelBusModule::mapColorOrder(uint8_t c)
-{
-    // Map ETS ColorOrder enum to OFM's ColorOrder enum
-    // Based on NEOColourOrder enumeration from NeoPixelBus.share.xml
-    switch (c)
-    {
-        case 0: return ColorOrder::GRB;  // GRB (WS2812/SK6812 standard)
-        case 1: return ColorOrder::RGB;  // RGB (standard RGB order)
-        case 2: return ColorOrder::BRG;  // BRG (rare configuration)
-        case 3: return ColorOrder::RBG;  // RBG (some LED clones)
-        case 4: return ColorOrder::BGR;  // BGR (APA102/SK9822 standard)
-        case 5: return ColorOrder::GBR;  // GBR (some WS2812B clones)
-        case 6: return ColorOrder::RGBW; // RGBW (4-channel, RGB+White)
-        case 7:
-            return ColorOrder::GRBW; // GRBW (4-channel, SK6812 standard)
-        // 5-Channel Color Orders (RGBCCT = RGB + Warm White + Cool White)
-        case 8: return ColorOrder::RGBCCT;  // RGBCCT (5-channel)
-        case 9: return ColorOrder::GRBCCT;  // GRBCCT (5-channel, likely standard)
-        case 10: return ColorOrder::RGBCTW; // RGBCTW (5-channel, CW first)
-        case 11: return ColorOrder::GRBCTW; // GRBCTW (5-channel, CW first)
-        default: return ColorOrder::GRB;    // Default to WS2812/SK6812 standard
-    }
-}
-
 void NeoPixelBusModule::configureVirtualStripOrder()
 {
     _virtualStripConfiguration.clear();
@@ -2214,7 +2151,6 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
 {
     switch (protocol)
     {
-        case LedProtocol::WS2805: return "WS2805";
         case LedProtocol::WS2812: return "WS2812";
         case LedProtocol::WS2812B: return "WS2812B";
         case LedProtocol::WS2813: return "WS2813";

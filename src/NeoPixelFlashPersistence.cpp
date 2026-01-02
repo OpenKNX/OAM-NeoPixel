@@ -65,7 +65,7 @@ void NeoPixelFlashPersistence::writeToFlash()
 #ifdef OPENKNX_DEBUG
             logInfoP("[Segment %d] SAVED:", i);
             logInfoP("  Power:      %s (%d)", state.power ? "ON" : "OFF", state.power);
-            logInfoP("  Color:      R=%3d G=%3d B=%3d W=%3d", state.r, state.g, state.b, state.w);
+            logInfoP("  Color:      R=%3d G=%3d B=%3d WW=%3d CW=%3d", state.r, state.g, state.b, state.ww, state.cw);
             logInfoP("  Brightness: %d", state.brightness);
             if (state.effectType > 0)
             {
@@ -153,7 +153,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
 #ifdef OPENKNX_DEBUG
         logInfoP("[Segment %d] LOADED from flash:", i);
         logInfoP("  Power:      %s (%d)", state.power ? "ON" : "OFF", state.power);
-        logInfoP("  Color:      R=%3d G=%3d B=%3d W=%3d", state.r, state.g, state.b, state.w);
+        logInfoP("  Color:      R=%3d G=%3d B=%3d WW=%3d CW=%3d", state.r, state.g, state.b, state.ww, state.cw);
         logInfoP("  Brightness: %d", state.brightness);
         if (state.effectType > 0)
         {
@@ -174,7 +174,8 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         cfg.savedR = state.r;
         cfg.savedG = state.g;
         cfg.savedB = state.b;
-        cfg.savedW = state.w;
+        cfg.savedWW = state.ww;
+        cfg.savedCW = state.cw;
         cfg.savedBrightness = state.brightness;
         cfg.savedEffectType = state.effectType;
         // Note: Effect-specific parameters are now loaded from ETS, not from flash
@@ -286,21 +287,21 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                     {
                         _module->setupEffectConfiguration(seg);
                     }
-                    seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                    seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                     // Store the saved brightness internally but set display to 0
                     // The segment will remember this brightness for when power is restored
                     seg->setBrightness(0);
                     // Store the original brightness in savedBrightness for later use
 #ifdef OPENKNX_DEBUG
-                    logInfoP("[Segment %d] APPLIED: OFF (Effect=%d, Color=R:%d,G:%d,B:%d,W:%d configured, brightness=0, saved brightness=%d)",
-                             i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+                    logInfoP("[Segment %d] APPLIED: OFF (Effect=%d, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d configured, brightness=0, saved brightness=%d)",
+                             i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
 #endif
                 }
                 else
                 {
                     // No saved data - just turn off
                     seg->setBrightness(0);
-                    seg->setPrimaryColor(0, 0, 0, 0);
+                    seg->setPrimaryColor(0, 0, 0, 0, 0);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] APPLIED: OFF (no saved data, brightness=0)", i);
 #endif
@@ -323,7 +324,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                         {
                             _module->setupEffectConfiguration(seg);
                         }
-                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                         seg->setBrightness(0); // Power off
 #ifdef OPENKNX_DEBUG
                         logInfoP("[Segment %d] RESTORED: Last state was OFF (Effect=%d configured but brightness=0)",
@@ -340,18 +341,18 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                             _module->setupEffectConfiguration(seg);
                         }
                         // Always restore color (effects use primary color, Solid needs it)
-                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW);
+                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                         seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
                         if (cfg.savedEffectType > 0)
                         {
-                            logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Color=R:%d,G:%d,B:%d,W:%d, Brightness=%d)",
-                                     i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+                            logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
+                                     i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
                         }
                         else
                         {
-                            logInfoP("[Segment %d] RESTORED: Last solid color (R=%d,G=%d,B=%d,W=%d, Brightness=%d)",
-                                     i, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedW, cfg.savedBrightness);
+                            logInfoP("[Segment %d] RESTORED: Last solid color (R=%d,G=%d,B=%d,WW=%d,CW=%d, Brightness=%d)",
+                                     i, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
                         }
 #endif
                     }
@@ -366,13 +367,13 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                     skippedCount++;
 #endif
                     seg->setBrightness(0);
-                    seg->setPrimaryColor(0, 0, 0, 0);
+                    seg->setPrimaryColor(0, 0, 0, 0, 0);
                 }
                 break;
 
             case 2: // DEFAULT COLOR (Standard-Farbe)
             {
-                uint8_t r, g, b, w, brightness, effectType;
+                uint8_t r, g, b, ww, cw, brightness, effectType;
 
                 // Get default color params (segment-specific or global)
                 if (segmentBehavior == 3)
@@ -382,11 +383,12 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                     r = ParamNEO_NEOSegmentStartupR;
                     g = ParamNEO_NEOSegmentStartupG;
                     b = ParamNEO_NEOSegmentStartupB;
-                    w = ParamNEO_NEOSegmentStartupW;
+                    ww = ParamNEO_NEOSegmentStartupW; // TODO: Add separate WW/CW params if needed
+                    cw = 0;                           // Default to 0 for now
                     brightness = ParamNEO_NEOSegmentStartupBrightness;
                     effectType = ParamNEO_NEOSegmentStartupEffect;
-                    logDebugP("[Segment %d] Read from ETS: R=%d,G=%d,B=%d,W=%d,Br=%d,Eff=%d",
-                              i, r, g, b, w, brightness, effectType);
+                    logDebugP("[Segment %d] Read from ETS: R=%d,G=%d,B=%d,WW=%d,CW=%d,Br=%d,Eff=%d",
+                              i, r, g, b, ww, cw, brightness, effectType);
                 }
                 else
                 {
@@ -395,11 +397,12 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                     r = ParamNEO_NEOGlobalStartupR;
                     g = ParamNEO_NEOGlobalStartupG;
                     b = ParamNEO_NEOGlobalStartupB;
-                    w = ParamNEO_NEOGlobalStartupW;
+                    ww = ParamNEO_NEOGlobalStartupW; // TODO: Add separate WW/CW params if needed
+                    cw = 0;                          // Default to 0 for now
                     brightness = ParamNEO_NEOGlobalStartupBrightness;
                     effectType = ParamNEO_NEOGlobalStartupEffect;
-                    logDebugP("[Segment %d] Read from ETS: R=%d,G=%d,B=%d,W=%d,Br=%d,Eff=%d",
-                              i, r, g, b, w, brightness, effectType);
+                    logDebugP("[Segment %d] Read from ETS: R=%d,G=%d,B=%d,WW=%d,CW=%d,Br=%d,Eff=%d",
+                              i, r, g, b, ww, cw, brightness, effectType);
                 }
 
                 // Apply effect FIRST (this clears color), then color, then brightness
@@ -412,20 +415,20 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 }
 
                 // Always set color (effects use primary color, Solid needs it)
-                seg->setPrimaryColor(r, g, b, w);
+                seg->setPrimaryColor(r, g, b, ww, cw);
                 // Set brightness LAST
                 seg->setBrightness(brightness);
 
 #ifdef OPENKNX_DEBUG
                 if (effectType > 0)
                 {
-                    logInfoP("[Segment %d] APPLIED: Default effect (Type=%d, Color=R:%d,G:%d,B:%d,W:%d, Brightness=%d)",
-                             i, effectType, r, g, b, w, brightness);
+                    logInfoP("[Segment %d] APPLIED: Default effect (Type=%d, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
+                             i, effectType, r, g, b, ww, cw, brightness);
                 }
                 else
                 {
-                    logInfoP("[Segment %d] APPLIED: Default color (R=%d,G=%d,B=%d,W=%d, Brightness=%d)",
-                             i, r, g, b, w, brightness);
+                    logInfoP("[Segment %d] APPLIED: Default color (R=%d,G=%d,B=%d,WW=%d,CW=%d, Brightness=%d)",
+                             i, r, g, b, ww, cw, brightness);
                 }
                 restoredCount++;
 #endif
@@ -479,28 +482,41 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     // Determine power state (brightness > 0 = on)
     state.power = (seg->getBrightness() > 0) ? 1 : 0;
 
-    // Save color (use savedR/G/B if valid, otherwise read from segment)
+    // Save color (use savedR/G/B/WW/CW if valid, otherwise read from segment)
     if (cfg.savedValid)
     {
         state.r = cfg.savedR;
         state.g = cfg.savedG;
         state.b = cfg.savedB;
-        state.w = cfg.savedW;
+        state.ww = cfg.savedWW;
+        state.cw = cfg.savedCW;
     }
     else
     {
         uint8_t r, g, b;
         VirtualStrip* vstrip = _module->getVirtualStrip();
-        if (vstrip && vstrip->getBytesPerLed() == 4)
+        if (vstrip && vstrip->getBytesPerLed() == 5)
         {
+            // RGBCCT (5 bytes per LED)
+            uint8_t ww, cw;
+            seg->getPixel(0, r, g, b, ww, cw);
+            state.ww = ww;
+            state.cw = cw;
+        }
+        else if (vstrip && vstrip->getBytesPerLed() == 4)
+        {
+            // RGBW (4 bytes per LED)
             uint8_t w;
             seg->getPixel(0, r, g, b, w);
-            state.w = w;
+            state.ww = w;
+            state.cw = 0;
         }
         else
         {
+            // RGB (3 bytes per LED)
             seg->getPixel(0, r, g, b);
-            state.w = 0;
+            state.ww = 0;
+            state.cw = 0;
         }
         state.r = r;
         state.g = g;

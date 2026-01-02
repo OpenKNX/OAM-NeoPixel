@@ -67,7 +67,8 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t savedR = 0;
         uint8_t savedG = 0;
         uint8_t savedB = 0;
-        uint8_t savedW = 0;
+        uint8_t savedWW = 0; // Warm White (or single white for RGBW)
+        uint8_t savedCW = 0; // Cool White (RGBCCT only)
         uint8_t savedBrightness = 0;
 
         // Saved effect information
@@ -89,7 +90,8 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t pendingSolidR = 0;
         uint8_t pendingSolidG = 0;
         uint8_t pendingSolidB = 0;
-        uint8_t pendingSolidW = 0;
+        uint8_t pendingSolidWW = 0; // Warm White (or single white for RGBW)
+        uint8_t pendingSolidCW = 0; // Cool White (RGBCCT only)
 
         // DPT 3.007 Start/Stop dimming state
         enum DimmingChannel
@@ -205,8 +207,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint32_t correctColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0) const;
 
     // Static helper functions (public for testing)
-    static LedProtocol mapProtocol(uint8_t paramLedType);
-    static ColorOrder mapColorOrder(uint8_t paramOrder);
+    // Note: mapProtocol() and mapColorOrder() are in StripConfiguration class
     static bool isSpiProtocol(LedProtocol protocol);
     static const char* getColorOrderName(ColorOrder order);
     static const char* getProtocolName(LedProtocol protocol);
