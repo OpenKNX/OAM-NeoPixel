@@ -132,6 +132,7 @@
                 <Enumeration Text="Palette" Value="23" Id="%ENID%"/>
                 <Enumeration Text="Blitz" Value="24" Id="%ENID%"/> <!-- EN: Lightning -->
                 <Enumeration Text="Gradient" Value="25" Id="%ENID%"/>
+                <Enumeration Text="RGBCCTTest" Value="26" Id="%ENID%"/>
                 <!-- GENERATED_EFFECT_ENUMERATIONS_END -->
               </TypeRestriction>
               </ParameterType>

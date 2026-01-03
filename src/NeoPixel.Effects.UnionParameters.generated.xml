@@ -150,3 +150,6 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%172" Offset="129" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%173" Offset="130" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
 
+                <!-- RGBCCTTest Effect (ID 26) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%174" Offset="131" BitOffset="0" Name="NEO%C%RGBCCTTestPhaseDuration" ParameterType="%AID%_PT-RGBCCTTestPhaseDuration" Text="PhaseDuration (RGBCCTTest)" Value="5"/>
+

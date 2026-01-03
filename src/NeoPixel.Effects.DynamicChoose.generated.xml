@@ -177,5 +177,9 @@
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" IndentLevel="2" HelpContext="%DOC%"/>
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%173_R-%TT%%CC%17301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
+                      <when test="26">
+                        <!-- RGBCCTTest Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%174_R-%TT%%CC%17401" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
                     </choose>
 

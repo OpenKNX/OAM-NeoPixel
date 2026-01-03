@@ -3057,6 +3057,7 @@
 #define NEO_NEOGradientStartHue                 128      // uint8_t
 #define NEO_NEOGradientEndHue                   129      // uint8_t
 #define NEO_NEOGradientSaturation               130      // uint8_t
+#define NEO_NEORGBCCTTestPhaseDuration          131      // uint8_t
 
 // Start LED
 #define ParamNEO_NEOSegmentStart                     ((knx.paramWord(NEO_ParamCalcIndex(NEO_NEOSegmentStart)) & NEO_NEOSegmentStartMask) >> NEO_NEOSegmentStartShift)
@@ -3290,6 +3291,8 @@
 #define ParamNEO_NEOGradientEndHue                   (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGradientEndHue)))
 // Saturation (Gradient)
 #define ParamNEO_NEOGradientSaturation               (knx.paramByte(NEO_ParamCalcIndex(NEO_NEOGradientSaturation)))
+// PhaseDuration (RGBCCTTest)
+#define ParamNEO_NEORGBCCTTestPhaseDuration          (knx.paramByte(NEO_ParamCalcIndex(NEO_NEORGBCCTTestPhaseDuration)))
 
 // deprecated
 #define NEO_KoOffset 600

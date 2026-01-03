@@ -115,31 +115,37 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
 Effect* EffectConfiguration::getEffectFromType(uint8_t effectType)
 {
     // Map effect type ID to actual effect instances
-    // Based on the console effect list:
+    // Must match NEOEffectType enumeration in NeoPixel.share.xml
     switch (effectType)
     {
-        case 0: return EffectPool::getSolid();    // Solid Color
-        case 1: return EffectPool::getWipe();     // Color Wipe
-        case 2: return EffectPool::getRainbow();  // Rainbow
-        case 3: return EffectPool::getPride();    // Pride2015
-        case 4: return EffectPool::getConfetti(); // Confetti
-        case 5: return EffectPool::getJuggle();   // Juggle
-        case 6: return EffectPool::getBPM();      // BPM
-        case 7: return EffectPool::getCylon();    // Cylon
+        case 0: return EffectPool::getSolid();        // Solid Color
+        case 1: return EffectPool::getWipe();         // Color Wipe
+        case 2: return EffectPool::getRainbow();      // Rainbow
+        case 3: return EffectPool::getRainbowCycle(); // Rainbow Cycle
+        case 4: return EffectPool::getPride();        // Pride2015
+        case 5: return EffectPool::getConfetti();     // Confetti
+        case 6: return EffectPool::getJuggle();       // Juggle
+        case 7: return EffectPool::getBPM();          // BPM
+        case 8: return EffectPool::getCylon();        // Cylon
 #ifndef NEOPIXEL_MINIMAL_EFFECTS
-        case 8: return EffectPool::getRGBWTest();             // SK6812/RGBW Test
-        case 9: return EffectPool::getGarageDoor();           // GarageDoor
-        case 10: return EffectPool::getFire();                // Fire
-        case 11: return EffectPool::getTheaterChase();        // Theater Chase
-        case 12: return EffectPool::getTheaterChaseRainbow(); // Theater Chase Rainbow
-        case 13: return EffectPool::getSinelon();             // Sinelon
-        case 14: return EffectPool::getTwinkle();             // Twinkle
-        case 15: return EffectPool::getSparkle();             // Sparkle
-        case 16: return EffectPool::getBreathing();           // Breathing
-        case 17: return EffectPool::getStrobe();              // Strobe
-        case 18: return EffectPool::getPulse();               // Pulse
-        case 19: return EffectPool::getComet();               // Comet
-        case 20: return EffectPool::getMeteor();              // Meteor
+        case 9: return EffectPool::getRGBWTest();             // RGBWTest
+        case 10: return EffectPool::getGarageDoor();          // GarageDoor
+        case 11: return EffectPool::getFire();                // Fire
+        case 12: return EffectPool::getTheaterChase();        // Theater Chase
+        case 13: return EffectPool::getTheaterChaseRainbow(); // Theater Chase Rainbow
+        case 14: return EffectPool::getSinelon();             // Sinelon
+        case 15: return EffectPool::getTwinkle();             // Twinkle
+        case 16: return EffectPool::getSparkle();             // Sparkle
+        case 17: return EffectPool::getBreathing();           // Breathing
+        case 18: return EffectPool::getStrobe();              // Strobe
+        case 19: return EffectPool::getPulse();               // Pulse
+        case 20: return EffectPool::getComet();               // Comet
+        case 21: return EffectPool::getMeteor();              // Meteor
+        case 22: return EffectPool::getNoise();               // Noise
+        case 23: return EffectPool::getPalette();             // Palette
+        case 24: return EffectPool::getLightning();           // Lightning (Blitz)
+        case 25: return EffectPool::getGradient();            // Gradient
+        case 26: return EffectPool::getRGBCCTTest();          // RGBCCTTest
 #endif
         default: return EffectPool::getSolid();
     }

@@ -214,6 +214,10 @@ inline void loadEffectParameters(Effect* effect, Segment* segment, uint8_t effec
             if (paramCount >= 4) effect->setParameter(segment, 3, ParamNEO_NEOGradientSaturation);
             break;
             
+        case 26:  // RGBCCTTest Effect
+            if (paramCount >= 1) effect->setParameter(segment, 0, ParamNEO_NEORGBCCTTestPhaseDuration);
+            break;
+            
         // Effects without parameters: 0,1,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21
         default:
             // No effect-specific parameters to load

@@ -287,6 +287,11 @@
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255"/>
               </ParameterType>
 
+              <!-- RGBCCTTest Effect Parameters -->
+<ParameterType Id="%AID%_PT-RGBCCTTestPhaseDuration" Name="PhaseDuration (RGBCCTTest)">
+                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="60"/>
+              </ParameterType>
+
               <!-- RGBWTest Effect Parameters -->
 <ParameterType Id="%AID%_PT-RGBWTestPhaseDuration" Name="PhaseDuration (RGBWTest)">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="60"/>

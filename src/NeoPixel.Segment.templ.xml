@@ -43,7 +43,7 @@
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                 <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
-                <!-- Generated: ID 73-173, Offset 30-130 -->
+                <!-- Generated: ID 73-174, Offset 30-131 -->
 
                 <!-- Wipe Effect (ID 1) Parameters -->
                 <Parameter Id="%AID%_UP-%TT%%CC%073" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed (Wipe)" Value="25"/>
@@ -195,6 +195,9 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%171" Offset="128" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue (Gradient)" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%172" Offset="129" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%173" Offset="130" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
+
+                <!-- RGBCCTTest Effect (ID 26) Parameters -->
+                <Parameter Id="%AID%_UP-%TT%%CC%174" Offset="131" BitOffset="0" Name="NEO%C%RGBCCTTestPhaseDuration" ParameterType="%AID%_PT-RGBCCTTestPhaseDuration" Text="PhaseDuration (RGBCCTTest)" Value="5"/>
                 <!-- END AUTO-GENERATED: Effect Parameters Union -->
               </Union>
             </Parameters>
@@ -218,7 +221,7 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
               <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
               <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-              <!-- Generated effect-specific parameter refs (ID 73-173) -->
+              <!-- Generated effect-specific parameter refs (ID 73-174) -->
 
               <!-- Wipe Effect ParameterRefs -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%073_R-%TT%%CC%07301" RefId="%AID%_UP-%TT%%CC%073" />
@@ -346,6 +349,8 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%171_R-%TT%%CC%17101" RefId="%AID%_UP-%TT%%CC%171" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" RefId="%AID%_UP-%TT%%CC%172" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%173_R-%TT%%CC%17301" RefId="%AID%_UP-%TT%%CC%173" />
+              <!-- RGBCCTTest Effect ParameterRefs -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%174_R-%TT%%CC%17401" RefId="%AID%_UP-%TT%%CC%174" />
               <!-- END AUTO-GENERATED: Effect ParameterRefs -->
             </ParameterRefs>
             <ComObjectTable>
@@ -718,6 +723,10 @@
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%171_R-%TT%%CC%17101" IndentLevel="2" HelpContext="%DOC%"/>
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" IndentLevel="2" HelpContext="%DOC%"/>
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%173_R-%TT%%CC%17301" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                      <when test="26">
+                        <!-- RGBCCTTest Effect Parameters -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%174_R-%TT%%CC%17401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                     </choose>
                     <!-- END AUTO-GENERATED: Effect Dynamic UI -->
