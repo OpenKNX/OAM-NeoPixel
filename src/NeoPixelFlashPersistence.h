@@ -22,7 +22,7 @@ class NeoPixelFlashPersistence
     const std::string logPrefix() const { return "NeoPixelFlashPersistence"; }
 
     /**
-     * @brief Flash storage structure for one segment (11 bytes)
+     * @brief Flash storage structure for one segment (10 bytes)
      */
     struct SegmentFlashState
     {
@@ -32,7 +32,7 @@ class NeoPixelFlashPersistence
         uint8_t effectType;      // Effect ID 0-10 (1 byte)
         uint8_t effectSpeed;     // Effect speed 0-255 (1 byte)
         uint8_t effectIntensity; // Effect intensity 0-255 (1 byte)
-        // Total: 11 bytes per segment
+        // Total: 10 bytes per segment
     } __attribute__((packed));
 
     /**
@@ -43,7 +43,7 @@ class NeoPixelFlashPersistence
 
     /**
      * @brief Calculate flash size needed for storing segment states
-     * @return Number of bytes required (11 bytes × configured segments)
+     * @return Number of bytes required (10 bytes × configured segments)
      */
     uint16_t calculateFlashSize() const;
 
