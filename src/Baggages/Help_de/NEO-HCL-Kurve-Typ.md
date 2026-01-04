@@ -25,4 +25,15 @@ Wählt die Art der HCL-Kurve (Human Centric Lighting) für die **automatische Fa
 ## Funktionsweise:
 Die HCL-Kurve berechnet **einmal pro Minute** den optimalen Kelvin-Wert basierend auf der aktuellen Uhrzeit und sendet ihn an das KNX-Objekt. Die Farbtemperatur wird dann als Post-Processing auf alle gerenderten Pixel angewendet.
 
+## Unterschied nach LED-Typ:
+
+### RGBCCT (5-Kanal) – Empfohlen!
+- **Direkte WW/CW-Steuerung**: Das System stellt das Verhältnis zwischen Warm-Weiss (WW) und Kalt-Weiss (CW) ein
+- **Beispiel bei 4000K**: WW=50%, CW=50%
+- **Vorteil**: Reine, effiziente Farbtemperaturwiedergabe
+
+### RGB/RGBW (3/4-Kanal)
+- **RGB-Tönung**: Das System färbt die RGB-Kanäle entsprechend der Kelvin-Temperatur ein
+- Weiße/pastellfarbene Pixel werden stärker beeinflusst als gesättigte Farben
+
 **Wichtig**: Das System benötigt eine **korrekte Systemzeit** (via NTP oder KNX), sonst wird eine Warnung im Log ausgegeben.
