@@ -295,8 +295,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Segment Implementation
     void createSegments();                                   // Create segments on virtual strip
-    void applySegmentConfiguration();                        // Apply segment-specific settings
-    void applyGroupingAndSpacing(SegmentConfig& config);     // Apply grouping and spacing pattern
+    void applySegmentConfiguration();                        // Apply segment-specific settings (grouping, spacing, reverse, mirror)
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
     // Effect Implementation (delegated to EffectConfiguration)

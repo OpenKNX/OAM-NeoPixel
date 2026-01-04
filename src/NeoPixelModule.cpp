@@ -2584,55 +2584,38 @@ void NeoPixelBusModule::applySegmentConfiguration()
         SegmentConfig& config = _segments[i];
         if (!config.segment) continue;
 
-        // Apply grouping and spacing by setting specific pixels
+        // Apply grouping and spacing via Segment API
         if (config.grouping > 1 || config.spacing > 0)
         {
-            applyGroupingAndSpacing(config);
+            config.segment->setGrouping(config.grouping);
+            config.segment->setSpacing(config.spacing);
+            logInfoP("Segment %zu: Applied grouping=%d, spacing=%d (virtual length=%d)",
+                     i, config.grouping, config.spacing, config.segment->getLength());
         }
 
-        // Note: Reverse direction and mirror effect would be applied
-        // when effects are running, not in static configuration
+        // Apply offset (shift effect start position)
+        if (config.offset > 0)
+        {
+            config.segment->setOffset(config.offset);
+            logInfoP("Segment %zu: Offset=%d LEDs", i, config.offset);
+        }
+
+        // Apply reverse direction
+        if (config.reverseDirection)
+        {
+            config.segment->setReverse(true);
+            logInfoP("Segment %zu: Reverse direction enabled", i);
+        }
+
+        // Apply mirror effect
+        if (config.mirrorEffect)
+        {
+            config.segment->setMirror(true);
+            logInfoP("Segment %zu: Mirror effect enabled", i);
+        }
 
         logDebugP("Applied configuration to segment %zu", i);
     }
-}
-
-// Apply grouping and spacing to segment (helper function)
-void NeoPixelBusModule::applyGroupingAndSpacing(SegmentConfig& config)
-{
-    if (!config.segment) return;
-
-    // Grouping and spacing implementation:
-    // - grouping: how many LEDs are treated as one unit
-    // - spacing: how many LEDs to skip between groups
-
-    uint16_t segmentLength = config.segment->getLength();
-    uint16_t groupSize = config.grouping > 0 ? config.grouping : 1;
-    uint16_t spacing = config.spacing;
-
-    if (groupSize == 1 && spacing == 0)
-    {
-        return; // No grouping/spacing needed
-    }
-
-    // Clear the segment first
-    config.segment->clear();
-
-    // Apply grouping pattern by setting pixels in groups
-    for (uint16_t pos = 0; pos < segmentLength; pos += (groupSize + spacing))
-    {
-        // Set pixels in current group
-        for (uint16_t g = 0; g < groupSize && (pos + g) < segmentLength; g++)
-        {
-            // This would normally be set by effects, but we mark the pattern
-            // by setting a dim white color to show the grouping pattern
-            config.segment->setPixel(pos + g, 32, 32, 32); // Dim white for visualization
-        }
-        // Skip 'spacing' pixels (they remain black)
-    }
-
-    logDebugP("Applied grouping=%d, spacing=%d to segment (length %d)",
-              groupSize, spacing, segmentLength);
 }
 
 // Get segment by index
