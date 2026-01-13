@@ -999,6 +999,132 @@ function Generate-EffectTypeEnumeration {
     return ($xmlLines -join "`n")
 }
 
+function Generate-EffectMappingCpp {
+    <#
+    .SYNOPSIS
+        Generates C++ getEffectFromType() function for EffectConfiguration.cpp
+    .DESCRIPTION
+        Generates a C++ header with the effect type mapping function that maps
+        ETS effect type IDs to EffectPool::getXXX() calls, synchronized with
+        the same EffectPool.cpp registration order used for XML enumeration.
+    #>
+    
+    Write-ScriptVerbose "Generating C++ effect mapping function"
+    
+    # Get effect list
+    $effectsDir = Resolve-RepoPath $script:Config.EffectsDir
+    $effectFiles = Get-ChildItem -Path $effectsDir -Filter "*.h" | Where-Object {
+        $_.Name -notin $script:Config.ExcludeHeaders -and
+        $_.Name -match '(Effect.+\.h$|.+Effect\.h$)'
+    }
+    
+    $effectList = @()
+    foreach ($file in $effectFiles) {
+        $content = Get-Content $file.FullName -Raw
+        
+        # Extract class name
+        if ($content -match $script:Config.Patterns.ClassName) {
+            $className = $Matches[1]
+            $names = Get-EffectDisplayNameFromHeader -HeaderPath $file.FullName
+            
+            $effectList += @{
+                ClassName = $className
+                NameDE = $names.DE
+                NameEN = $names.EN
+                FilePath = $file.FullName
+            }
+        }
+    }
+    
+    # Sort by EffectPool.cpp registration order
+    $registrationOrder = Parse-EffectPoolRegistrationOrder
+    
+    if ($registrationOrder.Count -eq 0) {
+        Write-Warning "Failed to parse EffectPool.cpp! Falling back to alphabetical sort"
+        $sorted = $effectList | Sort-Object NameEN
+    } else {
+        $effectLookup = @{}
+        foreach ($effect in $effectList) {
+            $effectLookup[$effect.ClassName] = $effect
+        }
+        
+        $sorted = @()
+        foreach ($className in $registrationOrder) {
+            if ($effectLookup.ContainsKey($className)) {
+                $sorted += $effectLookup[$className]
+            }
+        }
+    }
+    
+    # Generate C++ switch cases
+    $currentYear = (Get-Date).Year
+    $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $cppLines = @()
+    
+    # Header comment (matching HardwareMappingGenerated.h style)
+    $cppLines += "/**"
+    $cppLines += " * @file EffectTypeMapping.h"
+    $cppLines += " * @brief Effect Type ID to EffectPool Instance Mapping (Auto-Generated)"
+    $cppLines += " *"
+    $cppLines += " * This file contains the mapping between ETS Effect Type IDs and EffectPool singleton instances."
+    $cppLines += " * The mapping is automatically generated from Effect header files at build time and synchronized"
+    $cppLines += " * with the registration order in EffectPool.cpp and the enumeration in NeoPixel.share.xml."
+    $cppLines += " *"
+    $cppLines += " * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY"
+    $cppLines += " * @note Generated: $currentDateTime"
+    $cppLines += " * @note Source: Build-EffectParameters.ps1"
+    $cppLines += " *"
+    $cppLines += " * @copyright Copyright (c) $currentYear OpenKNX (Licensed under GNU GPL v3.0)"
+    $cppLines += " */"
+    $cppLines += ""
+    $cppLines += "#pragma once"
+    $cppLines += ""
+    $cppLines += "#include ""../lib/OFM-NeoPixel/src/effects/EffectPool.h"""
+    $cppLines += ""
+    $cppLines += "/**"
+    $cppLines += " * @brief Maps ETS effect type ID to actual Effect instance"
+    $cppLines += " * "
+    $cppLines += " * This function is synchronized with the Effect Type enumeration in"
+    $cppLines += " * NeoPixel.share.xml and the registration order in EffectPool.cpp"
+    $cppLines += " * "
+    $cppLines += " * @param effectType Effect type ID from ETS (0-$($sorted.Count - 1))"
+    $cppLines += " * @return Pointer to Effect instance, or Solid effect for unknown types"
+    $cppLines += " */"
+    $cppLines += "inline Effect* getEffectFromType(uint8_t effectType)"
+    $cppLines += "{"
+    $cppLines += "    switch (effectType)"
+    $cppLines += "    {"
+    
+    # Generate switch cases
+    $id = 0
+    foreach ($effect in $sorted) {
+        # Convert ClassName to getXXX() function name
+        # BPMEffect -> getBPM()
+        # EffectSolid -> getSolid()
+        $methodName = $effect.ClassName -replace 'Effect', ''
+        
+        $comment = "// $($effect.NameEN)"
+        if ($effect.NameDE -ne $effect.NameEN) {
+            $comment += " (DE: $($effect.NameDE))"
+        }
+        
+        $cppLines += "        case ${id}: return EffectPool::get${methodName}(); $comment"
+        $id++
+    }
+    
+    # Default case
+    $cppLines += "        default: return EffectPool::getSolid(); // Fallback to Solid"
+    $cppLines += "    }"
+    $cppLines += "}"
+    
+    Write-Host ""
+    Write-Host "  Generated C++ mapping for $($sorted.Count) effects (IDs 0-$($id-1))" -ForegroundColor Green
+    Write-ScriptVerbose "C++ effect mapping generation complete" "Green"
+    Write-Host ""
+    
+    return ($cppLines -join "`n")
+}
+
 function Update-EffectTypeEnumerationInShareXml {
     <#
     .SYNOPSIS
@@ -1964,9 +2090,24 @@ $DynamicContent                    $endMarker
 function Generate-CppMapping {
     param([array]$Effects)
     
+    $currentYear = (Get-Date).Year
+    $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    
     $cpp = @()
-    $cpp += '// AUTO-GENERATED by scripts/Build-EffectParameters.ps1'
-    $cpp += '// DO NOT EDIT MANUALLY - Changes will be overwritten!'
+    $cpp += '/**'
+    $cpp += ' * @file EffectParameterMapping.h'
+    $cpp += ' * @brief Effect Parameter Loading from ETS Configuration (Auto-Generated)'
+    $cpp += ' *'
+    $cpp += ' * This file contains the mapping logic to load effect-specific parameters from ETS'
+    $cpp += ' * configuration (EEPROM) and apply them to Effect instances. Parameters are automatically'
+    $cpp += ' * generated from Effect header files and synchronized with NeoPixel.Effects.*.xml definitions.'
+    $cpp += ' *'
+    $cpp += ' * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY'
+    $cpp += " * @note Generated: $currentDateTime"
+    $cpp += ' * @note Source: Build-EffectParameters.ps1'
+    $cpp += ' *'
+    $cpp += " * @copyright Copyright (c) $currentYear OpenKNX (Licensed under GNU GPL v3.0)"
+    $cpp += ' */'
     $cpp += ''
     $cpp += '#ifndef EFFECT_PARAMETER_MAPPING_H'
     $cpp += '#define EFFECT_PARAMETER_MAPPING_H'
@@ -2117,6 +2258,14 @@ Write-Host ""
 $shareXmlPath = Resolve-RepoPath $script:Config.ShareXml
 Update-EffectTypeEnumerationInShareXml -ShareXmlPath $shareXmlPath
 
+# Step 0b: Generate C++ Effect Type Mapping Header
+$cppMapping = Generate-EffectMappingCpp
+$cppMappingHeaderPath = "src/EffectTypeMapping.h"
+Set-Content -Path $cppMappingHeaderPath -Value $cppMapping -Encoding UTF8
+Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+Write-Host "C++ effect type mapping header" -ForegroundColor White
+Write-Host "       $cppMappingHeaderPath" -ForegroundColor DarkGray
+
 # Read starting IDs from template markers
 Write-Host ""
 Write-Host "  Reading template configuration..." -ForegroundColor Cyan
@@ -2244,6 +2393,14 @@ try {
             Write-Host ""
             Write-Host "  [OK] Internal and OpenKNXproducer validations passed!" -ForegroundColor Green
             Write-Host "  [OK] knxprod.h and NeoPixel.Segment.xml are valid!" -ForegroundColor Green
+            
+            # Remove old error log from previous failed builds (cleanup)
+            $errorLogPath = "src/Build-EffectParameters.err"
+            if (Test-Path $errorLogPath) {
+                Remove-Item $errorLogPath -Force
+                Write-ScriptVerbose "Removed old error log: $errorLogPath" "DarkGray"
+            }
+            
             Write-Host ""
             Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
             Write-Host "  Generation Complete" -ForegroundColor Cyan
@@ -2286,7 +2443,8 @@ try {
             $label2 = "Union Parameters:".PadRight($labelWidth)
             $label3 = "ParameterRefs:".PadRight($labelWidth)
             $label4 = "Dynamic Choose:".PadRight($labelWidth)
-            $label5 = "C++ Mapping:".PadRight($labelWidth)
+            $label5 = "C++ Param Mapping:".PadRight($labelWidth)
+            $label6 = "C++ Type Mapping:".PadRight($labelWidth)
             
             Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
             Write-Host ($label1 + $paramTypesPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
@@ -2306,6 +2464,10 @@ try {
             
             Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
             Write-Host ($label5 + $cppMappingPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
+            Write-Host " │" -ForegroundColor DarkGray
+            
+            Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
+            Write-Host ($label6 + $cppMappingHeaderPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
             Write-Host " │" -ForegroundColor DarkGray
             
             Write-Host "  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
