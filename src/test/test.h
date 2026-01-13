@@ -68,14 +68,14 @@ inline void setup_test_environment(NeoPixel& neoPixelModule)
     auto strip5 = mgr->addStrip(NEOPIX_6, NEOPIX_6_LEDS, LedProtocol::WS2812B, ColorOrder::GRB); // External: use AUTO timing (default)
     strip5->init();
 
-    auto strip6 = mgr->addSpiStrip(NEOPIX_7_MOSI, NEOPIX_7_SCK, NEOPIX_7_LEDS, LedProtocol::APA102_CLONE, ColorOrder::BGR, 4000000); //
+    // APA102 Clone: Use APA102_CLONE protocol with minRgbValue=8 to prevent color update bug
+    auto strip6 = mgr->addSpiStrip(NEOPIX_7_MOSI, NEOPIX_7_SCK, NEOPIX_7_LEDS, LedProtocol::APA102_CLONE, ColorOrder::BGR, 4000000);
 
-    // Configure for clone chips (minRgbValue=8 to prevent color update bug)
+    // Configure clone-specific settings (minRgbValue is auto-set by APA102_CLONE, but can be adjusted)
     auto* spiCfg = dynamic_cast<SpiStripConfig*>(strip6->getConfig());
     if (spiCfg)
     {
-        spiCfg->setMinRgbValue(8);  // Minimum RGB value (8 for clones, 0 for originals)
-        spiCfg->setDummyLedMode(1); // 1 = physical dummy LED (sacrifice LED#0)
+        spiCfg->setMinRgbValue(8); // Minimum RGB value for clone chips
         strip6->applyConfig();
     }
     strip6->init();

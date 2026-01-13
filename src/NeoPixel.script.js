@@ -274,3 +274,18 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
   info("SegmentStartEndCheck: numSeg=" + numSeg +
        " hasError=" + hasError);
 }
+// ====================================================================
+// GPIO Port Allocation and Conflict Detection
+// ====================================================================
+
+// BEGIN AUTO-GENERATED: Multi-Hardware GPIO Port Mapping
+// Cleaned - Ready for regeneration
+// END AUTO-GENERATED: Multi-Hardware GPIO Port Mapping
+// ============================================================================================================
+// REAL GPIO CONFLICT DETECTION
+// Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
+// Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
+// ============================================================================================================
+// BEGIN AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection
+// Cleaned - Ready for regeneration
+// END AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection

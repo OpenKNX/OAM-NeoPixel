@@ -214,7 +214,7 @@ void StripConfiguration::configureFromETS()
 
             // Read SPI frequency from ETS (if manual config enabled)
             uint32_t spiFrequency = 10000000; // Default: 10 MHz
-            bool spiClkManual = (bool)ParamNEOSTRIP_NEOSPICLKManual;
+            bool spiClkManual = (ParamNEOSTRIP_NEOSPICLKMode == 1);
 
             if (spiClkManual)
             {

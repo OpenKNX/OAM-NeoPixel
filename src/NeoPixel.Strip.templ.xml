@@ -11,7 +11,7 @@
               <!-- Strip Name -->
               <Parameter Id="%AID%_P-%TT%9%C%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Strip Parameters -->
-              <Union SizeInBit="144">
+              <Union SizeInBit="192">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: 0..7 (8b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>
@@ -26,33 +26,60 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%034" Offset="3" BitOffset="0" Name="NEO%C%ClockGPIO" ParameterType="%AID%_PT-NEOSPICLKGPIO" Text="Clock GPIO" Value="2"/>
                 <!-- Byte 3: Bits 6..7 frei -->
                 <!-- Byte 4: 0..5 (6b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%035" Offset="4" BitOffset="0" Name="NEO%C%SPIMOSIGPIO" ParameterType="%AID%_PT-NEOSPIMOSIGPIO" Text="MOSI GPIO" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%035" Offset="4" BitOffset="0" Name="NEO%C%SPIMOSIGPIO" ParameterType="%AID%_PT-NEOSPIMOSIGPIO" Text="Daten GPIO" Value="3"/>
                 <!-- Byte 4: Bits 6..7 frei -->
                 <!-- Byte 5: 0..2 (3b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%036" Offset="5" BitOffset="0" Name="NEO%C%SPICLK" ParameterType="%AID%_PT-NEOSPICLK" Text="SPI Clock" Value="0"/>
-                <!-- Byte 5: Bit 3 = SPI Clock manuell -->
-                <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="5" BitOffset="3" Name="NEO%C%SPICLKManual" ParameterType="%AID%_PT-Boolean" Text="SPI Takt manuell konfigurieren" Value="0"/>
+                <!-- Byte 5: Bit 3 = SPI Clock Mode -->
+                <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="5" BitOffset="3" Name="NEO%C%SPICLKMode" ParameterType="%AID%_PT-SPIClockMode" Text="SPI Takt" Value="0"/>
                 <!-- Byte 5: Bit 4 = GPIO manuell -->
                 <Parameter Id="%AID%_UP-%TT%9%C%071" Offset="5" BitOffset="4" Name="NEO%C%GPIOManual" ParameterType="%AID%_PT-Boolean" Text="GPIO manuell konfigurieren" Value="0"/>
-                <!-- Byte 5: Bits 5..7 frei -->
-                <!-- Byte 6..7: 16b -->
+                <!-- BEGIN AUTO-GENERATED: GPIO Port Selection Parameter -->
+                <!-- Cleaned - Ready for regeneration -->
+                <!-- END AUTO-GENERATED: GPIO Port Selection Parameter -->
+                <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection Parameter -->
+                <!-- Cleaned - Ready for regeneration -->
+                <!-- END AUTO-GENERATED: GPIO Clock Selection Parameter -->
+                <!-- Byte 6 onwards: Length, etc. -->
+                <!-- Byte 7..8: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%037" Offset="6" BitOffset="0" Name="NEO%C%Length" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Anzahl an LEDs/LEDs-Gruppen" Value="30"/>
                 <!-- Byte 8..9: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%038" Offset="8" BitOffset="0" Name="NEO%C%SkipFirstLEDs" ParameterType="%AID%_PT-MinMaxValue" Text="Überspringe erste LEDs" Value="0"/>
-                <!-- Byte 10: 0 (1b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="0" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
-                <!-- Byte 10: Bits 2..7 frei -->
-                <!-- Byte 11: 0 (1b), 1 (1b), 2..5 (4b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%046" Offset="11" BitOffset="0" Name="NEO%C%WhiteBalanceCorrection" ParameterType="%AID%_PT-Boolean" Text="Weißabgleich" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%047" Offset="11" BitOffset="1" Name="NEO%C%GammaCorrection" ParameterType="%AID%_PT-Boolean" Text="Gamma Korrektur (empfohlen!)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%048" Offset="11" BitOffset="2" Name="NEO%C%GammaValue" ParameterType="%AID%_PT-NEOGammaValue" Text="Gamma Wert" Value="8"/>
-                <!-- Byte 11: Bits 6..7 frei -->
-                <!-- Byte 12: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%067" Offset="12" BitOffset="0" Name="NEO%C%WhiteBalanceRed" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Rot (%)" Value="100"/>
-                <!-- Byte 13: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%068" Offset="13" BitOffset="0" Name="NEO%C%WhiteBalanceGreen" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Grün (%)" Value="100"/>
-                <!-- Byte 14: -->
-                <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="14" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
+                <!-- Byte 10: 0 (1b), 1..3 (3b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%039" Offset="10" BitOffset="0" Name="NEO%C%powerLimitEnabled" ParameterType="%AID%_PT-Boolean" Text="Strombegrenzung aktiviert" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%040" Offset="10" BitOffset="1" Name="NEO%C%powerLimitType" ParameterType="%AID%_PT-NEOPowerLimitType" Text="Strombegrenzung Typ" Value="0"/>
+
+                <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="2" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
+                <!-- Byte 11..12: 16b -->
+                <Parameter Id="%AID%_UP-%TT%9%C%041" Offset="11" BitOffset="0" Name="NEO%C%powerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
+                <!-- Byte 13: 0..6 (7b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%042" Offset="13" BitOffset="0" Name="NEO%C%currentPerLED" ParameterType="%AID%_PT-NEOPowerLimitLED" Text="Strom pro LED (mA)" Value="60"/>
+                <!-- Byte 13: Bit 7 frei -->
+                <!-- Byte 14..15: 16b -->
+                <Parameter Id="%AID%_UP-%TT%9%C%043" Offset="14" BitOffset="0" Name="NEO%C%currentPerChannel" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Strom pro Kanal (mA)" Value="500"/>
+                <!-- Byte 16: 0..6 (7b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%044" Offset="16" BitOffset="0" Name="NEO%C%autoBrightnessLimit" ParameterType="%AID%_PT-NEOPercent" Text="Auto-Helligkeitsbegrenzung (%)" Value="100"/>
+                <!-- Byte 16: Bit 7 frei -->
+                <!-- Byte 17: 0..6 (7b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%045" Offset="17" BitOffset="0" Name="NEO%C%powerLimitThreshold" ParameterType="%AID%_PT-NEOPercent" Text="Strombegrenzung Schwellwert (%)" Value="80"/>
+                <!-- Byte 17: Bit 7 frei -->
+                <!-- Byte 18: 0 (1b), 1 (1b), 2..5 (4b) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%046" Offset="18" BitOffset="0" Name="NEO%C%WhiteBalanceCorrection" ParameterType="%AID%_PT-Boolean" Text="Weißabgleich" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%047" Offset="18" BitOffset="1" Name="NEO%C%GammaCorrection" ParameterType="%AID%_PT-Boolean" Text="Gamma Korrektur (empfohlen!)" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%048" Offset="18" BitOffset="2" Name="NEO%C%GammaValue" ParameterType="%AID%_PT-NEOGammaValue" Text="Gamma Wert" Value="8"/>
+                <!-- Byte 18: Bits 6..7 frei -->
+                <!-- Byte 19: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%066" Offset="19" BitOffset="0" Name="NEO%C%ablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
+                <!-- Byte 20: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%067" Offset="20" BitOffset="0" Name="NEO%C%WhiteBalanceRed" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Rot (%)" Value="100"/>
+                <!-- Byte 21: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%068" Offset="21" BitOffset="0" Name="NEO%C%WhiteBalanceGreen" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Grün (%)" Value="100"/>
+                <!-- Byte 22: -->
+                <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="22" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
+                <!-- Byte 23: GPIO Conflict Result Parameters -->
+                <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result Parameters -->
+                <!-- Cleaned - Ready for regeneration -->
+                <!-- END AUTO-GENERATED: GPIO Conflict Result Parameters -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -67,20 +94,36 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" RefId="%AID%_UP-%TT%9%C%036" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" RefId="%AID%_UP-%TT%9%C%037" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" RefId="%AID%_UP-%TT%9%C%038" />
-               <!-- 39-45 free -->
+              <ParameterRef Id="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" RefId="%AID%_UP-%TT%9%C%039" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001" RefId="%AID%_UP-%TT%9%C%040" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" RefId="%AID%_UP-%TT%9%C%041" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" RefId="%AID%_UP-%TT%9%C%042" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" RefId="%AID%_UP-%TT%9%C%043" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" RefId="%AID%_UP-%TT%9%C%044" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" RefId="%AID%_UP-%TT%9%C%045" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601" RefId="%AID%_UP-%TT%9%C%046" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%047_R-%TT%9%C%04701" RefId="%AID%_UP-%TT%9%C%047" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%048_R-%TT%9%C%04801" RefId="%AID%_UP-%TT%9%C%048" />
-              <!-- 49-66 free -->
+              <ParameterRef Id="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" RefId="%AID%_UP-%TT%9%C%066" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%067_R-%TT%9%C%06701" RefId="%AID%_UP-%TT%9%C%067" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%068_R-%TT%9%C%06801" RefId="%AID%_UP-%TT%9%C%068" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%069_R-%TT%9%C%06901" RefId="%AID%_UP-%TT%9%C%069" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" RefId="%AID%_UP-%TT%9%C%070" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%071_R-%TT%9%C%07101" RefId="%AID%_UP-%TT%9%C%071" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%072_R-%TT%9%C%07201" RefId="%AID%_UP-%TT%9%C%072" />
+              <!-- BEGIN AUTO-GENERATED: GPIO Port Selection ParameterRef -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Port Selection ParameterRef -->
+              <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRef -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRef -->
+              
+              <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->
             </ParameterRefs>
             <ParameterCalculations>
-            <ParameterCalculation Id="%AID%_PC-%TT%9%C%001" Language="JavaScript" Name="LEDTypeParamCalc" LRTransformationFunc="NEO_LedTypeToRGB" RLTransformationFunc="NEO_Empty">
+            <ParameterCalculation Id="%AID%_PC-%TT%9%C%001" Language="JavaScript" Name="Strip%C%_LEDTypeParamCalc" LRTransformationFunc="NEO_LedTypeToRGB" RLTransformationFunc="NEO_Empty">
                 <LParameters>
                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" AliasName="LedType" />
                 </LParameters>
@@ -88,6 +131,15 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%031_R-%TT%9%C%03101" AliasName="RGBColourOrder"/>
                 </RParameters>
               </ParameterCalculation>
+              <!-- BEGIN AUTO-GENERATED: GPIO Copy ParameterCalculation -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Copy ParameterCalculation -->
+              <!-- BEGIN AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->
+              <!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->
             </ParameterCalculations>
             <ComObjectTable>
               <!-- Power -->
@@ -121,7 +173,7 @@
                 <when test=">=%C%">
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Basic" Text="LED Streifen %C%: {{0:-}}" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001">
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="LED Einstellungen" UIHint="Headline" />
-                      <!-- Strip Name -->
+                      
                       <ParameterRefRef RefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001" IndentLevel="1" HelpContext="%DOC%" /> 
                       <!-- LED Type -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" IndentLevel="1" HelpContext="%DOC%" />    
@@ -131,20 +183,52 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%032_R-%TT%9%C%03201" IndentLevel="1" HelpContext="%DOC%"/>
                       <!-- Timing -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%072_R-%TT%9%C%07201" IndentLevel="1" HelpContext="%DOC%"/>
+                      <!-- Anzahl LEDs -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" IndentLevel="1" HelpContext="%DOC%"/>
+                      <!-- Überspringe erste LEDs -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" IndentLevel="1" HelpContext="%DOC%"/>
+                      
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Port Einstellungen" UIHint="Headline" />
+                      
+                      <!-- BEGIN AUTO-GENERATED: GPIO Conflict Status Display -->
+                      <!-- Cleaned - Ready for regeneration -->
+                      <!-- END AUTO-GENERATED: GPIO Conflict Status Display -->
+                      
+                      <!-- BEGIN AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->
+                      <!-- Cleaned - Ready for regeneration -->
+                      <!-- END AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->
+                      
+                      <!-- Clock Port Selection (only for SPI LEDs) -->
+                      <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+                        <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24) -->
+                        <when test="5 21 22 23 24">
+                          <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
+                          <!-- Cleaned - Ready for regeneration -->
+                          <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
+                        </when>
+                      </choose>
+                      
+                      <!-- BEGIN AUTO-GENERATED: Central Manual GPIO Warning -->
+                      <!-- Cleaned - Ready for regeneration -->
+                      <!-- END AUTO-GENERATED: Central Manual GPIO Warning -->
+                      
+                      <!-- SPI Takt Configuration (nur für SPI) -->
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
                       <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24) -->
                       <when test="5 21 22 23 24">
-                          <!-- TODO -->
-                      </when>
-                      <!-- all non-SPI LED types -->
-                      <when default="true">
-                          <!-- TODO -->
+                        <!-- SPI Takt -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" IndentLevel="1" HelpContext="%DOC%"/>
+                        <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">
+                          <when test="1">
+                            <!-- Warnung bei manuellem SPI Takt -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="⚠ Die manuelle SPI-Takt-Konfiguration kann zu Problemen führen!&#xD;&#xA;Bei zu hohen Frequenzen können die LEDs flackern oder nicht funktionieren." UIHint="Information" />
+                            <!-- SPI Clock Frequenz -->
+                            <ParameterRefRef RefId="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                        </choose>
                       </when>
                       </choose>
-                      <!-- Length -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" IndentLevel="1" HelpContext="%DOC%"/>
-                      <!-- SkipFirstLEDs -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" IndentLevel="1" HelpContext="%DOC%"/>
+                      
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <!-- ========================================================================================================= -->
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Weiß Einstellungen" UIHint="Headline" />
@@ -167,43 +251,35 @@
                       </choose>
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <!-- ========================================================================================================= -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Experten-Einstellungen" UIHint="Headline" />
-
-                      <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-                      <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24) -->
-                        <when test="5 21 22 23 24">
-                          <!-- GPIO manuell konfigurieren -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%071_R-%TT%9%C%07101" IndentLevel="1" HelpContext="%DOC%"/>
-                          <choose ParamRefId="%AID%_UP-%TT%9%C%071_R-%TT%9%C%07101">
-                            <when test="1">
-                              <!-- Clock GPIO -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%034_R-%TT%9%C%03401" IndentLevel="1" HelpContext="%DOC%"/>
-                              <!-- MOSI GPIO -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%035_R-%TT%9%C%03501" IndentLevel="1" HelpContext="%DOC%"/>
-                            </when>
-                          </choose>
-                          <!-- SPI Takt manuell konfigurieren -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" IndentLevel="1" HelpContext="%DOC%"/>
-                          <!-- Nur wenn manuell aktiviert UND LED-Typ ein SPI-Strip ist, SPI Clock anzeigen -->
-                          <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">
-                            <when test="1">
-                                <!-- SPI Clock (Enum: 1 / 2 / 4 / 8 / 12 MHz …) -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" IndentLevel="2" HelpContext="%DOC%"/>
-                            </when>
-                          </choose>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Strom-Einstellungen" UIHint="Headline" />
+                          <!-- powerLimitEnabled -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" IndentLevel="1" HelpContext="%DOC%"/>
+                          <choose ParamRefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901">
+                          <when test="!=0">
+                              <!-- powerLimitType -->
+                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001" IndentLevel="1" HelpContext="%DOC%"/>
+                              <choose ParamRefId="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001">
+                              <when test="0">
+                                  <!-- powerLimitGlobal -->
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" IndentLevel="1" HelpContext="%DOC%"/>
+                              </when>
+                              <when test="1">
+                                  <!-- currentPerChannel -->
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" IndentLevel="1" HelpContext="%DOC%"/>
+                              </when>
+                              <when test="2">
+                                  <!-- powerLimitPerLED -->
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" IndentLevel="1" HelpContext="%DOC%"/>
+                              </when>
+                              </choose>
+                              <!-- autoBrightnessLimit -->
+                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" IndentLevel="1" HelpContext="%DOC%"/>
+                              <!-- powerLimitThreshold -->
+                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" IndentLevel="1" HelpContext="%DOC%"/>
+                              <!-- ablSlewRatePercent -->
+                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" IndentLevel="1" HelpContext="%DOC%"/>
                         </when>
-                        <!-- all non-SPI LED types -->
-                        <when default="true">
-                          <!-- GPIO manuell konfigurieren -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%071_R-%TT%9%C%07101" IndentLevel="1" HelpContext="%DOC%"/>
-                          <choose ParamRefId="%AID%_UP-%TT%9%C%071_R-%TT%9%C%07101">
-                            <when test="1">
-                              <!-- Data GPIO -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%033_R-%TT%9%C%03301" IndentLevel="1" HelpContext="%DOC%"/>
-                            </when>
-                          </choose>
-                        </when>
-                      </choose>
+                        </choose>
                   </ParameterBlock>
                 </when>
               </choose>
