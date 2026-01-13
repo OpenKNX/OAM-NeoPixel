@@ -1,10 +1,10 @@
 #!/usr/bin/env pwsh
 <#
 Open ■
-┬────┴  Build-DynamicGPIOTemplate
+┬────┴  Build-HardwareConfig
 ■ KNX   2024 OpenKNX - Erkan Çolak
 
-FILEPATH: scripts/Build-DynamicGPIOTemplate.ps1
+FILEPATH: scripts/Build-HardwareConfig.ps1
 
 .SYNOPSIS
     Generic GPIO template generator - builds ETS XML with dynamic GPIO dropdowns based on hardware
@@ -40,12 +40,12 @@ FILEPATH: scripts/Build-DynamicGPIOTemplate.ps1
 
 .EXAMPLE
     # NeoPixel LED strips
-    ./Build-DynamicGPIOTemplate.ps1 -FeatureName "NeoPixel" -DefinesPrefix "NEOPIXEL_HW" `
+    ./Build-HardwareConfig.ps1 -FeatureName "NeoPixel" -DefinesPrefix "NEOPIXEL_HW" `
         -TemplateFile "src/NeoPixel.Strip.templ.xml"
 
 .EXAMPLE
     # I2C bus selection
-    ./Build-DynamicGPIOTemplate.ps1 -FeatureName "I2C" -DefinesPrefix "I2C_HW" `
+    ./Build-HardwareConfig.ps1 -FeatureName "I2C" -DefinesPrefix "I2C_HW" `
         -TemplateFile "src/I2C.Config.templ.xml" -MaxPorts 4
 
 .NOTES
@@ -2527,6 +2527,108 @@ if ($hardwareConfigsSkipped.Count -gt 0) {
     Write-Host "$hwName" -ForegroundColor DarkYellow
   }
 }
+
+Write-Host ""
+
+# ====================================================================
+# Generate C++ Hardware Mapping Header
+# ====================================================================
+Write-Step "Generating C++ Hardware Mapping Header..."
+
+$hardwareMappingPath = Join-Path $repoRoot "src/HardwareMappingGenerated.h"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$year = Get-Date -Format "yyyy"
+
+$cppContent = @"
+/**
+ * @file HardwareMappingGenerated.h
+ * @brief Hardware Device ID to Index Mapping (Auto-Generated)
+ *
+ * This file contains the mapping between Device Hardware IDs and Hardware Indices.
+ * The mapping is automatically generated from platformio.hardware.ini at build time.
+ *
+ * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * @note Generated: $timestamp
+ * @note Source: Build-HardwareConfig.ps1
+ *
+ * @copyright Copyright (c) $year OpenKNX (Licensed under GNU GPL v3.0)
+ */
+
+#pragma once
+
+#include <cstdint>
+
+namespace HardwareMapping {
+
+/**
+ * @brief Number of supported hardware variants
+ */
+constexpr uint8_t NUM_HARDWARE_VARIANTS = $($hardwareConfigs.Count);
+
+/**
+ * @brief Device Hardware ID to Index mapping structure
+ */
+struct HardwareIdMapping {
+    uint16_t deviceHwId;
+    uint8_t hwIndex;
+    const char* name;
+};
+
+/**
+ * @brief Hardware ID mapping table
+ */
+constexpr HardwareIdMapping HARDWARE_ID_MAP[NUM_HARDWARE_VARIANTS] = {
+"@
+
+for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
+  $hwConfig = $hardwareConfigs[$hwIdx]
+  $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
+  $hwName = $hwConfig.DeviceName -replace '"', '\"'
+  
+  $cppContent += "`n    { $hwIdHex, $hwIdx, `"$hwName`" }"
+  if ($hwIdx -lt $hardwareConfigs.Count - 1) {
+    $cppContent += ","
+  }
+}
+
+$cppContent += @"
+
+};
+
+/**
+ * @brief Map Device Hardware ID to Hardware Index
+ * 
+ * @param deviceHwId The Device HW ID (16-bit)
+ * @return Hardware index (0-$(($hardwareConfigs.Count - 1))) or 0 if unknown
+ */
+inline uint8_t mapDeviceHwIdToIndex(uint16_t deviceHwId) {
+    for (uint8_t i = 0; i < NUM_HARDWARE_VARIANTS; i++) {
+        if (HARDWARE_ID_MAP[i].deviceHwId == deviceHwId) {
+            return HARDWARE_ID_MAP[i].hwIndex;
+        }
+    }
+    return 0; // Fallback to first hardware
+}
+
+/**
+ * @brief Get hardware name by index
+ * 
+ * @param hwIndex Hardware index (0-$(($hardwareConfigs.Count - 1)))
+ * @return Hardware name or nullptr if invalid
+ */
+inline const char* getHardwareName(uint8_t hwIndex) {
+    if (hwIndex < NUM_HARDWARE_VARIANTS) {
+        return HARDWARE_ID_MAP[hwIndex].name;
+    }
+    return nullptr;
+}
+
+} // namespace HardwareMapping
+"@
+
+Set-Content -Path $hardwareMappingPath -Value $cppContent -Encoding UTF8
+Write-Success "Generated C++ Hardware Mapping: $(Split-Path -Leaf $hardwareMappingPath)"
+Write-Host "  • $($hardwareConfigs.Count) hardware variant(s) mapped" -ForegroundColor DarkGray
 
 Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan

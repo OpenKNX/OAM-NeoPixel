@@ -7,7 +7,7 @@ Open ■
 FILEPATH: scripts/Build-NeoPixelStrips.ps1
 
 .SYNOPSIS
-    NeoPixel LED Strip template generator - wrapper for Build-DynamicGPIOTemplate.ps1
+    NeoPixel LED Strip template generator - wrapper for Build-HardwareConfig.ps1
 
 .DESCRIPTION
     Generates ETS XML template for NeoPixel LED strips with dynamic GPIO selection
@@ -22,7 +22,7 @@ FILEPATH: scripts/Build-NeoPixelStrips.ps1
     (e.g., "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1")
 
 .NOTES
-    This script delegates to Build-DynamicGPIOTemplate.ps1 with NeoPixel-specific parameters.
+    This script delegates to Build-HardwareConfig.ps1 with NeoPixel-specific parameters.
     Part of the OpenKNX project automation framework.
 #>
 
@@ -102,9 +102,9 @@ if ($HardwareConfigSection) {
 }
 
 # Call generic GPIO template builder
-Write-Host "  [NeoPixel] Calling Build-DynamicGPIOTemplate.ps1..." -ForegroundColor Cyan
+Write-Host "  [NeoPixel] Calling Build-HardwareConfig.ps1..." -ForegroundColor Cyan
 Write-Host "  [NeoPixel] Parameters: $($params | Out-String)" -ForegroundColor DarkGray
 
-& "$scriptDir/Build-DynamicGPIOTemplate.ps1" @params
+& "$scriptDir/Build-HardwareConfig.ps1" @params
 
 exit $LASTEXITCODE
