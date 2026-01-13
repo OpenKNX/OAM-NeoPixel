@@ -9,6 +9,71 @@ A sophisticated build-time code generation system that creates ETS XML templates
 - **JavaScript-based conflict detection** (4-way: Data-Data, Clock-Clock, Data-Clock, Clock-Data)
 - **Automatic hardware-change reset** to prevent invalid GPIO selections
 
+## Device Hardware ID Structure
+
+Each hardware variant is identified by a unique `DEVICE_HW_ID` that encodes the device family, board type, and variant in a hierarchical 16-bit structure:
+
+```
+Bits 15-12: Main Group (4 bits = 16 main groups)
+Bits 11-8:  Subgroup   (4 bits = 16 subgroups)
+Bits 7-0:   Variant    (8 bits = 256 variants)
+
+Format: 0xHUVV
+        H = Main Group
+        U = Subgroup
+        VV = Variant
+Example: 0x1201 = Main Group 1, Subgroup 2, Variant 1
+```
+
+### Device ID Hierarchy
+
+```
+Main Group 0x1 = OpenKNX (0x1000-0x1FFF)
+├─ 0x10 = REG1  (0x1000-0x10FF) → 256 variants
+├─ 0x11 = REG2  (0x1100-0x11FF) → 256 variants
+├─ 0x12 = UP1   (0x1200-0x12FF) → 256 variants
+├─ 0x13 = XIAO  (0x1300-0x13FF) → 256 variants
+└─ ... to 0x1F (16 subgroups)
+
+Main Group 0x2 = OpenKNX-Ready (0x2000-0x2FFF)
+├─ 0x20 = Partner A
+├─ 0x21 = Partner B
+└─ ...
+
+Main Group 0x3 = Community Devices (0x3000-0x3FFF)
+├─ 0x30 = Device A
+├─ 0x31 = Device B
+└─ ...
+```
+
+### XIAO Platform Examples (0x13XX)
+
+| Device HW ID | Decimal | Device Name                    | Platform  |
+|--------------|---------|--------------------------------|-----------|
+| `0x1300`     | 4864    | OpenKNXiao KNeoPix RP2040 V1   | RP2040    |
+| `0x1301`     | 4865    | OpenKNXiao Mini RP2040 V1      | RP2040    |
+| `0x1310`     | 4880    | OpenKNXiao KNeoPix RP2350 V1.4 | RP2350    |
+| `0x1320`     | 4896    | OpenKNXiao KNeoPix ESP32S3 V1  | ESP32-S3  |
+| `0x1321`     | 4897    | OpenKNXiao Mini ESP32S3 V1     | ESP32-S3  |
+| `0x1330`     | 4912    | OpenKNXiao KNeoPix ESP32C6 V1  | ESP32-C6  |
+| `0x1350`     | 4944    | OpenKNXiao KNeoPix ESP32C3 V1  | ESP32-C3  |
+| `0x1351`     | 4945    | OpenKNXiao Mini ESP32C3 V1     | ESP32-C3  |
+
+**Usage in Code**:
+```cpp
+// Defined in lib/OGM-HardwareConfig/include/HardwareConfig/OpenKNX/Xiao.h
+#ifdef OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1
+    #define DEVICE_HW_ID 0x1300
+    #define DEVICE_ID PREFIX_ID "V10-KNeoPix-2040"
+    #define DEVICE_NAME PREFIX_NAME "V1.0 KNeoPix RP2040"
+#endif
+```
+
+This ID is extracted during build-time via C++ preprocessor and used to:
+- **Map ETS parameters** to correct hardware-specific GPIO enumerations
+- **Enable hardware-specific features** in generated XML templates
+- **Detect hardware changes** and reset invalid GPIO configurations
+
 ## Problem Statement
 
 Multi-hardware embedded systems with static XML parameter definitions face critical challenges:

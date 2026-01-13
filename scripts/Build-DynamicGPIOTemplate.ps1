@@ -1760,8 +1760,9 @@ Write-Step "Generating Hardware Selection Parameter..."
 $hardwareParamXml = ""
 
 if ($hardwareConfigs.Count -gt 1) {
-  $hardwareParamXml = "                <Parameter Id=`"%AID%_UP-4000018`" Offset=`"0`" BitOffset=`"0`" Name=`"NEO_NeoPixelHardwareSelect`" ParameterType=`"%AID%_PT-${FeatureName}HardwareSelect`" Text=`"Hardware Auswahl`" Value=`"4097`"/>"
-  Write-Success "Generated Hardware Selection Parameter (4000018)"
+  $defaultHwId = $hardwareConfigs[0].DeviceIdBit
+  $hardwareParamXml = "                <Parameter Id=`"%AID%_UP-4000018`" Offset=`"0`" BitOffset=`"0`" Name=`"NEO_NeoPixelHardwareSelect`" ParameterType=`"%AID%_PT-${FeatureName}HardwareSelect`" Text=`"Hardware Auswahl`" Value=`"$defaultHwId`"/>"
+  Write-Success "Generated Hardware Selection Parameter (4000018) with default: $defaultHwId"
 }
 
 # Step 4.9: Generate 8 separate GPIO Port Parameters (one per hardware, unique IDs)
