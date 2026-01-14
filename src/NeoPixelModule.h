@@ -211,6 +211,11 @@ class NeoPixelBusModule : public OpenKNX::Module
     static const char* getColorOrderName(ColorOrder order);
     static const char* getProtocolName(LedProtocol protocol);
 
+    // Debug: Show complete configuration analysis (OPENKNX_DEBUG only)
+    #ifdef OPENKNX_DEBUG
+    void debugShowConfiguration();
+    #endif
+
   private:
     // OFM-NeoPixel library instance (not registered as separate module)
     NeoPixel _neoPixel;

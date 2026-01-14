@@ -58,15 +58,7 @@ class EffectConfiguration
      */
     void setupEffectConfiguration(Segment* segment);
 
-    /**
-     * @brief Get Effect instance from type ID
-     *
-     * Maps ETS effect type parameter (0-20) to EffectPool singleton instances.
-     *
-     * @param effectType Effect type ID from ETS
-     * @return Effect* Pointer to effect instance (never nullptr, defaults to Solid)
-     */
-    Effect* getEffectFromType(uint8_t effectType);
+    // Note: getEffectFromType() is now a global function in EffectTypeMapping.h (auto-generated)
 
   private:
     NeoPixelBusModule* _module; // Parent module for parameter access

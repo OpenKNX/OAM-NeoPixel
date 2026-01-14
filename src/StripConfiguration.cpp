@@ -71,7 +71,7 @@ void StripConfiguration::configureFromETS()
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         _module->setChannelIndex(i);
-        uint8_t _channelIndex = i; // Local variable for ETS parameter macros
+        uint8_t& _channelIndex = _module->_channelIndex; // Reference to module member for ETS parameter macros
 
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
         if (pixels == 0) continue; // Skip strips with 0 LEDs
@@ -131,7 +131,7 @@ void StripConfiguration::configureFromETS()
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         _module->setChannelIndex(i);
-        uint8_t _channelIndex = i; // Local variable for ETS parameter macros
+        uint8_t& _channelIndex = _module->_channelIndex; // Reference to module member for ETS parameter macros
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = mapProtocol(ledTypeParam);
@@ -153,6 +153,9 @@ void StripConfiguration::configureFromETS()
 
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
+        
+        // DEBUG: Log LED count for each strip
+        logInfoP("Strip %d: Reading ParamNEOSTRIP_NEOLength = %d (channelIndex=%d)", i, pixels, _channelIndex);
 
         // Skip strips with 0 LEDs configured
         if (pixels == 0)

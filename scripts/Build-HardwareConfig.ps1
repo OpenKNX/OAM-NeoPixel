@@ -70,6 +70,9 @@ param(
   [string]$TemplateFile = "src/NeoPixel.Strip.templ.xml",
     
   [Parameter(Mandatory = $false)]
+  [string]$OutputFile = "",
+    
+  [Parameter(Mandatory = $false)]
   [string]$ExtractorTool = "scripts/extract_gpio_config.cpp",
     
   [Parameter(Mandatory = $false)]
@@ -82,16 +85,25 @@ param(
   [string]$JavaScriptFile = "",
     
   [Parameter(Mandatory = $false)]
+  [string]$HardwareMappingHeader = "src/HardwareMappingData.h",
+    
+  [Parameter(Mandatory = $false)]
   [switch]$TestMode,
     
   [Parameter(Mandatory = $false)]
-  [switch]$CleanOnly,
+  [switch]$Clean,
+    
+  [Parameter(Mandatory = $false)]
+  [switch]$Force,
     
   [Parameter(Mandatory = $false)]
   [switch]$DryRun,
     
   [Parameter(Mandatory = $false)]
   [switch]$VerboseMode,
+    
+  [Parameter(Mandatory = $false)]
+  [switch]$UniversalBuild,
     
   [Parameter(Mandatory = $false)]
   [string]$HardwareConfigSection = ""
@@ -106,6 +118,9 @@ if ([string]::IsNullOrEmpty($ShareXml)) {
 }
 if ([string]::IsNullOrEmpty($JavaScriptFile)) {
   $JavaScriptFile = "src/$FeatureName.script.js"
+}
+if ([string]::IsNullOrEmpty($OutputFile)) {
+  $OutputFile = $TemplateFile
 }
 
 # ====================================================================
@@ -461,7 +476,7 @@ function Generate-GPIOPortParametersInShare {
   # Generate GPIO Port selection parameters in share.xml (00101-00106)
   # These store which GPIO port each strip uses (0=unused, 1-7=D0-D6)
   $paramsXml = "              <Union SizeInBit=`"48`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"42`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"60`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
     
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -488,7 +503,7 @@ function Generate-ClockPortParametersInShare {
   # Generate Clock GPIO Port selection parameters in share.xml (00111-00116)
   # These store which GPIO port each strip uses for Clock (0=unused, 1-7=D0-D6)
   $paramsXml = "              <Union SizeInBit=`"48`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"48`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"67`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
     
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -515,7 +530,7 @@ function Generate-ConflictParametersInShare {
   # Generate conflict flag parameters in share.xml (00091-00096)
   # Template will reference these with 0009%C% token
   $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"41`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"59`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips conflict flags (6 bit total) -->`n"
     
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -541,7 +556,7 @@ function Generate-ClockConflictParametersInShare {
     
   # Generate Clock conflict flag parameters in share.xml (00117-00122)
   $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"54`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"66`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock conflict flags (6 bit total) -->`n"
     
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -794,7 +809,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
     if ($Type -eq "Data") {
       # Data type has special SPI handling
       $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
-      $xml += "          <when test=`"5 21 22 23 24`">`n"
+      $xml += "          <when test=`"5 21 22 23 24 25`">`n"
       $xml += "            <!-- MOSI GPIO nur bei SPI -->`n"
       $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
       $xml += "          </when>`n"
@@ -821,7 +836,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
     
   if ($Type -eq "Data") {
     $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
-    $xml += "          <when test=`"5 21 22 23 24`">`n"
+    $xml += "          <when test=`"5 21 22 23 24 25`">`n"
     $xml += "            <!-- MOSI GPIO nur bei SPI -->`n"
     $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
     $xml += "          </when>`n"
@@ -1221,9 +1236,35 @@ $scriptJsPath = Resolve-RepoPath $JavaScriptFile
 Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
 Write-Host ""
 
-# Handle CleanOnly mode
-if ($CleanOnly) {
-  Write-Step "Cleaning marker blocks (CleanOnly mode)..."
+# Handle Clean mode
+if ($Clean) {
+  Write-Step "Cleaning marker blocks (Clean mode)..."
+  Write-Host ""
+  
+  # List what will be cleaned
+  Write-Host "  Files to be cleaned:" -ForegroundColor Cyan
+  Write-Host "    • share.xml (ParameterTypes, Hardware Selection, GPIO Ports, etc.)" -ForegroundColor DarkGray
+  Write-Host "    • Template file (GPIO Options, Port Parameters, Conflict Detection)" -ForegroundColor DarkGray
+  Write-Host "    • JavaScript file (GPIO Mapping, Conflict Detection)" -ForegroundColor DarkGray
+  Write-Host "    • HardwareMappingData.h" -ForegroundColor DarkGray
+  Write-Host ""
+  
+  # Ask for confirmation (unless -Force)
+  if (-not $Force) {
+    Write-Host "  Continue with cleanup? (y/n): " -NoNewline -ForegroundColor Yellow
+    $confirmation = Read-Host
+    
+    if ($confirmation -ne 'y' -and $confirmation -ne 'Y') {
+      Write-Host ""
+      Write-Host "  Cleanup cancelled." -ForegroundColor Yellow
+      Write-Host ""
+      exit 0
+    }
+  }
+  
+  Write-Host ""
+  Write-Host "  Cleaning files..." -ForegroundColor Cyan
+  Write-Host ""
     
   # Clean share.xml
   Write-Host "  • Cleaning share.xml (ParameterTypes)..." -ForegroundColor Cyan
@@ -1366,6 +1407,36 @@ if ($CleanOnly) {
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOClockCopyCalcStart `
     -EndMarker $script:Config.Markers.GPIOClockCopyCalcEnd
+    
+  # Clean HardwareMappingData.h
+  Write-Host "  • Cleaning HardwareMappingData.h..." -ForegroundColor Cyan
+  $hardwareMappingPath = Resolve-RepoPath $HardwareMappingHeader
+  if (Test-Path $hardwareMappingPath) {
+    $headerFileName = Split-Path -Leaf $HardwareMappingHeader
+    $placeholderContent = @"
+/**
+ * @file $headerFileName
+ * @brief Hardware ID to Index mapping (auto-generated)
+ * 
+ * This file is AUTO-GENERATED by scripts/Build-HardwareConfig.ps1
+ * DO NOT EDIT MANUALLY!
+ * 
+ * Run the following command to regenerate:
+ *   pwsh scripts/Build-HardwareConfig.ps1 -FeatureName "NeoPixel" -DefinesPrefix "NEOPIXEL_HW"
+ * Or use the wrapper:
+ *   pwsh scripts/Build-HardwareConfigTemplates.ps1
+ */
+
+#pragma once
+
+#error "HardwareMappingData.h is empty! Run 'pwsh scripts/Build-HardwareConfigTemplates.ps1' to regenerate."
+
+// This file will be generated by Build-HardwareConfig.ps1
+// Run the script to generate hardware ID mapping from platformio.hardware.ini
+"@
+    Set-Content -Path $hardwareMappingPath -Value $placeholderContent -NoNewline
+    Write-Host "    ✓ $headerFileName - Emptied with placeholder" -ForegroundColor Green
+  }
     
   Write-Host ""
   Write-Success "All marker blocks cleaned successfully!"
@@ -1801,7 +1872,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $gpioClockParamXml += "`n"
   }
   $gpioClockParamXml += @"
-<Parameter Id="%AID%_UP-%TT%9%C%0$paramId" Offset="6" BitOffset="1" Name="NEO%C%GPIOClockPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Clock Port" Value="15"/>
+<Parameter Id="%AID%_UP-%TT%9%C%0$paramId" Offset="23" BitOffset="0" Name="NEO%C%GPIOClockPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Clock Port" Value="15"/>
 "@
 }
 
@@ -2220,7 +2291,7 @@ $centralWarningXml = @"
 </choose>
 <!-- Check Clock Port (Share Param 0011%C%, only for SPI LEDs) = Manuell (10) -->
 <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-  <when test="5 21 22 23 24">
+  <when test="5 21 22 23 24 25">
     <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
       <when test="10">
         <ParameterSeparator Id="%AID%_PS-manualclock%C%" Text="⚠ Die manuelle GPIO-Konfiguration ist nur für fortgeschrittene Anwender empfohlen!&#xD;&#xA;Falsche Einstellungen können zu Fehlfunktionen führen." UIHint="Information" />
@@ -2535,13 +2606,14 @@ Write-Host ""
 # ====================================================================
 Write-Step "Generating C++ Hardware Mapping Header..."
 
-$hardwareMappingPath = Join-Path $repoRoot "src/HardwareMappingGenerated.h"
+$hardwareMappingPath = Resolve-RepoPath $HardwareMappingHeader
+$headerFileName = Split-Path -Leaf $HardwareMappingHeader
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $year = Get-Date -Format "yyyy"
 
 $cppContent = @"
 /**
- * @file HardwareMappingGenerated.h
+ * @file $headerFileName
  * @brief Hardware Device ID to Index Mapping (Auto-Generated)
  *
  * This file contains the mapping between Device Hardware IDs and Hardware Indices.

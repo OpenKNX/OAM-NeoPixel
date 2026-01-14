@@ -37,11 +37,8 @@
                 <!-- BEGIN AUTO-GENERATED: GPIO Port Selection Parameter -->
                 <!-- Cleaned - Ready for regeneration -->
                 <!-- END AUTO-GENERATED: GPIO Port Selection Parameter -->
-                <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection Parameter -->
-                <!-- Cleaned - Ready for regeneration -->
-                <!-- END AUTO-GENERATED: GPIO Clock Selection Parameter -->
-                <!-- Byte 6 onwards: Length, etc. -->
-                <!-- Byte 7..8: 16b -->
+                <!-- Byte 6-7: Length (14-bit) -->
+                <!-- Byte 6..7: 14b (NEOLength) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%037" Offset="6" BitOffset="0" Name="NEO%C%Length" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Anzahl an LEDs/LEDs-Gruppen" Value="30"/>
                 <!-- Byte 8..9: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%038" Offset="8" BitOffset="0" Name="NEO%C%SkipFirstLEDs" ParameterType="%AID%_PT-MinMaxValue" Text="Überspringe erste LEDs" Value="0"/>
@@ -76,6 +73,10 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%068" Offset="21" BitOffset="0" Name="NEO%C%WhiteBalanceGreen" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Grün (%)" Value="100"/>
                 <!-- Byte 22: -->
                 <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="22" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
+                <!-- Byte 23: GPIO Clock Port Selection (moved from Byte 6 to avoid NEOLength conflict) -->
+                <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection Parameter -->
+                <!-- Cleaned - Ready for regeneration -->
+                <!-- END AUTO-GENERATED: GPIO Clock Selection Parameter -->
                 <!-- Byte 23: GPIO Conflict Result Parameters -->
                 <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result Parameters -->
                 <!-- Cleaned - Ready for regeneration -->
@@ -129,6 +130,20 @@
                 </LParameters>
                 <RParameters>
                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%031_R-%TT%9%C%03101" AliasName="RGBColourOrder"/>
+                </RParameters>
+              </ParameterCalculation>
+              <!-- Reset Clock GPIO when switching from SPI to 1-Wire LED types -->
+              <ParameterCalculation Id="%AID%_PC-%TT%9%C%002" Language="JavaScript" Name="Strip%C%_ResetClockOnLedTypeChange" LRTransformationFunc="NEO_ResetClockGPIOOnLedTypeChange" RLTransformationFunc="NEO_Empty">
+                <LParameters>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" AliasName="LedType" />
+                </LParameters>
+                <RParameters>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101" AliasName="Strip1ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%082_R-%TT%9%C%08201" AliasName="Strip2ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%083_R-%TT%9%C%08301" AliasName="Strip3ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%084_R-%TT%9%C%08401" AliasName="Strip4ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%085_R-%TT%9%C%08501" AliasName="Strip5ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%086_R-%TT%9%C%08601" AliasName="Strip6ClockPort"/>
                 </RParameters>
               </ParameterCalculation>
               <!-- BEGIN AUTO-GENERATED: GPIO Copy ParameterCalculation -->
@@ -200,8 +215,8 @@
                       
                       <!-- Clock Port Selection (only for SPI LEDs) -->
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-                        <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24) -->
-                        <when test="5 21 22 23 24">
+                        <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
+                        <when test="5 21 22 23 24 25">
                           <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
                           <!-- Cleaned - Ready for regeneration -->
                           <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
@@ -214,8 +229,8 @@
                       
                       <!-- SPI Takt Configuration (nur für SPI) -->
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-                      <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24) -->
-                      <when test="5 21 22 23 24">
+                        <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
+                        <when test="5 21 22 23 24 25">
                         <!-- SPI Takt -->
                         <ParameterRefRef RefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" IndentLevel="1" HelpContext="%DOC%"/>
                         <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">

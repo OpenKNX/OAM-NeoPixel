@@ -1,13 +1,13 @@
 #!/usr/bin/env pwsh
 <#
 Open ■
-┬────┴  Build-NeoPixelStrips
+┬────┴  Build-HardwareConfigTemplates
 ■ KNX   2024 OpenKNX - Erkan Çolak
 
-FILEPATH: scripts/Build-NeoPixelStrips.ps1
+FILEPATH: scripts/Build-HardwareConfigTemplates.ps1
 
 .SYNOPSIS
-    NeoPixel LED Strip template generator - wrapper for Build-HardwareConfig.ps1
+    NeoPixel hardware configuration template generator - wrapper for Build-HardwareConfig.ps1
 
 .DESCRIPTION
     Generates ETS XML template for NeoPixel LED strips with dynamic GPIO selection
@@ -34,7 +34,13 @@ param(
     [string]$HardwareConfigSection = "",
     
     [Parameter(Mandatory=$false)]
-    [switch]$UniversalBuild
+    [switch]$UniversalBuild,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$Clean,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -90,6 +96,7 @@ $params = @{
 
 if ($UniversalBuild) {
     Write-Host "  [NeoPixel] UNIVERSAL BUILD: KNXprod supports all hardware variants" -ForegroundColor Cyan
+    $params.UniversalBuild = $true
 }
 
 if ($TestMode) {
@@ -99,6 +106,14 @@ if ($TestMode) {
 
 if ($HardwareConfigSection) {
     $params.HardwareConfigSection = $HardwareConfigSection
+}
+
+if ($Clean) {
+    $params.Clean = $true
+}
+
+if ($Force) {
+    $params.Force = $true
 }
 
 # Call generic GPIO template builder

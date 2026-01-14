@@ -3,7 +3,11 @@
 #
 #   scripts/Build-Release.ps1                - for Beta builds
 #   scripts/Build-Release.ps1 Release        - for Release builds
+#   scripts/Build-Release.ps1 -Release       - for Release builds (parameter)
 #   scripts/Build-Release.ps1 SkipFirmware   - for auto-generated files + knxprod only (no firmware)
+#   scripts/Build-Release.ps1 -SkipFirmware  - for auto-generated files + knxprod only (parameter)
+#   scripts/Build-Release.ps1 Clean          - clean all generated files
+#   scripts/Build-Release.ps1 -Clean         - clean all generated files (parameter)
 #
 # {
 #     "label": "Build-Release",
@@ -30,13 +34,65 @@
 #     "group": "test"
 # }
 
+param(
+    [Parameter(Position=0)]
+    [ValidateSet("Release", "SkipFirmware", "Clean", "")]
+    [string]$Mode = "",
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$Release,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipFirmware,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$Clean
+)
+
+# Handle both positional and named parameters
+$isClean = ($Mode -eq "Clean") -or $Clean
+$isRelease = ($Mode -eq "Release") -or $Release
+$isSkipFirmware = ($Mode -eq "SkipFirmware") -or $SkipFirmware
+
 # set product names, allows mapping of (devel) name in Project to a more consistent name in release
 # $settings = scripts/OpenKNX-Build-Settings.ps1
+
+# Handle Clean mode - cleanup all generated files
+if ($isClean) {
+    Write-Host "Cleaning all generated files..." -ForegroundColor Yellow
+    Write-Host ""
+    
+    Write-Host "Cleaning effect parameters..." -ForegroundColor Cyan
+    & scripts/Build-EffectParameters.ps1 -Clean -Force
+    
+    Write-Host ""
+    Write-Host "Cleaning hardware config..." -ForegroundColor Cyan
+    & scripts/Build-HardwareConfigTemplates.ps1 -Clean -Force
+    
+    Write-Host ""
+    Write-Host "✓ All generated files cleaned!" -ForegroundColor Green
+    Write-Host ""
+    
+    # Ask if user wants to build after cleaning
+    Write-Host "Build after cleaning? (y/n): " -NoNewline -ForegroundColor Yellow
+    $buildAfterClean = Read-Host
+    
+    if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {
+        Write-Host ""
+        Write-Host "Cleanup completed. Exiting without build." -ForegroundColor Cyan
+        exit 0
+    }
+    
+    Write-Host ""
+    Write-Host "Continuing with build..." -ForegroundColor Cyan
+    Write-Host ""
+    # Don't exit - continue with normal build flow
+}
 
 # Generate dynamic GPIO templates before building
 # Using -UniversalBuild for release to support all hardware variants
 Write-Host "Generating dynamic GPIO templates (Universal Build)..." -ForegroundColor Cyan
-scripts/Build-NeoPixelStrips.ps1 -UniversalBuild
+scripts/Build-HardwareConfigTemplates.ps1 -UniversalBuild
 if (!$?) { 
     Write-Host "GPIO template generation failed!" -ForegroundColor Red
     exit 1 
@@ -50,19 +106,16 @@ if (!$?) {
     exit 1 
 }
 
-# Determine if we should skip firmware builds
-$skipFirmware = ($args[0] -eq "SkipFirmware")
-
-# Filter parameter for pre/post-build: don't pass "SkipFirmware" to OpenKNXproducer
+# Determine build parameter for OpenKNXproducer
 # Pass "Release" if it was Release, otherwise empty (Beta)
-$buildParam = if ($args[0] -eq "Release") { "Release" } else { "" }
+$buildParam = if ($isRelease) { "Release" } else { "" }
 
 # execute generic pre-build steps
 ../OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
 if (!$?) { exit 1 }
 
 # OpenKNX Hardware builds (skip if SkipFirmware mode)
-if (-not $skipFirmware) {
+if (-not $isSkipFirmware) {
     Write-Host "Building firmware for all hardware variants..." -ForegroundColor Cyan
     
     # OpenKNXiao KNeoPiX

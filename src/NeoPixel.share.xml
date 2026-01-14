@@ -412,7 +412,7 @@
 
               <!-- Global Hardware Selection Union (16 bits) -->
               <Union SizeInBit="16">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="18" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="20" BitOffset="0" />
                 <!-- BEGIN AUTO-GENERATED: Hardware Selection Parameter -->
                 <!-- Cleaned - Ready for regeneration -->
                 <!-- END AUTO-GENERATED: Hardware Selection Parameter -->
@@ -427,7 +427,7 @@
               <!-- END AUTO-GENERATED: GPIO Clock Port Parameters -->
 
               <Union SizeInBit="24">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="20" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="22" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
                 <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 6"/>
                 <!-- Byte 1: 0..4 (5b), 5 (1b) -->
@@ -458,7 +458,7 @@
               </Union>
               <!-- Global Startup Behavior Union -->
               <Union SizeInBit="56">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="34" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="25" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
@@ -469,7 +469,7 @@
               </Union>
               <!-- Virtual Strip Configuration -->
               <Union SizeInBit="24">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="41" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="32" BitOffset="0" />
                 <!-- Canonical (full 1..6) -->
                 <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
@@ -501,14 +501,14 @@
                 <!-- Position 6: no limited variant needed, only used if 6 strips -->
                 
                 <!-- Duplicate Status Display (informational parameter) -->
-                <Parameter Id="%AID%_UP-%TT%00058" Offset="3" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="Read" />
+                <Parameter Id="%AID%_UP-%TT%00079" Offset="3" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="Read" />
                 <!-- Segment Start/End range error flag -->
-                <Parameter Id="%AID%_UP-%TT%00059" Offset="3" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: "          Value="0" Access="Read" />
+                <Parameter Id="%AID%_UP-%TT%00080" Offset="3" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: "          Value="0" Access="Read" />
               </Union>
 
               <!-- Virtual Strip Start Indices (for UI only) -->
               <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="46" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="35" BitOffset="0" />
                 <!-- 6 * 16 bit = 96 bit -->
                 <Parameter Id="%AID%_UP-%TT%00051" Offset="0" BitOffset="0"  Name="VirtualStripStart1" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 1" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00052" Offset="2" BitOffset="0"  Name="VirtualStripStart2" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 2" Value="1" Access="Read"/>
@@ -516,6 +516,18 @@
                 <Parameter Id="%AID%_UP-%TT%00054" Offset="6" BitOffset="0"  Name="VirtualStripStart4" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 4" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00055" Offset="8" BitOffset="0"  Name="VirtualStripStart5" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 5" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00056" Offset="10" BitOffset="0" Name="VirtualStripStart6" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 6" Value="1" Access="Read"/>
+              </Union>
+
+              <!-- Virtual Strip End Indices (for UI only) -->
+              <Union SizeInBit="96">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="47" BitOffset="0" />
+                <!-- 6 * 16 bit = 96 bit -->
+                <Parameter Id="%AID%_UP-%TT%00057" Offset="0" BitOffset="0"  Name="VirtualStripEnd1" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 1" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00058" Offset="2" BitOffset="0"  Name="VirtualStripEnd2" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 2" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00059" Offset="4" BitOffset="0"  Name="VirtualStripEnd3" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 3" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00076" Offset="6" BitOffset="0"  Name="VirtualStripEnd4" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 4" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00077" Offset="8" BitOffset="0"  Name="VirtualStripEnd5" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 5" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00078" Offset="10" BitOffset="0" Name="VirtualStripEnd6" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 6" Value="0" Access="Read"/>
               </Union>
               
               <!-- BEGIN AUTO-GENERATED: GPIO Conflict Parameters -->
@@ -544,6 +556,10 @@
               <ParameterRef Id="%AID%_UP-%TT%00063_R-%TT%0006301" RefId="%AID%_UP-%TT%00063" />
               <ParameterRef Id="%AID%_UP-%TT%00064_R-%TT%0006401" RefId="%AID%_UP-%TT%00064" />
               <ParameterRef Id="%AID%_UP-%TT%00065_R-%TT%0006501" RefId="%AID%_UP-%TT%00065" />
+              <ParameterRef Id="%AID%_UP-%TT%00077_R-%TT%0007701" RefId="%AID%_UP-%TT%00077" />
+              <ParameterRef Id="%AID%_UP-%TT%00078_R-%TT%0007801" RefId="%AID%_UP-%TT%00078" />
+              <ParameterRef Id="%AID%_UP-%TT%00079_R-%TT%0007901" RefId="%AID%_UP-%TT%00079" />
+              <ParameterRef Id="%AID%_UP-%TT%00080_R-%TT%0008001" RefId="%AID%_UP-%TT%00080" />
               <ParameterRef Id="%AID%_UP-%TT%00066_R-%TT%0006601" RefId="%AID%_UP-%TT%00066" />
               <ParameterRef Id="%AID%_UP-%TT%00067_R-%TT%0006701" RefId="%AID%_UP-%TT%00067" />
                <!-- NEO Parameter References -->
@@ -615,9 +631,13 @@
               <ParameterRef Id="%AID%_UP-%TT%00054_R-%TT%0005401" RefId="%AID%_UP-%TT%00054" />
               <ParameterRef Id="%AID%_UP-%TT%00055_R-%TT%0005501" RefId="%AID%_UP-%TT%00055" />
               <ParameterRef Id="%AID%_UP-%TT%00056_R-%TT%0005601" RefId="%AID%_UP-%TT%00056" />
+              
+              <!-- Virtual Strip End Index Parameter References -->
+              <ParameterRef Id="%AID%_UP-%TT%00057_R-%TT%0005701" RefId="%AID%_UP-%TT%00057" />
               <ParameterRef Id="%AID%_UP-%TT%00058_R-%TT%0005801" RefId="%AID%_UP-%TT%00058" />
-              <!-- Segment Start/End range error flag -->
               <ParameterRef Id="%AID%_UP-%TT%00059_R-%TT%0005901" RefId="%AID%_UP-%TT%00059" />
+              <ParameterRef Id="%AID%_UP-%TT%00076_R-%TT%0007601" RefId="%AID%_UP-%TT%00076" />
+              
               </ParameterRefs>
               <ParameterCalculations>
               <!-- Virtual Strip Start LED Calculation -->
@@ -669,8 +689,15 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" AliasName="Start4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" AliasName="Start5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" AliasName="Start6" />
+                  <!-- End-LED Outputs (read-only Parameter in der Tabelle) -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00057_R-%TT%0005701" AliasName="End1" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" AliasName="End2" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" AliasName="End3" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00076_R-%TT%0007601" AliasName="End4" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" AliasName="End5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" AliasName="End6" />
                   <!-- Duplicate flag -->
-                  <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" AliasName="HasDuplicates" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" AliasName="HasDuplicates" />
                 </RParameters>
               </ParameterCalculation>
               <ParameterCalculation Id="%AID%_PC-%TT%00038" Language="JavaScript" Name="SegmentStartEndCheck" LRTransformationFunc="NEO_CheckSegmentStartEndRanges" RLTransformationFunc="NEO_Empty">
@@ -730,7 +757,7 @@
 
               <RParameters>
                 <!-- 1 = at least one segment has StartLED > EndLED -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" AliasName="HasSegmentError" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00080_R-%TT%0008001" AliasName="HasSegmentError" />
               </RParameters>
             </ParameterCalculation>
 
@@ -908,10 +935,11 @@
                     <Row Id="%AID%_PB-nnn_R-7" Name="Pos6" />
                   </Rows>
                   <Columns>
-                    <Column Id="%AID%_PB-nnn_C-1" Name="Pos" Width="15%" />
-                    <Column Id="%AID%_PB-nnn_C-2" Name="StripSelect" Width="40%" />
-                    <Column Id="%AID%_PB-nnn_C-3" Name="StripName"   Width="35%" />
-                    <Column Id="%AID%_PB-nnn_C-4" Name="StartLED"    Width="10%" />
+                    <Column Id="%AID%_PB-nnn_C-1" Name="Pos" Width="12%" />
+                    <Column Id="%AID%_PB-nnn_C-2" Name="StripSelect" Width="35%" />
+                    <Column Id="%AID%_PB-nnn_C-3" Name="StripName"   Width="31%" />
+                    <Column Id="%AID%_PB-nnn_C-4" Name="StartLED"    Width="11%" />
+                    <Column Id="%AID%_PB-nnn_C-5" Name="EndLED"      Width="11%" />
                   </Columns>
                   
                   <!-- Header Row -->
@@ -919,6 +947,7 @@
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalischer LED Streifen" UIHint="Headline" Cell="1,2" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Name"                        UIHint="Headline" Cell="1,3" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Start LED"                   UIHint="Headline" Cell="1,4" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="End LED"                     UIHint="Headline" Cell="1,5" />
 
                   <!-- show as many rows as physical strips are selected -->
                   <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
@@ -1044,6 +1073,8 @@
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00051_R-%TT%0005101" Cell="2,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00057_R-%TT%0005701" Cell="2,5" />
                     </when>
                     <when test=">=2">
                       <!-- Row 2: Position 2 -->
@@ -1155,6 +1186,8 @@
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00052_R-%TT%0005201" Cell="3,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" Cell="3,5" />
                     </when>
                     <when test=">=3">
                       <!-- Row 3: Position 3 -->
@@ -1252,6 +1285,8 @@
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" Cell="4,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" Cell="4,5" />
                     </when>
                     <when test=">=4">
                       <!-- Row 4: Position 4 -->
@@ -1332,6 +1367,8 @@
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" Cell="5,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00076_R-%TT%0007601" Cell="5,5" />
                     </when>
                     <when test=">=5">
                       <!-- Row 5: Position 5 -->
@@ -1392,6 +1429,8 @@
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" Cell="6,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" Cell="6,5" />
                     </when>
                     <when test=">=6">
                       <!-- Row 6: Position 6 -->
@@ -1420,12 +1459,14 @@
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" Cell="7,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" Cell="7,5" />
                     </when>
                 </choose>
                 </ParameterBlock>
-                <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" IndentLevel="1"/> 
+                <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" IndentLevel="1"/> 
                 <!-- Virtual Strip Status Display -->
-                <choose ParamRefId="%AID%_UP-%TT%00058_R-%TT%0005801">
+                <choose ParamRefId="%AID%_UP-%TT%00079_R-%TT%0007901">
                   <when test="=1">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="⚠ Warnung: Mindestens zwei Teile des virtuelle Streifens verwenden denselben physikalischen Streifen! ⚠" UIHint="Error" />
                   </when>

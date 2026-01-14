@@ -65,6 +65,29 @@ function NEO_LedTypeToRGB(input, output, context) {
   info("NEO_LedTypeToRGB: LedType " + ledType + " -> RGBColourOrder " + ord);
 }
 
+// Reset Clock GPIO when switching between SPI and 1-Wire LED types
+function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
+  var ledType = toInt(input.LedType);
+  
+  // Check if this is a SPI LED type
+  var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 || 
+               ledType === 22 || ledType === 23 || ledType === 24 || ledType === 25);
+  
+  if (!isSPI) {
+    // LED type changed to 1-Wire → Reset all Clock Ports to Dummy (15)
+    output.Strip1ClockPort = 15;
+    output.Strip2ClockPort = 15;
+    output.Strip3ClockPort = 15;
+    output.Strip4ClockPort = 15;
+    output.Strip5ClockPort = 15;
+    output.Strip6ClockPort = 15;
+    
+    info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (1-Wire) → Clock Ports reset to 15");
+  } else {
+    info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (SPI) → Clock Ports unchanged");
+  }
+}
+
 // Calculate Start-LED indices for the virtual strip
 function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   info("NEO_UpdateVirtualStripStartIndices called");
@@ -124,14 +147,46 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   }
 
   // Physical strip lengths (per physical index 1..6)
-  var len = [
-    toInt(input.Len1),
-    toInt(input.Len2),
-    toInt(input.Len3),
-    toInt(input.Len4),
-    toInt(input.Len5),
-    toInt(input.Len6)
-  ];
+  var len = [0, 0, 0, 0, 0, 0];
+  
+  switch (numStrips) {
+    case 2:
+      len[0] = toInt(input.Len1_2);
+      len[1] = toInt(input.Len2_2);
+      break;
+
+    case 3:
+      len[0] = toInt(input.Len1_3);
+      len[1] = toInt(input.Len2_3);
+      len[2] = toInt(input.Len3_3);
+      break;
+
+    case 4:
+      len[0] = toInt(input.Len1_4);
+      len[1] = toInt(input.Len2_4);
+      len[2] = toInt(input.Len3_4);
+      len[3] = toInt(input.Len4_4);
+      break;
+
+    case 5:
+      len[0] = toInt(input.Len1_5);
+      len[1] = toInt(input.Len2_5);
+      len[2] = toInt(input.Len3_5);
+      len[3] = toInt(input.Len4_5);
+      len[4] = toInt(input.Len5_5);
+      break;
+
+    case 6:
+    default:
+      // Full range – UI uses canonical params directly
+      len[0] = toInt(input.Len1);
+      len[1] = toInt(input.Len2);
+      len[2] = toInt(input.Len3);
+      len[3] = toInt(input.Len4);
+      len[4] = toInt(input.Len5);
+      len[5] = toInt(input.Len6);
+      break;
+  }
 
   // ------------------------------------------------------------------
   // Duplicate check → HasDuplicate flag + optional info log
@@ -167,9 +222,10 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   output.HasDuplicates = hasDup ? 1 : 0;
 
   // ------------------------------------------------------------------
-  // Compute Start-LED indices
+  // Compute Start-LED and End-LED indices
   // ------------------------------------------------------------------
   var start = [0, 0, 0, 0, 0, 0];
+  var end = [0, 0, 0, 0, 0, 0];
   var current = 1; // 1-based LED index
 
   for (var i = 0; i < 6; i++) {
@@ -177,6 +233,7 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
 
     if (p2 < 1 || p2 > numStrips) {
       start[i] = 0;
+      end[i] = 0;
       continue;
     }
 
@@ -184,6 +241,7 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
     if (l < 0) l = 0;
 
     start[i] = current;
+    end[i] = (l > 0) ? (current + l - 1) : 0;
     current += l;
   }
 
@@ -193,6 +251,13 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   output.Start4 = start[3];
   output.Start5 = start[4];
   output.Start6 = start[5];
+
+  output.End1 = end[0];
+  output.End2 = end[1];
+  output.End3 = end[2];
+  output.End4 = end[3];
+  output.End5 = end[4];
+  output.End6 = end[5];
 
   info(
     "NumberOfLEDStrips=" + numStrips +

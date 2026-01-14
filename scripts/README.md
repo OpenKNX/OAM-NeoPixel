@@ -835,7 +835,7 @@ $hardwareSelectionXml += "</choose>`n"
 ### For NeoPixel LED Strips (Example Implementation)
 
 ```powershell
-./Build-NeoPixelStrips.ps1
+./Build-HardwareConfigTemplates.ps1
 ```
 
 This wrapper internally calls:
