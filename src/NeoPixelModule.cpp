@@ -1369,6 +1369,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             }
 
             // Status-only KOs (prevent "Unhandled KO Index" warnings)
+            case NEO_KoSegmentPowerState:
+            case NEO_KoSegmentBrightnessState:
             case NEO_KoCCTState:
             case NEO_KoFxState:
             case NEO_KoPresetState:
@@ -2996,8 +2998,8 @@ void NeoPixelBusModule::debugShowConfiguration()
         
         if (seg.savedValid)
         {
-            logInfoP("  │  Saved State:   R=%d G=%d B=%d W=%d Br=%d", 
-                                              seg.savedR, seg.savedG, seg.savedB, seg.savedW, seg.savedBrightness);
+            logInfoP("  │  Saved State:   R=%d G=%d B=%d WW=%d CW=%d Br=%d", 
+                                              seg.savedR, seg.savedG, seg.savedB, seg.savedWW, seg.savedCW, seg.savedBrightness);
         }
         
         logInfoP("  └──");

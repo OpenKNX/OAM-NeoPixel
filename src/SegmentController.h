@@ -7,6 +7,7 @@
 // Forward declarations
 class NeoPixelBusModule;
 class GroupObject;
+class Segment;
 
 /**
  * @brief Handles segment-specific operations including dimming and KO processing
@@ -116,6 +117,30 @@ class SegmentController
      * @return Delta value for dimming step
      */
     int16_t dpt3_007_delta(uint8_t stepCode);
+
+    /**
+     * @brief Helper: Apply color channel dimming (shared by R/G/B channels)
+     * @param segment Target segment
+     * @param colorChannel Which color channel (0=R, 1=G, 2=B)
+     * @param delta Dimming delta value
+     */
+    void applyColorChannelDimming(Segment* segment, uint8_t colorChannel, int16_t delta);
+
+    /**
+     * @brief Helper: Process single color channel KO (shared by R/G/B/W)
+     * @param channel Segment index
+     * @param ko GroupObject reference
+     * @param colorValue New color value
+     * @param colorChannel Which color channel (0=R, 1=G, 2=B, 3=W)
+     * @param channelName Channel name for logging
+     */
+    void processColorChannelKo(uint8_t channel, GroupObject& ko, uint8_t colorValue, uint8_t colorChannel, const char* channelName);
+
+    /**
+     * @brief Helper: Send RGBW/RGB status feedback
+     * @param channel Segment index
+     */
+    void sendColorStatusFeedback(uint8_t channel);
 };
 
 #endif // SEGMENT_CONTROLLER_H

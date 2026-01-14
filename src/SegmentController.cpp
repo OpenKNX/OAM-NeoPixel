@@ -83,100 +83,16 @@ void SegmentController::processActiveDimming()
             }
 
             case NeoPixelBusModule::SegmentConfig::RED:
-            {
-                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
-                if (bytesPerLed == 5)
-                {
-                    uint8_t ww, cw;
-                    if (seg->getPixel(0, r, g, b, ww, cw))
-                    {
-                        int16_t newR = r + delta;
-                        newR = constrain(newR, 0, 255);
-                        seg->setPrimaryColor((uint8_t)newR, g, b, ww, cw);
-                    }
-                }
-                else if (bytesPerLed == 4)
-                {
-                    uint8_t w;
-                    if (seg->getPixel(0, r, g, b, w))
-                    {
-                        int16_t newR = r + delta;
-                        newR = constrain(newR, 0, 255);
-                        seg->setPrimaryColor((uint8_t)newR, g, b, w);
-                    }
-                }
-                else if (seg->getPixel(0, r, g, b))
-                {
-                    int16_t newR = r + delta;
-                    newR = constrain(newR, 0, 255);
-                    seg->setPrimaryColor((uint8_t)newR, g, b, 0);
-                }
+                applyColorChannelDimming(seg, 0, delta); // 0 = Red channel
                 break;
-            }
 
             case NeoPixelBusModule::SegmentConfig::GREEN:
-            {
-                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
-                if (bytesPerLed == 5)
-                {
-                    uint8_t ww, cw;
-                    if (seg->getPixel(0, r, g, b, ww, cw))
-                    {
-                        int16_t newG = g + delta;
-                        newG = constrain(newG, 0, 255);
-                        seg->setPrimaryColor(r, (uint8_t)newG, b, ww, cw);
-                    }
-                }
-                else if (bytesPerLed == 4)
-                {
-                    uint8_t w;
-                    if (seg->getPixel(0, r, g, b, w))
-                    {
-                        int16_t newG = g + delta;
-                        newG = constrain(newG, 0, 255);
-                        seg->setPrimaryColor(r, (uint8_t)newG, b, w);
-                    }
-                }
-                else if (seg->getPixel(0, r, g, b))
-                {
-                    int16_t newG = g + delta;
-                    newG = constrain(newG, 0, 255);
-                    seg->setPrimaryColor(r, (uint8_t)newG, b, 0);
-                }
+                applyColorChannelDimming(seg, 1, delta); // 1 = Green channel
                 break;
-            }
 
             case NeoPixelBusModule::SegmentConfig::BLUE:
-            {
-                uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
-                if (bytesPerLed == 5)
-                {
-                    uint8_t ww, cw;
-                    if (seg->getPixel(0, r, g, b, ww, cw))
-                    {
-                        int16_t newB = b + delta;
-                        newB = constrain(newB, 0, 255);
-                        seg->setPrimaryColor(r, g, (uint8_t)newB, ww, cw);
-                    }
-                }
-                else if (bytesPerLed == 4)
-                {
-                    uint8_t w;
-                    if (seg->getPixel(0, r, g, b, w))
-                    {
-                        int16_t newB = b + delta;
-                        newB = constrain(newB, 0, 255);
-                        seg->setPrimaryColor(r, g, (uint8_t)newB, w);
-                    }
-                }
-                else if (seg->getPixel(0, r, g, b))
-                {
-                    int16_t newB = b + delta;
-                    newB = constrain(newB, 0, 255);
-                    seg->setPrimaryColor(r, g, (uint8_t)newB, 0);
-                }
+                applyColorChannelDimming(seg, 2, delta); // 2 = Blue channel
                 break;
-            }
 
             case NeoPixelBusModule::SegmentConfig::WHITE:
             case NeoPixelBusModule::SegmentConfig::WARM_WHITE:
@@ -321,235 +237,25 @@ bool SegmentController::processSegmentKo(GroupObject& ko, uint16_t koNumber, uin
 void SegmentController::processRedKo(uint8_t channel, GroupObject& ko)
 {
     uint8_t red = ko.value(DPT_Value_1_Ucount);
-    logInfoP("Segment %d Red: %d", channel, red);
-
-    auto& cfg = _module->_segments[channel];
-    Segment* targetSegment = cfg.segment;
-
-    // Store as pending
-    cfg.pendingSolidR = red;
-    cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
-    cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-    cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
-
-    // Update saved values
-    cfg.savedR = red;
-    if (!cfg.savedValid)
-    {
-        cfg.savedG = 0;
-        cfg.savedB = 0;
-        cfg.savedWW = 0;
-    }
-    cfg.savedBrightness = targetSegment->getBrightness();
-    cfg.savedValid = true;
-
-    // If Solid effect is running, update immediately
-    if (targetSegment->getEffect() == EffectPool::getSolid())
-    {
-        targetSegment->setPrimaryColor(red, cfg.savedG, cfg.savedB, 0);
-        logInfoP("Segment %d: Updated Solid effect color (Red=%d)", channel, red);
-    }
-    else
-    {
-        logInfoP("Segment %d: Stored pending Red=%d (will apply when effect stops)", channel, red);
-    }
-
-    // Send status feedback
-    uint8_t _channelIndex = _module->getChannelIndex();
-    _module->_channelIndex = channel;
-
-    uint8_t r = cfg.pendingSolidR;
-    uint8_t g = cfg.pendingSolidG;
-    uint8_t b = cfg.pendingSolidB;
-
-    if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
-    {
-        uint8_t w = cfg.pendingSolidWW;
-        uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-        bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-        if (changed) KoNEO_RGBWState.objectWritten();
-    }
-    else
-    {
-        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-        bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-        if (changed) KoNEO_RGBState.objectWritten();
-    }
-
-    _module->_channelIndex = _channelIndex;
+    processColorChannelKo(channel, ko, red, 0, "Red");
 }
 
 void SegmentController::processGreenKo(uint8_t channel, GroupObject& ko)
 {
     uint8_t green = ko.value(DPT_Value_1_Ucount);
-    logInfoP("Segment %d Green: %d", channel, green);
-
-    auto& cfg = _module->_segments[channel];
-    Segment* targetSegment = cfg.segment;
-
-    // Store as pending
-    cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
-    cfg.pendingSolidG = green;
-    cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-    cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
-
-    // Update saved values
-    if (!cfg.savedValid)
-    {
-        cfg.savedR = 0;
-        cfg.savedB = 0;
-        cfg.savedWW = 0;
-    }
-    cfg.savedG = green;
-    cfg.savedBrightness = targetSegment->getBrightness();
-    cfg.savedValid = true;
-
-    // If Solid effect is running, update immediately
-    if (targetSegment->getEffect() == EffectPool::getSolid())
-    {
-        targetSegment->setPrimaryColor(cfg.savedR, green, cfg.savedB, 0);
-        logInfoP("Segment %d: Updated Solid effect color (Green=%d)", channel, green);
-    }
-    else
-    {
-        logInfoP("Segment %d: Stored pending Green=%d (will apply when effect stops)", channel, green);
-    }
-
-    // Send status feedback (same pattern as Red)
-    uint8_t _channelIndex = _module->getChannelIndex();
-    _module->_channelIndex = channel;
-
-    uint8_t r = cfg.pendingSolidR;
-    uint8_t g = cfg.pendingSolidG;
-    uint8_t b = cfg.pendingSolidB;
-
-    if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
-    {
-        uint8_t w = cfg.pendingSolidWW;
-        uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-        bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-        if (changed) KoNEO_RGBWState.objectWritten();
-    }
-    else
-    {
-        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-        bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-        if (changed) KoNEO_RGBState.objectWritten();
-    }
-
-    _module->_channelIndex = _channelIndex;
+    processColorChannelKo(channel, ko, green, 1, "Green");
 }
 
 void SegmentController::processBlueKo(uint8_t channel, GroupObject& ko)
 {
     uint8_t blue = ko.value(DPT_Value_1_Ucount);
-    logInfoP("Segment %d Blue: %d", channel, blue);
-
-    auto& cfg = _module->_segments[channel];
-    Segment* targetSegment = cfg.segment;
-
-    // Store as pending
-    cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
-    cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
-    cfg.pendingSolidB = blue;
-    cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
-
-    // Update saved values
-    if (!cfg.savedValid)
-    {
-        cfg.savedR = 0;
-        cfg.savedG = 0;
-        cfg.savedWW = 0;
-    }
-    cfg.savedB = blue;
-    cfg.savedBrightness = targetSegment->getBrightness();
-    cfg.savedValid = true;
-
-    // If Solid effect is running, update immediately
-    if (targetSegment->getEffect() == EffectPool::getSolid())
-    {
-        targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, blue, 0);
-        logInfoP("Segment %d: Updated Solid effect color (Blue=%d)", channel, blue);
-    }
-    else
-    {
-        logInfoP("Segment %d: Stored pending Blue=%d (will apply when effect stops)", channel, blue);
-    }
-
-    // Send status feedback (same pattern as Red/Green)
-    uint8_t _channelIndex = _module->getChannelIndex();
-    _module->_channelIndex = channel;
-
-    uint8_t r = cfg.pendingSolidR;
-    uint8_t g = cfg.pendingSolidG;
-    uint8_t b = cfg.pendingSolidB;
-
-    if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
-    {
-        uint8_t w = cfg.pendingSolidWW;
-        uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-        bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-        if (changed) KoNEO_RGBWState.objectWritten();
-    }
-    else
-    {
-        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-        bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-        if (changed) KoNEO_RGBState.objectWritten();
-    }
-
-    _module->_channelIndex = _channelIndex;
+    processColorChannelKo(channel, ko, blue, 2, "Blue");
 }
 
 void SegmentController::processWhiteKo(uint8_t channel, GroupObject& ko)
 {
     uint8_t white = ko.value(DPT_Value_1_Ucount);
-    logInfoP("Segment %d White: %d", channel, white);
-
-    auto& cfg = _module->_segments[channel];
-    Segment* targetSegment = cfg.segment;
-
-    // Store as pending
-    cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
-    cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
-    cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-    cfg.pendingSolidWW = white;
-
-    // Update saved values
-    if (!cfg.savedValid)
-    {
-        cfg.savedR = 0;
-        cfg.savedG = 0;
-        cfg.savedB = 0;
-    }
-    cfg.savedWW = white;
-    cfg.savedBrightness = targetSegment->getBrightness();
-    cfg.savedValid = true;
-
-    // If Solid effect is running, update immediately
-    if (targetSegment->getEffect() == EffectPool::getSolid())
-    {
-        targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, white);
-        logInfoP("Segment %d: Updated Solid effect color (White=%d)", channel, white);
-    }
-    else
-    {
-        logInfoP("Segment %d: Stored pending White=%d (will apply when effect stops)", channel, white);
-    }
-
-    // Send RGBW status feedback
-    uint8_t _channelIndex = _module->getChannelIndex();
-    _module->_channelIndex = channel;
-
-    uint8_t r = cfg.pendingSolidR;
-    uint8_t g = cfg.pendingSolidG;
-    uint8_t b = cfg.pendingSolidB;
-    uint8_t w = white;
-    uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-    bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-    if (changed) KoNEO_RGBWState.objectWritten();
-
-    _module->_channelIndex = _channelIndex;
+    processColorChannelKo(channel, ko, white, 3, "White");
 }
 
 void SegmentController::processCctKo(uint8_t channel, GroupObject& ko)
@@ -614,4 +320,148 @@ void SegmentController::startStopDimming(uint8_t channel, uint8_t dimmingChannel
         logInfoP("Segment %d: Start dimming channel=%d, increase=%d, stepCode=%d",
                  channel, dimmingChannel, increase, stepCode);
     }
+}
+
+// ========== Helper Functions for Code Deduplication ==========
+
+void SegmentController::applyColorChannelDimming(Segment* seg, uint8_t colorChannel, int16_t delta)
+{
+    uint8_t r, g, b;
+    uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+    
+    if (bytesPerLed == 5) // RGBCCT
+    {
+        uint8_t ww, cw;
+        if (seg->getPixel(0, r, g, b, ww, cw))
+        {
+            // Update the specified color channel
+            uint8_t* channels[] = {&r, &g, &b};
+            int16_t newValue = *channels[colorChannel] + delta;
+            *channels[colorChannel] = (uint8_t)constrain(newValue, 0, 255);
+            seg->setPrimaryColor(r, g, b, ww, cw);
+        }
+    }
+    else if (bytesPerLed == 4) // RGBW
+    {
+        uint8_t w;
+        if (seg->getPixel(0, r, g, b, w))
+        {
+            // Update the specified color channel
+            uint8_t* channels[] = {&r, &g, &b};
+            int16_t newValue = *channels[colorChannel] + delta;
+            *channels[colorChannel] = (uint8_t)constrain(newValue, 0, 255);
+            seg->setPrimaryColor(r, g, b, w);
+        }
+    }
+    else // RGB
+    {
+        if (seg->getPixel(0, r, g, b))
+        {
+            // Update the specified color channel
+            uint8_t* channels[] = {&r, &g, &b};
+            int16_t newValue = *channels[colorChannel] + delta;
+            *channels[colorChannel] = (uint8_t)constrain(newValue, 0, 255);
+            seg->setPrimaryColor(r, g, b, 0);
+        }
+    }
+}
+
+void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, uint8_t colorValue, uint8_t colorChannel, const char* channelName)
+{
+    logInfoP("Segment %d %s: %d", channel, channelName, colorValue);
+
+    auto& cfg = _module->_segments[channel];
+    Segment* targetSegment = cfg.segment;
+
+    // Update saved and pending values based on channel
+    if (colorChannel == 0) // Red
+    {
+        cfg.pendingSolidR = colorValue;
+        cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
+        cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
+        cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
+        cfg.savedR = colorValue;
+        if (!cfg.savedValid) { cfg.savedG = 0; cfg.savedB = 0; cfg.savedWW = 0; }
+    }
+    else if (colorChannel == 1) // Green
+    {
+        cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
+        cfg.pendingSolidG = colorValue;
+        cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
+        cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
+        cfg.savedG = colorValue;
+        if (!cfg.savedValid) { cfg.savedR = 0; cfg.savedB = 0; cfg.savedWW = 0; }
+    }
+    else if (colorChannel == 2) // Blue
+    {
+        cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
+        cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
+        cfg.pendingSolidB = colorValue;
+        cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
+        cfg.savedB = colorValue;
+        if (!cfg.savedValid) { cfg.savedR = 0; cfg.savedG = 0; cfg.savedWW = 0; }
+    }
+    else if (colorChannel == 3) // White
+    {
+        cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
+        cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
+        cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
+        cfg.pendingSolidWW = colorValue;
+        cfg.savedWW = colorValue;
+        if (!cfg.savedValid) { cfg.savedR = 0; cfg.savedG = 0; cfg.savedB = 0; }
+    }
+
+    cfg.savedBrightness = targetSegment->getBrightness();
+    cfg.savedValid = true;
+
+    // If Solid effect is running, update immediately
+    if (targetSegment->getEffect() == EffectPool::getSolid())
+    {
+        if (colorChannel == 3) // White channel for RGBW
+            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, colorValue);
+        else // RGB channels
+            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+        logInfoP("Segment %d: Updated Solid effect color (%s=%d)", channel, channelName, colorValue);
+    }
+    else
+    {
+        logInfoP("Segment %d: Stored pending %s=%d (will apply when effect stops)", channel, channelName, colorValue);
+    }
+
+    // Send status feedback
+    sendColorStatusFeedback(channel);
+}
+
+void SegmentController::sendColorStatusFeedback(uint8_t channel)
+{
+    auto& cfg = _module->_segments[channel];
+    
+    // Store original channel index and switch to target channel
+    uint8_t originalChannelIndex = _module->getChannelIndex();
+    _module->_channelIndex = channel;
+    uint8_t _channelIndex = channel; // Local variable for KO macro expansion
+
+    uint8_t r = cfg.pendingSolidR;
+    uint8_t g = cfg.pendingSolidG;
+    uint8_t b = cfg.pendingSolidB;
+
+    // Send appropriate status feedback based on strip type
+    if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
+    {
+        // 4-channel RGBW feedback
+        uint8_t w = cfg.pendingSolidWW;
+        uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
+        bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
+        if (changed) KoNEO_RGBWState.objectWritten();
+    }
+    else
+    {
+        // 3-channel RGB feedback (also used for 5-channel RGBCCT)
+        uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+        bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
+        if (changed) KoNEO_RGBState.objectWritten();
+    }
+
+    // Restore original channel index
+    _module->_channelIndex = originalChannelIndex;
 }
