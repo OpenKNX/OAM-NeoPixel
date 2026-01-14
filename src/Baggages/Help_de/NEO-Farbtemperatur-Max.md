@@ -15,6 +15,17 @@ Diese Einstellung bestimmt die **kühlste (höchste)** Farbtemperatur, die währ
 - Zur **Sonnenhöchststand** (Mittag, zwischen Aufgang und Untergang)
 - Der Übergang erfolgt als **Sinuskurve** basierend auf der Sonnenposition
 
+## Auswirkung auf LED-Typen:
+
+### RGBCCT (5-Kanal)
+- Bei **Maximum Kelvin**: WW-Kanal = 0%, CW-Kanal = 100%
+- Reines, kühles Weißlicht vom Kalt-Weiß-Chip
+- **Stellen Sie diesen Wert auf die Kelvin-Temperatur Ihres CW-Chips** (typisch 5700K-6500K)
+
+### RGB/RGBW
+- RGB-Kanäle werden mit kühler Tönung eingefärbt
+- Blauanteil wird erhöht, Rotanteil reduziert
+
 ## Typische Werte
 - **5000K**: Tageslicht für konzentriertes Arbeiten
 - **5500K**: Natürliches Tageslicht
@@ -32,5 +43,5 @@ Diese Einstellung bestimmt die **kühlste (höchste)** Farbtemperatur, die währ
 - **Sonnen-Modus**: Maximum bei Sonnenhöchststand (Mittag)
 - Übergänge sind **immer Sinuskurven** (sanft und natürlich)
 
-## Empfehlung für circadianes Licht
-**6500K** als Maximum für angenehmes, waches Tageslicht ohne zu hohen Blauanteil
+## Empfehlung für RGBCCT-Streifen
+**Prüfen Sie die Spezifikationen Ihres LED-Streifens** und setzen Sie diesen Wert auf die Kelvin-Temperatur des CW-Chips (z.B. 6500K).

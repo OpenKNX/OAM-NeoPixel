@@ -147,10 +147,12 @@ struct HclCallbackData
     uint8_t strength;
     uint8_t brightnessComp;
     uint8_t whiteMix;
+    uint16_t minKelvin; // Strip's minimum Kelvin (warm white, e.g., 2700K)
+    uint16_t maxKelvin; // Strip's maximum Kelvin (cool white, e.g., 6500K)
 };
 
 // Static storage for HCL callback data (one global HCL state)
-static HclCallbackData s_hclData = {0, 0, 128, 0, 100, 50, 50};
+static HclCallbackData s_hclData = {0, 0, 128, 0, 100, 50, 50, 2700, 6500};
 
 void ColorManagement::disableHclMode()
 {
@@ -293,16 +295,72 @@ namespace
                                 uint8_t strengthPct,
                                 uint8_t brightnessCompPct,
                                 uint8_t whiteMixPct,
+                                uint16_t minKelvin,
+                                uint16_t maxKelvin,
                                 uint8_t& r, uint8_t& g, uint8_t& b,
-                                uint8_t* wOpt)
+                                uint8_t* wwOpt,
+                                uint8_t* cwOpt)
     {
+        // For RGBCCT (5-channel): Use WW/CW ratio for color temperature
+        // This is more efficient and provides pure white light
+        if (wwOpt && cwOpt)
+        {
+            // Calculate WW/CW ratio based on Kelvin
+            // At minKelvin (e.g., 2700K): 100% WW, 0% CW
+            // At maxKelvin (e.g., 6500K): 0% WW, 100% CW
+            // Linear interpolation between them
+
+            uint8_t wwIn = *wwOpt;
+            uint8_t cwIn = *cwOpt;
+
+            // Only apply HCL to pixels that have white content
+            uint8_t totalWhite = wwIn;
+            if (cwIn > totalWhite) totalWhite = cwIn;
+
+            // If no white channel active, nothing to adjust
+            if (totalWhite == 0) return;
+
+            // Calculate position in Kelvin range (0.0 = warm, 1.0 = cool)
+            uint16_t kMin = (minKelvin < 1000) ? 1000 : minKelvin;
+            uint16_t kMax = (maxKelvin > 10000) ? 10000 : maxKelvin;
+            if (kMax <= kMin)
+            {
+                kMax = kMin + 1;
+            }
+
+            // Clamp target Kelvin to range
+            uint16_t targetK = kelvin;
+            if (targetK < kMin) targetK = kMin;
+            if (targetK > kMax) targetK = kMax;
+
+            // Calculate ratio: 0 = full warm, 255 = full cool
+            uint16_t range = kMax - kMin;
+            uint8_t coolRatio = (uint8_t)(((uint32_t)(targetK - kMin) * 255u) / range);
+            uint8_t warmRatio = 255 - coolRatio;
+
+            // Apply strength
+            uint8_t strength = (strengthPct > 100) ? 100 : strengthPct;
+
+            // Blend between original WW/CW and target WW/CW based on strength
+            // Target: redistribute total white between WW and CW based on Kelvin
+            uint8_t targetWW = (uint8_t)(((uint32_t)totalWhite * warmRatio) / 255u);
+            uint8_t targetCW = (uint8_t)(((uint32_t)totalWhite * coolRatio) / 255u);
+
+            // Apply strength-based blend
+            *wwOpt = lerp_u8(wwIn, targetWW, (uint8_t)((strength * 255u) / 100u));
+            *cwOpt = lerp_u8(cwIn, targetCW, (uint8_t)((strength * 255u) / 100u));
+
+            return;
+        }
+
+        // For RGB/RGBW: Use the existing RGB tinting approach
         uint8_t kr, kg, kb;
         ColorHelper::kelvinToRGB(kelvin, kr, kg, kb);
 
         const uint8_t vmax = u8_max3(r, g, b);
         const uint8_t vmin = u8_min3(r, g, b);
         const uint8_t sat = (vmax == 0) ? 0 : (uint8_t)(((uint16_t)(vmax - vmin) * 255u) / vmax);
-        const uint8_t wIn = (wOpt) ? *wOpt : 0;
+        const uint8_t wIn = (wwOpt) ? *wwOpt : 0;
 
         // ApplyMode=Nur Weiss: hard cutoff above threshold unless explicit W
         if (applyMode == 0 && sat >= satThreshold && wIn == 0) return;
@@ -349,7 +407,7 @@ namespace
         }
 
         // RGBW: extract neutral part into W (configurable)
-        if (wOpt)
+        if (wwOpt)
         {
             int n = u8_min3((uint8_t)clamp_u8(tr), (uint8_t)clamp_u8(tg), (uint8_t)clamp_u8(tb));
             uint8_t mix = (whiteMixPct > 100) ? 100 : whiteMixPct;
@@ -363,7 +421,7 @@ namespace
         r = lerp_u8(r, clamp_u8(tr), frac);
         g = lerp_u8(g, clamp_u8(tg), frac);
         b = lerp_u8(b, clamp_u8(tb), frac);
-        if (wOpt) *wOpt = lerp_u8(wIn, clamp_u8(tw), frac);
+        if (wwOpt) *wwOpt = lerp_u8(wIn, clamp_u8(tw), frac);
     }
 } // namespace
 
@@ -377,8 +435,11 @@ namespace
  * This is called from VirtualStrip::syncToPhysical() for each pixel,
  * AFTER effects have rendered but BEFORE sending to hardware.
  * The effect buffer is NOT modified, so effects that read back pixels work correctly.
+ *
+ * For RGBCCT strips: Adjusts WW/CW ratio based on target Kelvin
+ * For RGB/RGBW strips: Applies RGB tinting based on Kelvin
  */
-static void hclPixelTransformCallback(uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* w, void* userData)
+static void hclPixelTransformCallback(uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* ww, uint8_t* cw, void* userData)
 {
     (void)userData; // Use static data instead
 
@@ -391,12 +452,37 @@ static void hclPixelTransformCallback(uint8_t& r, uint8_t& g, uint8_t& b, uint8_
                     s_hclData.strength,
                     s_hclData.brightnessComp,
                     s_hclData.whiteMix,
-                    r, g, b, w);
+                    s_hclData.minKelvin,
+                    s_hclData.maxKelvin,
+                    r, g, b, ww, cw);
 }
 
 void ColorManagement::applyHclPostProcess()
 {
     if (!_module || !_module->_initialized) return;
+
+    // Check if HCL is configured in ETS (type != disabled)
+    uint8_t hclType = (uint8_t)ParamNEO_HCLtype;
+    if (hclType == 0) return; // HCL disabled in ETS
+
+    // Read current Kelvin from KO (set by HclCurve::loop or external KNX telegram)
+    uint16_t koKelvin = (uint16_t)KoNEO_HCLState.value(Dpt(7, 600));
+
+    // Auto-enable HCL if we have a valid Kelvin value from the curve
+    if (koKelvin > 0 && !_hclEnabled)
+    {
+        _hclEnabled = true;
+        _hclTargetKelvin = koKelvin;
+        _hclAppliedKelvin = koKelvin; // Start at target (no initial slew)
+        _module->_hclModeEnabled = true;
+        logInfoP("HCL auto-enabled from curve: %dK", (int)koKelvin);
+    }
+    else if (koKelvin > 0 && koKelvin != _hclTargetKelvin)
+    {
+        // Update target if changed
+        _hclTargetKelvin = koKelvin;
+    }
+
     if (!_hclEnabled) return;
     if (_hclTargetKelvin == 0) return;
     // Note: HCL enable/disable controlled by HCLtype parameter (checked in HclCurve::loop)
@@ -484,6 +570,8 @@ void ColorManagement::applyHclPostProcess()
     s_hclData.strength = (uint8_t)ParamNEO_HCLStrength;
     s_hclData.brightnessComp = (uint8_t)ParamNEO_HCLBrightnessCompensation;
     s_hclData.whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
+    s_hclData.minKelvin = (uint16_t)ParamNEO_HCLminKelvin;
+    s_hclData.maxKelvin = (uint16_t)ParamNEO_HCLmaxKelvin;
 
     // Register the HCL callback on VirtualStrip (if not already done)
     // The callback is called during syncToPhysical() for each pixel

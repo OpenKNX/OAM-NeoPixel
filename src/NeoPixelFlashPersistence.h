@@ -27,7 +27,7 @@ class NeoPixelFlashPersistence
     struct SegmentFlashState
     {
         uint8_t power;           // 1 = on, 0 = off (1 byte)
-        uint8_t r, g, b, w;      // RGBW color values (4 bytes)
+        uint8_t r, g, b, ww, cw; // RGBWW+CW color values (5 bytes)
         uint8_t brightness;      // Brightness 0-255 (1 byte)
         uint8_t effectType;      // Effect ID 0-10 (1 byte)
         uint8_t effectSpeed;     // Effect speed 0-255 (1 byte)

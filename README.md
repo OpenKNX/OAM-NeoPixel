@@ -21,8 +21,11 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 - **RGB Direct Control**: Set exact RGB values
 - **HSV Control**: Hue, Saturation, Value for intuitive color selection
 - **Color Temperature (CCT)**: Kelvin-based warm/cool white adjustment
+- **RGBCCT (5-Channel)**: Full support for 5-channel LED strips with separate Warm White (WW) and Cool White (CW) channels for true color temperature control
 - **HCL (Human Centric Lighting)**: Automatic color temperature adjustment with sun-position curves or time-based scheduling for circadian rhythm support
-- **White Channels**: Dedicated warm white (WW) and cool white (CW) control for RGBW strips
+  - For RGBCCT strips: Directly adjusts WW/CW ratio for pure white color temperature
+  - For RGB/RGBW strips: Applies Kelvin-based RGB tinting
+- **White Channels**: Dedicated warm white (WW) and cool white (CW) control for RGBW and RGBCCT strips
 - **Brightness Scaling**: Per-segment brightness with DPT 5.001 (percentage 0–100%)
 - **Gamma Correction**: Configurable gamma curve for natural brightness perception
 - **White Balance Correction**: Fine-tune color channel intensity

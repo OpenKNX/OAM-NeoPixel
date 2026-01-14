@@ -1,5 +1,10 @@
-// Colour-order enum: 0=GRB, 1=RGB, 2=BRG, 3=RBG, 4=BGR, 5=GBR
+// Colour-order enum values (match NEOColourOrder in NeoPixel.share.xml)
+// 3-channel RGB
 var CO_GRB = 0, CO_RGB = 1, CO_BRG = 2, CO_RBG = 3, CO_BGR = 4, CO_GBR = 5;
+// 4-channel RGBW
+var CO_RGBW = 6, CO_GRBW = 7;
+// 5-channel RGBCCT
+var CO_RGBCCT = 8, CO_GRBCCT = 9, CO_RGBCTW = 10, CO_GRBCTW = 11;
 
 // Helper function for safe integer parsing with default value
 function toInt(v, def) {
@@ -12,57 +17,68 @@ function NEO_Empty(input, output, context) {
   info("NEO_Empty called with RGBColourOrder: " + input.RGBColourOrder);
 }
 
-// Map LedType -> RGBColourOrder (RGB part for RGBW/RGBCCT types)
+// Map LedType -> ColourOrder (full order including RGBW/RGBCCT)
 function NEO_LedTypeToRGB(input, output, context) {
   var ledType = toInt(input.LedType);
 
   // Default fallback if a type has no explicit mapping
-  var defaultOrder = CO_RGB; // safe default
+  var defaultOrder = CO_GRB; // most common default
 
   // Build mapping table [0..99] with default
   var map = [];
   var i;
   for (i = 0; i < 100; i++) map[i] = defaultOrder;
 
-  // ---- explicit mappings (mirror your ParameterType + C++ defaults) ----
-  map[0]  = CO_GRB; // WS2812B
-  map[1]  = CO_RGB; // WS2805
-  map[2]  = CO_RGB; // WS2811
-  map[3]  = CO_GRB; // WS2813
-  map[4]  = CO_GRB; // SK6812 (RGB)
-  map[5]  = CO_GRB; // APA102 (SPI)
-  map[6]  = CO_RGB; // SK9822 (SPI)
-  map[7]  = CO_GRB; // WS281x (generic RGB)
-  map[8]  = CO_GRB; // SK6812/WS2814 (RGBW) -> RGB part = GRB
-  map[9]  = CO_RGB; // TM1814 (RGBW) -> RGB part = RGB
-  map[10] = CO_GRB; // WS2812_400kHz -> GRB
-  map[11] = CO_RGB; // TM1829
-  map[12] = CO_RGB; // UCS8903
-  map[13] = CO_RGB; // APA106/PL9823
-  map[14] = CO_RGB; // TM1914 (RGBW)
-  map[15] = CO_GRB; // FW1906 (GRBCW) -> RGB part = GRB
-  map[16] = CO_RGB; // UCS8904 (RGBW)
-  map[17] = CO_RGB; // WS2805_RGBCW
-  map[18] = CO_RGB; // SM16825
-  map[19] = CO_RGB; // WS2811_WHITE (RGB part unused; keep safe)
-  map[20] = CO_RGB; // WS281x_WWA (RGB part unused; keep safe)
-  map[21] = CO_RGB; // WS2801 (SPI)
-  map[22] = CO_GRB; // LPD8806 (SPI)
-  map[23] = CO_RGB; // LPD6803 (SPI)
-  map[24] = CO_RGB; // P9813 (SPI)
-  // 99 = CUSTOM -> leave as user-defined; do not override
+  // ---- 1-Wire RGB Protocols (3-channel) ----
+  map[0]  = CO_GRB;    // WS2812B - GRB standard
+  map[2]  = CO_RGB;    // WS2811 - RGB order
+  map[3]  = CO_GRB;    // WS2813 - GRB standard
+  map[4]  = CO_GRB;    // SK6812 (RGB mode) - GRB standard
+  map[7]  = CO_GRB;    // WS281x (generic) - GRB standard
+  map[10] = CO_GRB;    // WS2812_400kHz - GRB
+  map[11] = CO_RGB;    // TM1829 - RGB
+  map[12] = CO_RGB;    // UCS8903 - RGB
+  map[13] = CO_RGB;    // APA106/PL9823 - RGB
 
+  // ---- SPI Protocols (3-channel) ----
+  map[5]  = CO_BGR;    // APA102 - BGR standard
+  map[6]  = CO_BGR;    // SK9822 - BGR standard
+  map[21] = CO_RGB;    // WS2801 - RGB
+  map[22] = CO_GRB;    // LPD8806 - GRB
+  map[23] = CO_RGB;    // LPD6803 - RGB
+  map[24] = CO_BGR;    // P9813 - BGR
+  map[25] = CO_BGR;    // APA102-Clone - BGR
+
+  // ---- 1-Wire RGBW Protocols (4-channel) ----
+  map[8]  = CO_GRBW;   // SK6812/WS2814 (RGBW) - GRBW standard
+  map[9]  = CO_GRBW;   // TM1814 - GRBW
+  map[14] = CO_GRBW;   // TM1914 - GRBW
+  map[15] = CO_GRBW;   // FW1906 - GRBW
+  map[16] = CO_RGBW;   // UCS8904 - RGBW
+
+  // ---- 5-Channel RGBCCT Protocols ----
+  map[1]  = CO_GRBCCT; // WS2805 RGBCCT - GRBCCT standard
+  map[17] = CO_GRBCCT; // WS2805_RGBCW - GRBCCT
+  map[18] = CO_GRBCCT; // SM16825 - GRBCCT
+  map[30] = CO_GRBCCT; // SK6812 RGBCCT (5ch) - GRBCCT
+  map[31] = CO_GRBCCT; // WS2814 RGBCCT (5ch) - GRBCCT
+
+  // ---- Special/Mono types ----
+  map[19] = CO_RGB;    // WS2811_WHITE (mono, keep safe default)
+  map[20] = CO_RGB;    // WS281x_WWA (WWA, keep safe default)
+
+  // 99 = CUSTOM -> leave as user-defined; do not override
   if (ledType === 99) {
-    info("NEO_LedTypeToRGB: CUSTOM type, leaving RGBColourOrder unchanged");
+    info("NEO_LedTypeToRGB: CUSTOM type, leaving ColourOrder unchanged");
     return;
   }
 
   var ord = map[ledType];
-  // Clamp to valid 0..5 just in case
-  if (ord < 0 || ord > 5 || isNaN(ord)) ord = defaultOrder;
+  // Clamp to valid 0..11 just in case
+  if (ord < 0 || ord > 11 || isNaN(ord)) ord = defaultOrder;
 
   output.RGBColourOrder = ord;
-  info("NEO_LedTypeToRGB: LedType " + ledType + " -> RGBColourOrder " + ord);
+  info("NEO_LedTypeToRGB: LedType " + ledType + " -> ColourOrder " + ord);
 }
 
 // Reset Clock GPIO when switching between SPI and 1-Wire LED types
