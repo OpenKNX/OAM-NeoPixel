@@ -67,15 +67,7 @@ void NeoPixelFlashPersistence::writeToFlash()
             logInfoP("  Power:      %s (%d)", state.power ? "ON" : "OFF", state.power);
             logInfoP("  Color:      R=%3d G=%3d B=%3d WW=%3d CW=%3d", state.r, state.g, state.b, state.ww, state.cw);
             logInfoP("  Brightness: %d", state.brightness);
-            if (state.effectType > 0)
-            {
-                logInfoP("  Effect:     Type=%d Speed=%d Intensity=%d",
-                         state.effectType, state.effectSpeed, state.effectIntensity);
-            }
-            else
-            {
-                logInfoP("  Effect:     None (solid color)");
-            }
+            logInfoP("  Note:       Effect type/params from ETS (not saved)");
 #endif
         }
         else
@@ -123,6 +115,21 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         return;
     }
 
+    // CRITICAL: Validate flash data size matches current segment configuration
+    // This prevents corruption when ETS changes segment count
+    uint16_t expectedSize = sizeof(SegmentFlashState) * segments.size();
+    if (size != expectedSize)
+    {
+        logWarningP("========================================");
+        logWarningP("FLASH SIZE MISMATCH - Configuration changed!");
+        logWarningP("Flash data: %d bytes (%d segments)", size, size / sizeof(SegmentFlashState));
+        logWarningP("Current config: %d bytes (%d segments)", expectedSize, segments.size());
+        logWarningP("Ignoring flash data to prevent corruption");
+        logWarningP("Segments will use default startup behavior");
+        logWarningP("========================================");
+        return;
+    }
+
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
     logInfoP("FLASH READ: Loading LED states from flash");
@@ -135,12 +142,11 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
 #endif
 
     uint16_t offset = 0;
-    uint16_t expectedSize = sizeof(SegmentFlashState);
 
     for (size_t i = 0; i < segments.size(); i++)
     {
         // Check if we have enough data left
-        if (offset + expectedSize > size)
+        if (offset + sizeof(SegmentFlashState) > size)
         {
             logWarningP("Flash data incomplete for segment %d, skipping remaining segments", i);
             break;
@@ -155,15 +161,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         logInfoP("  Power:      %s (%d)", state.power ? "ON" : "OFF", state.power);
         logInfoP("  Color:      R=%3d G=%3d B=%3d WW=%3d CW=%3d", state.r, state.g, state.b, state.ww, state.cw);
         logInfoP("  Brightness: %d", state.brightness);
-        if (state.effectType > 0)
-        {
-            logInfoP("  Effect:     Type=%d Speed=%d Intensity=%d",
-                     state.effectType, state.effectSpeed, state.effectIntensity);
-        }
-        else
-        {
-            logInfoP("  Effect:     None (solid color)");
-        }
+        logInfoP("  Note:       Effect type/params from ETS (not flash)");
 #endif
 
         // Store in segment config for later restoration (after startup delay)
@@ -177,12 +175,15 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         cfg.savedWW = state.ww;
         cfg.savedCW = state.cw;
         cfg.savedBrightness = state.brightness;
-        cfg.savedEffectType = state.effectType;
-        // Note: Effect-specific parameters are now loaded from ETS, not from flash
+        
+        // Phase 1: Effect type NOT restored from flash - always use ETS configuration
+        // savedEffectType will be set from ETS in restoreStatesAfterStartup()
         cfg.savedValid = true;
-        // Effect type 0 (Solid) is also valid - any saved state from flash is valid
-        cfg.savedEffectValid = true;
-        cfg.savedLastWasEffect = true;
+        
+        // Phase 2: Reserved fields will contain KO-changed effect parameter flags
+        // For now, mark as invalid so ETS effect config is used
+        cfg.savedEffectValid = false;
+        cfg.savedLastWasEffect = false;
 
 #ifdef OPENKNX_DEBUG
         logInfoP("  -> Stored in config for later restoration");
@@ -277,33 +278,35 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         {
             case 0: // OFF - Keep configuration but set power off
             {
-                // Restore saved configuration if available, but keep power OFF
-                // This preserves brightness/color for when user turns it back on
+                // Phase 1: Effect type always from ETS, color/brightness from flash
+                uint8_t etsEffectType = ParamNEO_NEONEOEffectType;
+                
+                // Apply effect from ETS
+                _module->applyEffectToSegment(seg, etsEffectType);
+                if (etsEffectType > 0)
+                {
+                    _module->setupEffectConfiguration(seg);
+                }
+                
+                // Restore color if available, otherwise use black
                 if (cfg.savedValid)
                 {
-                    // Restore effect type and color (but not visible until power on)
-                    _module->applyEffectToSegment(seg, cfg.savedEffectType);
-                    if (cfg.savedEffectType > 0)
-                    {
-                        _module->setupEffectConfiguration(seg);
-                    }
                     seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                     // Store the saved brightness internally but set display to 0
                     // The segment will remember this brightness for when power is restored
                     seg->setBrightness(0);
-                    // Store the original brightness in savedBrightness for later use
 #ifdef OPENKNX_DEBUG
-                    logInfoP("[Segment %d] APPLIED: OFF (Effect=%d, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d configured, brightness=0, saved brightness=%d)",
-                             i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
+                    logInfoP("[Segment %d] APPLIED: OFF (Effect=%d from ETS, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d from flash, brightness=0, saved=%d)",
+                             i, etsEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
 #endif
                 }
                 else
                 {
-                    // No saved data - just turn off
+                    // No saved data - use black
                     seg->setBrightness(0);
                     seg->setPrimaryColor(0, 0, 0, 0, 0);
 #ifdef OPENKNX_DEBUG
-                    logInfoP("[Segment %d] APPLIED: OFF (no saved data, brightness=0)", i);
+                    logInfoP("[Segment %d] APPLIED: OFF (Effect=%d from ETS, no saved color, brightness=0)", i, etsEffectType);
 #endif
                 }
 #ifdef OPENKNX_DEBUG
@@ -315,45 +318,34 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             case 1: // LAST STATE (flash restore)
                 if (cfg.savedValid)
                 {
-                    // Check power state first
+                    // Phase 1: Load effect type from ETS (always current config)
+                    uint8_t etsEffectType = ParamNEO_NEONEOEffectType;
+                    
+                    // Apply effect from ETS (not flash!)
+                    _module->applyEffectToSegment(seg, etsEffectType);
+                    if (etsEffectType > 0)
+                    {
+                        _module->setupEffectConfiguration(seg);
+                    }
+                    
+                    // Restore color and brightness from flash
+                    seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
+                    
+                    // Check power state
                     if (cfg.savedPower == 0)
                     {
-                        // Restore effect/color configuration but keep power off
-                        _module->applyEffectToSegment(seg, cfg.savedEffectType);
-                        if (cfg.savedEffectType > 0)
-                        {
-                            _module->setupEffectConfiguration(seg);
-                        }
-                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                         seg->setBrightness(0); // Power off
 #ifdef OPENKNX_DEBUG
-                        logInfoP("[Segment %d] RESTORED: Last state was OFF (Effect=%d configured but brightness=0)",
-                                 i, cfg.savedEffectType);
+                        logInfoP("[Segment %d] RESTORED: Last state OFF (Effect=%d from ETS, Color from flash, Brightness=0)",
+                                 i, etsEffectType);
 #endif
                     }
                     else
                     {
-                        // Power is ON - restore effect (including Solid/0) and color
-                        _module->applyEffectToSegment(seg, cfg.savedEffectType);
-                        if (cfg.savedEffectType > 0)
-                        {
-                            // Active effect - load parameters from ETS
-                            _module->setupEffectConfiguration(seg);
-                        }
-                        // Always restore color (effects use primary color, Solid needs it)
-                        seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                         seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
-                        if (cfg.savedEffectType > 0)
-                        {
-                            logInfoP("[Segment %d] RESTORED: Last effect (Type=%d, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
-                                     i, cfg.savedEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
-                        }
-                        else
-                        {
-                            logInfoP("[Segment %d] RESTORED: Last solid color (R=%d,G=%d,B=%d,WW=%d,CW=%d, Brightness=%d)",
-                                     i, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
-                        }
+                        logInfoP("[Segment %d] RESTORED: Last state ON (Effect=%d from ETS, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d from flash, Brightness=%d)",
+                                 i, etsEffectType, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
 #endif
                     }
 #ifdef OPENKNX_DEBUG
@@ -526,11 +518,11 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     // Save brightness
     state.brightness = seg->getBrightness();
 
-    // Save effect type only (parameters are always loaded from ETS)
-    state.effectType = cfg.savedEffectType;
-    // Note: effectSpeed and effectIntensity fields deprecated (always 0)
-    state.effectSpeed = 0;
-    state.effectIntensity = 0;
+    // Phase 1: Effect type always comes from ETS, not from flash
+    // Phase 2: Reserved fields will store KO-changed effect parameters
+    state.reserved1 = 0;
+    state.reserved2 = 0;
+    state.reserved3 = 0;
 
     return true;
 }

@@ -18,8 +18,9 @@ Alle LEDs werden nach einem Neustart ausgeschaltet.
 Die LEDs werden im zuletzt aktiven Zustand wiederhergestellt. Das System speichert automatisch:
 - Farbe (RGBW-Werte)
 - Helligkeit
-- Aktiven Effekt
-- Effekt-Parameter
+- Power-Status (Ein/Aus)
+
+**Wichtig:** Der aktive Effekt und dessen Parameter werden **nicht** im Flash gespeichert. Nach einem Neustart wird immer der in ETS konfigurierte Effekt verwendet. Dies verhindert Konflikte nach ETS-Umprogrammierung.
 
 **Anwendungsfall:**
 - Nahtlose Fortsetzung nach Stromausfall

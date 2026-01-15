@@ -22,16 +22,26 @@ class NeoPixelFlashPersistence
     const std::string logPrefix() const { return "NeoPixelFlashPersistence"; }
 
     /**
-     * @brief Flash storage structure for one segment (10 bytes)
+     * @brief Flash state structure for segment persistence (10 bytes)
+     * 
+     * Phase 1 (NOW): Stores only power, color, brightness
+     *   - Effect type/parameters always come from ETS
+     * 
+     * Phase 2 (FUTURE): Will store KO-changed effect parameters
+     *   - reserved1: Bitflags for which params changed via KO
+     *   - reserved2-3: Effect parameter values when changed via KO
      */
     struct SegmentFlashState
     {
-        uint8_t power;           // 1 = on, 0 = off (1 byte)
-        uint8_t r, g, b, ww, cw; // RGBWW+CW color values (5 bytes)
-        uint8_t brightness;      // Brightness 0-255 (1 byte)
-        uint8_t effectType;      // Effect ID 0-10 (1 byte)
-        uint8_t effectSpeed;     // Effect speed 0-255 (1 byte)
-        uint8_t effectIntensity; // Effect intensity 0-255 (1 byte)
+        uint8_t power;      // 0 = off, 1 = on
+        uint8_t r, g, b;    // RGB color (0-255 each)
+        uint8_t ww, cw;     // Warm/Cool white (0-255 each)
+        uint8_t brightness; // Master brightness (0-255)
+        
+        // Reserved for Phase 2: KO-based effect parameter persistence
+        uint8_t reserved1;  // Future: effectParamsChangedFlags (bitfield)
+        uint8_t reserved2;  // Future: effect parameter value 1
+        uint8_t reserved3;  // Future: effect parameter value 2
         // Total: 10 bytes per segment
     } __attribute__((packed));
 

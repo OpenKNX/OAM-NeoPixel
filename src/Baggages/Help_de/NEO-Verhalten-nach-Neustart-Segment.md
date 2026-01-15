@@ -32,9 +32,10 @@ Dieses Segment wird im zuletzt aktiven Zustand wiederhergestellt, unabhängig vo
 
 Das System speichert vor jedem Neustart automatisch:
 - Farbe (RGBW-Werte)
-- Helligkeit  
-- Aktiven Effekt (falls vorhanden)
-- Effekt-Parameter (Speed, Intensity)
+- Helligkeit
+- Power-Status (Ein/Aus)
+
+**Wichtig:** Der aktive Effekt und dessen Parameter (Speed, Intensity) werden **nicht** im Flash gespeichert. Nach einem Neustart wird immer der in ETS konfigurierte Effekt verwendet. Dies stellt sicher, dass nach einer ETS-Umprogrammierung keine alten Effekt-Einstellungen die neue Konfiguration überschreiben.
 
 **Anwendungsfall:**
 - Wichtige Segmente sollen immer ihren Zustand beibehalten

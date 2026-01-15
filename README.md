@@ -1,6 +1,6 @@
 # OAM-NeoPixel: KNX-Controlled Addressable LED Adapter
 
-A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, color temperature, brightness control, and state persistence.
+A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, color temperature, brightness control, and runtime state persistence.
 
 ## Features
 
@@ -146,6 +146,22 @@ For segment N (0-indexed), KOs = 600 + N×39:
 - **KO+38**: RGBW Relative (DPT 3.007)
 
 **Note**: KO indices are offsets within each segment's 39-KO block. Actual KO number = 600 + segment_index×39 + index.
+
+## State Persistence Behavior
+
+The firmware persists the following segment state to flash memory for seamless restoration after power cycles:
+- **Power state** (On/Off)
+- **Colors** (RGBWW/CW values)
+- **Brightness** (0-100%)
+
+**Important:** The active effect and its parameters (speed, intensity) are **NOT** persisted in flash. After a restart, the effect configuration is always loaded from the ETS parameters. This design prevents conflicts when you reprogram the device via ETS with a new effect configuration.
+
+**Startup Modes** (configurable per segment or globally):
+- **OFF**: LEDs remain off after restart
+- **LAST**: Restore last power/color/brightness state (effect from ETS)
+- **DEFAULT**: Use predefined color/brightness from ETS parameters (effect from ETS)
+
+This architecture ensures that ETS is the authoritative source for effect configuration, while the flash stores only runtime state.
 
 ## Troubleshooting
 
