@@ -3,7 +3,7 @@ b4d2b4d v1dev lib/knx https://github.com/OpenKNX/knx.git
 09bba3c v1dev lib/OFM-ConfigTransfer https://github.com/OpenKNX/OFM-ConfigTransfer.git
 b46cb4f v1dev lib/OFM-FileTransferModule https://github.com/OpenKNX/OFM-FileTransferModule.git
 55beacc v1dev lib/OFM-LogicModule https://github.com/OpenKNX/OFM-LogicModule.git
-0e1ed10 v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
+c2fdc9f v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
 7175df0 v1dev lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 55119fc v1dev lib/OFM-UsbExchange https://github.com/OpenKNX/OFM-UsbExchange.git
 811b511 ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git

@@ -74,7 +74,7 @@ if ($isClean) {
     Write-Host ""
     
     # Ask if user wants to build after cleaning
-    Write-Host "Build after cleaning? (y/n): " -NoNewline -ForegroundColor Yellow
+    Write-Host "Cleaning Done. Build now full Release with Firmware? (y/n): " -NoNewline -ForegroundColor Yellow
     $buildAfterClean = Read-Host
     
     if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {

@@ -106,7 +106,10 @@ param(
   [switch]$UniversalBuild,
     
   [Parameter(Mandatory = $false)]
-  [string]$HardwareConfigSection = ""
+  [string]$HardwareConfigSection = "",
+    
+  [Parameter(Mandatory = $false)]
+  [switch]$ShowDebugParamsInEtsApp
 )
 
 $ErrorActionPreference = "Stop"
@@ -482,7 +485,8 @@ function Generate-GPIOPortParametersInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "00" + (100 + $stripIdx).ToString()  # 00101, 00102, ..., 00106
     $byteOffset = $stripIdx - 1  # Each parameter in its own byte
-    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}DataPort`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Strip $stripIdx GPIO Port`" Value=`"15`" Access=`"Read`" UIHint=`"None`" SizeInBit=`"8`"/>`n"
+    $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}DataPort`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Strip $stripIdx GPIO Port`" Value=`"15`" Access=`"$accessMode`"/>`n"
   }
     
   $paramsXml += "              </Union>"
@@ -509,7 +513,8 @@ function Generate-ClockPortParametersInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "00" + (110 + $stripIdx).ToString()  # 00111, 00112, ..., 00116
     $byteOffset = $stripIdx - 1  # Each parameter in its own byte
-    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}ClockPort`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Strip $stripIdx Clock GPIO Port`" Value=`"15`" Access=`"Read`" UIHint=`"None`" SizeInBit=`"8`"/>`n"
+    $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}ClockPort`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Strip $stripIdx Clock GPIO Port`" Value=`"15`" Access=`"$accessMode`"/>`n"
   }
     
   $paramsXml += "              </Union>"
@@ -536,7 +541,8 @@ function Generate-ConflictParametersInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
     $bitOffset = $stripIdx - 1
-    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"Strip${stripIdx}HasDataConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Conflict`" Value=`"0`" Access=`"Read`" UIHint=`"None`" SizeInBit=`"1`"/>`n"
+    $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"Strip${stripIdx}HasDataConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
   }
     
   $paramsXml += "              </Union>"
@@ -562,7 +568,8 @@ function Generate-ClockConflictParametersInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122
     $bitOffset = $stripIdx - 1
-    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"Strip${stripIdx}HasClockConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Clock Conflict`" Value=`"0`" Access=`"Read`" UIHint=`"None`" SizeInBit=`"1`"/>`n"
+    $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"Strip${stripIdx}HasClockConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Clock Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
   }
     
   $paramsXml += "              </Union>"
@@ -591,7 +598,7 @@ function Generate-ConflictParameterRefsInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $portParamId = "00" + (100 + $stripIdx).ToString()  # 00101, 00102, ..., 00106
     $portRefId = $portParamId + "01"  # 0010101, 0010201, ..., 0010601
-    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${portParamId}_R-%TT%${portRefId}`" RefId=`"%AID%_UP-%TT%${portParamId}`" UIHint=`"None`" />`n"
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${portParamId}_R-%TT%${portRefId}`" RefId=`"%AID%_UP-%TT%${portParamId}`" />`n"
   }
     
   $refsXml += "              <!-- Data Conflict Flag Parameters for all 6 strips -->`n"
@@ -600,7 +607,7 @@ function Generate-ConflictParameterRefsInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $conflictParamId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
     $conflictRefId = $conflictParamId + "01"  # 0009101, 0009201, ..., 0009601
-    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${conflictParamId}_R-%TT%${conflictRefId}`" RefId=`"%AID%_UP-%TT%${conflictParamId}`" UIHint=`"None`" />`n"
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${conflictParamId}_R-%TT%${conflictRefId}`" RefId=`"%AID%_UP-%TT%${conflictParamId}`" />`n"
   }
     
   $refsXml += "              <!-- Clock GPIO Port Parameters for all 6 strips -->`n"
@@ -609,7 +616,7 @@ function Generate-ConflictParameterRefsInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockPortParamId = "00" + (110 + $stripIdx).ToString()  # 00111, 00112, ..., 00116
     $clockPortRefId = $clockPortParamId + "01"  # 0011101, 0011201, ..., 0011601
-    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockPortRefId}`" RefId=`"%AID%_UP-%TT%${clockPortParamId}`" UIHint=`"None`" />`n"
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockPortRefId}`" RefId=`"%AID%_UP-%TT%${clockPortParamId}`" />`n"
   }
     
   $refsXml += "              <!-- Clock Conflict Flag Parameters for all 6 strips -->`n"
@@ -618,7 +625,7 @@ function Generate-ConflictParameterRefsInShare {
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockConflictParamId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122
     $clockConflictRefId = $clockConflictParamId + "01"  # 0011701, 0011801, ..., 0012201
-    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockConflictParamId}_R-%TT%${clockConflictRefId}`" RefId=`"%AID%_UP-%TT%${clockConflictParamId}`" UIHint=`"None`" />"
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockConflictParamId}_R-%TT%${clockConflictRefId}`" RefId=`"%AID%_UP-%TT%${clockConflictParamId}`" />"
     if ($stripIdx -lt $NumStrips) {
       $refsXml += "`n"
     }
@@ -1185,9 +1192,7 @@ function Generate-ConflictUI {
   # Strip1=%C%=1 → Clock Conflict = 00117
   # Strip2=%C%=2 → Clock Conflict = 00118, etc.
   $uiXml += "<!-- Hidden Clock conflict parameter references -->`n"
-  $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%00020_R-%TT%0002001`">`n"  # Use Strip Count to determine which
-  $uiXml += "  <!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->`n"
-  $uiXml += "</choose>`n"
+  $uiXml += "<!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->`n"
     
   # Combined conflict display - triggers on Data conflicts (which includes Cross-conflicts)
   $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
@@ -1542,9 +1547,10 @@ if (-not $compiler) {
   $systemCompilers = @("g++", "clang++", "cpp")
   foreach ($cmd in $systemCompilers) {
     try {
-      $null = Get-Command $cmd -ErrorAction SilentlyContinue
-      if ($?) {
-        $compiler = $cmd
+      # Force -CommandType Application to avoid PowerShell aliases (e.g., "cpp" = Copy-ItemProperty in PS 5.1)
+      $cmdInfo = Get-Command $cmd -CommandType Application -ErrorAction SilentlyContinue
+      if ($cmdInfo) {
+        $compiler = $cmdInfo.Source  # Use full path from Get-Command
         Write-Step "Using system compiler: $compiler"
         break
       }

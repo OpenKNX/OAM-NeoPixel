@@ -180,33 +180,26 @@ void NeoPixelBusModule::processBeforeRestart()
     // Turn off all LEDs before ETS programming or device restart
     logInfoP("Turning off all LEDs before restart/programming");
 
-    if (!_initialized || !_virtualStrip) return;
+    if (!_initialized) return;
 
-    // Stop all effects and clear all segments if segments are configured
-    if (!_segments.empty())
+    // Stop all effects and clear all LEDs
+    for (auto& segConfig : _segments)
     {
-        for (auto& segConfig : _segments)
+        if (segConfig.segment && segConfig.segment->hasEffect())
         {
-            if (segConfig.segment)
-            {
-                if (segConfig.segment->hasEffect())
-                {
-                    segConfig.segment->clearEffect();
-                }
-                segConfig.segment->clearAll(); // Clear RGBW (handles both RGB and RGBW strips)
-            }
+            segConfig.segment->clearEffect(); // Remove effect (stops further updates)
         }
-        // Send update to all physical strips
-        _virtualStrip->show();
     }
-    else
-    {
-        // No segments configured - turn off all LEDs directly
-        _virtualStrip->turnOffAll();
-    }
+
+    // Use library method to clear and show all LEDs
+    _neoPixel.clearAll();  // Clear all segments
+    _neoPixel.updateAll(); // Send to hardware
 
     // Wait for DMA completion before restart (max 100ms timeout)
-    _virtualStrip->waitForCompletion(100);
+    if (_virtualStrip)
+    {
+        _virtualStrip->waitForCompletion(100);
+    }
 }
 
 // ============================================================================
