@@ -1,4 +1,4 @@
-# This script is just a template and has to be copied and modified per project
+﻿# This script is just a template and has to be copied and modified per project
 # This script should be called from .vscode/tasks.json with
 #
 #   scripts/Build-Release.ps1                - for Beta builds
@@ -38,13 +38,13 @@ param(
     [Parameter(Position=0)]
     [ValidateSet("Release", "SkipFirmware", "Clean", "")]
     [string]$Mode = "",
-    
+
     [Parameter(Mandatory=$false)]
     [switch]$Release,
-    
+
     [Parameter(Mandatory=$false)]
     [switch]$SkipFirmware,
-    
+
     [Parameter(Mandatory=$false)]
     [switch]$Clean
 )
@@ -61,28 +61,28 @@ $isSkipFirmware = ($Mode -eq "SkipFirmware") -or $SkipFirmware
 if ($isClean) {
     Write-Host "Cleaning all generated files..." -ForegroundColor Yellow
     Write-Host ""
-    
+
     Write-Host "Cleaning effect parameters..." -ForegroundColor Cyan
     & scripts/Build-EffectParameters.ps1 -Clean -Force
-    
+
     Write-Host ""
     Write-Host "Cleaning hardware config..." -ForegroundColor Cyan
-    & scripts/Build-HardwareConfigTemplates.ps1 -Clean -Force
-    
+    & scripts/Build-HardwareConfig.ps1 -Clean -Force
+
     Write-Host ""
     Write-Host "✓ All generated files cleaned!" -ForegroundColor Green
     Write-Host ""
-    
+
     # Ask if user wants to build after cleaning
     Write-Host "Cleaning Done. Build now full Release with Firmware? (y/n): " -NoNewline -ForegroundColor Yellow
     $buildAfterClean = Read-Host
-    
+
     if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {
         Write-Host ""
         Write-Host "Cleanup completed. Exiting without build." -ForegroundColor Cyan
         exit 0
     }
-    
+
     Write-Host ""
     Write-Host "Continuing with build..." -ForegroundColor Cyan
     Write-Host ""
@@ -92,18 +92,18 @@ if ($isClean) {
 # Generate dynamic GPIO templates before building
 # Using -UniversalBuild for release to support all hardware variants
 Write-Host "Generating dynamic GPIO templates (Universal Build)..." -ForegroundColor Cyan
-scripts/Build-HardwareConfigTemplates.ps1 -UniversalBuild
-if (!$?) { 
+scripts/Build-HardwareConfig.ps1 -UniversalBuild
+if (!$?) {
     Write-Host "GPIO template generation failed!" -ForegroundColor Red
-    exit 1 
+    exit 1
 }
 
 # Generate effect parameters before building
 Write-Host "Generating effect parameters..." -ForegroundColor Cyan
 scripts/Build-EffectParameters.ps1
-if (!$?) { 
+if (!$?) {
     Write-Host "Effect parameter generation failed!" -ForegroundColor Red
-    exit 1 
+    exit 1
 }
 
 # Determine build parameter for OpenKNXproducer
@@ -117,7 +117,7 @@ if (!$?) { exit 1 }
 # OpenKNX Hardware builds (skip if SkipFirmware mode)
 if (-not $isSkipFirmware) {
     Write-Host "Building firmware for all hardware variants..." -ForegroundColor Cyan
-    
+
     # OpenKNXiao KNeoPiX
     ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 OpenKNX-XIAO-KNeoPiX-RP2350_V1 uf2
     if (!$?) { exit 1 }
@@ -137,7 +137,16 @@ if (-not $isSkipFirmware) {
     #if (!$?) { exit 1 }
 
     # OpenKNX REG2
-    # ToDo: Add REG2 builds, after defining hardware IDs and platformio environments
+    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO_V1 OpenKNX-REG2-PiPico_V1 uf2
+    if (!$?) { exit 1 }
+    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO_W_V1 OpenKNX-REG2-PiPicoW_V1 uf2
+    if (!$?) { exit 1 }
+    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO2_V1 OpenKNX-REG2-PiPico2_V1 uf2
+    if (!$?) { exit 1 }
+    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO2_W_V1 OpenKNX-REG2-PiPico2W_V1 uf2
+    if (!$?) { exit 1 }
+    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_ESP32S3_PICO_V1 OpenKNX-REG2-ESP32S3-Pico_V1 bin
+    if (!$?) { exit 1 }
 } else {
     Write-Host "Skipping firmware builds (SkipFirmware mode)" -ForegroundColor Yellow
 }

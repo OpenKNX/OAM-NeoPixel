@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════════
+     HARDWARE GPIO CONFIGURATION FRAGMENT
+     This file is included by NeoPixel.Strip.templ.xml via op:include
+     Contains hardware-specific GPIO parameters and calculations
+     ═══════════════════════════════════════════════════════════════════════════════════════════════ -->
+<HardwareGPIOConfig xmlns="http://knx.org/xml/project/20">
+  <!-- PARAMETERS: Hardware-specific GPIO Port/Clock definitions -->
+  <Parameters>
+    <!-- BEGIN AUTO-GENERATED: GPIO Port Selection Parameter -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Port Selection Parameter -->
+
+    <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection Parameter -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Clock Selection Parameter -->
+
+    <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result Parameters -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Conflict Result Parameters -->
+  </Parameters>
+
+  <!-- PARAMETER REFS: References to hardware GPIO parameters -->
+  <ParameterRefs>
+    <!-- BEGIN AUTO-GENERATED: GPIO Port Selection ParameterRef -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Port Selection ParameterRef -->
+
+    <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRef -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRef -->
+    <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->
+  </ParameterRefs>
+
+  <!-- UI ELEMENTS: Hardware-specific GPIO UI choose/when blocks -->
+  <UIElements>
+    <!-- GPIO Conflict Status Display (for conflict warnings) -->
+    <GPIOConflictStatus>
+      <!-- BEGIN AUTO-GENERATED: GPIO Conflict Status Display -->
+      <!-- Cleaned - Ready for regeneration -->
+      <!-- END AUTO-GENERATED: GPIO Conflict Status Display -->
+    </GPIOConflictStatus>
+    
+    <!-- GPIO Port Selection UI -->
+    <GPIOPortSelection>
+      <!-- BEGIN AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->
+      <!-- Cleaned - Ready for regeneration -->
+      <!-- END AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->
+    </GPIOPortSelection>
+    
+    <!-- GPIO Clock Selection UI -->
+    <GPIOClockSelection>
+      <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
+      <!-- Cleaned - Ready for regeneration -->
+      <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
+    </GPIOClockSelection>
+    
+    <!-- GPIO Conflict Warning UI -->
+    <GPIOConflictWarning>
+      <!-- BEGIN AUTO-GENERATED: Central Manual GPIO Warning -->
+      <!-- Cleaned - Ready for regeneration -->
+      <!-- END AUTO-GENERATED: Central Manual GPIO Warning -->
+    </GPIOConflictWarning>
+  </UIElements>
+
+  <!-- PARAMETER CALCULATIONS: Hardware GPIO copy logic -->
+  <ParameterCalculations>
+    <!-- BEGIN AUTO-GENERATED: GPIO Copy ParameterCalculation -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Copy ParameterCalculation -->
+
+    <!-- BEGIN AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->
+
+    <!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->
+    <!-- Cleaned - Ready for regeneration -->
+    <!-- END AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->
+  </ParameterCalculations>
+</HardwareGPIOConfig>

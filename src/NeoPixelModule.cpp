@@ -144,6 +144,26 @@ void NeoPixelBusModule::loop(bool configured)
 {
     if (!configured || !_initialized) return;
 
+    // Check for hardware configuration mismatch and warn periodically
+    if (_hwConfigMismatch) {
+        unsigned long now = millis();
+        if (now - _lastHwMismatchWarning >= 5000) { // Every 5 seconds
+            _lastHwMismatchWarning = now;
+            #ifdef DEVICE_HW_ID
+                #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
+                    uint16_t selectedHwId = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
+                    uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
+                    uint8_t etsHwIndex = HardwareMapping::mapDeviceHwIdToIndex(selectedHwId);
+                    const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
+                    const char* etsHwName = HardwareMapping::getHardwareName(etsHwIndex);
+                    logErrorP("!!! HW MISMATCH: Firmware=%s (0x%04X) vs ETS=%s (0x%04X) - Update ETS config!",
+                              compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID,
+                              etsHwName ? etsHwName : "Unknown", selectedHwId);
+                #endif
+            #endif
+        }
+    }
+
     // Process HCL curve scheduling (updates Kelvin target based on sun position or time)
     // This runs even when power is OFF to maintain the curve state
     if (_hclCurve)
@@ -1418,12 +1438,34 @@ void NeoPixelBusModule::configureFromETS()
     // Initialize the OFM-NeoPixel module first
     _neoPixel.init();
 
-    // Log hardware configuration
+    // Log hardware configuration and check for mismatch
     #ifdef DEVICE_HW_ID
         uint8_t hwIndex = getCurrentHardwareIndex();
         const char* hwName = HardwareMapping::getHardwareName(hwIndex);
         logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - Compile-time mode", 
                  hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
+        
+        // Check if ETS configuration matches compiled hardware
+        #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
+            uint16_t selectedHwId = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
+            if (selectedHwId != DEVICE_HW_ID) {
+                _hwConfigMismatch = true;
+                uint8_t etsHwIndex = HardwareMapping::mapDeviceHwIdToIndex(selectedHwId);
+                const char* etsHwName = HardwareMapping::getHardwareName(etsHwIndex);
+                logErrorP("!!!! HARDWARE MISMATCH !!!!");
+                logErrorP("  Compiled for:  %s (ID: 0x%04X)", hwName ? hwName : "Unknown", DEVICE_HW_ID);
+                logErrorP("  ETS configured: %s (ID: 0x%04X)", etsHwName ? etsHwName : "Unknown", selectedHwId);
+                logErrorP("  GPIO Port configuration from ETS will be IGNORED, to prevent damage and unexpected behaviors!");
+                logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
+                logErrorP("!!!! HARDWARE MISMATCH !!!!");
+                
+                // Set Prog LED to red + error code blinking (Prio 2 - overrides prog mode)
+                openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->color(OpenKNX::Led::Color::Red);
+                openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->errorCode(1); // 1x blink = HW mismatch
+            } else {
+                _hwConfigMismatch = false;
+            }
+        #endif
     #else
         #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
             uint16_t selectedHwId = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
@@ -1431,8 +1473,10 @@ void NeoPixelBusModule::configureFromETS()
             const char* hwName = HardwareMapping::getHardwareName(hwIndex);
             logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - ETS runtime selection", 
                      hwName ? hwName : "Unknown", selectedHwId, hwIndex);
+            _hwConfigMismatch = false; // No mismatch in runtime mode
         #else
             logWarningP("Hardware selection not available - using default configuration");
+            _hwConfigMismatch = false;
         #endif
     #endif
 
@@ -1548,43 +1592,49 @@ void NeoPixelBusModule::configureFromETS()
         else
         {
             // Hardware-assisted mode: Get GPIO from hardware-specific port selection
-            uint8_t dataPortIndex = getGpioDataPortForHw(i);
-            
-            if (isHardwarePortSelected(dataPortIndex))
-            {
-                uint8_t dataGpio = mapPortIndexToGpio(dataPortIndex);
+            // CRITICAL: Ignore hardware port config if there's a hardware mismatch!
+            if (_hwConfigMismatch) {
+                logErrorP("Strip %d: Hardware mismatch detected - ignoring hardware port selection", i);
+                // Don't pre-mark any hardware ports, force manual configuration
+            } else {
+                uint8_t dataPortIndex = getGpioDataPortForHw(i);
                 
-                if (dataGpio != 255) // Valid GPIO
+                if (isHardwarePortSelected(dataPortIndex))
                 {
-                    if (!isPinUsed(dataGpio))
-                    {
-                        usedPins.push_back(dataGpio);
-                        logInfoP("Strip %d: Pre-marked hardware Data GPIO %d (port %d) as used", i, dataGpio, dataPortIndex);
-                    }
-                    else
-                    {
-                        logWarningP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortIndex);
-                    }
+                    uint8_t dataGpio = mapPortIndexToGpio(dataPortIndex);
                     
-                    // For SPI protocols, also mark clock GPIO
-                    if (isSpiProtocol(proto))
+                    if (dataGpio != 255) // Valid GPIO
                     {
-                        uint8_t clockPortIndex = getGpioClockPortForHw(i);
-                        
-                        if (isHardwarePortSelected(clockPortIndex))
+                        if (!isPinUsed(dataGpio))
                         {
-                            uint8_t sckGpio = mapPortIndexToGpio(clockPortIndex);
+                            usedPins.push_back(dataGpio);
+                            logInfoP("Strip %d: Pre-marked hardware Data GPIO %d (port %d) as used", i, dataGpio, dataPortIndex);
+                        }
+                        else
+                        {
+                            logErrorP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortIndex);
+                        }
+                        
+                        // For SPI protocols, also mark clock GPIO
+                        if (isSpiProtocol(proto))
+                        {
+                            uint8_t clockPortIndex = getGpioClockPortForHw(i);
                             
-                            if (sckGpio != 255) // Valid GPIO
+                            if (isHardwarePortSelected(clockPortIndex))
                             {
-                                if (!isPinUsed(sckGpio))
+                                uint8_t sckGpio = mapPortIndexToGpio(clockPortIndex);
+                                
+                                if (sckGpio != 255) // Valid GPIO
                                 {
-                                    usedPins.push_back(sckGpio);
-                                    logInfoP("Strip %d: Pre-marked hardware SCK GPIO %d (port %d) as used", i, sckGpio, clockPortIndex);
-                                }
-                                else
-                                {
-                                    logWarningP("Strip %d: Hardware SCK GPIO %d (port %d) already marked as used!", i, sckGpio, clockPortIndex);
+                                    if (!isPinUsed(sckGpio))
+                                    {
+                                        usedPins.push_back(sckGpio);
+                                        logInfoP("Strip %d: Pre-marked hardware SCK GPIO %d (port %d) as used", i, sckGpio, clockPortIndex);
+                                    }
+                                    else
+                                    {
+                                        logErrorP("Strip %d: Hardware SCK GPIO %d (port %d) already marked as used!", i, sckGpio, clockPortIndex);
+                                    }
                                 }
                             }
                         }
@@ -1667,6 +1717,12 @@ void NeoPixelBusModule::configureFromETS()
             else
             {
                 // Hardware-assisted mode: Use hardware-specific port mapping
+                // CRITICAL: Block hardware port usage if there's a hardware mismatch!
+                if (_hwConfigMismatch) {
+                    logErrorP("Strip %d: Hardware mismatch - cannot use hardware ports! Please configure GPIO manually.", i);
+                    continue; // Skip this strip completely
+                }
+                
                 uint8_t dataPortIndex = getGpioDataPortForHw(i);
                 uint8_t clockPortIndex = getGpioClockPortForHw(i);
                 
@@ -1815,6 +1871,12 @@ void NeoPixelBusModule::configureFromETS()
             else
             {
                 // Hardware-assisted mode: Use hardware-specific port mapping
+                // CRITICAL: Block hardware port usage if there's a hardware mismatch!
+                if (_hwConfigMismatch) {
+                    logErrorP("Strip %d: Hardware mismatch - cannot use hardware ports! Please configure GPIO manually.", i);
+                    continue; // Skip this strip completely
+                }
+                
                 uint8_t dataPortIndex = getGpioDataPortForHw(i);
                 
                 if (isHardwarePortSelected(dataPortIndex))

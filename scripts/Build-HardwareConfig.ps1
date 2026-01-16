@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 <#
 Open ■
 ┬────┴  Build-HardwareConfig
@@ -12,7 +12,7 @@ FILEPATH: scripts/Build-HardwareConfig.ps1
 .DESCRIPTION
     This script extracts hardware-specific GPIO configurations via C++ preprocessor
     and generates ETS XML templates with dynamic GPIO options.
-    
+
     Reusable for ANY feature that needs hardware-dependent GPIO selection:
     - NeoPixel LED strips
     - I2C bus selection
@@ -51,7 +51,7 @@ FILEPATH: scripts/Build-HardwareConfig.ps1
 .NOTES
     Author: OpenKNX Project - Erkan Çolak
     Requires: C++ compiler (g++/arm-none-eabi-g++) in PATH
-    
+
     This script is part of the OpenKNX project automation framework.
     It dynamically generates hardware-specific GPIO configurations for ETS applications.
 #>
@@ -62,52 +62,49 @@ FILEPATH: scripts/Build-HardwareConfig.ps1
 param(
   [Parameter(Mandatory = $false)]
   [string]$FeatureName = "NeoPixel",
-    
+
   [Parameter(Mandatory = $false)]
   [string]$DefinesPrefix = "NEOPIXEL_HW",
-    
+
   [Parameter(Mandatory = $false)]
-  [string]$TemplateFile = "src/NeoPixel.Strip.templ.xml",
-    
+  [string[]]$TemplateFile = @("src/NeoPixel.Hardware.templ.xml", "src/NeoPixel.Strip.templ.xml"),
+
   [Parameter(Mandatory = $false)]
   [string]$OutputFile = "",
-    
-  [Parameter(Mandatory = $false)]
-  [string]$ExtractorTool = "scripts/extract_gpio_config.cpp",
-    
+
   [Parameter(Mandatory = $false)]
   [int]$MaxPorts = 7,
-    
+
   [Parameter(Mandatory = $false)]
   [string]$ShareXml = "",
-    
+
   [Parameter(Mandatory = $false)]
   [string]$JavaScriptFile = "",
-    
+
   [Parameter(Mandatory = $false)]
   [string]$HardwareMappingHeader = "src/HardwareMappingData.h",
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$TestMode,
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$Clean,
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$Force,
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$DryRun,
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$VerboseMode,
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$UniversalBuild,
-    
+
   [Parameter(Mandatory = $false)]
   [string]$HardwareConfigSection = "",
-    
+
   [Parameter(Mandatory = $false)]
   [switch]$ShowDebugParamsInEtsApp
 )
@@ -122,9 +119,106 @@ if ([string]::IsNullOrEmpty($ShareXml)) {
 if ([string]::IsNullOrEmpty($JavaScriptFile)) {
   $JavaScriptFile = "src/$FeatureName.script.js"
 }
+
+# ====================================================================
+# Helper Functions - Console output
+# ====================================================================
+function Write-Step {
+  param([string]$Message)
+  Write-Host "  [$FeatureName] " -NoNewline -ForegroundColor Cyan
+  Write-Host $Message
+}
+
+function Write-Success {
+  param([string]$Message)
+  Write-Host "  [$FeatureName] ✓ " -NoNewline -ForegroundColor Green
+  Write-Host $Message
+}
+
+function Write-WarningMsg {
+  param([string]$Message)
+  Write-Host "  [$FeatureName] ⚠ " -NoNewline -ForegroundColor Yellow
+  Write-Host $Message
+}
+
+function Write-ErrorMsg {
+  param([string]$Message)
+  Write-Host "  [$FeatureName] ✗ " -NoNewline -ForegroundColor Red
+  Write-Host $Message
+}
+
+# PS 5.1 compatible clear screen
+# ====================================================================
+# Multiple Templates Mode - Process each template sequentially
+# ====================================================================
+if ($TemplateFile.Count -gt 1) {
+  Write-Host ""
+  Write-Step "Processing $($TemplateFile.Count) templates sequentially..."
+  Write-Host ""
+
+  $templateIndex = 1
+  foreach ($template in $TemplateFile) {
+    $templateName = Split-Path -Leaf $template
+
+    if ($Clean) {
+      Write-Host "  [$templateIndex/$($TemplateFile.Count)] Cleaning $templateName..." -ForegroundColor Yellow
+    } else {
+      Write-Host "  [$templateIndex/$($TemplateFile.Count)] Building $templateName..." -ForegroundColor Cyan
+    }
+
+    # Build parameters for single template
+    $params = @{
+      FeatureName = $FeatureName
+      DefinesPrefix = $DefinesPrefix
+      TemplateFile = @($template)  # Single template as array
+      MaxPorts = $MaxPorts
+    }
+
+    if ($TestMode) { $params.TestMode = $true }
+    if ($Clean) { $params.Clean = $true }
+    if ($Force) { $params.Force = $true }
+    if ($DryRun) { $params.DryRun = $true }
+    if ($VerboseMode) { $params.VerboseMode = $true }
+    if ($UniversalBuild) { $params.UniversalBuild = $true }
+    if ($HardwareConfigSection) { $params.HardwareConfigSection = $HardwareConfigSection }
+    if ($ShowDebugParamsInEtsApp) { $params.ShowDebugParamsInEtsApp = $true }
+
+    # Recursive call with single template
+    & "$PSCommandPath" @params
+
+    if ($LASTEXITCODE -ne 0) {
+      Write-ErrorMsg "$templateName failed!"
+      exit $LASTEXITCODE
+    }
+
+    if ($Clean) {
+      Write-Success "$templateName cleaned"
+    }
+
+    Write-Host ""
+    $templateIndex++
+  }
+
+  Write-Success "All templates processed successfully"
+  exit 0
+}
+
+# ====================================================================
+# Single Template Mode - Continue with normal processing
+# ====================================================================
+
+# Extract single template from array
+$TemplateFile = $TemplateFile[0]
+
 if ([string]::IsNullOrEmpty($OutputFile)) {
   $OutputFile = $TemplateFile
 }
+
+# ====================================================================
+# Maximum Hardware Variants (limited by 2-digit ID range)
+# ====================================================================
+# Data GPIO: 001-032 (32 slots, namespace %TT%0%C%), Clock GPIO: 033-064 (32 slots, namespace %TT%0%C%)
+$MAX_HARDWARE_VARIANTS = 32
 
 # ====================================================================
 # Configuration
@@ -133,10 +227,16 @@ $script:Config = @{
   # Default paths (relative to repo root)
   ExtractorToolDefault = "scripts/extract_gpio_config.cpp"
   ExtractorExeName     = "extract_gpio_config"
-    
+
+  # Hardware INI file paths (search order)
+  HardwareIniPaths     = @(
+    "platformio.hardware.ini",
+    "lib/OGM-HardwareConfig/include/HardwareConfig/OpenKNX/platformio.hardware.ini"
+  )
+
   # Temporary files
   TempDir              = "scripts"
-    
+
   # Markers
   Markers              = @{
     # Template markers (NO leading whitespace in definition)
@@ -144,12 +244,6 @@ $script:Config = @{
     GPIOEnd                   = "<!-- END AUTO-GENERATED: GPIO Options -->"
     ParamDefStart             = "<!-- BEGIN AUTO-GENERATED: GPIO Port Parameters -->"
     ParamDefEnd               = "<!-- END AUTO-GENERATED: GPIO Port Parameters -->"
-    ConflictParamStart        = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Result Parameters -->"
-    ConflictParamEnd          = "<!-- END AUTO-GENERATED: GPIO Conflict Result Parameters -->"
-    ConflictCalcStart         = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->"
-    ConflictCalcEnd           = "<!-- END AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->"
-    ConflictUIStart           = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Status Display -->"
-    ConflictUIEnd             = "<!-- END AUTO-GENERATED: GPIO Conflict Status Display -->"
     # share.xml markers (NO leading whitespace in definition)
     ParamTypeStart            = "<!-- BEGIN AUTO-GENERATED: GPIO Port Selection Types -->"
     ParamTypeEnd              = "<!-- END AUTO-GENERATED: GPIO Port Selection Types -->"
@@ -184,8 +278,14 @@ $script:Config = @{
     GPIOPortSelectionEnd      = "<!-- END AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->"
     GPIOClockSelectionStart   = "<!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->"
     GPIOClockSelectionEnd     = "<!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->"
+    ConflictParamStart        = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Result Parameters -->"
+    ConflictParamEnd          = "<!-- END AUTO-GENERATED: GPIO Conflict Result Parameters -->"
     ConflictResultRefsStart   = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->"
     ConflictResultRefsEnd     = "<!-- END AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->"
+    ConflictCalcStart         = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->"
+    ConflictCalcEnd           = "<!-- END AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->"
+    ConflictUIStart           = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Status Display -->"
+    ConflictUIEnd             = "<!-- END AUTO-GENERATED: GPIO Conflict Status Display -->"
     GPIOCopyCalcStart         = "<!-- BEGIN AUTO-GENERATED: GPIO Copy ParameterCalculation -->"
     GPIOCopyCalcEnd           = "<!-- END AUTO-GENERATED: GPIO Copy ParameterCalculation -->"
     GPIOClockCopyCalcStart    = "<!-- BEGIN AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->"
@@ -211,16 +311,16 @@ if ($VerboseMode) {
 # Helper Functions - Path resolution
 # ====================================================================
 function Get-RepoRoot {
-  $scriptDir = if ($PSScriptRoot) { 
-    $PSScriptRoot 
+  $scriptDir = if ($PSScriptRoot) {
+    $PSScriptRoot
   }
-  elseif ($PSCommandPath) { 
-    Split-Path -Parent $PSCommandPath 
+  elseif ($PSCommandPath) {
+    Split-Path -Parent $PSCommandPath
   }
-  else { 
-    $PWD.Path 
+  else {
+    $PWD.Path
   }
-    
+
   $repoRoot = Split-Path -Parent $scriptDir
   return $repoRoot
 }
@@ -232,21 +332,56 @@ function Resolve-RepoPath {
   return $fullPath
 }
 
+# ====================================================================
+# ====================================================================
+# Clear content between markers (replace with placeholder comment)
+# Enhanced with intelligent message handling for Strip templates
+# ====================================================================
 function Clear-MarkerContent {
   param(
     [string]$FilePath,
     [string]$StartMarker,
     [string]$EndMarker,
-    [string]$PlaceholderComment = "<!-- Cleaned - Ready for regeneration -->"
+    [string]$PlaceholderComment = "<!-- Cleaned - Ready for regeneration -->",
+    [string]$CleaningMessage = $null
   )
-    
-  if (-not (Test-Path $FilePath)) {
-    Write-Warning "File not found: $FilePath"
-    return
+
+  # Show cleaning message if provided
+  if ($CleaningMessage) {
+    $fileName = Split-Path -Leaf $FilePath
+    $suppressedMarkersForStrip = @(
+      "GPIO Port Selection Parameter",
+      "GPIO Port Selection ParameterRef",
+      "GPIO Clock Selection Parameter",
+      "GPIO Clock Selection ParameterRef",
+      "GPIO Port Selection ParameterRefRef",
+      "GPIO Clock Selection ParameterRefRef",
+      "Central Manual GPIO Warning",
+      "GPIO Copy ParameterCalculation",
+      "GPIO Clock Copy ParameterCalculation",
+      "GPIO Conflict Parameters",
+      "GPIO Clock Conflict Parameters",
+      "GPIO Conflict ParameterRefs",
+      "GPIO Conflict Result ParameterRefs",
+      "GPIO Conflict Check ParameterCalculations",
+      "GPIO Conflict Status Display",
+      "Conflict Parameters",
+      "ParameterRefs",
+      "ParameterCalculations",
+      "UI Display"
+    )
+
+    $shouldSuppress = $fileName -like "*Strip*" -and ($suppressedMarkersForStrip | Where-Object { $CleaningMessage -like "*$_*" })
+
+    if (-not $shouldSuppress) {
+      Write-Host "  • Cleaning $fileName ($CleaningMessage)..." -ForegroundColor Cyan
+    }
   }
-    
-  $content = Get-Content $FilePath -Raw
-  
+
+  # Proceed with actual cleaning
+  $content = Get-Content -Path $FilePath -Raw
+  if (-not $content) { return }
+
   # Pattern: Match indent + BEGIN marker, content, indent + END marker
   # (?ms) = multiline (^ matches line start) + singleline (. matches newlines)
   # (^[ \t]*) = capture leading whitespace at line start
@@ -254,7 +389,7 @@ function Clear-MarkerContent {
   $escapedStart = [regex]::Escape($StartMarker)
   $escapedEnd = [regex]::Escape($EndMarker)
   $pattern = "(?ms)(^[ \t]*)($escapedStart`r?`n)(.*?)(`r?`n\1$escapedEnd)"
-    
+
   if ($content -match $pattern) {
     # $1 = indent, $2 = BEGIN marker + newline, $3 = old content, $4 = newline + indent + END marker
     # Keep markers as-is (groups $1, $2 and $4), only replace content ($3)
@@ -265,7 +400,35 @@ function Clear-MarkerContent {
     Write-Success "Cleared: $(Split-Path -Leaf $FilePath)"
   }
   else {
-    Write-Warning "Markers not found in: $(Split-Path -Leaf $FilePath)"
+    # Suppress warnings for specific hardware GPIO markers that moved to Hardware.templ.xml
+    $fileName = Split-Path -Leaf $FilePath
+    $suppressedMarkersForStrip = @(
+      "GPIO Port Selection Parameter",
+      "GPIO Port Selection ParameterRef",
+      "GPIO Clock Selection Parameter",
+      "GPIO Clock Selection ParameterRef",
+      "GPIO Port Selection ParameterRefRef",
+      "GPIO Clock Selection ParameterRefRef",
+      "Central Manual GPIO Warning",
+      "GPIO Copy ParameterCalculation",
+      "GPIO Clock Copy ParameterCalculation",
+      "GPIO Conflict Parameters",
+      "GPIO Clock Conflict Parameters",
+      "GPIO Conflict ParameterRefs",
+      "GPIO Conflict Result ParameterRefs",
+      "GPIO Conflict Check ParameterCalculations",
+      "GPIO Conflict Status Display",
+      "Conflict Parameters",
+      "ParameterRefs",
+      "ParameterCalculations",
+      "UI Display"
+    )
+
+    $shouldSuppress = $fileName -like "*Strip*" -and $CleaningMessage -and ($suppressedMarkersForStrip | Where-Object { $CleaningMessage -like "*$_*" })
+
+    if (-not $shouldSuppress) {
+      Write-WarningMsg "Markers not found in: $fileName"
+    }
   }
 }
 
@@ -279,14 +442,14 @@ function Replace-MarkerContent {
     [string]$EndMarker,
     [string]$NewContent
   )
-    
+
   if (-not (Test-Path $FilePath)) {
-    Write-Warning "File not found: $FilePath"
+    Write-WarningMsg "File not found: $FilePath"
     return $false
   }
-    
+
   $content = Get-Content $FilePath -Raw
-  
+
   # Pattern: Match indent + BEGIN marker, content, indent + END marker
   # (?ms) = multiline (^ matches line start) + singleline (. matches newlines)
   # \1 = backreference - END marker MUST have same indent as BEGIN
@@ -294,16 +457,16 @@ function Replace-MarkerContent {
   $escapedStart = [regex]::Escape($StartMarker)
   $escapedEnd = [regex]::Escape($EndMarker)
   $pattern = "(?ms)(^[ \t]*)($escapedStart`r?`n)(.*?)(`r?`n\1$escapedEnd)"
-    
+
   if ($content -match $pattern) {
     # $1 = indent, $2 = BEGIN marker + newline, $3 = old content, $4 = newline + indent + END marker
     # Keep markers as-is (groups $2 and $4), only replace content ($3)
     $indent = $Matches[1]
-    
+
     # Re-indent NewContent: Find minimal indent, remove it, add marker indent
     # This preserves RELATIVE indentation within the content
     $lines = $NewContent -split "`n"
-    
+
     # Find minimal indentation of non-empty lines
     $minIndent = $null
     foreach ($line in $lines) {
@@ -316,7 +479,7 @@ function Replace-MarkerContent {
       }
     }
     if ($null -eq $minIndent) { $minIndent = 0 }
-    
+
     # Remove minimal indent from all lines, add marker indent
     $reindentedLines = @()
     foreach ($line in $lines) {
@@ -331,7 +494,7 @@ function Replace-MarkerContent {
       }
     }
     $reindentedContent = $reindentedLines -join "`n"
-    
+
     # Replacement: Keep $1 (indent), $2 (BEGIN+newline) and $4 (newline+indent+END), replace $3 (content)
     # This ensures markers stay exactly where they are
     $replacement = "`$1`$2$reindentedContent`$4"
@@ -349,14 +512,14 @@ function Replace-MarkerContent {
 # ====================================================================
 function Show-OpenKNXLogo {
   param([string]$SubTitle, [string]$Version)
-    
+
   $boxWidth = 112  # Content width inside the box
-    
+
   Write-Host ""
   Write-Host "  ┌" -NoNewline -ForegroundColor DarkGray
   Write-Host ("─" * $boxWidth) -NoNewline -ForegroundColor DarkGray
   Write-Host "─┐" -ForegroundColor DarkGray
-    
+
   # Line 1: "Open ■" - Open in normal color, ■ in green
   $line1Length = 6  # "Open " (5) + "■" (1)
   Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
@@ -364,10 +527,10 @@ function Show-OpenKNXLogo {
   Write-Host "$([char]::ConvertFromUtf32(0x25A0))" -NoNewline -ForegroundColor Green
   Write-Host (" " * ($boxWidth - $line1Length)) -NoNewline
   Write-Host "│" -ForegroundColor DarkGray
-    
+
   # Line 2: Unicode + SubTitle + Version (all green)
   $unicodeString = "$([char]::ConvertFromUtf32(0x252C))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2500))$([char]::ConvertFromUtf32(0x2534)) "
-    
+
   if ($SubTitle -and $Version) {
     $line2 = "$($unicodeString)$($SubTitle) v$Version"
   }
@@ -377,12 +540,12 @@ function Show-OpenKNXLogo {
   else {
     $line2 = "$($unicodeString)"
   }
-    
+
   Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
   Write-Host $line2 -NoNewline -ForegroundColor Green
   Write-Host (" " * ($boxWidth - $line2.Length)) -NoNewline
   Write-Host "│" -ForegroundColor DarkGray
-    
+
   # Line 3: "■ KNX" - ■ in green, KNX in normal color
   $line3Length = 5  # "■" (1) + " KNX" (4)
   Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
@@ -390,7 +553,7 @@ function Show-OpenKNXLogo {
   Write-Host " KNX" -NoNewline
   Write-Host (" " * ($boxWidth - $line3Length)) -NoNewline
   Write-Host "│" -ForegroundColor DarkGray
-    
+
   Write-Host "  └" -NoNewline -ForegroundColor DarkGray
   Write-Host ("─" * $boxWidth) -NoNewline -ForegroundColor DarkGray
   Write-Host "─┘" -ForegroundColor DarkGray
@@ -408,27 +571,27 @@ function Find-PlatformIOCompiler {
   else {
     Join-Path $HOME ".platformio"
   }
-    
+
   $packagesDir = Join-Path $platformioHome "packages"
-    
+
   if (-not (Test-Path $packagesDir)) {
     return $null
   }
-    
+
   # Search for toolchains with g++ compiler
   $toolchainDirs = Get-ChildItem -Path $packagesDir -Filter "toolchain-*" -Directory -ErrorAction SilentlyContinue
-    
+
   $compilerNames = @(
     "arm-none-eabi-g++",      # RP2040, SAMD
     "xtensa-esp32-elf-g++",   # ESP32
     "riscv32-esp-elf-g++",    # ESP32-C3/C6/H2
     "*-g++"                   # Generic fallback
   )
-    
+
   foreach ($toolchainDir in $toolchainDirs) {
     $binDir = Join-Path $toolchainDir.FullName "bin"
     if (-not (Test-Path $binDir)) { continue }
-        
+
     foreach ($compilerName in $compilerNames) {
       $compilers = Get-ChildItem -Path $binDir -Filter $compilerName -File -ErrorAction SilentlyContinue
       if ($compilers) {
@@ -436,35 +599,8 @@ function Find-PlatformIOCompiler {
       }
     }
   }
-    
+
   return $null
-}
-
-# ====================================================================
-# Helper Functions - Console output
-# ====================================================================
-function Write-Step {
-  param([string]$Message)
-  Write-Host "  [$FeatureName] " -NoNewline -ForegroundColor Cyan
-  Write-Host $Message
-}
-
-function Write-Success {
-  param([string]$Message)
-  Write-Host "  [$FeatureName] ✓ " -NoNewline -ForegroundColor Green
-  Write-Host $Message
-}
-
-function Write-Warning {
-  param([string]$Message)
-  Write-Host "  [$FeatureName] ⚠ " -NoNewline -ForegroundColor Yellow
-  Write-Host $Message
-}
-
-function Write-ErrorMsg {
-  param([string]$Message)
-  Write-Host "  [$FeatureName] ✗ " -NoNewline -ForegroundColor Red
-  Write-Host $Message
 }
 
 # ====================================================================
@@ -475,22 +611,22 @@ function Generate-GPIOPortParametersInShare {
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate GPIO Port selection parameters in share.xml (00101-00106)
   # These store which GPIO port each strip uses (0=unused, 1-7=D0-D6)
   $paramsXml = "              <Union SizeInBit=`"48`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"60`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "00" + (100 + $stripIdx).ToString()  # 00101, 00102, ..., 00106
     $byteOffset = $stripIdx - 1  # Each parameter in its own byte
     $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}DataPort`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Strip $stripIdx GPIO Port`" Value=`"15`" Access=`"$accessMode`"/>`n"
   }
-    
+
   $paramsXml += "              </Union>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.ParamDefStart `
@@ -503,22 +639,22 @@ function Generate-ClockPortParametersInShare {
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate Clock GPIO Port selection parameters in share.xml (00111-00116)
   # These store which GPIO port each strip uses for Clock (0=unused, 1-7=D0-D6)
   $paramsXml = "              <Union SizeInBit=`"48`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"67`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "00" + (110 + $stripIdx).ToString()  # 00111, 00112, ..., 00116
     $byteOffset = $stripIdx - 1  # Each parameter in its own byte
     $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}ClockPort`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Strip $stripIdx Clock GPIO Port`" Value=`"15`" Access=`"$accessMode`"/>`n"
   }
-    
+
   $paramsXml += "              </Union>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.ClockPortParamsStart `
@@ -531,22 +667,22 @@ function Generate-ConflictParametersInShare {
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate conflict flag parameters in share.xml (00091-00096)
   # Template will reference these with 0009%C% token
   $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"59`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips conflict flags (6 bit total) -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
     $bitOffset = $stripIdx - 1
     $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"Strip${stripIdx}HasDataConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
   }
-    
+
   $paramsXml += "              </Union>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.ConflictParamsStart `
@@ -559,21 +695,21 @@ function Generate-ClockConflictParametersInShare {
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate Clock conflict flag parameters in share.xml (00117-00122)
   $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"66`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock conflict flags (6 bit total) -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122
     $bitOffset = $stripIdx - 1
     $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%$paramId`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"Strip${stripIdx}HasClockConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Clock Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
   }
-    
+
   $paramsXml += "              </Union>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.ClockConflictParamsStart `
@@ -586,41 +722,41 @@ function Generate-ConflictParameterRefsInShare {
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate ParameterRefs in share.xml for:
   # 1. GPIO Port Parameters (00101-00106)
   # 2. Conflict Flag Parameters (00091-00096)
-    
+
   # Build ONLY the content, markers are already in the file and stay static
   $refsXml = "              <!-- GPIO Port Parameters for all 6 strips -->`n"
-    
+
   # GPIO Port ParameterRefs (00101-00106)
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $portParamId = "00" + (100 + $stripIdx).ToString()  # 00101, 00102, ..., 00106
     $portRefId = $portParamId + "01"  # 0010101, 0010201, ..., 0010601
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${portParamId}_R-%TT%${portRefId}`" RefId=`"%AID%_UP-%TT%${portParamId}`" />`n"
   }
-    
+
   $refsXml += "              <!-- Data Conflict Flag Parameters for all 6 strips -->`n"
-    
+
   # Data Conflict Flag ParameterRefs (00091-00096)
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $conflictParamId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
     $conflictRefId = $conflictParamId + "01"  # 0009101, 0009201, ..., 0009601
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${conflictParamId}_R-%TT%${conflictRefId}`" RefId=`"%AID%_UP-%TT%${conflictParamId}`" />`n"
   }
-    
+
   $refsXml += "              <!-- Clock GPIO Port Parameters for all 6 strips -->`n"
-    
+
   # Clock Port ParameterRefs (00111-00116)
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockPortParamId = "00" + (110 + $stripIdx).ToString()  # 00111, 00112, ..., 00116
     $clockPortRefId = $clockPortParamId + "01"  # 0011101, 0011201, ..., 0011601
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockPortRefId}`" RefId=`"%AID%_UP-%TT%${clockPortParamId}`" />`n"
   }
-    
+
   $refsXml += "              <!-- Clock Conflict Flag Parameters for all 6 strips -->`n"
-    
+
   # Clock Conflict Flag ParameterRefs (00117-00122)
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockConflictParamId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122
@@ -630,7 +766,7 @@ function Generate-ConflictParameterRefsInShare {
       $refsXml += "`n"
     }
   }
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.ConflictParamRefsStart `
@@ -638,63 +774,124 @@ function Generate-ConflictParameterRefsInShare {
     -NewContent $refsXml
 }
 
+function Generate-ConflictParameterRefsInShare {
+  param(
+    [string]$ShareXmlPath,
+    [int]$NumStrips = 6
+  )
+
+  # Generate ParameterRefs in share.xml for:
+  # 1. GPIO Port Parameters (00101-00106)
+  # 2. Conflict Flag Parameters (00091-00096)
+
+  # Build ONLY the content, markers are already in the file and stay static
+  $refsXml = "              <!-- GPIO Port Parameters for all 6 strips -->`n"
+
+  # GPIO Port ParameterRefs (00101-00106)
+  for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
+    $portParamId = "00" + (100 + $stripIdx).ToString()  # 00101, 00102, ..., 00106
+    $portRefId = $portParamId + "01"  # 0010101, 0010201, ..., 0010601
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${portParamId}_R-%TT%${portRefId}`" RefId=`"%AID%_UP-%TT%${portParamId}`" />`n"
+  }
+
+  $refsXml += "              <!-- Data Conflict Flag Parameters for all 6 strips -->`n"
+
+  # Data Conflict Flag ParameterRefs (00091-00096)
+  for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
+    $conflictParamId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
+    $conflictRefId = $conflictParamId + "01"  # 0009101, 0009201, ..., 0009601
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${conflictParamId}_R-%TT%${conflictRefId}`" RefId=`"%AID%_UP-%TT%${conflictParamId}`" />`n"
+  }
+
+  $refsXml += "              <!-- Clock GPIO Port Parameters for all 6 strips -->`n"
+
+  # Clock Port ParameterRefs (00111-00116)
+  for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
+    $clockPortParamId = "00" + (110 + $stripIdx).ToString()  # 00111, 00112, ..., 00116
+    $clockPortRefId = $clockPortParamId + "01"  # 0011101, 0011201, ..., 0011601
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockPortRefId}`" RefId=`"%AID%_UP-%TT%${clockPortParamId}`" />`n"
+  }
+
+  $refsXml += "              <!-- Clock Conflict Flag Parameters for all 6 strips -->`n"
+
+  # Clock Conflict Flag ParameterRefs (00117-00122)
+  for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
+    $clockConflictParamId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122
+    $clockConflictRefId = $clockConflictParamId + "01"  # 0011701, 0011801, ..., 0012201
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${clockConflictParamId}_R-%TT%${clockConflictRefId}`" RefId=`"%AID%_UP-%TT%${clockConflictParamId}`" />"
+    if ($stripIdx -lt $NumStrips) {
+      $refsXml += "`n"
+    }
+  }
+
+  # Replace content using generic function
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $script:Config.Markers.ConflictParamRefsStart `
+    -EndMarker $script:Config.Markers.ConflictParamRefsEnd `
+    -NewContent $refsXml
+}
+
+# REMOVED: Old duplicate function definitions - moved to lines 1422+
+# Functions Generate-ConflictResultParameters, Generate-ConflictResultParameterRefs,
+# Generate-ConflictResultCalculations are now defined later in the script
+
 function Generate-ConflictCalculation {
   param(
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate SINGLE ParameterCalculation in share.xml
   # Reads: Data GPIO ports (00101-00106) + Clock GPIO ports (00111-00116)
   # Writes: Data conflict flags (00091-00096) + Clock conflict flags (00117-00122)
-    
+
   # LParameters: Read Data+Clock GPIO ports for all 6 strips
   $lParams = "<LParameters>`n"
   $lParams += "  <!-- Data GPIO Port selections for all 6 strips -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $portParamId = "00" + (100 + $stripIdx).ToString()  # 00101, 00102, ..., 00106
     $refId = "00" + (100 + $stripIdx).ToString() + "01"  # 0010101, 0010201, ..., 0010601
     $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${portParamId}_R-%TT%${refId}`" AliasName=`"Strip${stripIdx}DataPort`" />`n"
   }
-    
+
   $lParams += "  <!-- Clock GPIO Port selections for all 6 strips -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockPortParamId = "00" + (110 + $stripIdx).ToString()  # 00111, 00112, ..., 00116
     $clockRefId = "00" + (110 + $stripIdx).ToString() + "01"  # 0011101, 0011201, ..., 0011601
     $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockRefId}`" AliasName=`"Strip${stripIdx}ClockPort`" />`n"
   }
-    
+
   $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00020_R-%TT%0002001`" AliasName=`"NumberOfLEDStrips`" />`n"
   $lParams += "</LParameters>"
-    
+
   # RParameters: Write Data+Clock conflict flags
   $rParams = "<RParameters>`n"
   $rParams += "  <!-- Data conflict outputs for all 6 strips -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $conflictParamId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
     $refId = "000" + (90 + $stripIdx).ToString() + "01"  # 0009101, 0009201, ..., 0009601
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${conflictParamId}_R-%TT%${refId}`" AliasName=`"Strip${stripIdx}HasDataConflict`" />`n"
   }
-    
+
   $rParams += "  <!-- Clock conflict outputs for all 6 strips -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockConflictParamId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122
     $clockRefId = $clockConflictParamId + "01"  # 0011701, 0011801, ..., 0012201
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${clockConflictParamId}_R-%TT%${clockRefId}`" AliasName=`"Strip${stripIdx}HasClockConflict`" />`n"
   }
-    
+
   $rParams += "</RParameters>"
-    
+
   # Single ParameterCalculation
   $calcXml = "<ParameterCalculation Id=`"%AID%_PC-%TT%00060`" Language=`"JavaScript`" Name=`"GPIOConflictTest`" LRTransformationFunc=`"NEO_DetectGPIOConflicts`" RLTransformationFunc=`"NEO_Empty`">`n"
   $calcXml += $lParams + "`n"
   $calcXml += $rParams + "`n"
   $calcXml += "</ParameterCalculation>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.ShareConflictCalcStart `
@@ -707,41 +904,41 @@ function Generate-HardwareChangeResetCalculation {
     [string]$ShareXmlPath,
     [int]$NumStrips = 6
   )
-    
+
   # Generate ParameterCalculation that resets all ports to Dummy (15) on hardware change
   # Prevents conflicts from different port value mappings across hardware variants
-    
+
   # LParameter: Hardware Selection
   $lParams = "<LParameters>`n"
   $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
   $lParams += "</LParameters>"
-    
+
   # RParameters: All Data + Clock ports
   $rParams = "<RParameters>`n"
   $rParams += "  <!-- Reset all Data ports to Dummy (15) -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $portParamId = "00" + (100 + $stripIdx).ToString()
     $refId = $portParamId + "01"
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${portParamId}_R-%TT%${refId}`" AliasName=`"Strip${stripIdx}DataPort`" />`n"
   }
-    
+
   $rParams += "  <!-- Reset all Clock ports to Dummy (15) -->`n"
-    
+
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockPortParamId = "00" + (110 + $stripIdx).ToString()
     $clockRefId = $clockPortParamId + "01"
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockRefId}`" AliasName=`"Strip${stripIdx}ClockPort`" />`n"
   }
-    
+
   $rParams += "</RParameters>"
-    
+
   # ParameterCalculation
   $calcXml = "<ParameterCalculation Id=`"%AID%_PC-%TT%00061`" Language=`"JavaScript`" Name=`"GPIOResetOnHWChange`" LRTransformationFunc=`"NEO_ResetAllPortsOnHardwareChange`" RLTransformationFunc=`"NEO_Empty`">`n"
   $calcXml += $lParams + "`n"
   $calcXml += $rParams + "`n"
   $calcXml += "</ParameterCalculation>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $script:Config.Markers.HWChangeResetCalcStart `
@@ -756,14 +953,14 @@ function Generate-HardwareSpecificGPIOSelectionUI {
     [string]$Type,
     [array]$HardwareConfigs
   )
-    
+
   # Build hardware list from configs with parameter offsets
   $hardwareList = @()
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $hwConfig = $HardwareConfigs[$hwIdx]
-    $dataParamId = (73 + $hwIdx).ToString().PadLeft(3, '0')  # 073, 074, 075, ...
-    $clockParamId = (81 + $hwIdx).ToString().PadLeft(3, '0')  # 081, 082, 083, ...
-    
+    $dataParamId = (1 + $hwIdx).ToString().PadLeft(3, '0')  # 001, 002, 003, ...
+    $clockParamId = (33 + $hwIdx).ToString().PadLeft(3, '0')  # 033, 034, 035, ...
+
     $hardwareList += @{
       Id = $hwConfig.DeviceIdBit
       Name = $hwConfig.DeviceName
@@ -771,97 +968,96 @@ function Generate-HardwareSpecificGPIOSelectionUI {
       ClockParam = $clockParamId
     }
   }
-    
-  # Determine which parameter set to use
-  $paramPrefix = if ($Type -eq "Data") { "Data" } else { "Clock" }
+
+  # Determine parameter IDs based on type
   $manualInputParam = if ($Type -eq "Data") { "033" } else { "034" }
   $mosiParam = "035"  # Only for Data type SPI
-    
+
   # Start building the XML
   $xml = "<!-- Hardware-specific $Type GPIO Selection - shows correct ports for each hardware -->`n"
   $xml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
-    
+
   # Generate Choose-block for each hardware
   foreach ($hw in $hardwareList) {
     $paramId = if ($Type -eq "Data") { $hw.DataParam } else { $hw.ClockParam }
     $paramRef = "${paramId}01"
-        
+
     $xml += "  <!-- $($hw.Name) -->`n"
     $xml += "  <when test=`"$($hw.Id)`">`n"
-    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${paramId}_R-%TT%9%C%${paramRef}`" IndentLevel=`"2`"/>`n"
+    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${paramId}_R-%TT%0%C%${paramRef}`" IndentLevel=`"2`"/>`n"
     $xml += "  </when>`n"
   }
-    
-  # Default fallback
-  $defaultParam = if ($Type -eq "Data") { "073" } else { "081" }
+
+  # Default fallback to manual GPIO input
+  $defaultParam = if ($Type -eq "Data") { "033" } else { "034" }
   $defaultRef = "${defaultParam}01"
   $xml += "  <when default=`"true`">`n"
-  $xml += "    <!-- Fallback to RP2040 -->`n"
-  $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${defaultParam}_R-%TT%9%C%${defaultRef}`" IndentLevel=`"2`"/>`n"
+  $xml += "    <!-- Fallback to manual input -->`n"
+    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${defaultParam}_R-%TT%0%C%${defaultRef}`" IndentLevel=`"2`"/>`n"
   $xml += "  </when>`n"
   $xml += "</choose>`n"
-    
+
   # Manual input field section - hardware-specific
   $xml += "<!-- Manual $Type GPIO input field when set to 'Manuell' (value 10) -->`n"
   $xml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
-    
+
   foreach ($hw in $hardwareList) {
     $paramId = if ($Type -eq "Data") { $hw.DataParam } else { $hw.ClockParam }
     $paramRef = "${paramId}01"
-        
+
     $xml += "  <when test=`"$($hw.Id)`">`n"
-    $xml += "    <choose ParamRefId=`"%AID%_UP-%TT%9%C%${paramId}_R-%TT%9%C%${paramRef}`">`n"
+    $xml += "    <choose ParamRefId=`"%AID%_UP-%TT%0%C%${paramId}_R-%TT%0%C%${paramRef}`">`n"
     $xml += "      <when test=`"10`">`n"
-        
+
     if ($Type -eq "Data") {
       # Data type has special SPI handling
       $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
       $xml += "          <when test=`"5 21 22 23 24 25`">`n"
       $xml += "            <!-- MOSI GPIO nur bei SPI -->`n"
-      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
+      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`"/>`n"
       $xml += "          </when>`n"
       $xml += "          <when default=`"true`">`n"
       $xml += "            <!-- Data GPIO -->`n"
-      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
+      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
       $xml += "          </when>`n"
       $xml += "        </choose>`n"
     }
     else {
       # Clock type is simpler
-      $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
+      $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
     }
-        
+
     $xml += "      </when>`n"
     $xml += "    </choose>`n"
     $xml += "  </when>`n"
   }
-    
+
   # Default fallback for manual input
   $xml += "  <when default=`"true`">`n"
-  $xml += "    <choose ParamRefId=`"%AID%_UP-%TT%9%C%${defaultParam}_R-%TT%9%C%${defaultRef}`">`n"
+  $xml += "    <choose ParamRefId=`"%AID%_UP-%TT%0%C%${defaultParam}_R-%TT%0%C%${defaultRef}`">`n"
   $xml += "      <when test=`"10`">`n"
-    
+
   if ($Type -eq "Data") {
     $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
     $xml += "          <when test=`"5 21 22 23 24 25`">`n"
     $xml += "            <!-- MOSI GPIO nur bei SPI -->`n"
-    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
+    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${mosiParam}_R-%TT%0%C%${mosiParam}01`" IndentLevel=`"3`"/>`n"
     $xml += "          </when>`n"
     $xml += "          <when default=`"true`">`n"
     $xml += "            <!-- Data GPIO -->`n"
-    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
+    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${manualInputParam}_R-%TT%0%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
     $xml += "          </when>`n"
     $xml += "        </choose>`n"
   }
   else {
-    $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"%DOC%`"/>`n"
+    $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${manualInputParam}_R-%TT%0%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
   }
-    
+
   $xml += "      </when>`n"
   $xml += "    </choose>`n"
   $xml += "  </when>`n"
   $xml += "</choose>"
-    
+
   return $xml
 }
 
@@ -874,35 +1070,35 @@ function Generate-ConflictDetectionJS {
     [string]$JavaScriptPath,
     [int]$NumStrips = 6
   )
-    
-  # Initialize port array  
+
+  # Initialize port array
   $jsInit = "  var dataPorts = [`n    input.Strip1DataPort"
   for ($i = 2; $i -le $NumStrips; $i++) {
     $jsInit += ",`n    input.Strip${i}DataPort"
   }
   $jsInit += "`n  ];"
-    
+
   # Initialize clock port array
   $jsClockInit = "  var clockPorts = [`n    input.Strip1ClockPort"
   for ($i = 2; $i -le $NumStrips; $i++) {
     $jsClockInit += ",`n    input.Strip${i}ClockPort"
   }
   $jsClockInit += "`n  ];"
-    
+
   # Initialize data outputs
   $jsOutputInit = "  // Alle Data Conflict Flags initial auf 0 setzen`n"
   for ($i = 1; $i -le $NumStrips; $i++) {
     $jsOutputInit += "  output.Strip${i}HasDataConflict = 0;`n"
   }
   $jsOutputInit = $jsOutputInit.TrimEnd("`n")
-    
+
   # Initialize clock outputs
   $jsClockOutputInit = "  // Alle Clock Conflict Flags initial auf 0 setzen`n"
   for ($i = 1; $i -le $NumStrips; $i++) {
     $jsClockOutputInit += "  output.Strip${i}HasClockConflict = 0;`n"
   }
   $jsClockOutputInit = $jsClockOutputInit.TrimEnd("`n")
-    
+
   # Data conflict detection logic (if-else chain for ECMA3 compatibility)
   $jsConflictAssignmentsI = ""
   for ($i = 0; $i -lt $NumStrips; $i++) {
@@ -910,14 +1106,14 @@ function Generate-ConflictDetectionJS {
     $condition = "i == $i"
     $jsConflictAssignmentsI += "        if ($condition) output.Strip${stripNum}HasDataConflict = 1;`n"
   }
-    
+
   $jsConflictAssignmentsJ = ""
   for ($j = 0; $j -lt $NumStrips; $j++) {
     $stripNum = $j + 1
     $condition = "j == $j"
     $jsConflictAssignmentsJ += "        if ($condition) output.Strip${stripNum}HasDataConflict = 1;`n"
   }
-    
+
   # Clock conflict detection logic (if-else chain for ECMA3 compatibility)
   # WICHTIG: Clock Conflicts setzen AUCH Data Conflicts für UI-Anzeige!
   $jsClockConflictAssignmentsI = ""
@@ -929,7 +1125,7 @@ function Generate-ConflictDetectionJS {
     $jsClockConflictAssignmentsI += "          output.Strip${stripNum}HasDataConflict = 1;  // Für UI-Anzeige`n"
     $jsClockConflictAssignmentsI += "        }`n"
   }
-    
+
   $jsClockConflictAssignmentsJ = ""
   for ($j = 0; $j -lt $NumStrips; $j++) {
     $stripNum = $j + 1
@@ -939,7 +1135,7 @@ function Generate-ConflictDetectionJS {
     $jsClockConflictAssignmentsJ += "          output.Strip${stripNum}HasDataConflict = 1;  // Für UI-Anzeige`n"
     $jsClockConflictAssignmentsJ += "        }`n"
   }
-    
+
   # Cross-conflict logic: Data vs Clock (erweitert mit UI-Flags)
   $jsCrossDataConflictAssignments = ""
   for ($i = 0; $i -lt $NumStrips; $i++) {
@@ -947,7 +1143,7 @@ function Generate-ConflictDetectionJS {
     $condition = "i == $i"
     $jsCrossDataConflictAssignments += "        if ($condition) output.Strip${stripNum}HasDataConflict = 1;`n"
   }
-    
+
   $jsCrossClockConflictAssignments = ""
   for ($j = 0; $j -lt $NumStrips; $j++) {
     $stripNum = $j + 1
@@ -1071,13 +1267,13 @@ function Generate-ConflictDetectionJS {
   $fullJS += "    }`n"
   $fullJS += "  }`n"
   $fullJS += "}`n"
-    
+
   # Replace content using generic function
   $success = Replace-MarkerContent -FilePath $JavaScriptPath `
     -StartMarker $script:Config.Markers.JSConflictStart `
     -EndMarker $script:Config.Markers.JSConflictEnd `
     -NewContent $fullJS
-    
+
   if (-not $success) {
     # Append at end if markers don't exist
     $jsContent = Get-Content -Path $JavaScriptPath -Raw
@@ -1092,28 +1288,27 @@ function Generate-GPIOClockCopyCalculation {
     [string]$TemplatePath,
     [array]$HardwareConfigs
   )
-    
+
   # Generate 8 SEPARATE ParameterCalculations - ALL flat without Choose-wrappers
   # OpenKNXproducer does NOT process Choose-blocks in Static/ParameterCalculations section!
   # All 8 will be in final XML, but only the one matching current hardware will execute
   # (because parameters only exist for selected hardware)
-    
+
   $calcXml = ""
-    
+
   # Generate one ParameterCalculation for each hardware (WITHOUT Choose-wrapper)
   foreach ($hwConfig in $HardwareConfigs) {
-    $hwId = $hwConfig.DeviceIdBit
     $hwName = $hwConfig.DeviceName
     $hwIndex = [array]::IndexOf($HardwareConfigs, $hwConfig)
-    $parameterIndex = 81 + $hwIndex  # 081, 082, 083, etc.
-    $parameterIndexFormatted = $parameterIndex.ToString("000")  # Convert to 081, 082, etc.
+    $parameterIndex = 33 + $hwIndex  # 033, 034, 035, etc.
+    $parameterIndexFormatted = $parameterIndex.ToString("000")  # Convert to 033, 034, etc.
     $calcId = "089" + $hwIndex.ToString()  # 0890, 0891, 0892, etc.
-        
+
     # Flat ParameterCalculation (NO Choose-wrapper!)
     $calcXml += "<!-- $hwName -->`n"
     $calcXml += "<ParameterCalculation Id=`"%AID%_PC-%TT%9%C%${calcId}`" Language=`"JavaScript`" Name=`"Strip%C%_CopyClockGPIOPort_HW${hwIndex}`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "  <LParameters>`n"
-    $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${parameterIndexFormatted}_R-%TT%9%C%${parameterIndexFormatted}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${parameterIndexFormatted}_R-%TT%0%C%${parameterIndexFormatted}01`" AliasName=`"TemplateGPIOPort`" />`n"
     $calcXml += "  </LParameters>`n"
     $calcXml += "  <RParameters>`n"
     $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01`" AliasName=`"ShareGPIOPort`" />`n"
@@ -1122,9 +1317,9 @@ function Generate-GPIOClockCopyCalculation {
     if($hwIndex -lt ($HardwareConfigs.Count - 1)) {
       $calcXml += "`n"
     }
-    
+
   }
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $TemplatePath `
     -StartMarker $script:Config.Markers.GPIOClockCopyCalcStart `
@@ -1137,28 +1332,27 @@ function Generate-GPIOCopyCalculation {
     [string]$TemplatePath,
     [array]$HardwareConfigs
   )
-    
+
   # Generate 8 SEPARATE ParameterCalculations - ALL flat without Choose-wrappers
   # OpenKNXproducer does NOT process Choose-blocks in Static/ParameterCalculations section!
   # All 8 will be in final XML, but only the one matching current hardware will execute
   # (because parameters only exist for selected hardware)
-    
+
   $calcXml = ""
-    
+
   # Generate one ParameterCalculation for each hardware (WITHOUT Choose-wrapper)
   foreach ($hwConfig in $HardwareConfigs) {
-    $hwId = $hwConfig.DeviceIdBit
     $hwName = $hwConfig.DeviceName
     $hwIndex = [array]::IndexOf($HardwareConfigs, $hwConfig)
-    $parameterIndex = 73 + $hwIndex  # 073, 074, 075, etc.
-    $parameterIndexFormatted = $parameterIndex.ToString("000")  # Convert to 073, 074, etc.
+    $parameterIndex = 1 + $hwIndex  # 001, 002, 003, etc.
+    $parameterIndexFormatted = $parameterIndex.ToString("000")  # Convert to 001, 002, etc.
     $calcId = "080" + $hwIndex.ToString()  # 0800, 0801, 0802, etc.
-        
+
     # Flat ParameterCalculation (NO Choose-wrapper!)
     $calcXml += "<!-- $hwName -->`n"
     $calcXml += "<ParameterCalculation Id=`"%AID%_PC-%TT%9%C%${calcId}`" Language=`"JavaScript`" Name=`"Strip%C%_CopyGPIOPort_HW${hwIndex}`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "  <LParameters>`n"
-    $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${parameterIndexFormatted}_R-%TT%9%C%${parameterIndexFormatted}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${parameterIndexFormatted}_R-%TT%0%C%${parameterIndexFormatted}01`" AliasName=`"TemplateGPIOPort`" />`n"
     $calcXml += "  </LParameters>`n"
     $calcXml += "  <RParameters>`n"
     $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01`" AliasName=`"ShareGPIOPort`" />`n"
@@ -1168,7 +1362,7 @@ function Generate-GPIOCopyCalculation {
       $calcXml += "`n"
     }
   }
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $TemplatePath `
     -StartMarker $script:Config.Markers.GPIOCopyCalcStart `
@@ -1176,41 +1370,41 @@ function Generate-GPIOCopyCalculation {
     -NewContent $calcXml
 }
 
+# REMOVED: OLD Generate-ConflictUI (wrong - used Strip parameters %TT%9%C%091)
+# REMOVED: Generate-ConflictResultParameters - NOT NEEDED!
+# REMOVED: Generate-ConflictResultParameterRefs - NOT NEEDED!
+# REMOVED: Generate-ConflictResultCalculations - NOT NEEDED!
+# Solution: UI references Share.xml parameters directly (%TT%0009%C%)
+
 function Generate-ConflictUI {
   param(
     [string]$TemplatePath
   )
-    
-  # Generate UI that shows conflicts for BOTH Data and Clock
-  # Uses a clever approach: Show conflict if EITHER Data OR Clock conflict exists
-  # since Clock parameters don't follow %C% pattern, we'll use specific mapping
-    
-  # Hidden parameters for conflict status reading
+
+  # Generate UI that shows conflicts by directly referencing Share.xml parameters
+  # NO separate Strip parameters needed - just reference Share directly!
+
+  # Hidden ParameterRefRef to Share.xml conflict parameter (makes it available for choose)
   $uiXml = "<ParameterRefRef RefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`" IndentLevel=`"1`" />`n"
-    
-  # Add hidden Clock conflict parameters based on Strip number
-  # Strip1=%C%=1 → Clock Conflict = 00117
-  # Strip2=%C%=2 → Clock Conflict = 00118, etc.
+
+  # Add comment about Clock conflicts
   $uiXml += "<!-- Hidden Clock conflict parameter references -->`n"
   $uiXml += "<!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->`n"
-    
+
   # Combined conflict display - triggers on Data conflicts (which includes Cross-conflicts)
+  # References Share.xml parameter directly!
   $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
   $uiXml += "  <when test=`"1`">`n"
   $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"⛔ GPIO PORT KONFLIKT: Dieser Port wird bereits von einem anderen Streifen verwendet, oder Data- und Clock-Port sind identisch!`" UIHint=`"Error`" />`n"
   $uiXml += "  </when>`n"
   $uiXml += "</choose>"
-    
+
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $TemplatePath `
     -StartMarker $script:Config.Markers.ConflictUIStart `
     -EndMarker $script:Config.Markers.ConflictUIEnd `
     -NewContent $uiXml
 }
-
-# REMOVED: Generate-HardwareSpecificParameters - This was the wrong approach
-# The issue is that Choose-blocks should be in ParameterCalculations, not ParameterRefRef
-# Template-parameters with %TT% and %C% should be used directly
 
 # ====================================================================
 # Main Script
@@ -1230,10 +1424,13 @@ Write-Step "Defines Prefix: $DefinesPrefix"
 Write-Step "Template: $TemplateFile"
 Write-Host ""
 
+# ====================================================================
+# Main Script Entry Point
+# ====================================================================
+
 # Resolve all paths relative to repo root
 $repoRoot = Get-RepoRoot
 $scriptDir = Join-Path $repoRoot "scripts"
-$extractorToolPath = Resolve-RepoPath $ExtractorTool
 $templatePath = Resolve-RepoPath $TemplateFile
 $shareXmlPath = Resolve-RepoPath $ShareXml
 $scriptJsPath = Resolve-RepoPath $JavaScriptFile
@@ -1245,7 +1442,7 @@ Write-Host ""
 if ($Clean) {
   Write-Step "Cleaning marker blocks (Clean mode)..."
   Write-Host ""
-  
+
   # List what will be cleaned
   Write-Host "  Files to be cleaned:" -ForegroundColor Cyan
   Write-Host "    • share.xml (ParameterTypes, Hardware Selection, GPIO Ports, etc.)" -ForegroundColor DarkGray
@@ -1253,166 +1450,158 @@ if ($Clean) {
   Write-Host "    • JavaScript file (GPIO Mapping, Conflict Detection)" -ForegroundColor DarkGray
   Write-Host "    • HardwareMappingData.h" -ForegroundColor DarkGray
   Write-Host ""
-  
-  # Ask for confirmation (unless -Force)
-  if (-not $Force) {
-    Write-Host "  Continue with cleanup? (y/n): " -NoNewline -ForegroundColor Yellow
-    $confirmation = Read-Host
-    
-    if ($confirmation -ne 'y' -and $confirmation -ne 'Y') {
-      Write-Host ""
-      Write-Host "  Cleanup cancelled." -ForegroundColor Yellow
-      Write-Host ""
-      exit 0
-    }
-  }
-  
+
+  # Skip confirmation - proceed directly with cleanup
+  Write-Host "  ✓ Proceeding with cleanup..." -ForegroundColor Green
+
   Write-Host ""
   Write-Host "  Cleaning files..." -ForegroundColor Cyan
   Write-Host ""
-    
-  # Clean share.xml
-  Write-Host "  • Cleaning share.xml (ParameterTypes)..." -ForegroundColor Cyan
+
+  # Clean share.xml - separate calls for detailed output
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (ParameterTypes)" `
     -StartMarker $script:Config.Markers.ParamTypeStart `
     -EndMarker $script:Config.Markers.ParamTypeEnd
-    
-  Write-Host "  • Cleaning share.xml (Hardware Selection Parameter)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (Hardware Selection Parameter)" `
     -StartMarker $script:Config.Markers.HardwareParamStart `
     -EndMarker $script:Config.Markers.HardwareParamEnd
-    
-  Write-Host "  • Cleaning share.xml (Hardware Selection ParameterRef)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (Hardware Selection ParameterRef)" `
     -StartMarker $script:Config.Markers.HardwareParamRefStart `
     -EndMarker $script:Config.Markers.HardwareParamRefEnd
-    
-  Write-Host "  • Cleaning share.xml (Hardware Selection ParameterRefRef UI)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (Hardware Selection ParameterRefRef UI)" `
     -StartMarker $script:Config.Markers.HardwareParamRefRefStart `
     -EndMarker $script:Config.Markers.HardwareParamRefRefEnd
-    
-  Write-Host "  • Cleaning share.xml (GPIO Port Parameters)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (GPIO Port Parameters)" `
     -StartMarker $script:Config.Markers.ParamDefStart `
     -EndMarker $script:Config.Markers.ParamDefEnd
-    
-  Write-Host "  • Cleaning share.xml (GPIO Clock Port Parameters)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (GPIO Clock Port Parameters)" `
     -StartMarker $script:Config.Markers.ClockPortParamsStart `
     -EndMarker $script:Config.Markers.ClockPortParamsEnd
-    
-  Write-Host "  • Cleaning share.xml (GPIO Conflict Parameters)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (GPIO Conflict Parameters)" `
     -StartMarker $script:Config.Markers.ConflictParamsStart `
     -EndMarker $script:Config.Markers.ConflictParamsEnd
 
-  Write-Host "  • Cleaning share.xml (GPIO Clock Conflict Parameters)..." -ForegroundColor Cyan
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (GPIO Clock Conflict Parameters)" `
     -StartMarker $script:Config.Markers.ClockConflictParamsStart `
     -EndMarker $script:Config.Markers.ClockConflictParamsEnd
-    
-  Write-Host "  • Cleaning share.xml (GPIO Conflict ParameterRefs)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (GPIO Conflict ParameterRefs)" `
     -StartMarker $script:Config.Markers.ConflictParamRefsStart `
     -EndMarker $script:Config.Markers.ConflictParamRefsEnd
-    
-  Write-Host "  • Cleaning share.xml (GPIO Conflict Check ParameterCalculation)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (GPIO Conflict ParameterCalculation)" `
     -StartMarker $script:Config.Markers.ShareConflictCalcStart `
     -EndMarker $script:Config.Markers.ShareConflictCalcEnd
-    
-  Write-Host "  • Cleaning share.xml (GPIO Hardware Change Reset ParameterCalculation)..." -ForegroundColor Cyan
+
   Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (Hardware Change Reset ParameterCalculation)" `
     -StartMarker $script:Config.Markers.HWChangeResetCalcStart `
     -EndMarker $script:Config.Markers.HWChangeResetCalcEnd
-    
+
   # Clean template XML - ALL marker blocks
-  Write-Host "  • Cleaning template XML (GPIO Port Selection Parameter)..." -ForegroundColor Cyan
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOPortParamStart `
-    -EndMarker $script:Config.Markers.GPIOPortParamEnd
-    
-  Write-Host "  • Cleaning template XML (GPIO Port Selection ParameterRef)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.GPIOPortParamEnd `
+    -CleaningMessage "GPIO Port Selection Parameter"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOPortParamRefStart `
-    -EndMarker $script:Config.Markers.GPIOPortParamRefEnd
-    
-  Write-Host "  • Cleaning template XML (GPIO Clock Selection ParameterRef)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.GPIOPortParamRefEnd `
+    -CleaningMessage "GPIO Port Selection ParameterRef"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOClockParamRefStart `
-    -EndMarker $script:Config.Markers.GPIOClockParamRefEnd
-    
-  Write-Host "  • Cleaning template XML (GPIO Clock Selection Parameter)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.GPIOClockParamRefEnd `
+    -CleaningMessage "GPIO Clock Selection ParameterRef"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOClockParamStart `
-    -EndMarker $script:Config.Markers.GPIOClockParamEnd
-    
-  Write-Host "  • Cleaning template XML (GPIO Port Selection ParameterRefRef)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.GPIOClockParamEnd `
+    -CleaningMessage "GPIO Clock Selection Parameter"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOPortSelectionStart `
-    -EndMarker $script:Config.Markers.GPIOPortSelectionEnd
-    
-  Write-Host "  • Cleaning template XML (GPIO Clock Selection ParameterRefRef)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.GPIOPortSelectionEnd `
+    -CleaningMessage "GPIO Port Selection ParameterRefRef"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOClockSelectionStart `
-    -EndMarker $script:Config.Markers.GPIOClockSelectionEnd
-    
-  Write-Host "  • Cleaning template XML (Central Manual GPIO Warning)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.GPIOClockSelectionEnd `
+    -CleaningMessage "GPIO Clock Selection ParameterRefRef"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.CentralWarningStart `
-    -EndMarker $script:Config.Markers.CentralWarningEnd
-    
-  Write-Host "  • Cleaning template XML (Conflict Parameters)..." -ForegroundColor Cyan
-  Clear-MarkerContent -FilePath $templatePath `
-    -StartMarker $script:Config.Markers.ConflictParamStart `
-    -EndMarker $script:Config.Markers.ConflictParamEnd
-    
-  Write-Host "  • Cleaning template XML (ParameterRefs)..." -ForegroundColor Cyan
-  Clear-MarkerContent -FilePath $templatePath `
-    -StartMarker $script:Config.Markers.ConflictResultRefsStart `
-    -EndMarker $script:Config.Markers.ConflictResultRefsEnd
-    
-  Write-Host "  • Cleaning template XML (ParameterCalculations)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.CentralWarningEnd `
+    -CleaningMessage "Central Manual GPIO Warning"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.ConflictCalcStart `
-    -EndMarker $script:Config.Markers.ConflictCalcEnd
-    
-  Write-Host "  • Cleaning template XML (UI Display)..." -ForegroundColor Cyan
+    -EndMarker $script:Config.Markers.ConflictCalcEnd `
+    -CleaningMessage "ParameterCalculations"
+
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.ConflictUIStart `
-    -EndMarker $script:Config.Markers.ConflictUIEnd
-    
+    -EndMarker $script:Config.Markers.ConflictUIEnd `
+    -CleaningMessage "UI Display"
+
   # Clean JavaScript (Port Mapping)
-  Write-Host "  • Cleaning JavaScript (Port Mapping)..." -ForegroundColor Cyan
   if (Test-Path $scriptJsPath) {
     Clear-MarkerContent -FilePath $scriptJsPath `
-      -StartMarker $script:Config.Markers.JSStart `
+      -CleaningMessage "JavaScript (Port Mapping)" `
       -PlaceholderComment "// Cleaned - Ready for regeneration" `
+      -StartMarker $script:Config.Markers.JSStart `
       -EndMarker $script:Config.Markers.JSEnd
   }
-    
+
   # Clean JavaScript (Conflict Detection)
-  Write-Host "  • Cleaning JavaScript (Conflict Detection)..." -ForegroundColor Cyan
   if (Test-Path $scriptJsPath) {
     Clear-MarkerContent -FilePath $scriptJsPath `
+      -CleaningMessage "JavaScript (Conflict Detection)" `
       -PlaceholderComment "// Cleaned - Ready for regeneration" `
       -StartMarker $script:Config.Markers.JSConflictStart `
       -EndMarker $script:Config.Markers.JSConflictEnd
   }
-    
+
   # Clean template XML (GPIO Copy ParameterCalculation)
-  Write-Host "  • Cleaning template XML (GPIO Copy ParameterCalculation)..." -ForegroundColor Cyan
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOCopyCalcStart `
-    -EndMarker $script:Config.Markers.GPIOCopyCalcEnd
-    
+    -EndMarker $script:Config.Markers.GPIOCopyCalcEnd `
+    -CleaningMessage "GPIO Copy ParameterCalculation"
+
   # Clean template XML (GPIO Clock Copy ParameterCalculation)
-  Write-Host "  • Cleaning template XML (GPIO Clock Copy ParameterCalculation)..." -ForegroundColor Cyan
   Clear-MarkerContent -FilePath $templatePath `
     -StartMarker $script:Config.Markers.GPIOClockCopyCalcStart `
-    -EndMarker $script:Config.Markers.GPIOClockCopyCalcEnd
-    
+    -EndMarker $script:Config.Markers.GPIOClockCopyCalcEnd `
+    -CleaningMessage "GPIO Clock Copy ParameterCalculation"
+
+  # Clean template XML (Conflict Parameters)
+  Clear-MarkerContent -FilePath $templatePath `
+    -StartMarker $script:Config.Markers.ConflictParamStart `
+    -EndMarker $script:Config.Markers.ConflictParamEnd `
+    -CleaningMessage "Template Conflict Parameters"
+
+  # Clean template XML (Conflict ParameterRefs)
+  Clear-MarkerContent -FilePath $templatePath `
+    -StartMarker $script:Config.Markers.ConflictResultRefsStart `
+    -EndMarker $script:Config.Markers.ConflictResultRefsEnd `
+    -CleaningMessage "Template Conflict ParameterRefs"
+
   # Clean HardwareMappingData.h
   Write-Host "  • Cleaning HardwareMappingData.h..." -ForegroundColor Cyan
   $hardwareMappingPath = Resolve-RepoPath $HardwareMappingHeader
@@ -1422,19 +1611,17 @@ if ($Clean) {
 /**
  * @file $headerFileName
  * @brief Hardware ID to Index mapping (auto-generated)
- * 
+ *
  * This file is AUTO-GENERATED by scripts/Build-HardwareConfig.ps1
  * DO NOT EDIT MANUALLY!
- * 
+ *
  * Run the following command to regenerate:
- *   pwsh scripts/Build-HardwareConfig.ps1 -FeatureName "NeoPixel" -DefinesPrefix "NEOPIXEL_HW"
- * Or use the wrapper:
- *   pwsh scripts/Build-HardwareConfigTemplates.ps1
+ *   pwsh scripts/Build-HardwareConfig.ps1
  */
 
 #pragma once
 
-#error "HardwareMappingData.h is empty! Run 'pwsh scripts/Build-HardwareConfigTemplates.ps1' to regenerate."
+#error "HardwareMappingData.h is empty! Run 'pwsh scripts/Build-HardwareConfig.ps1' to regenerate."
 
 // This file will be generated by Build-HardwareConfig.ps1
 // Run the script to generate hardware ID mapping from platformio.hardware.ini
@@ -1442,7 +1629,7 @@ if ($Clean) {
     Set-Content -Path $hardwareMappingPath -Value $placeholderContent -NoNewline
     Write-Host "    ✓ $headerFileName - Emptied with placeholder" -ForegroundColor Green
   }
-    
+
   Write-Host ""
   Write-Success "All marker blocks cleaned successfully!"
   Write-Host ""
@@ -1456,9 +1643,24 @@ if ($VerboseMode) {
 # Step 1: Parse ALL hardware configurations from platformio.hardware.ini
 Write-Step "Scanning for hardware configurations..."
 
-$hardwareIniPath = Join-Path $repoRoot "platformio.hardware.ini"
-if (-not (Test-Path $hardwareIniPath)) {
-  Write-ErrorMsg "platformio.hardware.ini not found!"
+# Search for platformio.hardware.ini using configured paths
+$hardwareIniPath = $null
+foreach ($relativePath in $script:Config.HardwareIniPaths) {
+  $testPath = Join-Path $repoRoot $relativePath
+  if (Test-Path $testPath) {
+    $hardwareIniPath = $testPath
+    if ($relativePath -ne $script:Config.HardwareIniPaths[0]) {
+      Write-Success "Using platformio.hardware.ini from $relativePath"
+    }
+    break
+  }
+}
+
+if (-not $hardwareIniPath) {
+  Write-ErrorMsg "platformio.hardware.ini not found in any of the configured locations:"
+  foreach ($path in $script:Config.HardwareIniPaths) {
+    Write-Host "    • $path" -ForegroundColor DarkGray
+  }
   exit 1
 }
 
@@ -1478,30 +1680,40 @@ foreach ($match in $sectionMatches) {
   $sectionLineStart = $iniContent.LastIndexOf("`n", $sectionStartPos) + 1
   $sectionBracketEnd = $iniContent.IndexOf("]", $sectionStartPos)
   $sectionName = $iniContent.Substring($sectionLineStart + 1, $sectionBracketEnd - $sectionLineStart - 1)
-    
+
   Write-Step "Found hardware config: $sectionName"
-    
+
   # Extract section content
   $nextSectionPos = $iniContent.IndexOf("`n[", $sectionBracketEnd)
   if ($nextSectionPos -eq -1) { $nextSectionPos = $iniContent.Length }
-    
+
   $sectionContent = $iniContent.Substring($sectionBracketEnd + 1, $nextSectionPos - $sectionBracketEnd - 1)
-    
+
   # Extract build_flags
   $buildFlags = @()
   if ($sectionContent -match "(?s)build_flags\s*=(.*?)(?=\n\S|\z)") {
     $buildFlagsText = $matches[1]
-        
-    # Parse each -D flag
-    $defineMatches = [regex]::Matches($buildFlagsText, "-D([^\s]+)")
-    foreach ($defineMatch in $defineMatches) {
-      $defineValue = $defineMatch.Groups[1].Value
-      # Escape quotes for shell: KEY="VALUE" -> KEY=\"VALUE\"
-      $defineValue = $defineValue -replace '"', '\"'
-      $buildFlags += "-D$defineValue"
+
+    # Parse each -D flag - supports both formats:
+    # Format 1: -DKEY=VALUE  (simple, no outer quotes)
+    # Format 2: "-DKEY=VALUE"  (with outer quotes for special chars like parentheses)
+    # Split by newlines and process each line
+    $lines = $buildFlagsText -split "`n"
+    foreach ($line in $lines) {
+      $line = $line.Trim()
+      if ($line -match '^"?-D(.+?)"?\s*$') {
+        $defineValue = $matches[1]
+        # Remove outer quotes if present (PowerShell 5.1 compatible)
+        if ($defineValue.StartsWith('"') -and $defineValue.EndsWith('"')) {
+          $defineValue = $defineValue.Substring(1, $defineValue.Length - 2)
+        }
+        # Escape inner quotes for shell
+        $defineValue = $defineValue -replace '"', '\"'
+        $buildFlags += "-D$defineValue"
+      }
     }
   }
-    
+
   $hardwareConfigs += @{
     Name        = $sectionName
     SectionName = $sectionName
@@ -1511,18 +1723,8 @@ foreach ($match in $sectionMatches) {
 }
 
 if ($hardwareConfigs.Count -eq 0) {
-  Write-Warning "No hardware configurations found matching pattern: ${DefinesPrefix}_*"
-  Write-Warning "Falling back to manual GPIO mode only"
-  $gpioPorts = @()
-}
-else {
-  Write-Success "Found $($hardwareConfigs.Count) hardware configuration(s)"
-}
-
-if ($hardwareConfigs.Count -eq 0) {
-  Write-Warning "No hardware configurations found matching pattern: ${DefinesPrefix}_*"
-  Write-Warning "Falling back to manual GPIO mode only"
-  $gpioPorts = @()
+  Write-WarningMsg "No hardware configurations found matching pattern: ${DefinesPrefix}_*"
+  Write-WarningMsg "Falling back to manual GPIO mode only"
 }
 else {
   Write-Success "Found $($hardwareConfigs.Count) hardware configuration(s)"
@@ -1555,7 +1757,10 @@ if (-not $compiler) {
         break
       }
     }
-    catch {}
+    catch {
+      # Compiler binary not found in PATH or not executable - try next candidate
+      Write-Verbose "Compiler '$candidate' not available: $_"
+    }
   }
 }
 
@@ -1571,10 +1776,10 @@ $includeHardwareConfig = Join-Path $repoRoot "lib/OGM-HardwareConfig/include"
 for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwConfig = $hardwareConfigs[$hwIdx]
   $hwName = $hwConfig.Name
-    
+
   Write-Host ""
   Write-Step "[$($hwIdx + 1)/$($hardwareConfigs.Count)] Processing: $hwName"
-    
+
   # Use preprocessor only (no compilation needed!)
   # This is much simpler and avoids linking/compiler issues
   $preprocessorArgs = @(
@@ -1583,30 +1788,30 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     "-I$includeHardwareConfig"
     "-DFEATURE_PREFIX=$DefinesPrefix"
   )
-    
+
   # Add hardware-specific build flags
   $preprocessorArgs += $hwConfig.BuildFlags
-    
+
   # DEBUG: Show preprocessor command
   if ($DryRun) {
     $hwDefines = $hwConfig.BuildFlags | Where-Object { $_ -match "^-DOKNXHW" }
     Write-Host "    [DEBUG] HW Defines: $($hwDefines -join ' ')" -ForegroundColor Magenta
   }
-    
+
   # Add simple extractor source
   $simpleExtractor = Join-Path $scriptDir "extract_gpio_config_simple.cpp"
   $preprocessorArgs += $simpleExtractor
-    
+
   # Run preprocessor
   try {
     $extractorOutput = & $compiler $preprocessorArgs 2>&1
-        
+
     if ($LASTEXITCODE -ne 0) {
-      Write-Warning "  Preprocessing failed for $hwName - skipping"
+      Write-WarningMsg "  Preprocessing failed for $hwName - skipping"
       Write-Host "  Debug: $($extractorOutput | Select-Object -First 3)" -ForegroundColor DarkGray
       continue
     }
-        
+
     # Parse output
     $hwData = @{}
     foreach ($line in $extractorOutput) {
@@ -1614,7 +1819,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
         $hwData[$matches[1]] = $matches[2]
       }
     }
-        
+
     # DEBUG: Show extracted values
     if ($DryRun) {
       $deviceBitLines = $extractorOutput | Where-Object { $_ -match "DEVICE_ID_BIT" }
@@ -1625,22 +1830,22 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
         Write-Host "    [DEBUG] No DEVICE_ID_BIT found in extractor output" -ForegroundColor Red
       }
     }
-        
+
     # Store device info in hwConfig (concatenate multiple quoted strings)
-    $hwConfig.DeviceId = if ($hwData.ContainsKey("HW_DEVICE_ID")) { 
+    $hwConfig.DeviceId = if ($hwData.ContainsKey("HW_DEVICE_ID")) {
       # Concatenate multiple string literals: "A" "B" -> "AB"
       $deviceId = $hwData["HW_DEVICE_ID"] -replace '"\s*"', ''  # Remove quotes between strings
       $deviceId -replace '"', ''  # Remove all quotes
     }
-    else { 
-      $hwName 
+    else {
+      $hwName
     }
-    $hwConfig.DeviceName = if ($hwData.ContainsKey("HW_DEVICE_NAME")) { 
+    $hwConfig.DeviceName = if ($hwData.ContainsKey("HW_DEVICE_NAME")) {
       $deviceName = $hwData["HW_DEVICE_NAME"] -replace '"\s*"', ''
       $deviceName -replace '"', ''
     }
-    else { 
-      $hwName 
+    else {
+      $hwName
     }
     $hwConfig.DeviceIdBit = if ($hwData.ContainsKey("HW_DEVICE_ID_BIT")) {
       # Parse hex value (0x1001 -> 4097)
@@ -1650,30 +1855,30 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     else {
       0
     }
-        
+
     # DEBUG: Show extracted device info
     Write-Host "    Device: $($hwConfig.DeviceId) - $($hwConfig.DeviceName) [0x$($hwConfig.DeviceIdBit.ToString('X4'))]" -ForegroundColor Cyan
-        
+
     # Extract GPIO ports
     $hwPortsAvailable = $hwData["HW_GPIO_PORTS_DEFINED"] -eq "1"
     $portCount = [int]$hwData["HW_GPIO_PORT_COUNT"]
-        
+
     if ($hwPortsAvailable -and $portCount -gt 0) {
       Write-Success "  Found $portCount GPIO port(s)"
-            
+
       for ($i = 1; $i -le $portCount; $i++) {
         $gpioKey = "HW_GPIO_PORT_${i}_GPIO_DATA"
         $labelKey = "HW_GPIO_PORT_${i}_LABEL"
-                
+
         if ($hwData.ContainsKey($gpioKey)) {
-          $label = if ($hwData.ContainsKey($labelKey)) { 
+          $label = if ($hwData.ContainsKey($labelKey)) {
             # Remove quotes and multiple backslashes from preprocessor output
             $hwData[$labelKey] -replace '"', '' -replace '\\+', ''
           }
-          else { 
-            "Port $i" 
+          else {
+            "Port $i"
           }
-                    
+
           # Extract GPIO number for JavaScript (even though C++ uses NEOPIXEL_HW_PORT_{index}_GPIO)
           $gpioKey = "NEOPIXEL_HW_PORT_${i}_GPIO"
           $gpioNum = if ($hwData.ContainsKey($gpioKey)) {
@@ -1682,23 +1887,23 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
           else {
             -1  # Unknown GPIO
           }
-                    
+
           $hwConfig.GPIOPorts += @{
             Index = $i
             Label = $label
             GPIO  = $gpioNum
           }
-                    
+
           Write-Host "    • Port ${i}: $label" -ForegroundColor DarkGray
         }
       }
     }
     else {
-      Write-Warning "  No GPIO ports defined for $hwName"
+      Write-WarningMsg "  No GPIO ports defined for $hwName"
     }
   }
   catch {
-    Write-Warning "  Error processing ${hwName}: $_"
+    Write-WarningMsg "  Error processing ${hwName}: $_"
   }
 }
 
@@ -1715,7 +1920,7 @@ $hardwareConfigsSkipped = @()
 foreach ($hwConfig in $hardwareConfigs) {
   if ($hwConfig.DeviceIdBit -eq 0) {
     $hardwareConfigsSkipped += $hwConfig
-    Write-Warning "  Hardware '$($hwConfig.Name)' has no DEVICE_HW_ID - skipping ETS generation"
+    Write-WarningMsg "  Hardware '$($hwConfig.Name)' has no DEVICE_HW_ID - skipping ETS generation"
   }
   else {
     $hardwareConfigsFiltered += $hwConfig
@@ -1729,9 +1934,18 @@ if ($hardwareConfigsSkipped.Count -gt 0) {
   Write-Host "  Skipped $($hardwareConfigsSkipped.Count) hardware(s) without HW_ID" -ForegroundColor DarkYellow
 }
 
+# Check hardware limit
+$hardwareOverflow = @()
+if ($hardwareConfigs.Count -gt $MAX_HARDWARE_VARIANTS) {
+  Write-WarningMsg "Hardware limit exceeded: $($hardwareConfigs.Count) variants found, but only $MAX_HARDWARE_VARIANTS supported"
+  Write-WarningMsg "Limiting to first $MAX_HARDWARE_VARIANTS hardware variants"
+  $hardwareOverflow = $hardwareConfigs[$MAX_HARDWARE_VARIANTS..($hardwareConfigs.Count - 1)]
+  $hardwareConfigs = $hardwareConfigs[0..($MAX_HARDWARE_VARIANTS - 1)]
+}
+
 if ($hardwareConfigs.Count -eq 0) {
-  Write-Warning "No hardware configurations with DEVICE_HW_ID found"
-  Write-Warning "Please add DEVICE_HW_ID defines to hardware headers"
+  Write-WarningMsg "No hardware configurations with DEVICE_HW_ID found"
+  Write-WarningMsg "Please add DEVICE_HW_ID defines to hardware headers"
   exit 1
 }
 
@@ -1741,9 +1955,8 @@ Write-Success "Using $($hardwareConfigs.Count) hardware variant(s) with HW_ID fo
 $hardwareConfigsWithPorts = @($hardwareConfigs | Where-Object { $_.GPIOPorts.Count -gt 0 })
 
 if ($hardwareConfigsWithPorts.Count -eq 0) {
-  Write-Warning "No hardware configurations with GPIO ports found"
-  Write-Warning "Generating manual-only configuration"
-  $gpioPorts = @()
+  Write-WarningMsg "No hardware configurations with GPIO ports found"
+  Write-WarningMsg "Generating manual-only configuration"
 }
 else {
   Write-Success "Successfully configured $($hardwareConfigsWithPorts.Count) hardware variant(s)"
@@ -1773,14 +1986,14 @@ if ($hardwareConfigs.Count -gt 1) {
   <TypeRestriction Base="Value" SizeInBit="$bitsNeededForHardware">
 
 "@
-    
+
   for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $hwConfig = $hardwareConfigs[$hwIdx]
     $hwName = $hwConfig.DeviceName
     $deviceIdBit = $hwConfig.DeviceIdBit
     $parameterTypeXml += "    <Enumeration Text=`"${hwName}`" Value=`"${deviceIdBit}`" Id=`"%ENID%`" />`n"
   }
-    
+
   $parameterTypeXml += @"
   </TypeRestriction>
 </ParameterType>
@@ -1795,23 +2008,23 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwConfig = $hardwareConfigs[$hwIdx]
   $hwName = $hwConfig.Name -replace "^${DefinesPrefix}_", ""
   $portCount = $hwConfig.GPIOPorts.Count
-    
+
   # Calculate bits needed for this hardware's port count + Manual
   $maxValue = [Math]::Max($portCount, 10)  # Manual = 10
   $bitsNeeded = [Math]::Ceiling([Math]::Log($maxValue + 1) / [Math]::Log(2))
   if ($bitsNeeded -lt 4) { $bitsNeeded = 4 }
-    
+
   $parameterTypeXml += @"
 
 <!-- GPIO Port Selection for HW${hwIdx}: ${hwName} (${portCount} port(s)) -->
 <ParameterType Id="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Name="${FeatureName}GPIOPortHW${hwIdx}">
   <TypeRestriction Base="Value" SizeInBit="$bitsNeeded">
 "@
-    
+
   # Add DUMMY option first (value 15) - always shown, never conflicts
   $dummyEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-15"
   $parameterTypeXml += "    <Enumeration Text=`"--- Wählen Sie bitte ein Port aus ---`" Value=`"15`" Id=`"${dummyEnumId}`" />`n"
-    
+
   # Add port enumerations (0 to portCount-1)
   for ($portIdx = 0; $portIdx -lt $portCount; $portIdx++) {
     $gpioPort = $hwConfig.GPIOPorts[$portIdx]
@@ -1819,11 +2032,11 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $enumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-${portIdx}"
     $parameterTypeXml += "    <Enumeration Text=`"${gpioPortLabel}`" Value=`"${portIdx}`" Id=`"${enumId}`" />`n"
   }
-    
+
   # Add "Manuell" option with value 10
   $manualEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-10"
   $parameterTypeXml += "    <Enumeration Text=`"Manuell`" Value=`"10`" Id=`"${manualEnumId}`" />`n"
-    
+
   $parameterTypeXml += @"
   </TypeRestriction>
 </ParameterType>
@@ -1831,6 +2044,50 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
 }
 
 Write-Success "Generated $($hardwareConfigs.Count) hardware-specific GPIO Port ParameterTypes"
+
+# Step 4.7.5: Generate Clock GPIO Port ParameterTypes (identical to Data GPIO, for SPI hardware)
+Write-Step "Generating Clock GPIO Port ParameterTypes..."
+
+for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
+  $hwConfig = $hardwareConfigs[$hwIdx]
+  $hwName = $hwConfig.Name -replace "^${DefinesPrefix}_", ""
+  $portCount = $hwConfig.GPIOPorts.Count
+
+  # Calculate bits needed for this hardware's port count + Manual
+  $maxValue = [Math]::Max($portCount, 10)  # Manual = 10
+  $bitsNeeded = [Math]::Ceiling([Math]::Log($maxValue + 1) / [Math]::Log(2))
+  if ($bitsNeeded -lt 4) { $bitsNeeded = 4 }
+
+  $parameterTypeXml += @"
+
+<!-- Clock GPIO Port Selection for HW${hwIdx}: ${hwName} (${portCount} port(s)) -->
+<ParameterType Id="%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}" Name="${FeatureName}GPIOClockPortHW${hwIdx}">
+  <TypeRestriction Base="Value" SizeInBit="$bitsNeeded">
+"@
+
+  # Add DUMMY option first (value 15) - same as Data GPIO
+  $dummyEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-15"
+  $parameterTypeXml += "    <Enumeration Text=`"--- Wählen Sie bitte ein Port aus ---`" Value=`"15`" Id=`"${dummyEnumId}`" />`n"
+
+  # Add port enumerations (0 to portCount-1)
+  for ($portIdx = 0; $portIdx -lt $portCount; $portIdx++) {
+    $gpioPort = $hwConfig.GPIOPorts[$portIdx]
+    $gpioPortLabel = $gpioPort.Label  # Extract Label from Hashtable
+    $enumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-${portIdx}"
+    $parameterTypeXml += "    <Enumeration Text=`"${gpioPortLabel}`" Value=`"${portIdx}`" Id=`"${enumId}`" />`n"
+  }
+
+  # Add "Manuell" option with value 10
+  $manualEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-10"
+  $parameterTypeXml += "    <Enumeration Text=`"Manuell`" Value=`"10`" Id=`"${manualEnumId}`" />`n"
+
+  $parameterTypeXml += @"
+  </TypeRestriction>
+</ParameterType>
+"@
+}
+
+Write-Success "Generated $($hardwareConfigs.Count) hardware-specific Clock GPIO Port ParameterTypes"
 
 # Step 4.8: Generate Hardware Selection Parameter (for share.xml)
 Write-Step "Generating Hardware Selection Parameter..."
@@ -1842,81 +2099,85 @@ if ($hardwareConfigs.Count -gt 1) {
   Write-Success "Generated Hardware Selection Parameter (4000018) with default: $defaultHwId"
 }
 
-# Step 4.9: Generate 8 separate GPIO Port Parameters (one per hardware, unique IDs)
-Write-Step "Generating 8 separate GPIO Port Parameters (for Template)..."
+# Step 4.9: Generate separate GPIO Port Parameters (one per hardware, unique IDs)
+Write-Step "Generating GPIO Port Parameters (for Template)..."
 
-# Generate 8 separate Parameters, each with unique ID (073, 074, 075, ..., 080)
+# Generate Parameters with IDs 001-032 (32 hardware max) in separate namespace %TT%0%C%
 $gpioPortParamXml = ""
 for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwConfig = $hardwareConfigs[$hwIdx]
   $hwName = $hwConfig.DeviceName
   $portCount = $hwConfig.GPIOPorts.Count
-  $paramId = 73 + $hwIdx
-    
+  $paramId = 1 + $hwIdx
+  $paramIdFormatted = $paramId.ToString("D3")
+
   if ($hwIdx -gt 0) {
     $gpioPortParamXml += "`n"
   }
   $gpioPortParamXml += @"
-<Parameter Id="%AID%_UP-%TT%9%C%0$paramId" Offset="5" BitOffset="4" Name="NEO%C%GPIODataPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Daten Port" Value="15"/>
+<Parameter Id="%AID%_UP-%TT%0%C%$paramIdFormatted" Offset="5" BitOffset="4" Name="NEO%C%GPIODataPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Daten Port" Value="15"/>
 "@
 }
 
-Write-Success "Generated 8 separate GPIO Port Parameters (IDs: 073-080, one per hardware)"
+Write-Success "Generated $($hardwareConfigs.Count) GPIO Port Parameters (IDs: 001-032, namespace %TT%0%C%)"
 Write-Host "  Each parameter has unique ID and hardware-specific ParameterType" -ForegroundColor DarkGray
 
-# Step 4.9.1: Generate 8 separate Clock GPIO Parameters (for SPI, IDs 081-088)
-Write-Step "Generating 8 separate Clock GPIO Parameters (for Template, SPI only)..."
+# Step 4.9.1: Generate separate Clock GPIO Parameters (for SPI, IDs 051-064)
+Write-Step "Generating Clock GPIO Parameters (for Template, SPI only)..."
 
 $gpioClockParamXml = ""
 for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwConfig = $hardwareConfigs[$hwIdx]
   $hwName = $hwConfig.DeviceName
   $portCount = $hwConfig.GPIOPorts.Count
-  $paramId = 81 + $hwIdx
-    
+  $paramId = 33 + $hwIdx
+  $paramIdFormatted = $paramId.ToString("D3")
+
   if ($hwIdx -gt 0) {
     $gpioClockParamXml += "`n"
   }
   $gpioClockParamXml += @"
-<Parameter Id="%AID%_UP-%TT%9%C%0$paramId" Offset="23" BitOffset="0" Name="NEO%C%GPIOClockPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Clock Port" Value="15"/>
+<Parameter Id="%AID%_UP-%TT%0%C%$paramIdFormatted" Offset="3" BitOffset="0" Name="NEO%C%GPIOClockPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}" Text="Clock Port" Value="15"/>
 "@
 }
 
-Write-Success "Generated 8 separate Clock GPIO Parameters (IDs: 081-088, for SPI LEDs)"
+Write-Success "Generated $($hardwareConfigs.Count) Clock GPIO Parameters (IDs: 033-064, namespace %TT%0%C%)"
 Write-Host "  Each parameter uses same ParameterType as Data GPIO" -ForegroundColor DarkGray
 
-# Step 4.9.5: Generate 8 separate ParameterRefs (one for each Parameter)
-Write-Step "Generating 8 separate GPIO Port ParameterRefs (for Template)..."
+# Step 4.9.5: Generate separate ParameterRefs (one for each Parameter)
+Write-Step "Generating GPIO Port ParameterRefs (for Template)..."
 
 $gpioPortParamRefsXml = ""
 for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
-  $paramId = 73 + $hwIdx
-  $refId = "${paramId}01"
-  
+  $paramId = 1 + $hwIdx
+  $paramIdFormatted = $paramId.ToString("D3")
+  $refId = "${paramIdFormatted}01"
+
   if ($hwIdx -gt 0) {
     $gpioPortParamRefsXml += "`n"
   }
-  $gpioPortParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%9%C%0${paramId}_R-%TT%9%C%0${refId}`" RefId=`"%AID%_UP-%TT%9%C%0${paramId}`" />"
+  $gpioPortParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%0%C%${paramIdFormatted}_R-%TT%0%C%${refId}`" RefId=`"%AID%_UP-%TT%0%C%${paramIdFormatted}`" />"
 }
 
-Write-Success "Generated 8 separate GPIO Port ParameterRefs (IDs: 07301-08001)"
+Write-Success "Generated $($hardwareConfigs.Count) GPIO Port ParameterRefs (IDs: 001-032, namespace %TT%0%C%)"
 Write-Host "  Each ParameterRef references its corresponding Parameter" -ForegroundColor DarkGray
 
-# Step 4.9.6: Generate 8 separate Clock GPIO ParameterRefs
-Write-Step "Generating 8 separate Clock GPIO ParameterRefs (for Template)..."
+# Step 4.9.6: Generate separate Clock GPIO ParameterRefs
+Write-Step "Generating Clock GPIO ParameterRefs (for Template)..."
 
 $gpioClockParamRefsXml = ""
 for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
-  $paramId = 81 + $hwIdx
-  $refId = "${paramId}01"
-  
+  $paramId = 33 + $hwIdx
+  $paramIdFormatted = $paramId.ToString("D3")
+  $refId = "${paramIdFormatted}01"
+
   if ($hwIdx -gt 0) {
     $gpioClockParamRefsXml += "`n"
   }
-  $gpioClockParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%9%C%0${paramId}_R-%TT%9%C%0${refId}`" RefId=`"%AID%_UP-%TT%9%C%0${paramId}`" />"
+  $gpioClockParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%0%C%${paramIdFormatted}_R-%TT%0%C%${refId}`" RefId=`"%AID%_UP-%TT%0%C%${paramIdFormatted}`" />"
 }
 
-Write-Success "Generated 8 separate Clock GPIO ParameterRefs (IDs: 08101-08801)"
+Write-Success "Generated $($hardwareConfigs.Count) Clock GPIO ParameterRefs (IDs: 051+)"
 Write-Host "  Each ParameterRef references its corresponding Clock Parameter" -ForegroundColor DarkGray
 
 # Step 4.10: Generate ParameterRefs (for share.xml)
@@ -1945,12 +2206,12 @@ $shareConflictParamsXml += "  <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`
 $byteOffset = 0
 for ($stripIdx = 1; $stripIdx -le 6; $stripIdx++) {
   $baseId = 87 + ($stripIdx * 3)  # 90, 93, 96, 99, 102, 105
-    
+
   $shareConflictParamsXml += "  <!-- Strip $stripIdx Conflict Flags -->`n"
   $shareConflictParamsXml += "  <Parameter Id=`"%AID%_UP-%TT%$(($baseId).ToString('00000'))`" Offset=`"$byteOffset`" BitOffset=`"0`" Name=`"Strip${stripIdx}HasDataConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Data Konflikt`" Value=`"0`" Access=`"Read`"/>`n"
   $shareConflictParamsXml += "  <Parameter Id=`"%AID%_UP-%TT%$(($baseId+1).ToString('00000'))`" Offset=`"$byteOffset`" BitOffset=`"1`" Name=`"Strip${stripIdx}HasClockConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Clock Konflikt`" Value=`"0`" Access=`"Read`"/>`n"
   $shareConflictParamsXml += "  <Parameter Id=`"%AID%_UP-%TT%$(($baseId+2).ToString('00000'))`" Offset=`"$byteOffset`" BitOffset=`"2`" Name=`"Strip${stripIdx}HasCrossConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Strip $stripIdx Cross Konflikt`" Value=`"0`" Access=`"Read`"/>`n"
-    
+
   $byteOffset = $byteOffset + 1
 }
 $shareConflictParamsXml += "</Union>"
@@ -1959,7 +2220,7 @@ $shareConflictParamsXml += "</Union>"
 $shareConflictParamRefsXml = ""
 for ($stripIdx = 1; $stripIdx -le 6; $stripIdx++) {
   $baseId = 87 + ($stripIdx * 3)
-    
+
   $shareConflictParamRefsXml += "<!-- Strip $stripIdx Conflict Flags -->`n"
   $shareConflictParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%$(($baseId).ToString('00000'))_R-%TT%$(($baseId).ToString('00000'))01`" RefId=`"%AID%_UP-%TT%$(($baseId).ToString('00000'))`" />`n"
   $shareConflictParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%$(($baseId+1).ToString('00000'))_R-%TT%$(($baseId+1).ToString('00000'))01`" RefId=`"%AID%_UP-%TT%$(($baseId+1).ToString('00000'))`" />`n"
@@ -2003,7 +2264,7 @@ if ($shareContent -match [regex]::Escape($startMarker)) {
     }) -join "`n"
   $replacement = "`$1`$2$indentedXml`$4"
   $shareContent = $shareContent -replace $pattern, $replacement
-    
+
   if ($DryRun) {
     Write-Host "  [DRY-RUN] Would insert 18 UNION Conflict Parameters into share.xml" -ForegroundColor Yellow
   }
@@ -2013,7 +2274,7 @@ if ($shareContent -match [regex]::Escape($startMarker)) {
   }
 }
 else {
-  Write-Warning "GPIO Conflict Parameters markers not found in share.xml"
+  Write-WarningMsg "GPIO Conflict Parameters markers not found in share.xml"
 }
 
 # ====================================================================================================
@@ -2027,7 +2288,7 @@ if (Generate-GPIOPortParametersInShare -ShareXmlPath $shareXmlPath -NumStrips 6)
   Write-Success "Share.xml GPIO Port Parameters generated (6 strips)"
 }
 else {
-  Write-Warning "Share.xml GPIO Port Parameter markers not found - skipped"
+  Write-WarningMsg "Share.xml GPIO Port Parameter markers not found - skipped"
 }
 
 # Generate Clock GPIO Port Parameters in share.xml (00111-00116)
@@ -2036,7 +2297,7 @@ if (Generate-ClockPortParametersInShare -ShareXmlPath $shareXmlPath -NumStrips 6
   Write-Success "Share.xml Clock GPIO Port Parameters generated (6 strips)"
 }
 else {
-  Write-Warning "Share.xml Clock GPIO Port Parameter markers not found - skipped"
+  Write-WarningMsg "Share.xml Clock GPIO Port Parameter markers not found - skipped"
 }
 
 # Generate Conflict Parameters in share.xml (00091-00096)
@@ -2045,7 +2306,7 @@ if (Generate-ConflictParametersInShare -ShareXmlPath $shareXmlPath -NumStrips 6)
   Write-Success "Share.xml Conflict Parameters generated (6 strips)"
 }
 else {
-  Write-Warning "Share.xml Conflict Parameter markers not found - skipped"
+  Write-WarningMsg "Share.xml Conflict Parameter markers not found - skipped"
 }
 
 # Generate Clock Conflict Parameters in share.xml (00117-00122)
@@ -2054,7 +2315,7 @@ if (Generate-ClockConflictParametersInShare -ShareXmlPath $shareXmlPath -NumStri
   Write-Success "Share.xml Clock Conflict Parameters generated (6 strips)"
 }
 else {
-  Write-Warning "Share.xml Clock Conflict Parameter markers not found - skipped"
+  Write-WarningMsg "Share.xml Clock Conflict Parameter markers not found - skipped"
 }
 
 # Generate Conflict ParameterRefs in share.xml
@@ -2063,7 +2324,7 @@ if (Generate-ConflictParameterRefsInShare -ShareXmlPath $shareXmlPath -NumStrips
   Write-Success "Share.xml Conflict ParameterRefs generated"
 }
 else {
-  Write-Warning "Share.xml Conflict ParameterRefs markers not found - skipped"
+  Write-WarningMsg "Share.xml Conflict ParameterRefs markers not found - skipped"
 }
 
 # Generate SINGLE ParameterCalculation in share.xml
@@ -2072,7 +2333,7 @@ if (Generate-ConflictCalculation -ShareXmlPath $shareXmlPath -NumStrips 6) {
   Write-Success "ParameterCalculation generated in share.xml (reads 00101-00106, writes 00091-00096)"
 }
 else {
-  Write-Warning "ParameterCalculation markers not found - skipped"
+  Write-WarningMsg "ParameterCalculation markers not found - skipped"
 }
 
 # Generate Hardware Change Reset ParameterCalculation
@@ -2081,7 +2342,7 @@ if (Generate-HardwareChangeResetCalculation -ShareXmlPath $shareXmlPath -NumStri
   Write-Success "Hardware Change Reset ParameterCalculation generated (resets all ports to 15)"
 }
 else {
-  Write-Warning "Hardware Change Reset markers not found - skipped"
+  Write-WarningMsg "Hardware Change Reset markers not found - skipped"
 }
 
 # Generate JavaScript Detection Function
@@ -2090,25 +2351,25 @@ if (Generate-ConflictDetectionJS -JavaScriptPath $scriptJsPath -NumStrips 6) {
   Write-Success "JavaScript conflict detection generated"
 }
 else {
-  Write-Warning "JavaScript generation failed"
+  Write-WarningMsg "JavaScript generation failed"
 }
 
-# Generate GPIO Copy ParameterCalculation in Template (9%C%073 → 0010%C%)
+# Generate GPIO Copy ParameterCalculation in Template (0%C%001 → 0010%C%)
 Write-Host "  • Generating GPIO Copy ParameterCalculation in Template..." -ForegroundColor Cyan
 if (Generate-GPIOCopyCalculation -TemplatePath $templatePath -HardwareConfigs $hardwareConfigs) {
   Write-Success "Template GPIO Copy Calculation generated (dynamic hardware mapping)"
 }
 else {
-  Write-Warning "Template GPIO Copy Calculation markers not found - skipped"
+  Write-WarningMsg "Template GPIO Copy Calculation markers not found - skipped"
 }
 
-# Generate Clock GPIO Copy ParameterCalculation in Template (9%C%081 → 0011%C%)
+# Generate Clock GPIO Copy ParameterCalculation in Template (0%C%033 → 0011%C%)
 Write-Host "  • Generating Clock GPIO Copy ParameterCalculation in Template..." -ForegroundColor Cyan
 if (Generate-GPIOClockCopyCalculation -TemplatePath $templatePath -HardwareConfigs $hardwareConfigs) {
   Write-Success "Template Clock GPIO Copy Calculation generated (dynamic hardware mapping)"
 }
 else {
-  Write-Warning "Template Clock GPIO Copy Calculation markers not found - skipped"
+  Write-WarningMsg "Template Clock GPIO Copy Calculation markers not found - skipped"
 }
 
 # Generate UI in template (references share.xml parameters with %C% token)
@@ -2117,8 +2378,14 @@ if (Generate-ConflictUI -TemplatePath $templatePath) {
   Write-Success "Template UI generated (references share.xml 0009%C%)"
 }
 else {
-  Write-Warning "Template UI markers not found - skipped"
+  Write-WarningMsg "Template UI markers not found - skipped"
 }
+
+# Template Conflict Parameters - NOT NEEDED!
+# Template UI uses 0009%C% which directly references share.xml parameters 00091-00096
+# Creating Template parameters would DUPLICATE the IDs and cause conflicts
+Write-Host "  • Template Conflict Parameters: Using share.xml parameters directly via %C% token..." -ForegroundColor Cyan
+Write-Success "Template references share.xml 00091-00096 via 0009%C% pattern (no duplicates)"
 
 Write-Success "GPIO Conflict Detection System Complete"
 Write-Host "  • share.xml: Parameters 00091-00096, Calculation reads 00101-00106" -ForegroundColor DarkGray
@@ -2157,11 +2424,11 @@ if ($VerboseMode) {
 # DEBUG: Check how many times the pattern matches
 if ($DryRun -or $Debug) {
   Write-Host "  [DEBUG] Start marker: '$startMarker'" -ForegroundColor Yellow
-  Write-Host "  [DEBUG] End marker: '$endMarker'" -ForegroundColor Yellow  
+  Write-Host "  [DEBUG] End marker: '$endMarker'" -ForegroundColor Yellow
   Write-Host "  [DEBUG] Pattern: $pattern" -ForegroundColor Yellow
-  $matches = [regex]::Matches($shareContent, $pattern)
-  Write-Host "  [DEBUG] Pattern matches $($matches.Count) time(s) in share.xml" -ForegroundColor $(if ($matches.Count -ne 1) { 'Red' }else { 'Green' })
-  if ($matches.Count -gt 1) {
+  $regexMatches = [regex]::Matches($shareContent, $pattern)
+  Write-Host "  [DEBUG] Pattern matches $($regexMatches.Count) time(s) in share.xml" -ForegroundColor $(if ($regexMatches.Count -ne 1) { 'Red' }else { 'Green' })
+  if ($regexMatches.Count -gt 1) {
     Write-Host "  [DEBUG] THIS IS THE BUG - Pattern should match exactly ONCE!" -ForegroundColor Red
     for ($i = 0; $i -lt $matches.Count; $i++) {
       #Write-Host "  [DEBUG]   Match $($i+1) at position $($matches[$i].Index), length $($matches[$i].Length)" -ForegroundColor Yellow
@@ -2197,7 +2464,7 @@ if ($hardwareParamXml -ne "") {
   $escapedStart = [regex]::Escape($startMarker)
   $escapedEnd = [regex]::Escape($endMarker)
   $pattern = "(?ms)(^[ \t]*)($escapedStart`r?`n)(.*?)(`r?`n\1$escapedEnd)"
-    
+
   if ($shareContent -match $pattern) {
     $replacement = "`$1`$2$hardwareParamXml`$4"
     $shareContent = $shareContent -replace $pattern, $replacement
@@ -2219,7 +2486,7 @@ Write-Step "Updating share.xml with Hardware Selection ParameterRef..."
 if ($hardwareParamRefXml -ne "") {
   $startMarker = $script:Config.Markers.HardwareParamRefStart
   $endMarker = $script:Config.Markers.HardwareParamRefEnd
-  
+
   if (Replace-MarkerContent -FilePath $shareXmlPath -StartMarker $startMarker -EndMarker $endMarker -NewContent $hardwareParamRefXml) {
     Write-Success "Hardware Selection ParameterRef updated in share.xml"
   }
@@ -2322,7 +2589,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
   $hwName = $hwConfig.DeviceName
   $portCount = $hwConfig.GPIOPorts.Count
-    
+
   $jsPortCounts += "    ${hwIdHex}: $portCount"
   if ($hwIdx -lt $hardwareConfigs.Count - 1) { $jsPortCounts += "," }
   $jsPortCounts += "  // $hwName`n"
@@ -2338,18 +2605,18 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwConfig = $hardwareConfigs[$hwIdx]
   $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
   $hwName = $hwConfig.DeviceName
-    
+
   $jsPortInfo += "    ${hwIdHex}: [  // $hwName`n"
-    
+
   for ($portIdx = 0; $portIdx -lt $hwConfig.GPIOPorts.Count; $portIdx++) {
     $gpioPort = $hwConfig.GPIOPorts[$portIdx]
     $label = $gpioPort.Label
-        
+
     $jsPortInfo += "      '$label'"
     if ($portIdx -lt $hwConfig.GPIOPorts.Count - 1) { $jsPortInfo += "," }
     $jsPortInfo += "`n"
   }
-    
+
   $jsPortInfo += "    ]"
   if ($hwIdx -lt $hardwareConfigs.Count - 1) { $jsPortInfo += "," }
   $jsPortInfo += "`n"
@@ -2362,10 +2629,10 @@ $jsPortMaps = @"
   // Port selection: User selects port index (0-based) from dropdown
   // C++ firmware resolves index to actual GPIO via NEOPIXEL_HW_PORT_{index+1}_GPIO
   // GPIO numbers are compile-time defines, not available in JavaScript
-  
+
 $jsPortCounts
 $jsPortInfo
-  
+
 "@
 
 # Step 8: Update JavaScript file
@@ -2376,7 +2643,7 @@ if (Test-Path $scriptJsPath) {
   $scriptContent = Get-Content -Path $scriptJsPath -Raw
   $jsStartMarker = $script:Config.Markers.JSStart
   $jsEndMarker = $script:Config.Markers.JSEnd
-    
+
   if ($scriptContent -match [regex]::Escape($jsStartMarker)) {
     # Use new pattern that preserves marker indentation
     $escapedStart = [regex]::Escape($jsStartMarker)
@@ -2396,35 +2663,32 @@ if (Test-Path $scriptJsPath) {
     }
   }
   else {
-    Write-Warning "JavaScript markers not found - skipping"
+    Write-WarningMsg "JavaScript markers not found - skipping"
   }
 }
 else {
-  Write-Warning "NeoPixel.script.js not found - skipping JavaScript update"
+  Write-WarningMsg "NeoPixel.script.js not found - skipping JavaScript update"
 }
 
-# Step 8.5: Update template file with GPIO Port Selection Parameters (073-080)
+# Step 8.5: Update template file with GPIO Port Selection Parameters (001-032, namespace 0)
 Write-Step "Updating template file with GPIO Port Selection Parameters (8 separate)..."
-
-# Load template content once for all Step 8.5.x operations
-$templateContent = Get-Content $templatePath -Raw
 
 $gpioPortParamStartMarker = $script:Config.Markers.GPIOPortParamStart
 $gpioPortParamEndMarker = $script:Config.Markers.GPIOPortParamEnd
 
 if (Replace-MarkerContent -FilePath $templatePath -StartMarker $gpioPortParamStartMarker -EndMarker $gpioPortParamEndMarker -NewContent $gpioPortParamXml) {
   if ($DryRun) {
-    Write-Host "  [DRY-RUN] Would insert 8 GPIO Port Selection Parameters (073-080)" -ForegroundColor Yellow
+    Write-Host "  [DRY-RUN] Would insert GPIO Port Selection Parameters (001-032, namespace 0)" -ForegroundColor Yellow
   }
   else {
-    Write-Success "GPIO Port Selection Parameters (073-080) inserted - 8 separate parameters"
+    Write-Success "GPIO Port Selection Parameters (001-032, namespace 0) inserted - $($hardwareConfigs.Count) parameters"
   }
 }
 else {
-  Write-Warning "GPIO Port Selection Parameter markers not found in template"
+  Write-WarningMsg "GPIO Port Selection Parameter markers not found in template"
 }
 
-# Step 8.5.5.1: Update template file with Clock GPIO Selection Parameters (081-088)
+# Step 8.5.5.1: Update template file with Clock GPIO Selection Parameters (033-064, namespace 0)
 Write-Step "Updating template file with Clock GPIO Selection Parameters (8 separate, SPI)..."
 
 $gpioClockParamStartMarker = $script:Config.Markers.GPIOClockParamStart
@@ -2432,14 +2696,14 @@ $gpioClockParamEndMarker = $script:Config.Markers.GPIOClockParamEnd
 
 if (Replace-MarkerContent -FilePath $templatePath -StartMarker $gpioClockParamStartMarker -EndMarker $gpioClockParamEndMarker -NewContent $gpioClockParamXml) {
   if ($DryRun) {
-    Write-Host "  [DRY-RUN] Would insert 8 Clock GPIO Selection Parameters (081-088)" -ForegroundColor Yellow
+    Write-Host "  [DRY-RUN] Would insert Clock GPIO Selection Parameters (051-089)" -ForegroundColor Yellow
   }
   else {
-    Write-Success "Clock GPIO Selection Parameters (081-088) inserted - 8 separate parameters for SPI"
+    Write-Success "Clock GPIO Selection Parameters (051-089) inserted - $($hardwareConfigs.Count) parameters for SPI"
   }
 }
 else {
-  Write-Warning "Clock GPIO Selection Parameter markers not found in template"
+  Write-WarningMsg "Clock GPIO Selection Parameter markers not found in template"
 }
 
 # Step 8.5.6: Update template file with GPIO Port Selection ParameterRefs (8 separate)
@@ -2457,7 +2721,7 @@ if (Replace-MarkerContent -FilePath $templatePath -StartMarker $gpioPortParamRef
   }
 }
 else {
-  Write-Warning "GPIO Port Selection ParameterRef markers not found in template"
+  Write-WarningMsg "GPIO Port Selection ParameterRef markers not found in template"
 }
 
 # Step 8.5.6.1: Update template file with GPIO Clock Selection ParameterRefs
@@ -2475,7 +2739,7 @@ if (Replace-MarkerContent -FilePath $templatePath -StartMarker $gpioClockParamRe
   }
 }
 else {
-  Write-Warning "GPIO Clock Selection ParameterRef markers not found in template"
+  Write-WarningMsg "GPIO Clock Selection ParameterRef markers not found in template"
 }
 
 # Step 8.5.7: Update template file with GPIO Port Selection ParameterRefRef (choose-block)
@@ -2493,7 +2757,7 @@ if (Replace-MarkerContent -FilePath $templatePath -StartMarker $gpioPortSelectio
   }
 }
 else {
-  Write-Warning "GPIO Port Selection ParameterRefRef markers not found in template"
+  Write-WarningMsg "GPIO Port Selection ParameterRefRef markers not found in template"
 }
 
 # Step 8.5.8: Update template file with Clock GPIO Selection ParameterRefRef (choose-block, SPI only)
@@ -2511,7 +2775,7 @@ if (Replace-MarkerContent -FilePath $templatePath -StartMarker $gpioClockSelecti
   }
 }
 else {
-  Write-Warning "Clock GPIO Selection ParameterRefRef markers not found in template"
+  Write-WarningMsg "Clock GPIO Selection ParameterRefRef markers not found in template"
 }
 
 # Step 8.5.9: Update template file with Central Manual GPIO Warning
@@ -2529,17 +2793,24 @@ if (Replace-MarkerContent -FilePath $templatePath -StartMarker $centralWarningSt
   }
 }
 else {
-  Write-Warning "Central Manual GPIO Warning markers not found in template"
+  Write-WarningMsg "Central Manual GPIO Warning markers not found in template"
 }
 
-# Step 8.8: Update template file with UI code for GPIO Conflict Status Display (HW-specific)
-Write-Step "Updating template file with GPIO Conflict Status UI..."
+# Step 8.8: Update template file with UI code for GPIO Conflict Status Display
+# ONLY for Strip.templ.xml (references Share.xml parameters directly)
+if ($TemplateFile -like "*Strip.templ.xml") {
+  Write-Step "Updating Strip template with GPIO Conflict UI (references Share.xml)..."
 
-if (Generate-ConflictUI -TemplatePath $templatePath -NumHardwareVariants 8 -BaseConflictParamId 91) {
-  Write-Success "GPIO Conflict Status UI generated (hardware-aware choose-block)"
+  # Generate conflict UI (references Share.xml parameters directly - NO separate Strip parameters!)
+  if (Generate-ConflictUI -TemplatePath $templatePath) {
+    Write-Success "GPIO Conflict Status UI generated (references Share %TT%0009%C% directly)"
+  }
+  else {
+    Write-WarningMsg "GPIO Conflict Status UI markers not found in Strip template"
+  }
 }
 else {
-  Write-Warning "GPIO Conflict Status UI markers not found in template"
+  Write-Host "  ℹ Skipping conflict UI (not Strip.templ.xml)" -ForegroundColor DarkGray
 }
 
 # Step 9: OBSOLETE - GPIO Options section now handled by Steps 8.5.7 and 8.5.8
@@ -2587,7 +2858,7 @@ foreach ($hwConfig in $hardwareConfigs) {
   Write-Host "      • " -NoNewline -ForegroundColor DarkGray
   Write-Host "$hwName" -NoNewline -ForegroundColor Green
   Write-Host " → $($hwConfig.GPIOPorts.Count) port(s)" -ForegroundColor DarkGray
-    
+
   if ($VerboseMode) {
     foreach ($port in $hwConfig.GPIOPorts) {
       Write-Host "          Port $($port.Index): $($port.Label)" -ForegroundColor DarkGray
@@ -2603,6 +2874,19 @@ if ($hardwareConfigsSkipped.Count -gt 0) {
     Write-Host "      ⊗ " -NoNewline -ForegroundColor DarkGray
     Write-Host "$hwName" -ForegroundColor DarkYellow
   }
+}
+
+if ($hardwareOverflow.Count -gt 0) {
+  Write-Host ""
+  Write-Host "    ⚠ Hardware Limit Exceeded" -ForegroundColor Yellow
+  Write-Host "    Maximum supported: $MAX_HARDWARE_VARIANTS hardware variants" -ForegroundColor DarkYellow
+  Write-Host "    Ignored Hardware (beyond limit):" -ForegroundColor Yellow
+  foreach ($hw in $hardwareOverflow) {
+    Write-Host "      ⊗ " -NoNewline -ForegroundColor DarkGray
+    Write-Host "$($hw.DeviceName) (HW_ID: 0x$($hw.DeviceIdBit.ToString('X4')))" -ForegroundColor DarkYellow
+  }
+  Write-Host ""
+  Write-Host "    💡 To support more hardware, adjust ID ranges in Build-HardwareConfig.ps1" -ForegroundColor Cyan
 }
 
 Write-Host ""
@@ -2662,7 +2946,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $hwConfig = $hardwareConfigs[$hwIdx]
   $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
   $hwName = $hwConfig.DeviceName -replace '"', '\"'
-  
+
   $cppContent += "`n    { $hwIdHex, $hwIdx, `"$hwName`" }"
   if ($hwIdx -lt $hardwareConfigs.Count - 1) {
     $cppContent += ","
@@ -2675,7 +2959,7 @@ $cppContent += @"
 
 /**
  * @brief Map Device Hardware ID to Hardware Index
- * 
+ *
  * @param deviceHwId The Device HW ID (16-bit)
  * @return Hardware index (0-$(($hardwareConfigs.Count - 1))) or 0 if unknown
  */
@@ -2690,7 +2974,7 @@ inline uint8_t mapDeviceHwIdToIndex(uint16_t deviceHwId) {
 
 /**
  * @brief Get hardware name by index
- * 
+ *
  * @param hwIndex Hardware index (0-$(($hardwareConfigs.Count - 1)))
  * @return Hardware name or nullptr if invalid
  */

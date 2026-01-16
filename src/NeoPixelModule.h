@@ -278,6 +278,10 @@ class NeoPixelBusModule : public OpenKNX::Module
     unsigned long _lastHclApplyMs = 0; // Rate limiting for post-processing
 
     // Performance & Rate Limiting
+    
+    // Hardware Configuration Mismatch Detection
+    bool _hwConfigMismatch = false;          // True if ETS HW ID doesn't match compiled DEVICE_HW_ID
+    unsigned long _lastHwMismatchWarning = 0; // Timestamp of last warning
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp
     static const unsigned long COLOR_UPDATE_INTERVAL_MS = 50; // Update color every 500ms to reduce logging overhead
 
