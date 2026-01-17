@@ -106,7 +106,10 @@ param(
   [string]$HardwareConfigSection = "",
 
   [Parameter(Mandatory = $false)]
-  [switch]$ShowDebugParamsInEtsApp
+  [switch]$ShowDebugParamsInEtsApp,
+
+  [Parameter(Mandatory = $false)]
+  [string[]]$EnvironmentFilter = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -182,6 +185,7 @@ if ($TemplateFile.Count -gt 1) {
     if ($UniversalBuild) { $params.UniversalBuild = $true }
     if ($HardwareConfigSection) { $params.HardwareConfigSection = $HardwareConfigSection }
     if ($ShowDebugParamsInEtsApp) { $params.ShowDebugParamsInEtsApp = $true }
+    if ($EnvironmentFilter.Count -gt 0) { $params.EnvironmentFilter = $EnvironmentFilter }
 
     # Recursive call with single template
     & "$PSCommandPath" @params
@@ -1720,6 +1724,17 @@ foreach ($match in $sectionMatches) {
     BuildFlags  = $buildFlags
     GPIOPorts   = @()
   }
+}
+
+# Filter hardware configs if EnvironmentFilter is specified
+if ($EnvironmentFilter.Count -gt 0) {
+  $originalCount = $hardwareConfigs.Count
+  $hardwareConfigs = $hardwareConfigs | Where-Object {
+    # Exact match: Check if this section name is in the filter list
+    $EnvironmentFilter -contains $_.Name
+  }
+  $filteredCount = $hardwareConfigs.Count
+  Write-Step "Filtered: $filteredCount/$originalCount configs (exact match)"
 }
 
 if ($hardwareConfigs.Count -eq 0) {

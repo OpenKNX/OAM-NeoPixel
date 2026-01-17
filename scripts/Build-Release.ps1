@@ -1,42 +1,17 @@
-﻿# This script is just a template and has to be copied and modified per project
-# This script should be called from .vscode/tasks.json with
-#
-#   scripts/Build-Release.ps1                - for Beta builds
-#   scripts/Build-Release.ps1 Release        - for Release builds
-#   scripts/Build-Release.ps1 -Release       - for Release builds (parameter)
-#   scripts/Build-Release.ps1 SkipFirmware   - for auto-generated files + knxprod only (no firmware)
-#   scripts/Build-Release.ps1 -SkipFirmware  - for auto-generated files + knxprod only (parameter)
-#   scripts/Build-Release.ps1 Clean          - clean all generated files
-#   scripts/Build-Release.ps1 -Clean         - clean all generated files (parameter)
-#
-# {
-#     "label": "Build-Release",
-#     "type": "shell",
-#     "command": "scripts/Build-Release.ps1 Release",
-#     "args": [],
-#     "problemMatcher": [],
-#     "group": "test"
-# },
-# {
-#     "label": "Build-Beta",
-#     "type": "shell",
-#     "command": "scripts/Build-Release.ps1 ",
-#     "args": [],
-#     "problemMatcher": [],
-#     "group": "test"
-# },
-# {
-#     "label": "Build-SkipFirmware",
-#     "type": "shell",
-#     "command": "scripts/Build-Release.ps1 SkipFirmware",
-#     "args": [],
-#     "problemMatcher": [],
-#     "group": "test"
-# }
+﻿<#
+.SYNOPSIS
+    OpenKNX NeoPixel - Build Release Script
+
+.DESCRIPTION
+    Automated build script for OpenKNX NeoPixel firmware across multiple hardware platforms.
+    Use -Help for usage information.
+
+.LINK
+    https://github.com/OpenKNX/OAM-NeoPixel
+#>
 
 param(
     [Parameter(Position=0)]
-    [ValidateSet("Release", "SkipFirmware", "Clean", "")]
     [string]$Mode = "",
 
     [Parameter(Mandatory=$false)]
@@ -46,15 +21,82 @@ param(
     [switch]$SkipFirmware,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Clean
+    [switch]$Clean,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Full,
+
+    [Parameter(Mandatory=$false)]
+    [Alias("h")]
+    [switch]$Help
 )
+
+# OpenKNX Logo function
+function OpenKNX_ShowLogo($AddCustomText = $null) {
+    Write-Host ""
+    Write-Host "Open " -NoNewline
+    Write-Host "$( [char]::ConvertFromUtf32(0x25A0) )" -ForegroundColor Green
+    $unicodeString = "$( [char]::ConvertFromUtf32(0x252C) )$( [char]::ConvertFromUtf32(0x2500) )$( [char]::ConvertFromUtf32(0x2500) )$( [char]::ConvertFromUtf32(0x2500) )$( [char]::ConvertFromUtf32(0x2500) )$( [char]::ConvertFromUtf32(0x2534) ) "
+
+    if ($AddCustomText) { 
+        Write-Host "$($unicodeString) $($AddCustomText)"  -ForegroundColor Green
+    }
+    else {
+        Write-Host "$($unicodeString)"  -ForegroundColor Green
+    }
+
+    Write-Host "$( [char]::ConvertFromUtf32(0x25A0) )" -NoNewline -ForegroundColor Green
+    Write-Host " KNX"
+    Write-Host ""
+}
+
+# Function to display help
+function Show-Help {
+    OpenKNX_ShowLogo "Build Release Script"
+    Write-Host "USAGE:" -ForegroundColor Yellow
+    Write-Host "  .\Build-Release.ps1 [-Release] [-Full] [-SkipFirmware] [-Clean]"
+    Write-Host ""
+    Write-Host "OPTIONS:" -ForegroundColor Yellow
+    Write-Host "  -Release       Create release build (default: beta)"
+    Write-Host "  -Full          Build ALL hardware variants (default: tested only)"
+    Write-Host "  -SkipFirmware  Generate configs only, skip firmware compilation"
+    Write-Host "  -Clean         Remove generated files, prompt for rebuild"
+    Write-Host "  -Help, -h      Show this help"
+    Write-Host ""
+    Write-Host "EXAMPLES:" -ForegroundColor Yellow
+    Write-Host "  .\Build-Release.ps1              " -NoNewline -ForegroundColor White
+    Write-Host "# Beta build (tested hardware)" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -Release     " -NoNewline -ForegroundColor White
+    Write-Host "# Release build" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
+    Write-Host "# Include untested REG2 boards" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -Release -Full" -NoNewline -ForegroundColor White
+    Write-Host " # Full release" -ForegroundColor DarkGray
+    Write-Host ""
+}
+
+# Show help if requested
+if ($Help) {
+    Show-Help
+    exit 0
+}
+
+# Validate Mode parameter manually
+$validModes = @("Release", "SkipFirmware", "Clean", "Full", "")
+if ($Mode -and $Mode -notin $validModes) {
+    Write-Host ""
+    Write-Host "ERROR: Invalid mode '$Mode'. Valid values: Release, SkipFirmware, Clean, Full" -ForegroundColor Red
+    Show-Help
+    exit 1
+}
 
 # Handle both positional and named parameters
 $isClean = ($Mode -eq "Clean") -or $Clean
 $isRelease = ($Mode -eq "Release") -or $Release
 $isSkipFirmware = ($Mode -eq "SkipFirmware") -or $SkipFirmware
+$isFull = ($Mode -eq "Full") -or $Full
 
-# set product names, allows mapping of (devel) name in Project to a more consistent name in release
+# Set product names, allows mapping of (devel) name in project to a more consistent name in release
 # $settings = scripts/OpenKNX-Build-Settings.ps1
 
 # Handle Clean mode - cleanup all generated files
@@ -74,7 +116,7 @@ if ($isClean) {
     Write-Host ""
 
     # Ask if user wants to build after cleaning
-    Write-Host "Cleaning Done. Build now full Release with Firmware? (y/n): " -NoNewline -ForegroundColor Yellow
+    Write-Host "Cleaning done. Build full release with firmware now? (y/n): " -NoNewline -ForegroundColor Yellow
     $buildAfterClean = Read-Host
 
     if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {
@@ -86,13 +128,59 @@ if ($isClean) {
     Write-Host ""
     Write-Host "Continuing with build..." -ForegroundColor Cyan
     Write-Host ""
-    # Don't exit - continue with normal build flow
+        # Don't exit - continue with normal build flow
 }
 
+# ============================================================================
+# BUILD TARGET CONFIGURATION - Add new hardware variants here
+# ============================================================================
+#
+# Target format: @{ Env = "environment"; Name = "Output-Filename"; Ext = "uf2|bin"; HwSection = "section-name" }
+#   Env       - PlatformIO environment name from platformio.ini (e.g., release_OKNXHW_...)
+#   Name      - Output firmware filename without extension (e.g., OpenKNX-XIAO-KNeoPiX-RP2350_V1)
+#   Ext       - Firmware file extension: "uf2" for RP2040/RP2350, "bin" for ESP32
+#   HwSection - EXACT section name from platformio.hardware.ini (e.g., neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1)
+#               This section name is used by Build-HardwareConfig.ps1 to extract build_flags for the C preprocessor
+#
+# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+# ============================================================================
+
+# Standard Build Targets (tested hardware)
+$standardTargets = @(
+    # OpenKNXiao KNeoPiX
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    # OpenKNXiao Mini
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
+    #@{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
+)
+
+# Full Build Targets (additional, not yet tested hardware)
+$fullTargets = @(
+    # OpenKNX REG2
+    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
+    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" }
+)
+
 # Generate dynamic GPIO templates before building
-# Using -UniversalBuild for release to support all hardware variants
-Write-Host "Generating dynamic GPIO templates (Universal Build)..." -ForegroundColor Cyan
-scripts/Build-HardwareConfig.ps1 -UniversalBuild
+# Collect exact hardware section names from all targets that will be built
+$allTargets = $standardTargets
+if ($isFull) {
+    $allTargets = $standardTargets + $fullTargets
+}
+
+# Extract unique hardware section names from targets
+$hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
+
+Write-Host "Generating GPIO templates for selected hardware..." -ForegroundColor Cyan
+Write-Host "  Section filter: $($hardwareFilter -join ', ')" -ForegroundColor DarkGray
+scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter
 if (!$?) {
     Write-Host "GPIO template generation failed!" -ForegroundColor Red
     exit 1
@@ -110,47 +198,39 @@ if (!$?) {
 # Pass "Release" if it was Release, otherwise empty (Beta)
 $buildParam = if ($isRelease) { "Release" } else { "" }
 
-# execute generic pre-build steps
+# Execute generic pre-build steps
 ../OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
 if (!$?) { exit 1 }
 
+# ============================================================================
+# BUILD EXECUTION
+# ============================================================================
+
 # OpenKNX Hardware builds (skip if SkipFirmware mode)
 if (-not $isSkipFirmware) {
-    Write-Host "Building firmware for all hardware variants..." -ForegroundColor Cyan
-
-    # OpenKNXiao KNeoPiX
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 OpenKNX-XIAO-KNeoPiX-RP2350_V1 uf2
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1 OpenKNX-XIAO-KNeoPiX-RP2040_V1 uf2
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1 OpenKNX-XIAO-KNeoPiX-ESP32C3_V1 bin
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1 OpenKNX-XIAO-KNeoPiX-ESP32C6_V1 bin
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1 OpenKNX-XIAO-KNeoPiX-ESP32S3_V1 bin
-    if (!$?) { exit 1 }
-    #
-    # OpenKNXiao Mini
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1 OpenKNX-XIAO-RP2040-Mini_V1 uf2
-    if (!$?) { exit 1 }
-    #../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1 OpenKNX-XIAO-RP2350-Mini_V1 uf2
-    #if (!$?) { exit 1 }
-
-    # OpenKNX REG2
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO_V1 OpenKNX-REG2-PiPico_V1 uf2
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO_W_V1 OpenKNX-REG2-PiPicoW_V1 uf2
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO2_V1 OpenKNX-REG2-PiPico2_V1 uf2
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_PIPICO2_W_V1 OpenKNX-REG2-PiPico2W_V1 uf2
-    if (!$?) { exit 1 }
-    ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 release_OKNXHW_REG2_ESP32S3_PICO_V1 OpenKNX-REG2-ESP32S3-Pico_V1 bin
-    if (!$?) { exit 1 }
+    Write-Host "Building firmware for hardware variants..." -ForegroundColor Cyan
+    
+    # Build standard targets
+    Write-Host "Building standard targets (tested hardware)..." -ForegroundColor Cyan
+    foreach ($target in $standardTargets) {
+        ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
+        if (!$?) { exit 1 }
+    }
+    
+    # Build full targets if requested
+    if ($isFull) {
+        Write-Host "Building full targets (untested REG2 hardware)..." -ForegroundColor Cyan
+        foreach ($target in $fullTargets) {
+            ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
+            if (!$?) { exit 1 }
+        }
+    } else {
+        Write-Host "Skipping full targets (use -Full to build all)" -ForegroundColor Yellow
+    }
 } else {
     Write-Host "Skipping firmware builds (SkipFirmware mode)" -ForegroundColor Yellow
 }
 
-# execute generic post-build steps
+# Execute generic post-build steps
 ../OGM-Common/scripts/setup/reusable/Build-Release-Postprocess.ps1 $buildParam
 if (!$?) { exit 1 }
