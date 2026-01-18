@@ -120,33 +120,33 @@
               <!-- RGBW Status -->
               <ComObject Id="%AID%_O-%TT%%CC%025" Number="%K24%" Name="%C%RGBWState"  Text="RGBW Status"         FunctionText="NeoPixel Segment %C%: Ausgang, DPT 251.600"         ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- BriRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%026" Number="%K25%" Name="%C%BriRel"     Text="Helligkeit Relativ"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"  ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%026" Number="%K25%" Name="%C%BriRel"     Text="Dimmen"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"  ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%027" Number="%K26%" Name="%C%RRel"       Text="Rot Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%027" Number="%K26%" Name="%C%RRel"       Text="Rot dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- GRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%028" Number="%K27%" Name="%C%GRel"       Text="Grün Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%028" Number="%K27%" Name="%C%GRel"       Text="Grün dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- BRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%029" Number="%K28%" Name="%C%BRel"       Text="Blau Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%029" Number="%K28%" Name="%C%BRel"       Text="Blau dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- WRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%030" Number="%K29%" Name="%C%WRel"       Text="Weiß Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%030" Number="%K29%" Name="%C%WRel"       Text="Weiß dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- WWRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%031" Number="%K30%" Name="%C%WWRel"      Text="Warmweiß Relativ"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%031" Number="%K30%" Name="%C%WWRel"      Text="Warmweiß dimmen"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- CWRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%032" Number="%K31%" Name="%C%CWRel"      Text="Kaltweiß Relativ"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%032" Number="%K31%" Name="%C%CWRel"      Text="Kaltweiß dimmen"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%033" Number="%K32%" Name="%C%HRel"       Text="Hue Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%033" Number="%K32%" Name="%C%HRel"       Text="Farbton dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- SRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%034" Number="%K33%" Name="%C%SRel"       Text="Sättigung Relativ"   FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"   ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%034" Number="%K33%" Name="%C%SRel"       Text="Sättigung dimmen"   FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"   ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- VRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%035" Number="%K34%" Name="%C%VRel"       Text="Helligkeit (Value) Relativ" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="1 Byte" DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%035" Number="%K34%" Name="%C%VRel"       Text="Helligkeit (Value) dimmen" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="1 Byte" DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- FxRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%036" Number="%K35%" Name="%C%FxRel"      Text="Effekt Relativ"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"      ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%036" Number="%K35%" Name="%C%FxRel"      Text="Effekt schalten"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"      ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGBRel (3 bytes, relative encoding per Byte) -->
-              <ComObject Id="%AID%_O-%TT%%CC%037" Number="%K36%" Name="%C%RGBRel"     Text="RGB Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%037" Number="%K36%" Name="%C%RGBRel"     Text="RGB dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HSVRel (3 bytes, relative encoding per Byte) -->
-              <ComObject Id="%AID%_O-%TT%%CC%038" Number="%K37%" Name="%C%HSVRel"     Text="HSV Relativ"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%038" Number="%K37%" Name="%C%HSVRel"     Text="HSV dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGBWRel (6 bytes total; first 4 = R,G,B,W) -->
-              <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K38%" Name="%C%RGBWRel"    Text="RGBW Relativ"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K38%" Name="%C%RGBWRel"    Text="RGBW dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Segment Power -->
@@ -200,33 +200,33 @@
               <!-- RGBW Status -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%025_R-%TT%%CC%02501" RefId="%AID%_O-%TT%%CC%025" Text="{{0:%C%}}: RGBW Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- BriRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%026_R-%TT%%CC%02601" RefId="%AID%_O-%TT%%CC%026" Text="{{0:%C%}}: Helligkeit Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%026_R-%TT%%CC%02601" RefId="%AID%_O-%TT%%CC%026" Text="{{0:%C%}}: Dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%027_R-%TT%%CC%02701" RefId="%AID%_O-%TT%%CC%027" Text="{{0:%C%}}: Rot Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%027_R-%TT%%CC%02701" RefId="%AID%_O-%TT%%CC%027" Text="{{0:%C%}}: Rot dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- GRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%028_R-%TT%%CC%02801" RefId="%AID%_O-%TT%%CC%028" Text="{{0:%C%}}: Grün Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%028_R-%TT%%CC%02801" RefId="%AID%_O-%TT%%CC%028" Text="{{0:%C%}}: Grün dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- BRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%029_R-%TT%%CC%02901" RefId="%AID%_O-%TT%%CC%029" Text="{{0:%C%}}: Blau Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%029_R-%TT%%CC%02901" RefId="%AID%_O-%TT%%CC%029" Text="{{0:%C%}}: Blau dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- WRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%030_R-%TT%%CC%03001" RefId="%AID%_O-%TT%%CC%030" Text="{{0:%C%}}: Weiß Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%030_R-%TT%%CC%03001" RefId="%AID%_O-%TT%%CC%030" Text="{{0:%C%}}: Weiß dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- WWRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%031_R-%TT%%CC%03101" RefId="%AID%_O-%TT%%CC%031" Text="{{0:%C%}}: Warmweiß Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%031_R-%TT%%CC%03101" RefId="%AID%_O-%TT%%CC%031" Text="{{0:%C%}}: Warmweiß dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- CWRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%032_R-%TT%%CC%03201" RefId="%AID%_O-%TT%%CC%032" Text="{{0:%C%}}: Kaltweiß Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%032_R-%TT%%CC%03201" RefId="%AID%_O-%TT%%CC%032" Text="{{0:%C%}}: Kaltweiß dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- HRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%033_R-%TT%%CC%03301" RefId="%AID%_O-%TT%%CC%033" Text="{{0:%C%}}: Farbton Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%033_R-%TT%%CC%03301" RefId="%AID%_O-%TT%%CC%033" Text="{{0:%C%}}: Farbton dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- SRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%034_R-%TT%%CC%03401" RefId="%AID%_O-%TT%%CC%034" Text="{{0:%C%}}: Sättigung Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%034_R-%TT%%CC%03401" RefId="%AID%_O-%TT%%CC%034" Text="{{0:%C%}}: Sättigung dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- VRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%035_R-%TT%%CC%03501" RefId="%AID%_O-%TT%%CC%035" Text="{{0:%C%}}: Helligkeit Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%035_R-%TT%%CC%03501" RefId="%AID%_O-%TT%%CC%035" Text="{{0:%C%}}: Helligkeit (Value) dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- FxRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%036_R-%TT%%CC%03601" RefId="%AID%_O-%TT%%CC%036" Text="{{0:%C%}}: Effekt Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%036_R-%TT%%CC%03601" RefId="%AID%_O-%TT%%CC%036" Text="{{0:%C%}}: Effekt schalten" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGBRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%037_R-%TT%%CC%03701" RefId="%AID%_O-%TT%%CC%037" Text="{{0:%C%}}: RGB Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%037_R-%TT%%CC%03701" RefId="%AID%_O-%TT%%CC%037" Text="{{0:%C%}}: RGB dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- HSVRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" RefId="%AID%_O-%TT%%CC%038" Text="{{0:%C%}}: HSV Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" RefId="%AID%_O-%TT%%CC%038" Text="{{0:%C%}}: HSV dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGBWRel -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" RefId="%AID%_O-%TT%%CC%039" Text="{{0:%C%}}: RGBW Relativ" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" RefId="%AID%_O-%TT%%CC%039" Text="{{0:%C%}}: RGBW dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
           </Static>   
           <Dynamic>
