@@ -779,6 +779,15 @@
             <!-- Cleaned - Ready for regeneration -->
             <!-- END AUTO-GENERATED: GPIO Hardware Change Reset ParameterCalculation -->
 
+            <ParameterCalculation Id="%AID%_PC-%TT%00039" Language="JavaScript" Name="NetworkModuleVisibility" LRTransformationFunc="NEO_SetNetworkModuleVisibility" RLTransformationFunc="NEO_Empty">
+              <LParameters>
+                <ParameterRefRef RefId="%AID%_UP-4000018_R-400001801" AliasName="HardwareSelect" />
+              </LParameters>
+              <RParameters>
+                <ParameterRefRef RefId="%AID%_UP-0099902_R-009990201" AliasName="ShowNetworkModule" />
+              </RParameters>
+            </ParameterCalculation>
+
             </ParameterCalculations>
             <ComObjectTable>
               <!-- Power -->
@@ -814,10 +823,27 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %ModuleVersion%" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="⚠ Wichtig: Wählen Sie die Hardware aus, die Sie verwenden. Die Auswahl bestimmt die verfügbaren GPIO-Ports in den Port-Einstellungen. Eine falsche Hardware-Auswahl kann dazu führen, dass die LED-Streifen nicht funktionieren." UIHint="Information" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wählen Sie Ihre OpenKNX-Hardware aus, um die Physikalische LED Streifen zu konfigurieren. Die Auto-Erkennung ist verfügbar wenn das Gerät programmiert ist." UIHint="Information" />
                 <!-- BEGIN AUTO-GENERATED: Hardware Selection ParameterRefRef -->
                 <!-- Cleaned - Ready for regeneration -->
                 <!-- END AUTO-GENERATED: Hardware Selection ParameterRefRef -->
+                <choose ParamRefId="%AID%_UP-4000018_R-400001801">
+                  <!-- Button nur anzeigen wenn Hardware-Dummy-Wert (Value=255) ausgewaehlt ist -->
+                  <when test="=255">
+                    <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid">
+                      <Rows>
+                        <Row Id="%AID%_PB-nnn_R-1" />
+                        <Row Id="%AID%_PB-nnn_R-2" />
+                      </Rows>
+                      <Columns>
+                        <Column Id="%AID%_PB-nnn_C-1" Width="2%" />
+                        <Column Id="%AID%_PB-nnn_C-2" Width="98%" />
+                      </Columns>
+                      <Button Id="%AID%_B-%TT%00003" Text="Hardware automatisch erkennen" Name="DetectHardware" Cell="1,2" EventHandler="NEO_detectHardware" EventHandlerOnline="ConnectionOriented" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Cell="2,2" Text="Liest die Information aus der angeschlossenen OpenKNX-Hardware aus und setzt die Hardware-Auswahl automatisch." />
+                    </ParameterBlock>
+                  </when>
+                </choose>
                 <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <!-- Mehr als 1 Segment definiert-->

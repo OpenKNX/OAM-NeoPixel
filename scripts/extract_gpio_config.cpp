@@ -127,6 +127,13 @@ int main(int argc, char* argv[])
         std::cout << "HW_GPIO_PORT_COUNT=0" << std::endl;
     #endif
     
+    // Network capability detection (independent of GPIO ports)
+    #if defined(NEOPIXEL_HW_HAS_NETWORK)
+        std::cout << "HW_HAS_NETWORK=" << FEATURE_DEFINE(HAS_NETWORK) << std::endl;
+    #else
+        std::cout << "HW_HAS_NETWORK=0" << std::endl;
+    #endif
+    
     std::cout << "# ========================================" << std::endl;
     std::cout << "# Extraction complete" << std::endl;
     

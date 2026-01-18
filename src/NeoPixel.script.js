@@ -355,6 +355,66 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
   info("SegmentStartEndCheck: numSeg=" + numSeg +
        " hasError=" + hasError);
 }
+
+// EventHandler: Hardware auto-detection from firmware
+// Called when user clicks "Hardware automatisch erkennen" button
+// Reads DEVICE_HW_ID from firmware and writes to Hardware Selection parameter
+function NEO_detectHardware(device, online, progress, context) {
+    progress.setText("NeoPixel: Lese Hardware-ID vom Gerät...");
+    progress.setProgress(10);
+    
+    online.connect();
+    progress.setProgress(30);
+    
+    // Function Property ID for hardware detection (to be implemented in firmware)
+    // Returns: [0, hwId_high, hwId_low] where hwId = (high << 8) | low
+    var data = [0]; // no input data
+    var resp = online.invokeFunctionProperty(158, 10, data); // FP 158/10 = NeoPixel hardware detect
+    
+    online.disconnect();
+    progress.setProgress(70);
+    
+    if (!resp || resp.length < 1 || resp[0] != 0) {
+        throw new Error("NeoPixel: Keine Antwort vom Gerät!");
+    }
+    
+    if (resp.length < 3) {
+        throw new Error("NeoPixel: Ungültige Antwort vom Gerät!");
+    }
+    
+    // Parse hardware ID from response (16-bit value)
+    var hwId = (resp[1] << 8) | resp[2];
+    
+    progress.setText("NeoPixel: Hardware erkannt - ID: 0x" + hwId.toString(16).toUpperCase());
+    progress.setProgress(90);
+    
+    // Map Hardware-ID to Hardware-Index using auto-generated mapping
+    var hwIndex = hardwareIdMap[hwId];
+    if (hwIndex === undefined) {
+        // Unknown hardware - set to 255 (no hardware configured) and let user know
+        hwIndex = 255;
+        progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
+    }
+    
+    // Write hardware INDEX to parameter using correct ETS EventHandler syntax
+    // Based on reference implementation from OGM-Common/src/Common.script.js
+    try {
+        // Method 1: ETS standard way using getParameterByName
+        var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
+        if (param) {
+            param.value = hwIndex;
+            progress.setText("NeoPixel: Hardware-Auswahl auf Index " + hwIndex + " gesetzt");
+        } else {
+            throw new Error("Parameter 'NEO_NeoPixelHardwareSelect' nicht gefunden");
+        }
+        
+    } catch (e) {
+        throw new Error("NeoPixel: Konnte Hardware-Auswahl nicht setzen: " + e.message);
+    }
+    
+    progress.setProgress(100);
+}
+
 // ====================================================================
 // GPIO Port Allocation and Conflict Detection
 // ====================================================================
@@ -362,11 +422,21 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
 // BEGIN AUTO-GENERATED: Multi-Hardware GPIO Port Mapping
 // Cleaned - Ready for regeneration
 // END AUTO-GENERATED: Multi-Hardware GPIO Port Mapping
+
+// BEGIN AUTO-GENERATED: Hardware ID Mapping for EventHandler
+// Cleaned - Ready for regeneration
+// END AUTO-GENERATED: Hardware ID Mapping for EventHandler
+
 // ============================================================================================================
 // REAL GPIO CONFLICT DETECTION
 // Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
 // Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
 // ============================================================================================================
+
 // BEGIN AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection
 // Cleaned - Ready for regeneration
 // END AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection
+
+// BEGIN AUTO-GENERATED: Network Module Visibility
+// Cleaned - Ready for regeneration
+// END AUTO-GENERATED: Network Module Visibility

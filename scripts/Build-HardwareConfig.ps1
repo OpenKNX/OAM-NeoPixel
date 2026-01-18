@@ -300,8 +300,12 @@ $script:Config = @{
     # JavaScript markers (NO leading whitespace in definition)
     JSStart                   = "// BEGIN AUTO-GENERATED: Multi-Hardware GPIO Port Mapping"
     JSEnd                     = "// END AUTO-GENERATED: Multi-Hardware GPIO Port Mapping"
+    JSHardwareIdMapStart      = "// BEGIN AUTO-GENERATED: Hardware ID Mapping for EventHandler"
+    JSHardwareIdMapEnd        = "// END AUTO-GENERATED: Hardware ID Mapping for EventHandler"
     JSConflictStart           = "// BEGIN AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection"
     JSConflictEnd             = "// END AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection"
+    JSNetworkVisibilityStart  = "// BEGIN AUTO-GENERATED: Network Module Visibility"
+    JSNetworkVisibilityEnd    = "// END AUTO-GENERATED: Network Module Visibility"
   }
 }
 
@@ -966,7 +970,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
     $clockParamId = (33 + $hwIdx).ToString().PadLeft(3, '0')  # 033, 034, 035, ...
 
     $hardwareList += @{
-      Id = $hwConfig.DeviceIdBit
+      Id = $hwIdx  # Use hardware INDEX for consistency with ParameterType
       Name = $hwConfig.DeviceName
       DataParam = $dataParamId
       ClockParam = $clockParamId
@@ -980,6 +984,13 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   # Start building the XML
   $xml = "<!-- Hardware-specific $Type GPIO Selection - shows correct ports for each hardware -->`n"
   $xml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
+
+  # Special case for Hardware=255 (no hardware selected - dummy value)
+  $xml += "  <!-- Keine Hardware ausgewählt (Dummy-Wert 255) -->`n"
+  $xml += "  <when test=`"255`">`n"
+  $xml += "    <!-- Show error message: Hardware must be selected first -->`n"
+  $xml += "    <ParameterSeparator Id=`"%AID%_PS-nohw%C%`" Text=`"Keine Hardware ausgewählt! Bitte wählen Sie zuerst eine Hardware aus.`" UIHint=`"Error`"/>`n"
+  $xml += "  </when>`n"
 
   # Generate Choose-block for each hardware
   foreach ($hw in $hardwareList) {
@@ -1287,6 +1298,94 @@ function Generate-ConflictDetectionJS {
   return $true
 }
 
+function Generate-NetworkVisibilityJS {
+  param(
+    [string]$JavaScriptPath,
+    [array]$HardwareConfigs
+  )
+
+  # Generate network-capable hardware INDEX array (not IDs!)
+  $networkHardware = @()
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $hwConfig = $HardwareConfigs[$hwIdx]
+    if ($hwConfig.HasNetwork -eq $true) {
+      $networkHardware += $hwIdx  # Use hardware INDEX for consistency
+    }
+  }
+
+  # Build JavaScript function
+  $jsFunction = "// Set Network Module visibility based on hardware selection`n"
+  $jsFunction += "function NEO_SetNetworkModuleVisibility(input, output, context) {`n"
+  $jsFunction += "    var hwSelect = toInt(input.HardwareSelect, 0);`n"
+  $jsFunction += "    var wifiHardware = [" + ($networkHardware -join ', ') + "]; // Auto-generated from platformio.hardware.ini`n"
+  $jsFunction += "    var hasNetwork = 0;`n"
+  $jsFunction += "    `n"
+  $jsFunction += "    for (var i = 0; i < wifiHardware.length; i++) {`n"
+  $jsFunction += "        if (hwSelect === wifiHardware[i]) {`n"
+  $jsFunction += "            hasNetwork = 1;`n"
+  $jsFunction += "            break;`n"
+  $jsFunction += "        }`n"
+  $jsFunction += "    }`n"
+  $jsFunction += "    `n"
+  $jsFunction += "    output.ShowNetworkModule = hasNetwork;`n"
+  $jsFunction += "    info(`"Hardware `" + hwSelect + `" -> Network visible: `" + hasNetwork);`n"
+  $jsFunction += "}"
+
+  # Replace content using marker or append at end
+  $success = Replace-MarkerContent -FilePath $JavaScriptPath `
+    -StartMarker $script:Config.Markers.JSNetworkVisibilityStart `
+    -EndMarker $script:Config.Markers.JSNetworkVisibilityEnd `
+    -NewContent $jsFunction
+
+  if (-not $success) {
+    # Append at end if markers don't exist
+    $jsContent = Get-Content -Path $JavaScriptPath -Raw
+    $jsContent += "`n`n" + $script:Config.Markers.JSNetworkVisibilityStart + "`n" + $jsFunction + "`n" + $script:Config.Markers.JSNetworkVisibilityEnd + "`n"
+    Set-Content -Path $JavaScriptPath -Value $jsContent -NoNewline
+  }
+  return $true
+}
+
+# Generate Hardware ID to Index Mapping JavaScript  
+function Generate-HardwareIdMappingJS {
+  param(
+    [string]$JavaScriptPath,
+    [array]$HardwareConfigs
+  )
+
+  $currentDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+  $jsMapping += "// Generated: $currentDate`n"
+  $jsMapping += "// Hardware ID to Hardware Index mapping for NEO_detectHardware function`n"
+  $jsMapping += "`n"
+  $jsMapping += "var hardwareIdMap = {`n"
+  $jsMapping += "    // AUTO-GENERATED: Hardware ID → Index mappings will be inserted here by Build-HardwareConfig.ps1`n"
+  
+  for ($i = 0; $i -lt $HardwareConfigs.Count; $i++) {
+    $hwConfig = $HardwareConfigs[$i]
+    $hwName = $hwConfig.DeviceName
+    $hwId = $hwConfig.DeviceIdBit
+    $jsMapping += "    $hwId`: $i"  # Hardware ID → Index
+    if ($i -lt ($HardwareConfigs.Count - 1)) {
+      $jsMapping += ","
+    }
+    $jsMapping += "  // $hwName → Index $i`n"
+  }
+  
+  $jsMapping += "};`n"
+
+  # Replace content using marker
+  $success = Replace-MarkerContent -FilePath $JavaScriptPath `
+    -StartMarker $script:Config.Markers.JSHardwareIdMapStart `
+    -EndMarker $script:Config.Markers.JSHardwareIdMapEnd `
+    -NewContent $jsMapping
+
+  if (-not $success) {
+    Write-WarningMsg "Hardware ID Mapping markers not found in JavaScript file"
+    return $false
+  }
+  return $true
+}
+
 function Generate-GPIOClockCopyCalculation {
   param(
     [string]$TemplatePath,
@@ -1399,7 +1498,7 @@ function Generate-ConflictUI {
   # References Share.xml parameter directly!
   $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
   $uiXml += "  <when test=`"1`">`n"
-  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"⛔ GPIO PORT KONFLIKT: Dieser Port wird bereits von einem anderen Streifen verwendet, oder Data- und Clock-Port sind identisch!`" UIHint=`"Error`" />`n"
+  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Dieser Port wird bereits von einem anderen Physikalischen LED Streifen verwendet. Bitte Wählen Sie einen anderen freien Port aus!`" UIHint=`"Error`" />`n"
   $uiXml += "  </when>`n"
   $uiXml += "</choose>"
 
@@ -1414,7 +1513,8 @@ function Generate-ConflictUI {
 # Main Script
 # ====================================================================
 
-Clear-Host
+## Do not clear host to preserve previous output!
+# Clear-Host
 
 Show-OpenKNXLogo -SubTitle "Dynamic GPIO Template Generator by Erkan Çolak" -Version $SCRIPT_VERSION
 
@@ -1568,18 +1668,36 @@ if ($Clean) {
   if (Test-Path $scriptJsPath) {
     Clear-MarkerContent -FilePath $scriptJsPath `
       -CleaningMessage "JavaScript (Port Mapping)" `
-      -PlaceholderComment "// Cleaned - Ready for regeneration" `
       -StartMarker $script:Config.Markers.JSStart `
-      -EndMarker $script:Config.Markers.JSEnd
+      -EndMarker $script:Config.Markers.JSEnd `
+      -PlaceholderComment "// Cleaned - Ready for regeneration"
   }
 
   # Clean JavaScript (Conflict Detection)
   if (Test-Path $scriptJsPath) {
     Clear-MarkerContent -FilePath $scriptJsPath `
       -CleaningMessage "JavaScript (Conflict Detection)" `
-      -PlaceholderComment "// Cleaned - Ready for regeneration" `
       -StartMarker $script:Config.Markers.JSConflictStart `
-      -EndMarker $script:Config.Markers.JSConflictEnd
+      -EndMarker $script:Config.Markers.JSConflictEnd `
+      -PlaceholderComment "// Cleaned - Ready for regeneration"
+  }
+
+  # Clean JavaScript (Hardware ID Mapping)
+  if (Test-Path $scriptJsPath) {
+    Clear-MarkerContent -FilePath $scriptJsPath `
+      -CleaningMessage "JavaScript (Hardware ID Mapping)" `
+      -StartMarker $script:Config.Markers.JSHardwareIdMapStart `
+      -EndMarker $script:Config.Markers.JSHardwareIdMapEnd `
+      -PlaceholderComment "// Cleaned - Ready for regeneration"
+  }
+
+  # Clean JavaScript (Network Module Visibility)
+  if (Test-Path $scriptJsPath) {
+    Clear-MarkerContent -FilePath $scriptJsPath `
+      -CleaningMessage "JavaScript (Network Module Visibility)" `
+      -StartMarker $script:Config.Markers.JSNetworkVisibilityStart `
+      -EndMarker $script:Config.Markers.JSNetworkVisibilityEnd `
+      -PlaceholderComment "// Cleaned - Ready for regeneration"
   }
 
   # Clean template XML (GPIO Copy ParameterCalculation)
@@ -1871,8 +1989,17 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
       0
     }
 
+    # Extract Network capability flag
+    $hwConfig.HasNetwork = if ($hwData.ContainsKey("HW_HAS_NETWORK") -and $hwData["HW_HAS_NETWORK"] -eq "1") {
+      $true
+    }
+    else {
+      $false
+    }
+
     # DEBUG: Show extracted device info
-    Write-Host "    Device: $($hwConfig.DeviceId) - $($hwConfig.DeviceName) [0x$($hwConfig.DeviceIdBit.ToString('X4'))]" -ForegroundColor Cyan
+    $networkInfo = if ($hwConfig.HasNetwork) { " [WiFi]" } else { "" }
+    Write-Host "    Device: $($hwConfig.DeviceId) - $($hwConfig.DeviceName) [0x$($hwConfig.DeviceIdBit.ToString('X4'))]$networkInfo" -ForegroundColor Cyan
 
     # Extract GPIO ports
     $hwPortsAvailable = $hwData["HW_GPIO_PORTS_DEFINED"] -eq "1"
@@ -1999,14 +2126,15 @@ if ($hardwareConfigs.Count -gt 1) {
 <!-- Hardware Selection -->
 <ParameterType Id="%AID%_PT-${FeatureName}HardwareSelect" Name="${FeatureName}HardwareSelect">
   <TypeRestriction Base="Value" SizeInBit="$bitsNeededForHardware">
+    <Enumeration Text="--- Bitte wählen Sie eine Hardware aus ---" Value="255" Id="%ENID%" />
 
 "@
 
   for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $hwConfig = $hardwareConfigs[$hwIdx]
     $hwName = $hwConfig.DeviceName
-    $deviceIdBit = $hwConfig.DeviceIdBit
-    $parameterTypeXml += "    <Enumeration Text=`"${hwName}`" Value=`"${deviceIdBit}`" Id=`"%ENID%`" />`n"
+    # Use hardware INDEX as Value (0,1,2,3,4,5) - JavaScript sets indices, not Hardware IDs
+    $parameterTypeXml += "    <Enumeration Text=`"${hwName}`" Value=`"${hwIdx}`" Id=`"%ENID%`" />`n"
   }
 
   $parameterTypeXml += @"
@@ -2109,9 +2237,9 @@ Write-Step "Generating Hardware Selection Parameter..."
 $hardwareParamXml = ""
 
 if ($hardwareConfigs.Count -gt 1) {
-  $defaultHwId = $hardwareConfigs[0].DeviceIdBit
+  $defaultHwId = 255  # Dummy default: "--- Bitte wählen Sie eine Hardware aus ---"
   $hardwareParamXml = "                <Parameter Id=`"%AID%_UP-4000018`" Offset=`"0`" BitOffset=`"0`" Name=`"NEO_NeoPixelHardwareSelect`" ParameterType=`"%AID%_PT-${FeatureName}HardwareSelect`" Text=`"Hardware Auswahl`" Value=`"$defaultHwId`"/>"
-  Write-Success "Generated Hardware Selection Parameter (4000018) with default: $defaultHwId"
+  Write-Success "Generated Hardware Selection Parameter (4000018) with default: $defaultHwId (Dummy)"
 }
 
 # Step 4.9: Generate separate GPIO Port Parameters (one per hardware, unique IDs)
@@ -2369,6 +2497,24 @@ else {
   Write-WarningMsg "JavaScript generation failed"
 }
 
+# Generate Network Visibility JavaScript Function  
+Write-Host "  • Generating JavaScript (NEO_SetNetworkModuleVisibility)..." -ForegroundColor Cyan
+if (Generate-NetworkVisibilityJS -JavaScriptPath $scriptJsPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "JavaScript network visibility generated"
+}
+else {
+  Write-WarningMsg "JavaScript network visibility generation failed"
+}
+
+# Generate Hardware ID Mapping JavaScript
+Write-Host "  • Generating JavaScript (hardwareIdMap)..." -ForegroundColor Cyan
+if (Generate-HardwareIdMappingJS -JavaScriptPath $scriptJsPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "JavaScript hardware ID mapping generated"
+}
+else {
+  Write-WarningMsg "JavaScript hardware ID mapping generation failed"
+}
+
 # Generate GPIO Copy ParameterCalculation in Template (0%C%001 → 0010%C%)
 Write-Host "  • Generating GPIO Copy ParameterCalculation in Template..." -ForegroundColor Cyan
 if (Generate-GPIOCopyCalculation -TemplatePath $templatePath -HardwareConfigs $hardwareConfigs) {
@@ -2566,23 +2712,51 @@ Write-Host "  UI shows different GPIO options for each hardware variant" -Foregr
 Write-Step "Generating Central Manual GPIO Warning (Simplified)..."
 
 # Warning uses Share parameters (0010%C% for Data, 0011%C% for Clock) - hardware-independent
+# Single warning shown when EITHER Data OR Clock is set to "Manuell"
+# CRITICAL: ParameterSeparator appears only ONCE in code to avoid duplicate warnings
 $centralWarningXml = @"
 <!-- Zentrale Warnung: Zeige Warnung wenn Data oder Clock Port auf "Manuell" gesetzt ist -->
 <!-- Hidden parameter references -->
 <ParameterRefRef RefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01" IndentLevel="1" />
 <ParameterRefRef RefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01" IndentLevel="1" />
-<!-- Check Data Port (Share Param 0010%C%) = Manuell (10) -->
+<!-- Data Port = Manuell OR (LED is SPI AND Clock Port = Manuell) -->
 <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
   <when test="10">
-    <ParameterSeparator Id="%AID%_PS-manualdata%C%" Text="⚠ Die manuelle GPIO-Konfiguration ist nur für fortgeschrittene Anwender empfohlen!&#xD;&#xA;Falsche Einstellungen können zu Fehlfunktionen führen." UIHint="Information" />
+    <!-- Data Port is Manuell → show warning (regardless of Clock Port) -->
+  </when>
+  <when default="true">
+    <!-- Data Port NOT Manuell → check if Clock Port is Manuell for SPI LEDs -->
+    <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+      <when test="5 21 22 23 24 25">
+        <!-- LED type is SPI → check Clock Port -->
+        <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
+          <when test="10">
+            <!-- Clock Port is Manuell → show warning -->
+          </when>
+        </choose>
+      </when>
+    </choose>
   </when>
 </choose>
-<!-- Check Clock Port (Share Param 0011%C%, only for SPI LEDs) = Manuell (10) -->
+<!-- Single ParameterSeparator shown if ANY of the above conditions matched -->
+<choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
+  <when test="10">
+    <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="⚠️ WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
+  </when>
+</choose>
 <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
   <when test="5 21 22 23 24 25">
     <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
       <when test="10">
-        <ParameterSeparator Id="%AID%_PS-manualclock%C%" Text="⚠ Die manuelle GPIO-Konfiguration ist nur für fortgeschrittene Anwender empfohlen!&#xD;&#xA;Falsche Einstellungen können zu Fehlfunktionen führen." UIHint="Information" />
+        <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
+          <when test="10">
+            <!-- Data already Manuell → warning already shown above, skip -->
+          </when>
+          <when default="true">
+            <!-- Only Clock is Manuell → show warning -->
+            <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="⚠️ WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
+          </when>
+        </choose>
       </when>
     </choose>
   </when>
@@ -2893,7 +3067,7 @@ if ($hardwareConfigsSkipped.Count -gt 0) {
 
 if ($hardwareOverflow.Count -gt 0) {
   Write-Host ""
-  Write-Host "    ⚠ Hardware Limit Exceeded" -ForegroundColor Yellow
+  Write-Host "    Hardware Limit Exceeded" -ForegroundColor Yellow
   Write-Host "    Maximum supported: $MAX_HARDWARE_VARIANTS hardware variants" -ForegroundColor DarkYellow
   Write-Host "    Ignored Hardware (beyond limit):" -ForegroundColor Yellow
   foreach ($hw in $hardwareOverflow) {

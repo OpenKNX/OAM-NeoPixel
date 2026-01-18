@@ -154,6 +154,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     void showHelp() override;
     bool processCommand(const std::string command, bool diagnose) override;
 
+    // FunctionProperty: ETS online functions (hardware detection)
+    bool processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t *data, uint8_t *resultData, uint8_t &resultLength) override;
+
     // Access to unified virtual strip (if created)
     VirtualStrip* getVirtualStrip() const { return _virtualStrip; }
 

@@ -112,18 +112,29 @@ if ($isClean) {
     & scripts/Build-HardwareConfig.ps1 -Clean -Force
 
     Write-Host ""
+    Write-Host "Cleaning generated header files..." -ForegroundColor Cyan
+    $knxprodHeader = "include/knxprod.h"
+    if (Test-Path $knxprodHeader) {
+        Remove-Item $knxprodHeader -Force
+        Write-Host "  ✓ Removed $knxprodHeader" -ForegroundColor Green
+    } else {
+        Write-Host "  • $knxprodHeader not found (already clean)" -ForegroundColor DarkGray
+    }
+
+    Write-Host ""
     Write-Host "✓ All generated files cleaned!" -ForegroundColor Green
     Write-Host ""
 
-    # Ask if user wants to build after cleaning
-    Write-Host "Cleaning done. Build full release with firmware now? (y/n): " -NoNewline -ForegroundColor Yellow
-    $buildAfterClean = Read-Host
-
-    if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {
-        Write-Host ""
-        Write-Host "Cleanup completed. Exiting without build." -ForegroundColor Cyan
-        exit 0
-    }
+    exit 0
+    ## Ask if user wants to build after cleaning
+    #Write-Host "Cleaning done. Build full release with firmware now? (y/n): " -NoNewline -ForegroundColor Yellow
+    #$buildAfterClean = Read-Host
+    #
+    #if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {
+    #    Write-Host ""
+    #    Write-Host "Cleanup completed. Exiting without build." -ForegroundColor Cyan
+    #    exit 0
+    #}
 
     Write-Host ""
     Write-Host "Continuing with build..." -ForegroundColor Cyan
