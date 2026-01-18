@@ -57,15 +57,52 @@ inline uint8_t getGpioDataPortForHw(uint8_t stripIndex, uint8_t hwIndex = 255)
         
         switch (hwIndex)
         {
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW0
             case 0: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW0;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW1
             case 1: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW1;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW2
             case 2: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW2;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW3
             case 3: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW3;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW4
             case 4: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW4;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW5
             case 5: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW5;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW6
             case 6: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW6;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW7
             case 7: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW7;
-            default: return 15; // Dummy value
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW8
+            case 8: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW8;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW9
+            case 9: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW9;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW10
+            case 10: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW10;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW11
+            case 11: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW11;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW12
+            case 12: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW12;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW13
+            case 13: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW13;
+            #endif
+            #ifdef ParamNEOSTRIP_NEOGPIODataPortHW14
+            case 14: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW14;
+            #endif
+            default: return 15; // Dummy value  
         }
     #else
         return 15; // Not configured
@@ -96,14 +133,51 @@ inline uint8_t getGpioClockPortForHw(uint8_t stripIndex, uint8_t hwIndex = 255)
         
         switch (hwIndex)
         {
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW0
             case 0: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW0;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW1
             case 1: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW1;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW2
             case 2: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW2;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW3
             case 3: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW3;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW4
             case 4: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW4;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW5
             case 5: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW5;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW6
             case 6: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW6;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW7
             case 7: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW7;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW8
+            case 8: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW8;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW9
+            case 9: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW9;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW10
+            case 10: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW10;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW11
+            case 11: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW11;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW12
+            case 12: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW12;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW13
+            case 13: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW13;
+          #endif
+          #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW14
+            case 14: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW14;
+          #endif
             default: return 15; // Dummy value
         }
     #else
