@@ -115,6 +115,25 @@ param(
 $ErrorActionPreference = "Stop"
 $SCRIPT_VERSION = "0.1"
 
+# ====================================================================
+# UTF-8 Encoding Configuration (Critical for Windows PowerShell 5.1)
+# ====================================================================
+# PowerShell 5.1 (Windows) defaults to non-UTF-8 encoding which breaks Umlauts (ä,ö,ü,ß)
+# PowerShell 7+ (macOS/Linux) uses UTF-8 by default
+# Set both console output and file I/O to UTF-8 for cross-platform compatibility
+
+# Console output encoding (for external commands)
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+# PowerShell default encoding for Get-Content/Set-Content
+# Note: This only works in PowerShell 6+, but doesn't hurt in PS 5.1
+if ($PSVersionTable.PSVersion.Major -ge 6) {
+  $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+}
+# For PS 5.1: We explicitly add -Encoding UTF8 to all Get-Content/Set-Content calls
+
+Write-Host "  [INFO] PowerShell Version: $($PSVersionTable.PSVersion) - UTF-8 Encoding: Enabled" -ForegroundColor DarkGray
+
 # Set defaults if not provided
 if ([string]::IsNullOrEmpty($ShareXml)) {
   $ShareXml = "src/$FeatureName.share.xml"
@@ -188,7 +207,40 @@ if ($TemplateFile.Count -gt 1) {
     if ($EnvironmentFilter.Count -gt 0) { $params.EnvironmentFilter = $EnvironmentFilter }
 
     # Recursive call with single template
-    & "$PSCommandPath" @params
+    # Robust cross-platform path resolution
+    Write-Host "  [DEBUG] Multi-template recursive call:" -ForegroundColor Cyan
+    Write-Host "    PSCommandPath: $PSCommandPath" -ForegroundColor DarkGray
+    Write-Host "    PSScriptRoot: $PSScriptRoot" -ForegroundColor DarkGray
+    Write-Host "    MyInvocation.MyCommand.Path: $($MyInvocation.MyCommand.Path)" -ForegroundColor DarkGray
+    Write-Host "    PWD: $PWD" -ForegroundColor DarkGray
+    
+    $scriptPath = if ($PSCommandPath) {
+      # PowerShell 7: Use built-in automatic variable
+      Write-Host "    Using: PSCommandPath" -ForegroundColor Green
+      $PSCommandPath
+    } elseif ($PSScriptRoot) {
+      # PowerShell 5.1 when run directly: Construct from script directory
+      Write-Host "    Using: PSScriptRoot + filename" -ForegroundColor Green
+      Join-Path $PSScriptRoot "Build-HardwareConfig.ps1"
+    } elseif ($MyInvocation.MyCommand.Path) {
+      # Fallback: Use MyInvocation
+      Write-Host "    Using: MyInvocation.MyCommand.Path" -ForegroundColor Green
+      $MyInvocation.MyCommand.Path
+    } else {
+      # Last resort: Construct from current directory
+      Write-Host "    Using: PWD fallback" -ForegroundColor Yellow
+      Join-Path (Join-Path $PWD "scripts") "Build-HardwareConfig.ps1"
+    }
+    
+    Write-Host "    Final scriptPath: $scriptPath" -ForegroundColor $(if (Test-Path $scriptPath) { "Green" } else { "Red" })
+    
+    if (-not $scriptPath -or -not (Test-Path $scriptPath)) {
+      Write-ErrorMsg "Cannot locate Build-HardwareConfig.ps1 for recursive call"
+      Write-Host "  Attempted path: $scriptPath" -ForegroundColor Red
+      exit 1
+    }
+    
+    & $scriptPath @params
 
     if ($LASTEXITCODE -ne 0) {
       Write-ErrorMsg "$templateName failed!"
@@ -387,7 +439,7 @@ function Clear-MarkerContent {
   }
 
   # Proceed with actual cleaning
-  $content = Get-Content -Path $FilePath -Raw
+  $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
   if (-not $content) { return }
 
   # Pattern: Match indent + BEGIN marker, content, indent + END marker
@@ -404,7 +456,7 @@ function Clear-MarkerContent {
     $indent = $Matches[1]
     $replacement = "`$1`$2$indent$PlaceholderComment`$4"
     $content = $content -replace $pattern, $replacement
-    Set-Content -Path $FilePath -Value $content -NoNewline
+    Set-Content -Path $FilePath -Value $content -NoNewline -Encoding UTF8
     Write-Success "Cleared: $(Split-Path -Leaf $FilePath)"
   }
   else {
@@ -507,7 +559,7 @@ function Replace-MarkerContent {
     # This ensures markers stay exactly where they are
     $replacement = "`$1`$2$reindentedContent`$4"
     $content = $content -replace $pattern, $replacement
-    Set-Content -Path $FilePath -Value $content -NoNewline
+    Set-Content -Path $FilePath -Value $content -NoNewline -Encoding UTF8
     return $true
   }
   else {
@@ -586,6 +638,10 @@ function Find-PlatformIOCompiler {
     return $null
   }
 
+  # PowerShell 5.1 compatible Windows detection ($IsWindows only exists in PS Core 6+)
+  $isWin = ($PSVersionTable.PSVersion.Major -le 5) -or ([bool]$IsWindows) -or ($env:OS -match "Windows")
+  $exeSuffix = if ($isWin) { ".exe" } else { "" }
+
   # Search for toolchains with g++ compiler
   $toolchainDirs = Get-ChildItem -Path $packagesDir -Filter "toolchain-*" -Directory -ErrorAction SilentlyContinue
 
@@ -601,7 +657,7 @@ function Find-PlatformIOCompiler {
     if (-not (Test-Path $binDir)) { continue }
 
     foreach ($compilerName in $compilerNames) {
-      $compilers = Get-ChildItem -Path $binDir -Filter $compilerName -File -ErrorAction SilentlyContinue
+      $compilers = Get-ChildItem -Path $binDir -Filter "$compilerName$exeSuffix" -File -ErrorAction SilentlyContinue
       if ($compilers) {
         return $compilers[0].FullName
       }
@@ -1291,9 +1347,9 @@ function Generate-ConflictDetectionJS {
 
   if (-not $success) {
     # Append at end if markers don't exist
-    $jsContent = Get-Content -Path $JavaScriptPath -Raw
+    $jsContent = Get-Content -Path $JavaScriptPath -Raw -Encoding UTF8
     $jsContent += "`n" + $script:Config.Markers.JSConflictStart + "`n" + $fullJS + "`n" + $script:Config.Markers.JSConflictEnd + "`n"
-    Set-Content -Path $JavaScriptPath -Value $jsContent -NoNewline
+    Set-Content -Path $JavaScriptPath -Value $jsContent -NoNewline -Encoding UTF8
   }
   return $true
 }
@@ -1339,9 +1395,9 @@ function Generate-NetworkVisibilityJS {
 
   if (-not $success) {
     # Append at end if markers don't exist
-    $jsContent = Get-Content -Path $JavaScriptPath -Raw
+    $jsContent = Get-Content -Path $JavaScriptPath -Raw -Encoding UTF8
     $jsContent += "`n`n" + $script:Config.Markers.JSNetworkVisibilityStart + "`n" + $jsFunction + "`n" + $script:Config.Markers.JSNetworkVisibilityEnd + "`n"
-    Set-Content -Path $JavaScriptPath -Value $jsContent -NoNewline
+    Set-Content -Path $JavaScriptPath -Value $jsContent -NoNewline -Encoding UTF8
   }
   return $true
 }
@@ -1384,6 +1440,237 @@ function Generate-HardwareIdMappingJS {
     return $false
   }
   return $true
+}
+
+# Generate GPIO Port Mapping JavaScript (Port counts and labels)
+function Generate-GPIOPortMappingJS {
+  param(
+    [string]$JavaScriptPath,
+    [array]$HardwareConfigs
+  )
+
+  try {
+    # Generate HW_ID-based port count mapping
+    $jsPortCounts = "  // Port counts per hardware ID (HW_ID -> port count)`n"
+    $jsPortCounts += "  var portCounts = {`n"
+
+    for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+      $hwConfig = $HardwareConfigs[$hwIdx]
+      
+      # Validate hwConfig has required properties
+      if (-not $hwConfig -or -not $hwConfig.DeviceIdBit -or -not $hwConfig.DeviceName -or -not $hwConfig.GPIOPorts) {
+        Write-WarningMsg "Hardware config #$hwIdx incomplete - skipping in JavaScript generation"
+        continue
+      }
+      
+      $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
+      $hwName = $hwConfig.DeviceName
+      $portCount = $hwConfig.GPIOPorts.Count
+
+      $jsPortCounts += "    ${hwIdHex}: $portCount"
+      if ($hwIdx -lt $HardwareConfigs.Count - 1) { $jsPortCounts += "," }
+      $jsPortCounts += "  // $hwName`n"
+    }
+
+    $jsPortCounts += "  };"
+
+    # Generate GPIO port info mapping (labels only)
+    $jsPortInfo = "`n  // GPIO port labels per hardware (for documentation)`n"
+    $jsPortInfo += "  var portLabels = {`n"
+
+    for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+      $hwConfig = $HardwareConfigs[$hwIdx]
+      
+      # Validate hwConfig has required properties
+      if (-not $hwConfig -or -not $hwConfig.DeviceIdBit -or -not $hwConfig.DeviceName -or -not $hwConfig.GPIOPorts) {
+        Write-WarningMsg "Hardware config #$hwIdx incomplete - skipping in port labels"
+        continue
+      }
+      
+      $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
+      $hwName = $hwConfig.DeviceName
+
+      $jsPortInfo += "    ${hwIdHex}: [  // $hwName`n"
+
+      for ($portIdx = 0; $portIdx -lt $hwConfig.GPIOPorts.Count; $portIdx++) {
+        $gpioPort = $hwConfig.GPIOPorts[$portIdx]
+        
+        # Null-check for Windows compatibility
+        if (-not $gpioPort -or -not $gpioPort.Label) {
+          Write-Host "    [WARNING] Port $portIdx has no label for $hwName - skipping" -ForegroundColor Yellow
+          continue
+        }
+        
+        $label = $gpioPort.Label
+
+        $jsPortInfo += "      '$label'"
+        if ($portIdx -lt $hwConfig.GPIOPorts.Count - 1) { $jsPortInfo += "," }
+        $jsPortInfo += "`n"
+      }
+
+      $jsPortInfo += "    ]"
+      if ($hwIdx -lt $HardwareConfigs.Count - 1) { $jsPortInfo += "," }
+      $jsPortInfo += "`n"
+    }
+
+    $jsPortInfo += "  };"
+
+    # Build final JavaScript content
+    $currentDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $jsPortMaps = "  // Generated: $currentDate`n"
+    $jsPortMaps += "  // Port selection: User selects port index (0-based) from dropdown`n"
+    $jsPortMaps += "  // C++ firmware resolves index to actual GPIO via NEOPIXEL_HW_PORT_{index+1}_GPIO`n"
+    $jsPortMaps += "  // GPIO numbers are compile-time defines, not available in JavaScript`n"
+    $jsPortMaps += "`n"
+    $jsPortMaps += $jsPortCounts
+    $jsPortMaps += $jsPortInfo
+    $jsPortMaps += "`n"
+
+    # Replace content using marker
+    $success = Replace-MarkerContent -FilePath $JavaScriptPath `
+      -StartMarker $script:Config.Markers.JSStart `
+      -EndMarker $script:Config.Markers.JSEnd `
+      -NewContent $jsPortMaps
+
+    if (-not $success) {
+      Write-WarningMsg "GPIO Port Mapping markers not found in JavaScript file"
+      return $false
+    }
+    
+    return $true
+  }
+  catch {
+    Write-ErrorMsg "Failed to generate GPIO Port Mapping JavaScript: $_"
+    return $false
+  }
+}
+
+# Generate C++ Hardware Mapping Header
+function Generate-HardwareMappingHeader {
+  param(
+    [string]$HeaderPath,
+    [array]$HardwareConfigs
+  )
+
+  try {
+    $headerFileName = Split-Path -Leaf $HeaderPath
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $year = Get-Date -Format "yyyy"
+
+    $cppContent = @"
+/**
+ * @file $headerFileName
+ * @brief Hardware Device ID to Index Mapping (Auto-Generated)
+ *
+ * This file contains the mapping between Device Hardware IDs and Hardware Indices.
+ * The mapping is automatically generated from platformio.hardware.ini at build time.
+ *
+ * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * @note Generated: $timestamp
+ * @note Source: Build-HardwareConfig.ps1
+ *
+ * @copyright Copyright (c) $year OpenKNX (Licensed under GNU GPL v3.0)
+ */
+
+#pragma once
+
+#include <cstdint>
+
+namespace HardwareMapping {
+
+/**
+ * @brief Number of supported hardware variants
+ */
+constexpr uint8_t NUM_HARDWARE_VARIANTS = $($HardwareConfigs.Count);
+
+/**
+ * @brief Device Hardware ID to Index mapping structure
+ */
+struct HardwareIdMapping {
+    uint16_t deviceHwId;
+    uint8_t hwIndex;
+    const char* name;
+};
+
+/**
+ * @brief Hardware ID mapping table
+ */
+constexpr HardwareIdMapping HARDWARE_ID_MAP[NUM_HARDWARE_VARIANTS] = {
+"@
+
+    for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+      $hwConfig = $HardwareConfigs[$hwIdx]
+      
+      if (-not $hwConfig -or -not $hwConfig.DeviceIdBit -or -not $hwConfig.DeviceName) {
+        Write-WarningMsg "Hardware config #$hwIdx incomplete - skipping in C++ header"
+        continue
+      }
+      
+      $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
+      $hwName = $hwConfig.DeviceName -replace '"', '\"'
+
+      $cppContent += "`n    { $hwIdHex, $hwIdx, `"$hwName`" }"
+      if ($hwIdx -lt $HardwareConfigs.Count - 1) {
+        $cppContent += ","
+      }
+    }
+
+    $cppContent += @"
+
+};
+
+/**
+ * @brief Map Device Hardware ID to Hardware Index
+ *
+ * @param deviceHwId The Device HW ID (16-bit)
+ * @return Hardware index (0-$(($HardwareConfigs.Count - 1))) or 0 if unknown
+ */
+inline uint8_t mapDeviceHwIdToIndex(uint16_t deviceHwId) {
+    for (uint8_t i = 0; i < NUM_HARDWARE_VARIANTS; i++) {
+        if (HARDWARE_ID_MAP[i].deviceHwId == deviceHwId) {
+            return HARDWARE_ID_MAP[i].hwIndex;
+        }
+    }
+    return 0; // Fallback to first hardware
+}
+
+/**
+ * @brief Get hardware name by index
+ *
+ * @param hwIndex Hardware index (0-$(($HardwareConfigs.Count - 1)))
+ * @return Hardware name or nullptr if invalid index
+ */
+inline const char* getHardwareName(uint8_t hwIndex) {
+    if (hwIndex < NUM_HARDWARE_VARIANTS) {
+        return HARDWARE_ID_MAP[hwIndex].name;
+    }
+    return nullptr;
+}
+
+/**
+ * @brief Get Device HW ID by index
+ *
+ * @param hwIndex Hardware index (0-$(($HardwareConfigs.Count - 1)))
+ * @return Device HW ID or 0 if invalid index
+ */
+inline uint16_t getDeviceHwId(uint8_t hwIndex) {
+    if (hwIndex < NUM_HARDWARE_VARIANTS) {
+        return HARDWARE_ID_MAP[hwIndex].deviceHwId;
+    }
+    return 0;
+}
+
+} // namespace HardwareMapping
+"@
+
+    # Write header file
+    Set-Content -Path $HeaderPath -Value $cppContent -NoNewline -Encoding UTF8
+    return $true
+  }
+  catch {
+    Write-ErrorMsg "Failed to generate Hardware Mapping Header: $_"
+    return $false
+  }
 }
 
 function Generate-GPIOClockCopyCalculation {
@@ -1748,7 +2035,7 @@ if ($Clean) {
 // This file will be generated by Build-HardwareConfig.ps1
 // Run the script to generate hardware ID mapping from platformio.hardware.ini
 "@
-    Set-Content -Path $hardwareMappingPath -Value $placeholderContent -NoNewline
+    Set-Content -Path $hardwareMappingPath -Value $placeholderContent -NoNewline -Encoding UTF8
     Write-Host "    ✓ $headerFileName - Emptied with placeholder" -ForegroundColor Green
   }
 
@@ -1829,8 +2116,7 @@ foreach ($match in $sectionMatches) {
         if ($defineValue.StartsWith('"') -and $defineValue.EndsWith('"')) {
           $defineValue = $defineValue.Substring(1, $defineValue.Length - 2)
         }
-        # Escape inner quotes for shell
-        $defineValue = $defineValue -replace '"', '\"'
+        # Keep escaped quotes as-is - they'll be handled when passing to compiler
         $buildFlags += "-D$defineValue"
       }
     }
@@ -1917,7 +2203,8 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   # This is much simpler and avoids linking/compiler issues
   $preprocessorArgs = @(
     "-E"  # Preprocessor only
-    "-P"  # No line markers
+    "-P"
+    # Note: -P flag removed - it causes issues with escaped quotes on Windows
     "-I$includeHardwareConfig"
     "-DFEATURE_PREFIX=$DefinesPrefix"
   )
@@ -1935,9 +2222,36 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $simpleExtractor = Join-Path $scriptDir "extract_gpio_config_simple.cpp"
   $preprocessorArgs += $simpleExtractor
 
-  # Run preprocessor
+  # Run preprocessor (temporarily disable ErrorActionPreference to avoid exception on compiler errors)
   try {
-    $extractorOutput = & $compiler $preprocessorArgs 2>&1
+    $prevErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    
+    # CRITICAL FIX for Windows: Quote each argument separately to prevent backslash line continuation
+    # PowerShell 7 (macOS) handles this automatically, but PS 5.1 (Windows) needs explicit quoting
+    $isWindowsOS = ($PSVersionTable.PSVersion.Major -le 5) -or ([bool]$IsWindows -and $IsWindows) -or ($env:OS -match "Windows")
+    
+    if ($isWindowsOS) {
+      # Windows: Apply quoting fix for escaped quotes
+      $quotedArgs = @()
+      foreach ($arg in $preprocessorArgs) {
+        # If argument contains quotes, wrap the entire thing in quotes
+        if ($arg -match '"') {
+          # Replace \" with " (remove backslashes), then quote the whole argument
+          $cleanArg = $arg -replace '\\"', '"'
+          $quotedArgs += "`"$cleanArg`""
+        }
+        else {
+          $quotedArgs += $arg
+        }
+      }
+      $extractorOutput = & $compiler $quotedArgs 2>&1
+    } else {
+      # macOS/Linux: Use args directly (PowerShell 7 handles this correctly)
+      $extractorOutput = & $compiler $preprocessorArgs 2>&1
+    }
+    
+    $ErrorActionPreference = $prevErrorAction
 
     if ($LASTEXITCODE -ne 0) {
       Write-WarningMsg "  Preprocessing failed for $hwName - skipping"
@@ -1945,10 +2259,14 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
       continue
     }
 
-    # Parse output
+    # Parse output - filter to only KEY=VALUE lines (ignore warnings and line markers)
     $hwData = @{}
     foreach ($line in $extractorOutput) {
-      if ($line -match '^([A-Z_0-9]+)=(.+)$') {
+      # Remove carriage returns and trim whitespace
+      $line = ($line -replace "`r", "").Trim()
+      
+      # Only match lines that are pure KEY=VALUE (start with capital letter, no spaces before =)
+      if ($line -match '^([A-Z_][A-Z_0-9]*)=(.+)$') {
         $hwData[$matches[1]] = $matches[2]
       }
     }
@@ -2391,7 +2709,7 @@ if (-not (Test-Path $shareXmlPath)) {
   exit 1
 }
 
-$shareContent = Get-Content -Path $shareXmlPath -Raw
+$shareContent = Get-Content -Path $shareXmlPath -Raw -Encoding UTF8
 
 # Insert STATIC Conflict Parameters
 $startMarker = $script:Config.Markers.ConflictParamsStart
@@ -2412,7 +2730,7 @@ if ($shareContent -match [regex]::Escape($startMarker)) {
     Write-Host "  [DRY-RUN] Would insert 18 UNION Conflict Parameters into share.xml" -ForegroundColor Yellow
   }
   else {
-    Set-Content -Path $shareXmlPath -Value $shareContent -NoNewline
+    Set-Content -Path $shareXmlPath -Value $shareContent -NoNewline -Encoding UTF8
     Write-Success "Inserted 18 UNION Conflict Parameters into share.xml"
   }
 }
@@ -2556,7 +2874,7 @@ Write-Host "  • Template: UI references 0009%C% → Strip1=00091, Strip2=00092
 # Step 5: Update share.xml with ParameterCalculation
 Write-Step "Generating GPIO Conflict ParameterCalculation for share.xml..."
 
-$shareContent = Get-Content -Path $shareXmlPath -Raw
+$shareContent = Get-Content -Path $shareXmlPath -Raw -Encoding UTF8
 
 if ($VerboseMode) {
   Write-Host "  [DEBUG] Config.Markers.ParamTypeStart = '$($script:Config.Markers.ParamTypeStart)'" -ForegroundColor Magenta
@@ -2617,7 +2935,7 @@ else {
 Write-Step "Updating share.xml with Hardware Selection Parameter..."
 
 # Reload share.xml content after previous update
-$shareContent = Get-Content -Path $shareXmlPath -Raw
+$shareContent = Get-Content -Path $shareXmlPath -Raw -Encoding UTF8
 
 if ($hardwareParamXml -ne "") {
   $startMarker = $script:Config.Markers.HardwareParamStart
@@ -2629,7 +2947,7 @@ if ($hardwareParamXml -ne "") {
   if ($shareContent -match $pattern) {
     $replacement = "`$1`$2$hardwareParamXml`$4"
     $shareContent = $shareContent -replace $pattern, $replacement
-    Set-Content -Path $shareXmlPath -Value $shareContent -NoNewline
+    Set-Content -Path $shareXmlPath -Value $shareContent -NoNewline -Encoding UTF8
     Write-Success "Hardware Selection Parameter updated in share.xml"
   }
   else {
@@ -2769,94 +3087,16 @@ Write-Host "  Hidden ParameterRefRef followed by choose-blocks - same pattern as
 # Step 7: Generate JavaScript GPIO port mapping
 Write-Step "Generating JavaScript GPIO port mapping..."
 
-# Generate HW_ID-based port count mapping
-$jsPortCounts = "  // Port counts per hardware ID (HW_ID -> port count)`n"
-$jsPortCounts += "  var portCounts = {`n"
-
-for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
-  $hwConfig = $hardwareConfigs[$hwIdx]
-  $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
-  $hwName = $hwConfig.DeviceName
-  $portCount = $hwConfig.GPIOPorts.Count
-
-  $jsPortCounts += "    ${hwIdHex}: $portCount"
-  if ($hwIdx -lt $hardwareConfigs.Count - 1) { $jsPortCounts += "," }
-  $jsPortCounts += "  // $hwName`n"
-}
-
-$jsPortCounts += "  };"
-
-# Generate GPIO port info mapping (labels only - GPIO numbers resolved at compile time)
-$jsPortInfo = "`n  // GPIO port labels per hardware (for documentation)`n"
-$jsPortInfo += "  var portLabels = {`n"
-
-for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
-  $hwConfig = $hardwareConfigs[$hwIdx]
-  $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
-  $hwName = $hwConfig.DeviceName
-
-  $jsPortInfo += "    ${hwIdHex}: [  // $hwName`n"
-
-  for ($portIdx = 0; $portIdx -lt $hwConfig.GPIOPorts.Count; $portIdx++) {
-    $gpioPort = $hwConfig.GPIOPorts[$portIdx]
-    $label = $gpioPort.Label
-
-    $jsPortInfo += "      '$label'"
-    if ($portIdx -lt $hwConfig.GPIOPorts.Count - 1) { $jsPortInfo += "," }
-    $jsPortInfo += "`n"
-  }
-
-  $jsPortInfo += "    ]"
-  if ($hwIdx -lt $hardwareConfigs.Count - 1) { $jsPortInfo += "," }
-  $jsPortInfo += "`n"
-}
-
-$jsPortInfo += "  };"
-
-$jsPortMaps = @"
-  // Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-  // Port selection: User selects port index (0-based) from dropdown
-  // C++ firmware resolves index to actual GPIO via NEOPIXEL_HW_PORT_{index+1}_GPIO
-  // GPIO numbers are compile-time defines, not available in JavaScript
-
-$jsPortCounts
-$jsPortInfo
-
-"@
-
-# Step 8: Update JavaScript file
-Write-Step "Updating JavaScript file..."
-
 $scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.js"
-if (Test-Path $scriptJsPath) {
-  $scriptContent = Get-Content -Path $scriptJsPath -Raw
-  $jsStartMarker = $script:Config.Markers.JSStart
-  $jsEndMarker = $script:Config.Markers.JSEnd
-
-  if ($scriptContent -match [regex]::Escape($jsStartMarker)) {
-    # Use new pattern that preserves marker indentation
-    $escapedStart = [regex]::Escape($jsStartMarker)
-    $escapedEnd = [regex]::Escape($jsEndMarker)
-    $jsPattern = "(?ms)(^[ \t]*)($escapedStart`r?`n)(.*?)(`r?`n\1$escapedEnd)"
-    $jsReplacement = "`$1`$2$jsPortMaps`$4"
-    $updatedJsContent = $scriptContent -replace $jsPattern, $jsReplacement
-    if ($DryRun) {
-      Write-Host "  [DRY-RUN] Would update JavaScript file:" -ForegroundColor Yellow
-      Write-Host "    Original size: $($scriptContent.Length) chars" -ForegroundColor DarkGray
-      Write-Host "    New size: $($updatedJsContent.Length) chars" -ForegroundColor DarkGray
-      Write-Host "    Content to insert: $($jsPortMaps.Length) chars" -ForegroundColor DarkGray
-    }
-    else {
-      Set-Content -Path $scriptJsPath -Value $updatedJsContent -NoNewline
-      Write-Success "JavaScript port mapping updated"
-    }
-  }
-  else {
-    Write-WarningMsg "JavaScript markers not found - skipping"
-  }
+if (Generate-GPIOPortMappingJS -JavaScriptPath $scriptJsPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "JavaScript GPIO port mapping generated"
 }
 else {
-  Write-WarningMsg "NeoPixel.script.js not found - skipping JavaScript update"
+  Write-ErrorMsg "Failed to generate JavaScript GPIO port mapping"
+  Write-Host "  This usually means:" -ForegroundColor Yellow
+  Write-Host "  - Template file (NeoPixel.script.js) is outdated or missing markers" -ForegroundColor Yellow
+  Write-Host "  - Hardware config data is incomplete or malformed" -ForegroundColor Yellow
+  exit 1
 }
 
 # Step 8.5: Update template file with GPIO Port Selection Parameters (001-032, namespace 0)
@@ -3086,100 +3326,15 @@ Write-Host ""
 Write-Step "Generating C++ Hardware Mapping Header..."
 
 $hardwareMappingPath = Resolve-RepoPath $HardwareMappingHeader
-$headerFileName = Split-Path -Leaf $HardwareMappingHeader
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$year = Get-Date -Format "yyyy"
-
-$cppContent = @"
-/**
- * @file $headerFileName
- * @brief Hardware Device ID to Index Mapping (Auto-Generated)
- *
- * This file contains the mapping between Device Hardware IDs and Hardware Indices.
- * The mapping is automatically generated from platformio.hardware.ini at build time.
- *
- * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * @note Generated: $timestamp
- * @note Source: Build-HardwareConfig.ps1
- *
- * @copyright Copyright (c) $year OpenKNX (Licensed under GNU GPL v3.0)
- */
-
-#pragma once
-
-#include <cstdint>
-
-namespace HardwareMapping {
-
-/**
- * @brief Number of supported hardware variants
- */
-constexpr uint8_t NUM_HARDWARE_VARIANTS = $($hardwareConfigs.Count);
-
-/**
- * @brief Device Hardware ID to Index mapping structure
- */
-struct HardwareIdMapping {
-    uint16_t deviceHwId;
-    uint8_t hwIndex;
-    const char* name;
-};
-
-/**
- * @brief Hardware ID mapping table
- */
-constexpr HardwareIdMapping HARDWARE_ID_MAP[NUM_HARDWARE_VARIANTS] = {
-"@
-
-for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
-  $hwConfig = $hardwareConfigs[$hwIdx]
-  $hwIdHex = "0x" + $hwConfig.DeviceIdBit.ToString('X4')
-  $hwName = $hwConfig.DeviceName -replace '"', '\"'
-
-  $cppContent += "`n    { $hwIdHex, $hwIdx, `"$hwName`" }"
-  if ($hwIdx -lt $hardwareConfigs.Count - 1) {
-    $cppContent += ","
-  }
+if (Generate-HardwareMappingHeader -HeaderPath $hardwareMappingPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "Generated C++ Hardware Mapping: $(Split-Path -Leaf $hardwareMappingPath)"
+  Write-Host "  • $($hardwareConfigs.Count) hardware variant(s) mapped" -ForegroundColor DarkGray
 }
-
-$cppContent += @"
-
-};
-
-/**
- * @brief Map Device Hardware ID to Hardware Index
- *
- * @param deviceHwId The Device HW ID (16-bit)
- * @return Hardware index (0-$(($hardwareConfigs.Count - 1))) or 0 if unknown
- */
-inline uint8_t mapDeviceHwIdToIndex(uint16_t deviceHwId) {
-    for (uint8_t i = 0; i < NUM_HARDWARE_VARIANTS; i++) {
-        if (HARDWARE_ID_MAP[i].deviceHwId == deviceHwId) {
-            return HARDWARE_ID_MAP[i].hwIndex;
-        }
-    }
-    return 0; // Fallback to first hardware
+else {
+  Write-ErrorMsg "Failed to generate C++ Hardware Mapping Header"
+  Write-Host "  Expected path: $hardwareMappingPath" -ForegroundColor Yellow
+  exit 1
 }
-
-/**
- * @brief Get hardware name by index
- *
- * @param hwIndex Hardware index (0-$(($hardwareConfigs.Count - 1)))
- * @return Hardware name or nullptr if invalid
- */
-inline const char* getHardwareName(uint8_t hwIndex) {
-    if (hwIndex < NUM_HARDWARE_VARIANTS) {
-        return HARDWARE_ID_MAP[hwIndex].name;
-    }
-    return nullptr;
-}
-
-} // namespace HardwareMapping
-"@
-
-Set-Content -Path $hardwareMappingPath -Value $cppContent -Encoding UTF8
-Write-Success "Generated C++ Hardware Mapping: $(Split-Path -Leaf $hardwareMappingPath)"
-Write-Host "  • $($hardwareConfigs.Count) hardware variant(s) mapped" -ForegroundColor DarkGray
 
 Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
