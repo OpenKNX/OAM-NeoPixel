@@ -427,11 +427,9 @@ function NEO_detectHardware(device, online, progress, context) {
 // Cleaned - Ready for regeneration
 // END AUTO-GENERATED: Hardware ID Mapping for EventHandler
 
-// ============================================================================================================
 // REAL GPIO CONFLICT DETECTION
 // Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
 // Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
-// ============================================================================================================
 
 // BEGIN AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection
 // Cleaned - Ready for regeneration

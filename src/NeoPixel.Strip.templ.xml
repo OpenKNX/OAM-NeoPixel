@@ -17,7 +17,7 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>
                 <!-- Byte 1: 0..3 (4b), 4..5 (2b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%031" Offset="1" BitOffset="0" Name="NEO%C%ColourOrder" ParameterType="%AID%_PT-NEOColourOrder" Text="LED Farbordnung" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%032" Offset="1" BitOffset="4" Name="NEO%C%Swap" ParameterType="%AID%_PT-NEOSwap" Text="Swap" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%032" Offset="1" BitOffset="4" Name="NEO%C%Swap" ParameterType="%AID%_PT-NEOSwap" Text="Kanal-Tausch" Value="0"/>
                 <!-- Byte 1: Bits 6..7 frei -->
                 <!-- Byte 2: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%033" Offset="2" BitOffset="0" Name="NEO%C%DataGPIO" ParameterType="%AID%_PT-NEODataGPIO" Text="Daten GPIO" Value="6"/>
@@ -45,9 +45,8 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%037" Offset="6" BitOffset="0" Name="NEO%C%Length" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Anzahl an LEDs/LEDs-Gruppen" Value="30"/>
                 <!-- Byte 8..9: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%038" Offset="8" BitOffset="0" Name="NEO%C%SkipFirstLEDs" ParameterType="%AID%_PT-MinMaxValue" Text="Überspringe erste LEDs" Value="0"/>
-                <!-- Byte 10: 0 (1b), 1..3 (3b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%039" Offset="10" BitOffset="0" Name="NEO%C%powerLimitEnabled" ParameterType="%AID%_PT-Boolean" Text="Strombegrenzung aktiviert" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%9%C%040" Offset="10" BitOffset="1" Name="NEO%C%powerLimitType" ParameterType="%AID%_PT-NEOPowerLimitType" Text="Strombegrenzung Typ" Value="0"/>
+                <!-- Byte 10: 0..1 (2b) = Combined Power Limit (0=Disabled, 1=Global, 2=PerChannel, 3=PerLED) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%081" Offset="10" BitOffset="0" Name="NEO%C%powerLimitCombined" ParameterType="%AID%_PT-NEOPowerLimitCombined" Text="Strombegrenzung" Value="0"/>
 
                 <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="2" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
                 <!-- Byte 11..12: 16b -->
@@ -77,6 +76,9 @@
                 <!-- Byte 22: -->
                 <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="22" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
                 
+                <!-- Byte 23: Manual Clock GPIO Pin (when hardware="Manuell" for SPI) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%233" Offset="23" BitOffset="0" Name="NEO%C%ClockGPIOManual" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Clock GPIO Pin" Value="255"/>
+                
                 <!-- NOTE: GPIO Conflict Parameters live in Share.xml (namespace 00, parameters 00091-00096, 00117-00122)
                      They are directly referenced in the UI via ParameterRefRef - NO Strip-specific parameters needed! -->
                 
@@ -91,11 +93,11 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%033_R-%TT%9%C%03301" RefId="%AID%_UP-%TT%9%C%033" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%034_R-%TT%9%C%03401" RefId="%AID%_UP-%TT%9%C%034" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%035_R-%TT%9%C%03501" RefId="%AID%_UP-%TT%9%C%035" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%233_R-%TT%9%C%23301" RefId="%AID%_UP-%TT%9%C%233" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" RefId="%AID%_UP-%TT%9%C%036" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" RefId="%AID%_UP-%TT%9%C%037" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" RefId="%AID%_UP-%TT%9%C%038" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" RefId="%AID%_UP-%TT%9%C%039" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001" RefId="%AID%_UP-%TT%9%C%040" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101" RefId="%AID%_UP-%TT%9%C%081" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" RefId="%AID%_UP-%TT%9%C%041" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" RefId="%AID%_UP-%TT%9%C%042" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" RefId="%AID%_UP-%TT%9%C%043" />
@@ -179,14 +181,17 @@
                <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
                 <when test=">=%C%">
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Basic" Text="LED Streifen %C%: {{0:-}}" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001">
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="LED Einstellungen" UIHint="Headline" />
-                      
-                      <ParameterRefRef RefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001" IndentLevel="1" HelpContext="%DOC%" /> 
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="LED Streifen %C%:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Grundeinstellungen:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie den verwendeten LED-Chip-Typ, die Anzahl der LEDs und die grundlegenden Timing-Parameter. Diese Einstellungen müssen exakt zum angeschlossenen LED-Streifen passen, damit eine korrekte Ansteuerung gewährleistet ist." />
+                      <!-- Name/Beschreibung -->
+                      <ParameterRefRef RefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001" IndentLevel="1" HelpContext="%DOC%" />
                       <!-- LED Type -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" IndentLevel="1" HelpContext="%DOC%" />    
                       <!-- LED Colour Order -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%031_R-%TT%9%C%03101" IndentLevel="1" HelpContext="%DOC%"/>
-                      <!-- LED Swap -->
+                      <!-- LED Swap (jetzt mit besserem Text) -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%032_R-%TT%9%C%03201" IndentLevel="1" HelpContext="%DOC%"/>
                       <!-- Timing -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%072_R-%TT%9%C%07201" IndentLevel="1" HelpContext="%DOC%"/>
@@ -195,7 +200,9 @@
                       <!-- Überspringe erste LEDs -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" IndentLevel="1" HelpContext="%DOC%"/>
                       
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Port Einstellungen" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Port-Zuweisung:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Wählen Sie die Anschluss-Ports für die Daten- und (bei SPI-LEDs) Takt-Leitung. Die verfügbaren Ports sind hardwareabhängig. Beachten Sie die Dokumentation Ihrer OpenKNX-Hardware für die korrekte Port-Belegung und mögliche Port-Konflikte." UIHint="Information" />
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
                            HARDWARE GPIO CONFLICT STATUS DISPLAY (from Hardware.templ.xml)
@@ -233,7 +240,7 @@
                         <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">
                           <when test="1">
                             <!-- Warnung bei manuellem SPI Takt -->
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="⚠ Die manuelle SPI-Takt-Konfiguration kann zu Problemen führen!&#xD;&#xA;Bei zu hohen Frequenzen können die LEDs flackern oder nicht funktionieren." UIHint="Information" />
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Die manuelle SPI-Takt-Konfiguration kann zu Problemen führen!&#xD;&#xA;Bei zu hohen Frequenzen können die LEDs flackern oder nicht funktionieren." UIHint="Information" />
                             <!-- SPI Clock Frequenz -->
                             <ParameterRefRef RefId="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" IndentLevel="2" HelpContext="%DOC%"/>
                           </when>
@@ -243,7 +250,8 @@
                       
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <!-- ========================================================================================================= -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Weiß Einstellungen" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbkalibrierung:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Optimieren Sie die Farbwiedergabe durch Weißabgleich und Gamma-Korrektur. Der Weißabgleich kompensiert Fertigungstoleranzen der LEDs, die Gamma-Korrektur sorgt für eine natürlichere Helligkeitswahrnehmung (empfohlen)." />
                       <!-- White correction -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601" IndentLevel="1" HelpContext="%DOC%"/>
                       <choose ParamRefId="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601">
@@ -263,35 +271,38 @@
                       </choose>
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <!-- ========================================================================================================= -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Strom-Einstellungen" UIHint="Headline" />
-                          <!-- powerLimitEnabled -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" IndentLevel="1" HelpContext="%DOC%"/>
-                          <choose ParamRefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901">
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Schützen Sie Ihre Hardware durch intelligente Strombegrenzung. Die automatische Helligkeitsreduktion (ABL) verhindert Überlastung des Netzteils und der LED-Streifen, indem die Helligkeit dynamisch an den aktuellen Stromverbrauch angepasst wird." />
+                          <!-- Combined UI Dropdown -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101" IndentLevel="1" HelpContext="%DOC%"/>
+                          <choose ParamRefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101">
                           <when test="!=0">
-                              <!-- powerLimitType -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001" IndentLevel="1" HelpContext="%DOC%"/>
-                              <choose ParamRefId="%AID%_UP-%TT%9%C%040_R-%TT%9%C%04001">
-                              <when test="0">
+                            <!-- Not Deaktiviert -->
+                              <choose ParamRefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101"> 
+                                <!-- Check which mode -->
+                              <when test="1"> 
+                                <!-- Global -->
                                   <!-- powerLimitGlobal -->
                                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" IndentLevel="1" HelpContext="%DOC%"/>
                               </when>
-                              <when test="1">
+                              <when test="2"> 
+                                <!-- Per Channel -->
                                   <!-- currentPerChannel -->
                                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" IndentLevel="1" HelpContext="%DOC%"/>
                               </when>
-                              <when test="2">
+                              <when test="3"> 
+                                <!-- Per LED -->
                                   <!-- powerLimitPerLED -->
                                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" IndentLevel="1" HelpContext="%DOC%"/>
                               </when>
                               </choose>
-                              <!-- autoBrightnessLimit -->
+                              <!-- Common parameters when enabled -->
                               <ParameterRefRef RefId="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" IndentLevel="1" HelpContext="%DOC%"/>
-                              <!-- powerLimitThreshold -->
                               <ParameterRefRef RefId="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" IndentLevel="1" HelpContext="%DOC%"/>
-                              <!-- ablSlewRatePercent -->
                               <ParameterRefRef RefId="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" IndentLevel="1" HelpContext="%DOC%"/>
                         </when>
                         </choose>
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                   </ParameterBlock>
                 </when>
               </choose>

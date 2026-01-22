@@ -61,7 +61,10 @@ param(
     [switch]$Clean = $false,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Force = $false
+    [switch]$Force = $false,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipOpenKNXproducer = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -1473,6 +1476,7 @@ function Test-OpenKNXproducer {
     try {
         Push-Location $WorkingDir
 
+        Write-Information "Starting OpenKNXproducer in directory: $WorkingDir with Argutments: create --Debug -h $HeaderFile $SourceDir" -InformationAction Continue
         # Execute without redirect - output goes directly to console
         $process = Start-Process -FilePath $openKnxExe `
             -ArgumentList "create", "--Debug", "-h", $HeaderFile, $SourceDir `
@@ -2220,7 +2224,7 @@ function Generate-CppMapping {
 # Main Script
 # ====================================================================
 
-Clear-Host
+#Clear-Host
 Show-OpenKNXLogo -SubTitle "Build Effect Parameters" -Version $SCRIPT_VERSION
 
 # Determine script and repository root directories
@@ -2411,11 +2415,17 @@ try {
         Write-Host "$nextOffset" -ForegroundColor White
 
         # ============================================================
-        # FINAL VALIDATION: Test with OpenKNXproducer
+        # FINAL VALIDATION: Test with OpenKNXproducer (optional)
         # ============================================================
-        $testResult = Test-OpenKNXproducer -WorkingDir "." `
-                                            -HeaderFile "include/knxprod.h" `
-                                            -SourceDir "src/NeoPixel"
+        if (-not $SkipOpenKNXproducer) {
+            $testResult = Test-OpenKNXproducer -WorkingDir "." `
+                                                -HeaderFile "include/knxprod.h" `
+                                                -SourceDir "src/NeoPixel"
+        } else {
+            Write-Host ""
+            Write-Host "  Skipping OpenKNXproducer validation (as requested)" -ForegroundColor Yellow
+            $testResult = @{ Success = $true }
+        }
 
         if ($testResult.Success) {
             Write-Host ""

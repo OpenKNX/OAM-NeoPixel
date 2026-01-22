@@ -3,7 +3,7 @@
 Startzeit für das **Zeitfenster im Zeit-basierten HCL-Modus**.
 
 ## Gültig wenn
-- **HCL Kurve Typ = Zeit**
+- **HCL-Kurvetyp = Zeit**
 
 ## Funktionsweise
 - **Im Zeitfenster** (zwischen Start- und Endzeit):

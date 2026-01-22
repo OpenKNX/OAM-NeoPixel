@@ -3,7 +3,7 @@
 Minute der **Endzeit** für den **zeitbasierten HCL‑Modus**.
 
 ## Gültig wenn
-- **HCL Kurve Typ = Zeit**
+- **HCL-Kurvetyp = Zeit**
 
 ## Werte
 - **0…59**

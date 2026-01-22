@@ -143,6 +143,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void loop(bool configured) override;
     void processInputKo(GroupObject& ko) override;
     void processBeforeRestart() override;     // Turn off all LEDs before restart/programming
+    void processBeforeTablesUnload() override; // Turn off all LEDs before ETS programming
     void processAfterStartupDelay() override; // Restore LED states after startup
 
     // Flash persistence (OGM-Common calls these automatically)

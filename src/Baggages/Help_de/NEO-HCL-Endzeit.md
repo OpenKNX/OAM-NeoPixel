@@ -3,7 +3,7 @@
 Endzeit für das **Zeitfenster im Zeit-basierten HCL-Modus**.
 
 ## Gültig wenn
-- **HCL Kurve Typ = Zeit**
+- **HCL KurvenTyp = Zeit**
 
 ## Funktionsweise
 Definiert das **Ende des aktiven Zeitfensters**, in dem die HCL-Kurve läuft.

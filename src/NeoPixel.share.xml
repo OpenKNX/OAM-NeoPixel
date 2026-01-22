@@ -208,6 +208,15 @@
                   <Enumeration Text="Per LED"     Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
+              <!-- Power Limit Combined (UI-Dropdown: Disabled + Type combined) -->
+              <ParameterType Id="%AID%_PT-NEOPowerLimitCombined" Name="NEOPowerLimitCombined">
+                <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
+                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
+                  <Enumeration Text="Global"      Value="1" Id="%ENID%" />
+                  <Enumeration Text="Pro Kanal"   Value="2" Id="%ENID%" />
+                  <Enumeration Text="Pro LED"     Value="3" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <!-- Power Limit -->
               <ParameterType Id="%AID%_PT-NEOPowerLimit" Name="NEOPowerLimit">
                 <TypeRestriction Base="Value" SizeInBit="2">
@@ -321,52 +330,52 @@
               <!-- Virtual Strip Selection for exactly 1 strip -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect1" Name="VirtualStripSelect1">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
-                  <Enumeration Text="Physikalischer LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- for 1..2 strips -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect2" Name="VirtualStripSelect2">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
-                  <Enumeration Text="Physikalischer LED Streifen 1" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- for 1..3 strips -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect3" Name="VirtualStripSelect3">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
-                  <Enumeration Text="Physikalischer LED Streifen 1" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 2" Value="2" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- for 1..4 strips -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect4" Name="VirtualStripSelect4">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
-                  <Enumeration Text="Physikalischer LED Streifen 1" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 2" Value="2" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 3" Value="3" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- for 1..5 strips -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect5" Name="VirtualStripSelect5">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
-                  <Enumeration Text="Physikalischer LED Streifen 1" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 2" Value="2" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 3" Value="3" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 4" Value="4" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 5" Value="5" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- for 1..6 strips (full) -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect6" Name="VirtualStripSelect6">
                 <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
-                  <Enumeration Text="Physikalischer LED Streifen 1" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 2" Value="2" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 3" Value="3" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 4" Value="4" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 5" Value="5" Id="%ENID%" />
-                  <Enumeration Text="Physikalischer LED Streifen 6" Value="6" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
             </ParameterTypes>
@@ -377,7 +386,7 @@
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0 -->
                 <!-- Bits: [0..2]=HCLtype (3b), [3..7]=frei -->
-                <Parameter Id="%AID%_UP-%TT%00001" Offset="0" BitOffset="0" Name="HCLtype" ParameterType="%AID%_PT-HclType" Text="HCL Kurve Typ" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00001" Offset="0" BitOffset="0" Name="HCLtype" ParameterType="%AID%_PT-HclType" Text="HCL‑Kurventyp" Value="0" />
                 <!-- Byte 1..2 -->
                 <!-- Start time -->
                 <Parameter Id="%AID%_UP-%TT%00002" Offset="1" BitOffset="0" Name="HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
@@ -449,13 +458,12 @@
                 <Parameter Id="%AID%_UP-%TT%00068" Offset="3" BitOffset="0" Name="NEOpowerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
                 <!-- Byte 5: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%00069" Offset="5" BitOffset="0" Name="NEOcurrentPerLED" ParameterType="%AID%_PT-NEOPowerLimitLED" Text="Strom pro LED (mA)" Value="60"/>
-                <!-- Byte 5: 7 (1b) -->
-                <Parameter Id="%AID%_UP-%TT%00074" Offset="5" BitOffset="7" Name="NEOpowerLimitEnabled" ParameterType="%AID%_PT-Boolean" Text="Strombegrenzung aktiviert" Value="0"/>
+                <!-- Byte 5: 7 (1b) = frei -->
                 <!-- Byte 6..7: 16b -->
                 <Parameter Id="%AID%_UP-%TT%00070" Offset="6" BitOffset="0" Name="NEOcurrentPerChannel" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Strom pro Kanal (mA)" Value="500"/>
-                <!-- Byte 8: 0..2 (3b) - Power Limit Type -->
-                <Parameter Id="%AID%_UP-%TT%00075" Offset="8" BitOffset="0" Name="NEOpowerLimitType" ParameterType="%AID%_PT-NEOPowerLimitType" Text="Strombegrenzung Typ" Value="0"/>
-                <!-- Byte 8: 3..7 (5b) - frei -->
+                <!-- Byte 8: 0..1 (2b) = Combined Power Limit (0=Disabled, 1=Global, 2=PerChannel, 3=PerLED) -->
+                <Parameter Id="%AID%_UP-%TT%00081" Offset="8" BitOffset="0" Name="NEOpowerLimitCombined" ParameterType="%AID%_PT-NEOPowerLimitCombined" Text="Strombegrenzung" Value="0"/>
+                <!-- Byte 8: 2..7 (6b) - frei -->
                 <!-- Byte 9: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%00071" Offset="9" BitOffset="0" Name="NEOautoBrightnessLimit" ParameterType="%AID%_PT-NEOPercent" Text="Auto-Helligkeitsbegrenzung (%)" Value="100"/>
                 <!-- Byte 9: 7 (1b) - frei -->
@@ -464,7 +472,7 @@
                 <!-- Byte 10: Bit 7 frei -->
                 <!-- Byte 11: -->
                 <Parameter Id="%AID%_UP-%TT%00073" Offset="11" BitOffset="0" Name="NEOablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
-                 <!-- Byte 12-13: frei-->
+                <!-- Byte 12-13: frei-->
               </Union>
               <!-- Global Startup Behavior Union -->
               <Union SizeInBit="56">
@@ -511,9 +519,9 @@
                 <!-- Position 6: no limited variant needed, only used if 6 strips -->
                 
                 <!-- Duplicate Status Display (informational parameter) -->
-                <Parameter Id="%AID%_UP-%TT%00079" Offset="3" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="Read" />
+                <Parameter Id="%AID%_UP-%TT%00079" Offset="3" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="None" />
                 <!-- Segment Start/End range error flag -->
-                <Parameter Id="%AID%_UP-%TT%00080" Offset="3" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: "          Value="0" Access="Read" />
+                <Parameter Id="%AID%_UP-%TT%00080" Offset="3" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: " Value="0" Access="Read" />
               </Union>
 
               <!-- Virtual Strip Start Indices (for UI only) -->
@@ -583,8 +591,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00071_R-%TT%0007101" RefId="%AID%_UP-%TT%00071" />
               <ParameterRef Id="%AID%_UP-%TT%00072_R-%TT%0007201" RefId="%AID%_UP-%TT%00072" />
               <ParameterRef Id="%AID%_UP-%TT%00073_R-%TT%0007301" RefId="%AID%_UP-%TT%00073" />
-              <ParameterRef Id="%AID%_UP-%TT%00074_R-%TT%0007401" RefId="%AID%_UP-%TT%00074" />
-              <ParameterRef Id="%AID%_UP-%TT%00075_R-%TT%0007501" RefId="%AID%_UP-%TT%00075" />
+              <ParameterRef Id="%AID%_UP-%TT%00081_R-%TT%0008101" RefId="%AID%_UP-%TT%00081" />
 
               <!-- Global Startup Behavior Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00024_R-%TT%0002401" RefId="%AID%_UP-%TT%00024" />
@@ -818,12 +825,15 @@
             </Script>
           </Static>
           <Dynamic>
-           <Channel Id="%AID%_CH-%PREFIX%" Number="%PREFIX%" Name="Main" Text="NeoPixel" Icon="neopixel" HelpContext="NEO-NeoPixel">
-              <ParameterBlock Id="%AID%_PB-nnn" Name="Basic" Text="Allgemein" Icon="cog-outline" HelpContext="NEO-NeoPixel">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel" UIHint="Headline" />
+          <Channel Id="%AID%_CH-%PREFIX%" Number="%PREFIX%" Name="Main" Text="NeoPixel" Icon="neopixel" HelpContext="NEO-NeoPixel">
+            <ParameterBlock Id="%AID%_PB-nnnn" Name="Basic" Text="Allgemein" Icon="cog-outline" HelpContext="NEO-NeoPixel">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="OpenKNX NeoPixel &amp; kompatible LEDs" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Professionelle Steuerung adressierbarer LED‑Streifen über KNX. Unterstützt NeoPixel&#169;‑Produkte von Adafruit sowie kompatible RGB/RGBW/RGBCCT‑LEDs mit Effekten, Farbsteuerung und intelligenter Strombegrenzung." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel&#169; ist ein eingetragenes Markenzeichen der Adafruit Industries." />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %ModuleVersion%" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wählen Sie Ihre OpenKNX-Hardware aus, um die Physikalische LED Streifen zu konfigurieren. Die Auto-Erkennung ist verfügbar wenn das Gerät programmiert ist." UIHint="Information" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Hardware Auswahl" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Bitte wählen Sie hier das von Ihnen verwendete OpenKNX‑Gerät aus. Die korrekte Auswahl ist erforderlich, damit ausschließlich die für dieses Gerät passenden Parameter und Funktionen bereitgestellt werden." />
                 <!-- BEGIN AUTO-GENERATED: Hardware Selection ParameterRefRef -->
                 <!-- Cleaned - Ready for regeneration -->
                 <!-- END AUTO-GENERATED: Hardware Selection ParameterRefRef -->
@@ -833,49 +843,52 @@
                     <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid">
                       <Rows>
                         <Row Id="%AID%_PB-nnn_R-1" />
-                        <Row Id="%AID%_PB-nnn_R-2" />
                       </Rows>
                       <Columns>
-                        <Column Id="%AID%_PB-nnn_C-1" Width="2%" />
-                        <Column Id="%AID%_PB-nnn_C-2" Width="98%" />
+                        <Column Id="%AID%_PB-nnn_C-1" Width="50%" />
+                        <Column Id="%AID%_PB-nnn_C-2" Width="50%" />
                       </Columns>
-                      <Button Id="%AID%_B-%TT%00003" Text="Hardware automatisch erkennen" Name="DetectHardware" Cell="1,2" EventHandler="NEO_detectHardware" EventHandlerOnline="ConnectionOriented" />
-                      <ParameterSeparator Id="%AID%_PS-nnn" Cell="2,2" Text="Liest die Information aus der angeschlossenen OpenKNX-Hardware aus und setzt die Hardware-Auswahl automatisch." />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Information wird automatisch vom Gerät ausgelesen, ausgewertet &amp; als Auswahl gesetzt:" Cell="1,1" />
+                      <Button Id="%AID%_B-%TT%00003" Text="Automatische Erkennung Starten" Name="DetectHardware" EventHandler="NEO_detectHardware" EventHandlerOnline="ConnectionOriented" Cell="1,2" />
                     </ParameterBlock>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Automatische Erkennung ist nach programmierung der Physikalischen KNX Adresse verfügbar.&#10;WICHTIG: Seite danach verlassen/neu betreten, um Erkennungs-Button zu aktivieren." UIHint="Information" />
                   </when>
                 </choose>
-                <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
-                  <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
-                    <!-- Mehr als 1 Segment definiert-->
-                    <when test=">1">
-                      <!-- Global Power KO -->
-                      <ComObjectRefRef RefId="%AID%_O-%TT%00000_R-%TT%0000001"  />
-                      <!-- Global Power State KO -->
-                      <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />
-                      <!-- Global Brightness KO -->
-                      <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
-                      <!-- Global Brightness State KO -->
-                      <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
+                  <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
+                    <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
+                      <!-- Mehr als 1 Segment definiert-->
+                      <when test=">1">
+                        <!-- Global Power KO -->
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00000_R-%TT%0000001"  />
+                        <!-- Global Power State KO -->
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />
+                        <!-- Global Brightness KO -->
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
+                        <!-- Global Brightness State KO -->
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
+                      </when>
+                    </choose>
+                  </ParameterBlock>
+                  <!-- Global Startup Behavior Dynamic UI -->
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten vor/nach Neustart" UIHint="Headline" />
+                  <!-- Turn Off LEDs before Restart -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00023_R-%TT%0002301" IndentLevel="1" HelpContext="%DOC%"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00024_R-%TT%0002401" IndentLevel="1" HelpContext="%DOC%"/>
+                  <choose ParamRefId="%AID%_UP-%TT%00024_R-%TT%0002401">
+                    <when test="2">
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00025_R-%TT%0002501" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00026_R-%TT%0002601" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00027_R-%TT%0002701" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00028_R-%TT%0002801" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" HelpContext="%DOC%"/>
                     </when>
                   </choose>
-                </ParameterBlock>
-                <!-- Turn Off LEDs before Restart -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00023_R-%TT%0002301" IndentLevel="1" HelpContext="%DOC%"/>
-                <!-- Global Startup Behavior Dynamic UI -->
-                <ParameterSeparator Id="%AID%_PS-GlobalStartup" Text="Verhalten nach Neustart" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00024_R-%TT%0002401" IndentLevel="1" HelpContext="%DOC%"/>
-                <choose ParamRefId="%AID%_UP-%TT%00024_R-%TT%0002401">
-                  <when test="2">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00025_R-%TT%0002501" IndentLevel="2" HelpContext="%DOC%"/>
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00026_R-%TT%0002601" IndentLevel="2" HelpContext="%DOC%"/>
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00027_R-%TT%0002701" IndentLevel="2" HelpContext="%DOC%"/>
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00028_R-%TT%0002801" IndentLevel="2" HelpContext="%DOC%"/>
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" HelpContext="%DOC%"/>
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" HelpContext="%DOC%"/>
-                  </when>
-                </choose>
-                <!-- ========================================================================================================= -->
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Kurve" UIHint="Headline" />
+                  <!-- ========================================================================================================= -->
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Kurve" UIHint="Headline" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Human Centric Lighting (HCL) passt die Lichtfarbe global und automatisch an die Tageszeit an (von warmweiß morgens/abends bis kaltweiß mittags). Wirkt auf alle Modi (Solid, Effekte) und alle Farben oder nur Weiß. Simuliert natürlichen Tagesverlauf." />
                   <!-- HCL Type -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" HelpContext="%DOC%"/>
                   <choose ParamRefId="%AID%_UP-%TT%00001_R-%TT%0000101">
@@ -944,21 +957,25 @@
                       </ParameterBlock>
                     </when>
                   </choose>
-              </ParameterBlock>
-              <ParameterBlock Id="%AID%_PB-nnn" Name="HCL" Text="HCL" Inline="true" ShowInComObjectTree="true">
+                </ParameterBlock>
+                <ParameterBlock Id="%AID%_PB-nnn" Name="HCL" Text="HCL" Inline="true" ShowInComObjectTree="true">
                 <!-- HCL State  -->
                 <ComObjectRefRef RefId="%AID%_O-%TT%00002_R-%TT%0000201" />
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Physikalisch" Text="Physikalische LED Streifen" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine LedStreifen Parameter" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalische LED-Streifen:" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie hier die Anzahl der angeschlossenen LED-Streifen. Konfigurieren Sie anschließend die einzelnen Streifen in dem Sie jeweils auf den jeweiligen LED-Streifen in der Baumstruktur klicken." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Bitte stellen Sie sicher, dass Sie auch nur die Anzahl an LED-Streifen konfigurieren, die Sie tatsächlich angeschlossen haben. Andernfalls kann es zu unerwartetem Verhalten kommen." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" />
                 <!-- LED Anzahl Strips -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="1" HelpContext="%DOC%" /> 
+                <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="1" HelpContext="%DOC%" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <op:include href="NeoPixel.Strip.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOSTRIP" IsInner="true" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Reihenfolge der physikalischen LED-Streifen werden in der Einstellung des Virtuellen LED-Streifens festgelegt." UIHint="Information" />
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Virtuell" Text="Virtueller LED Streifen" Icon="vledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Reihenfolge der physikalischen LED-Streifen im virtuellen Streifen" UIHint="Headline" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wählen Sie für jede Position aus, welcher physikalische LED-Streifen verwendet werden soll." UIHint="Information" />
-                
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Reihenfolge der physikalischen LED-Streifen im Virtuellen LED-Streifen" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Legen Sie fest, in welcher Reihenfolge die physikalischen LED-Streifen zum virtuellen Streifen zusammengefügt werden. Diese Reihenfolge bestimmt die LED-Nummerierung im virtuellen Streifen für die Segment-Definition." UIHint="Information" />
                 <!-- Virtual Strip Order Table -->
                 <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
                   <Rows>
@@ -979,11 +996,11 @@
                   </Columns>
                   
                   <!-- Header Row -->
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Position"                    UIHint="Headline" Cell="1,1" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalischer LED Streifen" UIHint="Headline" Cell="1,2" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Name"                        UIHint="Headline" Cell="1,3" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Start LED"                   UIHint="Headline" Cell="1,4" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="End LED"                     UIHint="Headline" Cell="1,5" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Position"                 UIHint="Headline" Cell="1,1" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalischer Streifen" UIHint="Headline" Cell="1,2" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Name"                     UIHint="Headline" Cell="1,3" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Start LED"                UIHint="Headline" Cell="1,4" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="  End LED"                UIHint="Headline" Cell="1,5" />
 
                   <!-- show as many rows as physical strips are selected -->
                   <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
@@ -1504,68 +1521,31 @@
                 <!-- Virtual Strip Status Display -->
                 <choose ParamRefId="%AID%_UP-%TT%00079_R-%TT%0007901">
                   <when test="=1">
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="⚠ Warnung: Mindestens zwei Teile des virtuelle Streifens verwenden denselben physikalischen Streifen! ⚠" UIHint="Error" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Fehler: Mindestens zwei Teile des virtuelle Streifens verwenden denselben physikalischen Streifen!" UIHint="Error" />
                   </when>
                   <when test="=0">
-                    <!-- <ParameterSeparator Id="%AID%_PS-nnn" Text="✓ Alle virtuellen Streifen sind eindeutig konfiguriert" UIHint="Information" /> -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Alle virtuellen Streifen sind eindeutig konfiguriert" UIHint="Information" />
                   </when>
                 </choose>
                 <!-- ========================================================================================================= -->
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Strom-Einstellungen" UIHint="Headline" />
-                    <!-- powerLimitEnabled -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" HelpContext="%DOC%"/>
-                    <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
-                    <when test="!=0">
-                        <!-- powerLimitType -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00075_R-%TT%0007501" IndentLevel="1" HelpContext="%DOC%"/>
-                        <choose ParamRefId="%AID%_UP-%TT%00075_R-%TT%0007501">
-                        <when test="0">
-                            <!-- powerLimitGlobal -->
-                            <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="1" HelpContext="%DOC%"/>
-                        </when>
-                        <when test="1">
-                            <!-- currentPerChannel -->
-                            <ParameterRefRef RefId="%AID%_UP-%TT%00070_R-%TT%0007001" IndentLevel="1" HelpContext="%DOC%"/>
-                        </when>
-                        <when test="2">
-                            <!-- powerLimitPerLED -->
-                            <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="1" HelpContext="%DOC%"/>
-                        </when>
-                        </choose>
-                        <!-- autoBrightnessLimit -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="1" HelpContext="%DOC%"/>
-                        <!-- powerLimitThreshold -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="1" HelpContext="%DOC%"/>
-                        <!-- ablSlewRatePercent -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="1" HelpContext="%DOC%"/>
-                  </when>
-                  </choose>
-                <!-- ========================================================================================================= -->
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Segment Parameter" UIHint="Headline" />
-                <!-- Segment Anzahl Strips -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00021_R-%TT%0002101" IndentLevel="1" HelpContext="%DOC%" />  
-                <!-- Update Speed -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="1" HelpContext="%DOC%"/>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <!-- ========================================================================================================= -->
                 <!-- Segment-Übersicht -->
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Segment-Übersicht" UIHint="Headline" />
-
+                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Segmente:" UIHint="Headline" />
+                <!-- Segment Anzahl Strips -->
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie bis zu 16 unabhängige Segmente auf dem virtuellen LED-Streifen. Jedes Segment kann einen eigenen Effekt, eigene Farben und Timing-Einstellungen haben." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Segmente werden durch Start- und End-LED-Positionen definiert und können sich überlappen oder Lücken lassen." />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00021_R-%TT%0002101" IndentLevel="1" HelpContext="%DOC%" />  
                 <!-- Segment Start/End Status Display -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" IndentLevel="1"/> 
                 <choose ParamRefId="%AID%_UP-%TT%00059_R-%TT%0005901">
                   <when test="=1">
                     <ParameterSeparator
-                      Id="%AID%_PS-SegmentStartEndError" Text="⚠ Fehler: Mindestens ein Segment hat eine ungültige LED-Bereichsdefinition (Start-LED ist größer als Ende-LED)! ⚠" UIHint="Error" />
+                      Id="%AID%_PS-SegmentStartEndError" Text="Fehler: Mindestens ein Segment hat eine ungültige LED-Bereichsdefinition (Start-LED ist größer als Ende-LED)!" UIHint="Error" />
                   </when>
                   <when test="=0">
                     <!-- optional: OK-Info -->
-                    <ParameterSeparator Id="%AID%_PS-SegmentStartEndOk" Text="✓ Alle Segment Start-/Ende-LED Bereiche sind gültig." UIHint="Information" />
+                    <ParameterSeparator Id="%AID%_PS-SegmentStartEndOk" Text="Alle Segment Start-/Ende-LED Bereiche sind gültig." UIHint="Information" />
                   </when>
                 </choose>
-
                 <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
                   <Rows>
                     <Row Id="%AID%_PB-nnn_R-1"  Name="Header" />
@@ -1758,12 +1738,48 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%16057_R-%TT%1605701" Cell="17,4" />
                     </when>
                   </choose>
-
                 </ParameterBlock>
-
-
-
+                <ParameterBlock Id="%AID%_PB-nnn" Name="Allgemein-VStrip" Text="Allgemein" Icon="cog-outline" ShowInComObjectTree="true">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Einstellungen des virtuellen LED-Streifens" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Diese Parameter gelten für alle Segmente und sorgen für ein einheitliches, harmonisches Lichtverhalten des gesamten Streifens." />
+                    <!-- Hier können allgemeine Einstellungen eingefügt werden -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Segment Einstellungen:" UIHint="Headline" />
+                    <!-- Update Speed -->
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="1" HelpContext="%DOC%"/>
+                    <!-- Combined UI Dropdown -->
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" HelpContext="%DOC%"/>
+                      <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
+                        <!-- Not Deaktiviert -->
+                        <when test="!=0">
+                            <!-- Check which mode -->
+                            <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
+                              <!-- Global: powerLimitGlobal -->
+                              <when test="1"> 
+                                <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="1" HelpContext="%DOC%"/>
+                              </when>
+                              <!-- Per Channel: powerLimitPerChannel -->
+                              <when test="2">
+                                <ParameterRefRef RefId="%AID%_UP-%TT%00070_R-%TT%0007001" IndentLevel="1" HelpContext="%DOC%"/>
+                              </when>
+                              <!-- Per LED: powerLimitPerLED -->
+                              <when test="3">
+                                <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="1" HelpContext="%DOC%"/>
+                              </when>
+                            </choose>
+                            <!-- Common parameters when enabled -->
+                            <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="1" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="1" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="1" HelpContext="%DOC%"/>
+                        </when>
+                      </choose>
+                    <!-- ========================================================================================================= -->
+                </ParameterBlock>
+                <!-- ========================================================================================================= -->
+                <!-- Segment Templates -->
                 <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEO" IsInner="true" />
+                <!-- ========================================================================================================= -->
+                
               </ParameterBlock>
             </Channel>
           </Dynamic>

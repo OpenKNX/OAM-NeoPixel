@@ -232,6 +232,12 @@ void NeoPixelBusModule::processBeforeRestart()
     }
 }
 
+void NeoPixelBusModule::processBeforeTablesUnload()
+{
+    // Let's do for now the same as processBeforeRestart
+    processBeforeRestart();
+}
+
 // ============================================================================
 // Flash State Persistence - Delegate to NeoPixelFlashPersistence
 // ============================================================================
@@ -2453,16 +2459,15 @@ void NeoPixelBusModule::configurePowerManagement()
         return;
     }
 
-    // Read GLOBAL power parameters
-    bool powerLimitEnabled = (bool)ParamNEO_NEOpowerLimitEnabled;
+    // Read GLOBAL power parameters (Combined: 0=Disabled, 1=Global, 2=PerChannel, 3=PerLED)
+    uint8_t powerLimitCombined = (uint8_t)ParamNEO_NEOpowerLimitCombined;
 
     // Configure power management in OFM
-    powerManager->setEnabled(powerLimitEnabled);
+    powerManager->setEnabled(powerLimitCombined != 0); // Enabled if not 0
 
-    if (powerLimitEnabled)
+    if (powerLimitCombined != 0)
     {
         // Read all ETS parameters
-        uint8_t powerLimitType = (uint8_t)ParamNEO_NEOpowerLimitType; // 0=Global, 1=PerChannel, 2=PerLED
         uint16_t powerLimitGlobal = (uint16_t)ParamNEO_NEOpowerLimitGlobal;
         uint16_t currentPerChannel = (uint16_t)ParamNEO_NEOcurrentPerChannel;
         uint8_t currentPerLed = (uint8_t)ParamNEO_NEOcurrentPerLED;
@@ -2470,13 +2475,13 @@ void NeoPixelBusModule::configurePowerManagement()
         uint8_t powerLimitThreshold = (uint8_t)ParamNEO_NEOpowerLimitThreshold;
         uint8_t ablSlewRate = (uint8_t)ParamNEO_NEOablSlewRatePercent;
 
-        // Set power limit mode
+        // Set power limit mode based on combined value
         PowerLimitMode mode;
-        switch (powerLimitType)
+        switch (powerLimitCombined)
         {
-            case 0: mode = PowerLimitMode::GLOBAL; break;
-            case 1: mode = PowerLimitMode::PER_CHANNEL; break;
-            case 2: mode = PowerLimitMode::PER_LED; break;
+            case 1: mode = PowerLimitMode::GLOBAL; break;
+            case 2: mode = PowerLimitMode::PER_CHANNEL; break;
+            case 3: mode = PowerLimitMode::PER_LED; break;
             default: mode = PowerLimitMode::GLOBAL; break;
         }
         powerManager->setPowerLimitMode(mode);

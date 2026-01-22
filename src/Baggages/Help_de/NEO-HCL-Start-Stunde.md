@@ -3,7 +3,7 @@
 Stunde der **Startzeit** für den **zeitbasierten HCL‑Modus**.
 
 ## Gültig wenn
-- **HCL Kurve Typ = Zeit**
+- **HCL KurvenTyp = Zeit**
 
 ## Werte
 - **0…23**
