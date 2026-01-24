@@ -270,6 +270,11 @@ $HW_DATA_GPIO_BASE_ID = 700   # Data GPIO base offset (700-799)
 $HW_CLOCK_GPIO_BASE_ID = 800  # Clock GPIO base offset (800-899)
 $MAX_HARDWARE_VARIANTS = 99   # Maximum supported hardware variants (0-99)
 
+$GPIO_MANUAL_VALUE = 10  # Value for "Manual" GPIO selection (Previous: 10) --> ToDo EC: Use 99, currently conflicts/Problmes
+$GPIO_DUMMY_VALUE = 15   # Value for dummy/placeholder option (Previous: 15) --> ToDo EC: Use 98, currently conflicts/Problems
+$GPIO_DUMMY_VALUE_EMPTY = 97  # Value for empty dummy/placeholder option NEW! --> ToDo EC: Using 97, We need to check! 
+
+
 # ====================================================================
 # Configuration
 # ====================================================================
@@ -963,7 +968,7 @@ function Generate-HardwareChangeResetCalculation {
     [int]$NumStrips = 6
   )
 
-  # Generate ParameterCalculation that resets all ports to Dummy (15) on hardware change
+  # Generate ParameterCalculation that resets all ports to Dummy ($GPIO_DUMMY_VALUE) on hardware change
   # Prevents conflicts from different port value mappings across hardware variants
 
   # LParameter: Hardware Selection
@@ -973,7 +978,7 @@ function Generate-HardwareChangeResetCalculation {
 
   # RParameters: All Data + Clock ports
   $rParams = "<RParameters>`n"
-  $rParams += "  <!-- Reset all Data ports to Dummy (15) -->`n"
+  $rParams += "  <!-- Reset all Data ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $portParamId = "00" + (100 + $stripIdx).ToString()
@@ -981,7 +986,7 @@ function Generate-HardwareChangeResetCalculation {
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${portParamId}_R-%TT%${refId}`" AliasName=`"Strip${stripIdx}DataPort`" />`n"
   }
 
-  $rParams += "  <!-- Reset all Clock ports to Dummy (15) -->`n"
+  $rParams += "  <!-- Reset all Clock ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $clockPortParamId = "00" + (110 + $stripIdx).ToString()
@@ -1028,7 +1033,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   }
 
   # Determine parameter IDs based on type
-  $manualInputParam = if ($Type -eq "Data") { "033" } else { "233" }
+  $manualInputParam = if ($Type -eq "Data") { "033" } else { "034" }
   $mosiParam = "035"  # Only for Data type SPI
 
   # Start building the XML
@@ -1038,8 +1043,13 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   # Special case for Hardware=255 (no hardware selected - dummy value)
   $xml += "  <!-- Keine Hardware ausgewählt (Dummy-Wert 255) -->`n"
   $xml += "  <when test=`"255`">`n"
-  $xml += "    <!-- Show error message: Hardware must be selected first -->`n"
-  $xml += "    <ParameterSeparator Id=`"%AID%_PS-nohw%C%`" Text=`"Keine Hardware ausgewählt! Bitte wählen Sie zuerst eine Hardware aus.`" UIHint=`"Error`"/>`n"
+  if ($Type -eq "Data") {
+    $xml += "    <!-- Show error message: Hardware must be selected first -->`n"
+    $xml += "    <ParameterSeparator Id=`"%AID%_PS-nohw%C%`" Text=`"Keine Hardware ausgewählt! Bitte wählen Sie zuerst eine Hardware aus.`" UIHint=`"Error`"/>`n"
+  } else {
+    $xml += "    <!-- Clock: Hardware not selected - no message (Data already shows it) -->`n"
+    $xml += "    <!-- <ParameterSeparator Id=`"%AID%_PS-nohwclock%C%`" Text=`"`"/> -->`n"
+  }
   $xml += "  </when>`n"
 
   # Generate Choose-block for each hardware
@@ -1073,7 +1083,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
 
     $xml += "  <when test=`"$($hw.Id)`">`n"
     $xml += "    <choose ParamRefId=`"%AID%_UP-%TT%0%C%${paramId}_R-%TT%0%C%${paramRef}`">`n"
-    $xml += "      <when test=`"10`">`n"
+    $xml += "      <when test=`"${GPIO_MANUAL_VALUE}`">`n"
 
     if ($Type -eq "Data") {
       # Data type has special SPI handling
@@ -1101,7 +1111,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   # Default fallback for manual input
   $xml += "  <when default=`"true`">`n"
   $xml += "    <choose ParamRefId=`"%AID%_UP-%TT%9%C%${defaultParam}_R-%TT%9%C%${defaultRef}`">`n"
-  $xml += "      <when test=`"10`">`n"
+  $xml += "      <when test=`"${GPIO_MANUAL_VALUE}`">`n"
 
   if ($Type -eq "Data") {
     $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
@@ -1229,15 +1239,15 @@ function Generate-ConflictDetectionJS {
   $fullJS += "}`n"
   $fullJS += "`n"
   $fullJS += "// ============================================================================================================`n"
-  $fullJS += "// HARDWARE WECHSEL: Reset alle Port-Zuweisungen auf Dummy (15)`n"
+  $fullJS += "// HARDWARE WECHSEL: Reset alle Port-Zuweisungen auf Dummy ($GPIO_DUMMY_VALUE)`n"
   $fullJS += "// Verhindert Konflikte durch unterschiedliche Port-Values bei verschiedenen Hardware-Varianten`n"
   $fullJS += "// ============================================================================================================`n"
   $fullJS += "function NEO_ResetAllPortsOnHardwareChange(input, output, context) {`n"
   for ($i = 1; $i -le $NumStrips; $i++) {
-    $fullJS += "  output.Strip${i}DataPort = 15;`n"
+    $fullJS += "  output.Strip${i}DataPort = $GPIO_DUMMY_VALUE;`n"
   }
   for ($i = 1; $i -le $NumStrips; $i++) {
-    $fullJS += "  output.Strip${i}ClockPort = 15;`n"
+    $fullJS += "  output.Strip${i}ClockPort = $GPIO_DUMMY_VALUE;`n"
   }
   $fullJS += "}`n"
   $fullJS += "`n"
@@ -1248,10 +1258,10 @@ function Generate-ConflictDetectionJS {
   $fullJS += "// UNTERSTÜTZT: Data vs Data, Clock vs Clock, Data vs Clock Cross-Konflikte`n"
   $fullJS += "// ============================================================================================================`n"
   $fullJS += "function NEO_DetectGPIOConflicts(input, output, context) {`n"
-  $fullJS += "  // Data Port-Werte für alle $NumStrips Strips lesen (0=Nicht verwendet, 10=Manuell)`n"
+  $fullJS += "  // Data Port-Werte für alle $NumStrips Strips lesen (0=Nicht verwendet, $GPIO_MANUAL_VALUE=Manuell)`n"
   $fullJS += $jsInit + "`n"
   $fullJS += "  `n"
-  $fullJS += "  // Clock Port-Werte für alle $NumStrips Strips lesen (0=Nicht verwendet, 10=Manuell)`n"
+  $fullJS += "  // Clock Port-Werte für alle $NumStrips Strips lesen (0=Nicht verwendet, $GPIO_MANUAL_VALUE=Manuell)`n"
   $fullJS += $jsClockInit + "`n"
   $fullJS += "  `n"
   $fullJS += $jsOutputInit + "`n"
@@ -1261,12 +1271,12 @@ function Generate-ConflictDetectionJS {
   $fullJS += "  // CHECK 1: Data vs Data Konflikte`n"
   $fullJS += "  for (var i = 0; i < 6; i++) {`n"
   $fullJS += "    var dataI = dataPorts[i];`n"
-  $fullJS += "    if (dataI == 10 || dataI == 15) continue;  // Manuell oder Dummy`n"
+  $fullJS += "    if (dataI == $GPIO_MANUAL_VALUE || dataI == $GPIO_DUMMY_VALUE) continue;  // Manuell oder Dummy`n"
   $fullJS += "    `n"
   $fullJS += "    for (var j = i + 1; j < 6; j++) {`n"
   $fullJS += "      var dataJ = dataPorts[j];`n"
   $fullJS += "      `n"
-  $fullJS += "      if (dataI == dataJ && dataJ != 10 && dataJ != 15) {`n"
+  $fullJS += "      if (dataI == dataJ && dataJ != $GPIO_MANUAL_VALUE && dataJ != $GPIO_DUMMY_VALUE) {`n"
   $fullJS += "        // BEIDE Strips bekommen Data-Konflikt-Flag`n"
   $fullJS += $jsConflictAssignmentsI
   $fullJS += "        `n"
@@ -1278,12 +1288,12 @@ function Generate-ConflictDetectionJS {
   $fullJS += "  // CHECK 2: Clock vs Clock Konflikte`n"
   $fullJS += "  for (var i = 0; i < 6; i++) {`n"
   $fullJS += "    var clockI = clockPorts[i];`n"
-  $fullJS += "    if (clockI == 10 || clockI == 15) continue;  // Manuell oder Dummy`n"
+  $fullJS += "    if (clockI == $GPIO_MANUAL_VALUE || clockI == $GPIO_DUMMY_VALUE) continue;  // Manuell oder Dummy`n"
   $fullJS += "    `n"
   $fullJS += "    for (var j = i + 1; j < 6; j++) {`n"
   $fullJS += "      var clockJ = clockPorts[j];`n"
   $fullJS += "      `n"
-  $fullJS += "      if (clockI == clockJ && clockJ != 10 && clockJ != 15) {`n"
+  $fullJS += "      if (clockI == clockJ && clockJ != $GPIO_MANUAL_VALUE && clockJ != $GPIO_DUMMY_VALUE) {`n"
   $fullJS += "        // BEIDE Strips bekommen Clock-Konflikt-Flag`n"
   $fullJS += $jsClockConflictAssignmentsI
   $fullJS += "        `n"
@@ -1295,14 +1305,14 @@ function Generate-ConflictDetectionJS {
   $fullJS += "  // CHECK 3: Data vs Clock Cross-Konflikte (CRITICAL!)`n"
   $fullJS += "  for (var i = 0; i < 6; i++) {`n"
   $fullJS += "    var dataI = dataPorts[i];`n"
-  $fullJS += "    if (dataI == 10 || dataI == 15) continue;  // Manuell oder Dummy`n"
+  $fullJS += "    if (dataI == $GPIO_MANUAL_VALUE || dataI == $GPIO_DUMMY_VALUE) continue;  // Manuell oder Dummy`n"
   $fullJS += "    `n"
   $fullJS += "    for (var j = 0; j < 6; j++) {`n"
   $fullJS += "      if (i == j) continue;  // Selber Strip`n"
   $fullJS += "      `n"
   $fullJS += "      var clockJ = clockPorts[j];`n"
   $fullJS += "      `n"
-  $fullJS += "      if (dataI == clockJ && clockJ != 10 && clockJ != 15) {`n"
+  $fullJS += "      if (dataI == clockJ && clockJ != $GPIO_MANUAL_VALUE && clockJ != $GPIO_DUMMY_VALUE) {`n"
   $fullJS += "        // Strip i hat Data-Konflikt, Strip j hat Clock-Konflikt`n"
   $fullJS += $jsCrossDataConflictAssignments
   $fullJS += "        `n"
@@ -1317,7 +1327,7 @@ function Generate-ConflictDetectionJS {
   $fullJS += "    var clockI = clockPorts[i];`n"
   $fullJS += "    `n"
   $fullJS += "    // Skip wenn einer der Ports manuell ist oder Dummy`n"
-  $fullJS += "    if (dataI == 10 || dataI == 15 || clockI == 10 || clockI == 15) continue;`n"
+  $fullJS += "    if (dataI == $GPIO_MANUAL_VALUE || dataI == $GPIO_DUMMY_VALUE || clockI == $GPIO_MANUAL_VALUE || clockI == $GPIO_DUMMY_VALUE) continue;`n"
   $fullJS += "    `n"
   $fullJS += "    // Konflikt wenn Data-Port = Clock-Port im selben Strip`n"
   $fullJS += "    if (dataI == clockI) {`n"
@@ -1416,6 +1426,24 @@ function Generate-HardwareIdMappingJS {
     $hwName = $hwConfig.DeviceName
     $hwId = $hwConfig.DeviceIdBit
     $jsMapping += "    $hwId`: $i"  # Hardware ID → Index
+    if ($i -lt ($HardwareConfigs.Count - 1)) {
+      $jsMapping += ","
+    }
+    $jsMapping += "  // $hwName → Index $i`n"
+  }
+  
+  $jsMapping += "};`n"
+
+  $jsMapping += "`n"
+  $jsMapping += "// Hardware ID to Hardware Name mapping for UI display`n"
+  $jsMapping += "var hardwareNameMap = {`n"
+  $jsMapping += "    // AUTO-GENERATED: Hardware ID → HWName mappings will be inserted here by Build-HardwareConfig.ps1`n"
+  
+  for ($i = 0; $i -lt $HardwareConfigs.Count; $i++) {
+    $hwConfig = $HardwareConfigs[$i]
+    $hwName = $hwConfig.DeviceName
+    $hwId = $hwConfig.DeviceIdBit
+    $jsMapping += "    $hwId`: '$hwName'"  # Hardware ID → HWName
     if ($i -lt ($HardwareConfigs.Count - 1)) {
       $jsMapping += ","
     }
@@ -2221,6 +2249,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
 
   # DEBUG: Show preprocessor command
   if ($DryRun) {
+    Write-Host "    [DEBUG] All Build Flags: $($hwConfig.BuildFlags -join ' ')" -ForegroundColor Magenta
     $hwDefines = $hwConfig.BuildFlags | Where-Object { $_ -match "^-DOKNXHW" }
     Write-Host "    [DEBUG] HW Defines: $($hwDefines -join ' ')" -ForegroundColor Magenta
   }
@@ -2280,12 +2309,22 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
 
     # DEBUG: Show extracted values
     if ($DryRun) {
+      Write-Host "    [DEBUG] Extracted keys: $($hwData.Keys -join ', ')" -ForegroundColor Yellow
       $deviceBitLines = $extractorOutput | Where-Object { $_ -match "DEVICE_ID_BIT" }
       if ($deviceBitLines) {
         Write-Host "    [DEBUG] DEVICE_ID_BIT lines: $($deviceBitLines -join ' | ')" -ForegroundColor Yellow
       }
       else {
         Write-Host "    [DEBUG] No DEVICE_ID_BIT found in extractor output" -ForegroundColor Red
+      }
+      
+      # Debug GPIO port extraction
+      $gpioPortLines = $extractorOutput | Where-Object { $_ -match "HW_GPIO_PORT.*=" }
+      if ($gpioPortLines) {
+        Write-Host "    [DEBUG] GPIO Port lines: $($gpioPortLines -join ' | ')" -ForegroundColor Yellow
+      }
+      else {
+        Write-Host "    [DEBUG] No HW_GPIO_PORT found in extractor output" -ForegroundColor Red
       }
     }
 
@@ -2349,7 +2388,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
           # Extract GPIO number for JavaScript (even though C++ uses NEOPIXEL_HW_PORT_{index}_GPIO)
           $gpioKey = "NEOPIXEL_HW_PORT_${i}_GPIO"
           $gpioNum = if ($hwData.ContainsKey($gpioKey)) {
-            $hwData[$gpioKey] -replace '"', '' -replace '\\+', ''
+            $hwData[$gpioKey] -replace '"', '' -replace '\\+', '' -replace '[()]', ''
           }
           else {
             -1  # Unknown GPIO
@@ -2478,10 +2517,10 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $portCount = $hwConfig.GPIOPorts.Count
 
   # Calculate bits needed for this hardware's port count + Manual
-  $maxValue = [Math]::Max($portCount, 10)  # Manual = 10
-  $bitsNeeded = [Math]::Ceiling([Math]::Log($maxValue + 1) / [Math]::Log(2))
-  if ($bitsNeeded -lt 4) { $bitsNeeded = 4 }
-
+  #$maxValue = [Math]::Max($portCount, 10)  # Manual = 10
+  #$bitsNeeded = [Math]::Ceiling([Math]::Log($maxValue + 1) / [Math]::Log(2))
+  #if ($bitsNeeded -lt 4) { $bitsNeeded = 4 }
+  $bitsNeeded = 8  # Force 8 bits to avoid issues with >16 ports (e.g. OKNXHW_X7 with 20 ports)
   $parameterTypeXml += @"
 
 <!-- GPIO Port Selection for HW${hwIdx}: ${hwName} (${portCount} port(s)) -->
@@ -2489,21 +2528,28 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   <TypeRestriction Base="Value" SizeInBit="$bitsNeeded">
 "@
 
-  # Add DUMMY option first (value 15) - always shown, never conflicts
-  $dummyEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-15"
-  $parameterTypeXml += "    <Enumeration Text=`"--- Wählen Sie bitte ein Port aus ---`" Value=`"15`" Id=`"${dummyEnumId}`" />`n"
-
+  # Add DUMMY option first (value $GPIO_DUMMY_VALUE) - always shown, never conflicts
+  $dummyEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-${GPIO_DUMMY_VALUE}"
   # Add port enumerations (0 to portCount-1)
-  for ($portIdx = 0; $portIdx -lt $portCount; $portIdx++) {
-    $gpioPort = $hwConfig.GPIOPorts[$portIdx]
-    $gpioPortLabel = $gpioPort.Label  # Extract Label from Hashtable
-    $enumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-${portIdx}"
-    $parameterTypeXml += "    <Enumeration Text=`"${gpioPortLabel}`" Value=`"${portIdx}`" Id=`"${enumId}`" />`n"
+  if( $portCount -eq 0) {
+    Write-WarningMsg "  Hardware '$hwName' has no GPIO ports defined - generating empty GPIO Port ParameterType"
+    $parameterTypeXml += "    <Enumeration Text=`"--- Setzen Sie bitte den Port manuell ---`" Value=`"${GPIO_DUMMY_VALUE}`" Id=`"${dummyEnumId}`" />`n"
+    
+    $dummyEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-${GPIO_DUMMY_VALUE_EMPTY}"
+    $parameterTypeXml += "    <Enumeration Text=`"-----------------------------------------`" Value=`"${GPIO_DUMMY_VALUE_EMPTY}`" Id=`"${dummyEnumId}`" />`n"
+  } else {
+    $parameterTypeXml += "    <Enumeration Text=`"--- Wählen Sie bitte ein Port aus ---`" Value=`"${GPIO_DUMMY_VALUE}`" Id=`"${dummyEnumId}`" />`n"
+    for ($portIdx = 0; $portIdx -lt $portCount; $portIdx++) {
+      $gpioPort = $hwConfig.GPIOPorts[$portIdx]
+      $gpioPortLabel = $gpioPort.Label  # Extract Label from Hashtable
+      $enumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-${portIdx}"
+      $parameterTypeXml += "    <Enumeration Text=`"${gpioPortLabel}`" Value=`"${portIdx}`" Id=`"${enumId}`" />`n"
+    }
   }
 
-  # Add "Manuell" option with value 10
-  $manualEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-10"
-  $parameterTypeXml += "    <Enumeration Text=`"Manuell`" Value=`"10`" Id=`"${manualEnumId}`" />`n"
+  # Add "Manuell" option with value ${GPIO_MANUAL_VALUE}
+  $manualEnumId = "%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}_EN-${GPIO_MANUAL_VALUE}"
+  $parameterTypeXml += "    <Enumeration Text=`"Manuell`" Value=`"${GPIO_MANUAL_VALUE}`" Id=`"${manualEnumId}`" />`n"
 
   $parameterTypeXml += @"
   </TypeRestriction>
@@ -2522,9 +2568,10 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $portCount = $hwConfig.GPIOPorts.Count
 
   # Calculate bits needed for this hardware's port count + Manual
-  $maxValue = [Math]::Max($portCount, 10)  # Manual = 10
-  $bitsNeeded = [Math]::Ceiling([Math]::Log($maxValue + 1) / [Math]::Log(2))
-  if ($bitsNeeded -lt 4) { $bitsNeeded = 4 }
+  #$maxValue = [Math]::Max($portCount, $GPIO_MANUAL_VALUE)  # Manual = 10
+  #$bitsNeeded = [Math]::Ceiling([Math]::Log($maxValue + 1) / [Math]::Log(2))
+  #if ($bitsNeeded -lt 4) { $bitsNeeded = 4 }
+  $bitsNeeded = 8 # Force 8 bits to avoid issues with >16 ports (e.g. OKNXHW_X7 with 20 ports)
 
   $parameterTypeXml += @"
 
@@ -2533,21 +2580,28 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   <TypeRestriction Base="Value" SizeInBit="$bitsNeeded">
 "@
 
-  # Add DUMMY option first (value 15) - same as Data GPIO
-  $dummyEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-15"
-  $parameterTypeXml += "    <Enumeration Text=`"--- Wählen Sie bitte ein Port aus ---`" Value=`"15`" Id=`"${dummyEnumId}`" />`n"
-
-  # Add port enumerations (0 to portCount-1)
-  for ($portIdx = 0; $portIdx -lt $portCount; $portIdx++) {
-    $gpioPort = $hwConfig.GPIOPorts[$portIdx]
-    $gpioPortLabel = $gpioPort.Label  # Extract Label from Hashtable
-    $enumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-${portIdx}"
-    $parameterTypeXml += "    <Enumeration Text=`"${gpioPortLabel}`" Value=`"${portIdx}`" Id=`"${enumId}`" />`n"
+  $dummyEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-${GPIO_DUMMY_VALUE}"
+  if( $portCount -eq 0) {
+    Write-WarningMsg "  Hardware '$hwName' has no GPIO ports defined - generating empty GPIO Clock Port ParameterType"
+    $parameterTypeXml += "    <Enumeration Text=`"--- Setzen Sie bitte den Port manuell ---`" Value=`"${GPIO_DUMMY_VALUE}`" Id=`"${dummyEnumId}`" />`n"
+  
+    $dummyEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-${GPIO_DUMMY_VALUE_EMPTY}"
+    $parameterTypeXml += "    <Enumeration Text=`"-----------------------------------------`" Value=`"${GPIO_DUMMY_VALUE_EMPTY}`" Id=`"${dummyEnumId}`" />`n"
+  } else {
+    # Add DUMMY option first (value $GPIO_DUMMY_VALUE) - same as Data GPIO
+    $parameterTypeXml += "    <Enumeration Text=`"--- Wählen Sie bitte ein Port aus ---`" Value=`"${GPIO_DUMMY_VALUE}`" Id=`"${dummyEnumId}`" />`n"
+    # Add port enumerations (0 to portCount-1)
+    for ($portIdx = 0; $portIdx -lt $portCount; $portIdx++) {
+      $gpioPort = $hwConfig.GPIOPorts[$portIdx]
+      $gpioPortLabel = $gpioPort.Label  # Extract Label from Hashtable
+      $enumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-${portIdx}"
+      $parameterTypeXml += "    <Enumeration Text=`"${gpioPortLabel}`" Value=`"${portIdx}`" Id=`"${enumId}`" />`n"
+    }
   }
 
   # Add "Manuell" option with value 10
-  $manualEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-10"
-  $parameterTypeXml += "    <Enumeration Text=`"Manuell`" Value=`"10`" Id=`"${manualEnumId}`" />`n"
+  $manualEnumId = "%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}_EN-${GPIO_MANUAL_VALUE}"
+  $parameterTypeXml += "    <Enumeration Text=`"Manuell`" Value=`"${GPIO_MANUAL_VALUE}`" Id=`"${manualEnumId}`" />`n"
 
   $parameterTypeXml += @"
   </TypeRestriction>
@@ -2583,7 +2637,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $gpioPortParamXml += "`n"
   }
   $gpioPortParamXml += @"
-<Parameter Id="%AID%_UP-%TT%0%C%$paramIdFormatted" Offset="5" BitOffset="4" Name="NEO%C%GPIODataPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Daten Port" Value="15"/>
+<Parameter Id="%AID%_UP-%TT%0%C%$paramIdFormatted" Offset="5" BitOffset="4" Name="NEO%C%GPIODataPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOPortHW${hwIdx}" Text="Daten Port" Value="${GPIO_DUMMY_VALUE}"/>
 "@
 }
 
@@ -2605,7 +2659,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $gpioClockParamXml += "`n"
   }
   $gpioClockParamXml += @"
-<Parameter Id="%AID%_UP-%TT%0%C%$paramIdFormatted" Offset="3" BitOffset="0" Name="NEO%C%GPIOClockPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}" Text="Clock Port" Value="15"/>
+<Parameter Id="%AID%_UP-%TT%0%C%$paramIdFormatted" Offset="3" BitOffset="0" Name="NEO%C%GPIOClockPortHW$hwIdx" ParameterType="%AID%_PT-${FeatureName}GPIOClockPortHW${hwIdx}" Text="Clock Port" Value="${GPIO_DUMMY_VALUE}"/>
 "@
 }
 
@@ -2807,7 +2861,7 @@ else {
 # Generate Hardware Change Reset ParameterCalculation
 Write-Host "  • Generating Hardware Change Reset ParameterCalculation..." -ForegroundColor Cyan
 if (Generate-HardwareChangeResetCalculation -ShareXmlPath $shareXmlPath -NumStrips 6) {
-  Write-Success "Hardware Change Reset ParameterCalculation generated (resets all ports to 15)"
+  Write-Success "Hardware Change Reset ParameterCalculation generated (resets all ports to $GPIO_DUMMY_VALUE)"
 }
 else {
   Write-WarningMsg "Hardware Change Reset markers not found - skipped"
@@ -3046,7 +3100,7 @@ $centralWarningXml = @"
 <ParameterRefRef RefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01" IndentLevel="1" />
 <!-- Data Port = Manuell OR (LED is SPI AND Clock Port = Manuell) -->
 <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
-  <when test="10">
+  <when test="${GPIO_MANUAL_VALUE}">
     <!-- Data Port is Manuell → show warning (regardless of Clock Port) -->
   </when>
   <when default="true">
@@ -3055,7 +3109,7 @@ $centralWarningXml = @"
       <when test="5 21 22 23 24 25">
         <!-- LED type is SPI → check Clock Port -->
         <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
-          <when test="10">
+          <when test="${GPIO_MANUAL_VALUE}">
             <!-- Clock Port is Manuell → show warning -->
           </when>
         </choose>
@@ -3065,16 +3119,16 @@ $centralWarningXml = @"
 </choose>
 <!-- Single ParameterSeparator shown if ANY of the above conditions matched -->
 <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
-  <when test="10">
+  <when test="${GPIO_MANUAL_VALUE}">
     <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
   </when>
 </choose>
 <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
   <when test="5 21 22 23 24 25">
     <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
-      <when test="10">
+      <when test="${GPIO_MANUAL_VALUE}">
         <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
-          <when test="10">
+          <when test="${GPIO_MANUAL_VALUE}">
             <!-- Data already Manuell → warning already shown above, skip -->
           </when>
           <when default="true">
