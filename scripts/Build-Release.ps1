@@ -185,7 +185,9 @@ $fullTargets = @(
     # OpenKNX PiPico BCU Connector
     @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "uf2"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
     @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "uf2"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
-    
+    # OpenKNX UP1 Board
+    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "bin"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
+
 )
 
 # Generate dynamic GPIO templates before building
