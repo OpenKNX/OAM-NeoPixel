@@ -388,22 +388,32 @@ function NEO_detectHardware(device, online, progress, context) {
     progress.setText("NeoPixel: Hardware erkannt - ID: 0x" + hwId.toString(16).toUpperCase());
     progress.setProgress(90);
     
-    // Map Hardware-ID to Hardware-Index using auto-generated mapping
+     // Check if Hardware-ID is known (validate using mapping)
     var hwIndex = hardwareIdMap[hwId];
-    if (hwIndex === undefined) {
-        // Unknown hardware - set to 255 (no hardware configured) and let user know
-        hwIndex = 255;
-        progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
+    var isKnownHardware = (hwIndex !== undefined);
+    var hwName = null;
+    if (isKnownHardware) {
+        hwName = hardwareNameMap[hwId];  // Direkt Hardware-Name holen
+        progress.setText("NeoPixel: Erkannte Hardware: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ")");
+    } else {
+      // Unknown hardware - set to 0 (reserved: "no selection") and let user know
+      progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
+      hwId = 0;  // 0x0000 = reserved value for "no hardware selected"
     }
     
-    // Write hardware INDEX to parameter using correct ETS EventHandler syntax
-    // Based on reference implementation from OGM-Common/src/Common.script.js
+    // Write hardware HW_ID directly to parameter (NOT index!)
+    // This makes the parameter stable across ETS versions when new hardware is added
     try {
         // Method 1: ETS standard way using getParameterByName
         var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
         if (param) {
+            //param.value = hwId; // ToDo EC: Later: Write HW_ID directly when supported to prevent index shifts!!
             param.value = hwIndex;
-            progress.setText("NeoPixel: Hardware-Auswahl auf Index " + hwIndex + " gesetzt");
+            if (isKnownHardware && hwName) {
+                progress.setText("NeoPixel: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ") ausgewählt");
+            } else {
+                progress.setText("NeoPixel: Hardware-Auswahl auf HW-ID 0x" + hwId.toString(16).toUpperCase() + " gesetzt");
+            }
         } else {
             throw new Error("Parameter 'NEO_NeoPixelHardwareSelect' nicht gefunden");
         }
