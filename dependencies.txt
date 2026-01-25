@@ -6,6 +6,6 @@ b46cb4f v1dev lib/OFM-FileTransferModule https://github.com/OpenKNX/OFM-FileTran
 9bf7e7d v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
 7175df0 v1dev lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 55119fc v1dev lib/OFM-UsbExchange https://github.com/OpenKNX/OFM-UsbExchange.git
-4a7d334 ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
-bc94991 v1dev lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
+019fb99 ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
+19bb6bc v1dev lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
 3e8a756 pr-fix-esp32C3C6h2 lib/TPUart https://github.com/OpenKNX/TPUart
