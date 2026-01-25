@@ -437,15 +437,7 @@
                 <!-- END AUTO-GENERATED: Hardware Selection Parameter -->
               </Union>
 
-              <!-- BEGIN AUTO-GENERATED: GPIO Port Parameters -->
-              <!-- Cleaned - Ready for regeneration -->
-              <!-- END AUTO-GENERATED: GPIO Port Parameters -->
-
-              <!-- BEGIN AUTO-GENERATED: GPIO Clock Port Parameters -->
-              <!-- Cleaned - Ready for regeneration -->
-              <!-- END AUTO-GENERATED: GPIO Clock Port Parameters -->
-
-              <Union SizeInBit="24">
+              <Union SizeInBit="112">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="22" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
                 <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 6"/>
@@ -548,6 +540,10 @@
                 <Parameter Id="%AID%_UP-%TT%00078" Offset="10" BitOffset="0" Name="VirtualStripEnd6" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 6" Value="0" Access="Read"/>
               </Union>
               
+              <!-- BEGIN AUTO-GENERATED: GPIO Port Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Port Parameters -->
+
               <!-- BEGIN AUTO-GENERATED: GPIO Conflict Parameters -->
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: GPIO Conflict Parameters -->
@@ -555,6 +551,10 @@
               <!-- BEGIN AUTO-GENERATED: GPIO Clock Conflict Parameters -->
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: GPIO Clock Conflict Parameters -->
+
+              <!-- BEGIN AUTO-GENERATED: GPIO Clock Port Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: GPIO Clock Port Parameters -->
 
             </Parameters>
             <ParameterRefs>

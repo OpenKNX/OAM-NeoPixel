@@ -3389,20 +3389,20 @@ else {
 }
 
 # Step 8.8: Update template file with UI code for GPIO Conflict Status Display
-# ONLY for Strip.templ.xml (references Share.xml parameters directly)
-if ($TemplateFile -like "*Strip.templ.xml") {
-  Write-Step "Updating Strip template with GPIO Conflict UI (references Share.xml)..."
+# ONLY for Hardware.templ.xml (referenced by Strip.templ.xml via op:include)
+if ($templatePath -like "*Hardware.templ.xml") {
+  Write-Step "Updating Hardware template with GPIO Conflict UI (references Share.xml)..."
 
   # Generate conflict UI (references Share.xml parameters directly - NO separate Strip parameters!)
   if (Generate-ConflictUI -TemplatePath $templatePath) {
     Write-Success "GPIO Conflict Status UI generated (references Share %TT%0009%C% directly)"
   }
   else {
-    Write-WarningMsg "GPIO Conflict Status UI markers not found in Strip template"
+    Write-WarningMsg "GPIO Conflict Status UI markers not found in Hardware template"
   }
 }
 else {
-  Write-Host "  ℹ Skipping conflict UI (not Strip.templ.xml)" -ForegroundColor DarkGray
+  Write-Host "  ℹ Skipping conflict UI (not Hardware.templ.xml)" -ForegroundColor DarkGray
 }
 
 # Step 9: OBSOLETE - GPIO Options section now handled by Steps 8.5.7 and 8.5.8
