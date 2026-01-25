@@ -107,6 +107,10 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
         segment->setPrimaryColor(0, 0, 0, 0);
 
         segment->setEffect(effect);
+        
+        // Load effect-specific parameters from ETS after setting the effect
+        setupEffectConfiguration(segment);
+        
         logInfoP("Applied effect '%s' (ID: %d) to segment (cleared first)", effect->getName(), effectType);
     }
     else
