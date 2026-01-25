@@ -1524,9 +1524,8 @@ void NeoPixelBusModule::configureFromETS()
         #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
             uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;  // Parameter contains index now
             const char* hwName = HardwareMapping::getHardwareName(selectedHwIndex);
-            uint16_t selectedHwId = HardwareMapping::mapIndexToDeviceHwId(selectedHwIndex);  // Convert index to HW_ID for logging
-            logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - ETS runtime selection", 
-                     hwName ? hwName : "Unknown", selectedHwId, selectedHwIndex);
+            logInfoP("Hardware: %s (Index: %d) - ETS runtime selection", 
+                     hwName ? hwName : "Unknown", selectedHwIndex);
             _hwConfigMismatch = false; // No mismatch in runtime mode
         #else
             logWarningP("Hardware selection not available - using default configuration");
