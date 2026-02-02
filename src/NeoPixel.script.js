@@ -163,46 +163,15 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   }
 
   // Physical strip lengths (per physical index 1..6)
-  var len = [0, 0, 0, 0, 0, 0];
-  
-  switch (numStrips) {
-    case 2:
-      len[0] = toInt(input.Len1_2);
-      len[1] = toInt(input.Len2_2);
-      break;
-
-    case 3:
-      len[0] = toInt(input.Len1_3);
-      len[1] = toInt(input.Len2_3);
-      len[2] = toInt(input.Len3_3);
-      break;
-
-    case 4:
-      len[0] = toInt(input.Len1_4);
-      len[1] = toInt(input.Len2_4);
-      len[2] = toInt(input.Len3_4);
-      len[3] = toInt(input.Len4_4);
-      break;
-
-    case 5:
-      len[0] = toInt(input.Len1_5);
-      len[1] = toInt(input.Len2_5);
-      len[2] = toInt(input.Len3_5);
-      len[3] = toInt(input.Len4_5);
-      len[4] = toInt(input.Len5_5);
-      break;
-
-    case 6:
-    default:
-      // Full range – UI uses canonical params directly
-      len[0] = toInt(input.Len1);
-      len[1] = toInt(input.Len2);
-      len[2] = toInt(input.Len3);
-      len[3] = toInt(input.Len4);
-      len[4] = toInt(input.Len5);
-      len[5] = toInt(input.Len6);
-      break;
-  }
+  // Always use canonical length params; they are independent of NumberOfLEDStrips.
+  var len = [
+    toInt(input.Len1),
+    toInt(input.Len2),
+    toInt(input.Len3),
+    toInt(input.Len4),
+    toInt(input.Len5),
+    toInt(input.Len6)
+  ];
 
   // ------------------------------------------------------------------
   // Duplicate check → HasDuplicate flag + optional info log
