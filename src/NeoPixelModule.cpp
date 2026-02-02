@@ -210,6 +210,15 @@ void NeoPixelBusModule::processBeforeRestart()
     // Turn off all LEDs before ETS programming or device restart
     logInfoP("Turning off all LEDs before restart/programming");
 
+    // Turn off external relays for safety
+    if (_relayCount > 0)
+    {
+        for (uint8_t i = 0; i < _relayCount; ++i)
+        {
+            setRelayOutput(i, false);
+        }
+    }
+
     if (!_initialized) return;
 
     // Stop all effects and clear all LEDs
@@ -275,6 +284,19 @@ void NeoPixelBusModule::processAfterStartupDelay()
 void NeoPixelBusModule::processActiveDimming()
 {
     _segmentController->processActiveDimming();
+}
+
+void NeoPixelBusModule::setRelayOutput(uint8_t relayIndex, bool state)
+{
+    if (relayIndex >= kRelayStorageSize) return;
+    if (_relayCount == 0 || relayIndex >= _relayCount) return;
+
+    uint8_t pin = _relayPins[relayIndex];
+    if (pin == 255) return;
+
+    _relayStates[relayIndex] = state;
+    digitalWrite(pin, state ? HIGH : LOW);
+    logInfoP("Relay %d set to %s (GPIO %d)", relayIndex + 1, state ? "ON" : "OFF", pin);
 }
 
 void NeoPixelBusModule::processInputKo(GroupObject& ko)
@@ -348,6 +370,24 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         }
         return;
     }
+
+    #if defined(NEO_KoExternalRelay1)
+    if (koNumber == NEO_KoExternalRelay1)
+    {
+        bool state = ko.value(DPT_Switch);
+        setRelayOutput(0, state);
+        return;
+    }
+    #endif
+
+    #if defined(NEO_KoExternalRelay2)
+    if (koNumber == NEO_KoExternalRelay2)
+    {
+        bool state = ko.value(DPT_Switch);
+        setRelayOutput(1, state);
+        return;
+    }
+    #endif
 
     // Channel-specific KOs (segment-based) - Calculate which channel this KO belongs to
     int channel = NEO_KoCalcChannel(koNumber);
@@ -1566,6 +1606,64 @@ void NeoPixelBusModule::configureFromETS()
     auto isPinUsed = [&usedPins](uint8_t pin) {
         return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
     };
+
+    // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
+    _relayCount = std::min<uint8_t>(kMaxExternalRelays, ParamNEO_NEOExternalRelayCount);
+    for (uint8_t i = 0; i < kRelayStorageSize; ++i)
+    {
+        _relayPins[i] = 255;
+        _relayStates[i] = false;
+    }
+
+    if (_relayCount > 0)
+    {
+        if (_hwConfigMismatch)
+        {
+            logErrorP("External relays disabled due to hardware mismatch");
+            _relayCount = 0;
+        }
+        else
+        {
+            auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
+                uint8_t portIndex = (relayIndex == 0)
+                    ? (uint8_t)ParamNEO_NEOExternalRelay1Port
+                    : (uint8_t)ParamNEO_NEOExternalRelay2Port;
+
+                if (!isHardwarePortSelected(portIndex))
+                {
+                    return 255;
+                }
+                return mapPortIndexToGpio(portIndex);
+            };
+
+            for (uint8_t i = 0; i < _relayCount; ++i)
+            {
+                uint8_t gpio = resolveRelayGpio(i);
+                _relayPins[i] = gpio;
+
+                if (gpio == 255)
+                {
+                    logWarningP("Relay %d: No valid GPIO selected in ETS", i + 1);
+                    continue;
+                }
+
+                if (isPinUsed(gpio))
+                {
+                    logErrorP("Relay %d: GPIO %d already in use", i + 1, gpio);
+                }
+                else
+                {
+                    usedPins.push_back(gpio);
+                    logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
+                }
+
+                pinMode(gpio, OUTPUT);
+                digitalWrite(gpio, LOW); // Default OFF for safety
+                _relayStates[i] = false;
+                logInfoP("Relay %d: Initial state OFF", i + 1);
+            }
+        }
+    }
 
     // 1) Determine number of strips from ETS (max 6 strips supported in virtual configuration)
     const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(6, ParamNEO_NEONumberOfLEDStrips));

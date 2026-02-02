@@ -269,6 +269,22 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Global Power Control
     bool _globalPowerOn = true; // Global power state (default ON)
 
+    // External Relays (max derived from knxprod.h)
+    #if defined(NEO_KoExternalRelay2) && defined(NEO_KoExternalRelay1)
+    static constexpr uint8_t kMaxExternalRelays =
+        (NEO_KoExternalRelay2 >= NEO_KoExternalRelay1)
+            ? (uint8_t)(NEO_KoExternalRelay2 - NEO_KoExternalRelay1 + 1)
+            : 0;
+    #elif defined(NEO_KoExternalRelay1)
+    static constexpr uint8_t kMaxExternalRelays = 1;
+    #else
+    static constexpr uint8_t kMaxExternalRelays = 0;
+    #endif
+    static constexpr uint8_t kRelayStorageSize = (kMaxExternalRelays > 0) ? kMaxExternalRelays : 1;
+    uint8_t _relayCount = 0;
+    uint8_t _relayPins[kRelayStorageSize] = {255};
+    bool _relayStates[kRelayStorageSize] = {false};
+
     // HCL (Human Centric Lighting) / Circadian whitepoint control
     //
     // Design goal (like many commercial systems):
@@ -323,6 +339,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Strip Configuration Helpers
     static uint8_t mapSwapMode(uint8_t paramValue); // Map ETS swap parameter
     void swapChannels(uint8_t& ch1, uint8_t& ch2);  // Helper for channel swapping
+
+    // Relay Helpers
+    void setRelayOutput(uint8_t relayIndex, bool state);
 };
 
 extern NeoPixelBusModule openknxNeoPixelModule;

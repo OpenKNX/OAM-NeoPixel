@@ -13,7 +13,7 @@ class Segment;
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
  *
- * Storage: 10 bytes per segment × 16 segments = 160 bytes max
+ * Storage: 10 bytes per segment × 16 segments = 160 bytes max (+ relay state)
  */
 class NeoPixelFlashPersistence
 {
@@ -43,6 +43,17 @@ class NeoPixelFlashPersistence
         uint8_t reserved2;  // Future: effect parameter value 1
         uint8_t reserved3;  // Future: effect parameter value 2
         // Total: 10 bytes per segment
+    } __attribute__((packed));
+
+    /**
+     * @brief Flash state structure for external relay persistence
+     * Stores on/off state bitmask and count
+     */
+    struct RelayFlashState
+    {
+        uint8_t count;        // Number of relays configured (0..kMax)
+        uint8_t statesMask;   // Bitmask: bit0=Relay1, bit1=Relay2, ...
+        uint8_t signature;    // 0xA5 when valid
     } __attribute__((packed));
 
     /**
@@ -80,6 +91,8 @@ class NeoPixelFlashPersistence
   private:
     NeoPixelBusModule* _module; // Parent module reference
     uint8_t _channelIndex = 0;  // Current channel index for ParamNEO_NEO* macros
+    RelayFlashState _relayFlashState = {0, 0, 0};
+    bool _relayFlashValid = false;
 
     /**
      * @brief Save current segment state to flash structure

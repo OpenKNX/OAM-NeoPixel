@@ -1,6 +1,7 @@
 #include "NeoPixelFlashPersistence.h"
 #include "NeoPixelModule.h"
 #include "Segment.h"
+#include <algorithm>
 
 NeoPixelFlashPersistence::NeoPixelFlashPersistence(NeoPixelBusModule* module)
     : _module(module)
@@ -20,6 +21,10 @@ uint16_t NeoPixelFlashPersistence::calculateFlashSize() const
     if (numSegments == 0) numSegments = 1; // Minimum 1 segment
 
     uint16_t size = sizeof(SegmentFlashState) * numSegments;
+    if (NeoPixelBusModule::kMaxExternalRelays > 0)
+    {
+        size += sizeof(RelayFlashState);
+    }
 
     logInfoP("Flash size calculated: %d bytes for %d segments", size, numSegments);
     return size;
@@ -81,6 +86,25 @@ void NeoPixelFlashPersistence::writeToFlash()
         }
     }
 
+    if (NeoPixelBusModule::kMaxExternalRelays > 0)
+    {
+        RelayFlashState relayState = {};
+        relayState.count = _module->_relayCount;
+        relayState.statesMask = 0;
+        relayState.signature = 0xA5;
+
+        uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
+        for (uint8_t i = 0; i < maxRelays; ++i)
+        {
+            if (_module->_relayStates[i])
+            {
+                relayState.statesMask |= static_cast<uint8_t>(1u << i);
+            }
+        }
+
+        openknx.flash.write((uint8_t*)&relayState, sizeof(RelayFlashState));
+    }
+
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
     logInfoP("FLASH WRITE: Complete - %d segments saved", segments.size());
@@ -117,13 +141,18 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
 
     // CRITICAL: Validate flash data size matches current segment configuration
     // This prevents corruption when ETS changes segment count
-    uint16_t expectedSize = sizeof(SegmentFlashState) * segments.size();
-    if (size != expectedSize)
+    uint16_t expectedSegmentSize = sizeof(SegmentFlashState) * segments.size();
+    uint16_t expectedTotalSize = expectedSegmentSize;
+    if (NeoPixelBusModule::kMaxExternalRelays > 0)
+    {
+        expectedTotalSize += sizeof(RelayFlashState);
+    }
+    if (size != expectedSegmentSize && size != expectedTotalSize)
     {
         logWarningP("========================================");
         logWarningP("FLASH SIZE MISMATCH - Configuration changed!");
         logWarningP("Flash data: %d bytes (%d segments)", size, size / sizeof(SegmentFlashState));
-        logWarningP("Current config: %d bytes (%d segments)", expectedSize, segments.size());
+        logWarningP("Current config: %d bytes (%d segments)", expectedSegmentSize, segments.size());
         logWarningP("Ignoring flash data to prevent corruption");
         logWarningP("Segments will use default startup behavior");
         logWarningP("========================================");
@@ -189,6 +218,34 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         logInfoP("  -> Stored in config for later restoration");
 #endif
     }
+
+#ifdef OPENKNX_DEBUG
+    if (size == expectedTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
+    {
+        RelayFlashState relayState;
+        memcpy(&relayState, data + expectedSegmentSize, sizeof(RelayFlashState));
+        _relayFlashState = relayState;
+        _relayFlashValid = (relayState.signature == 0xA5);
+        logInfoP("Relay flash loaded: count=%d mask=0x%02X valid=%d",
+                 relayState.count, relayState.statesMask, _relayFlashValid ? 1 : 0);
+    }
+    else
+    {
+        _relayFlashValid = false;
+    }
+#else
+    if (size == expectedTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
+    {
+        RelayFlashState relayState;
+        memcpy(&relayState, data + expectedSegmentSize, sizeof(RelayFlashState));
+        _relayFlashState = relayState;
+        _relayFlashValid = (relayState.signature == 0xA5);
+    }
+    else
+    {
+        _relayFlashValid = false;
+    }
+#endif
 
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
@@ -437,6 +494,18 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 #ifdef OPENKNX_DEBUG
         logInfoP("Hardware update triggered (show() called)");
 #endif
+    }
+
+    if (_relayFlashValid && _module->_relayCount > 0)
+    {
+        uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
+        uint8_t restoreCount = std::min<uint8_t>(_relayFlashState.count, maxRelays);
+
+        for (uint8_t i = 0; i < restoreCount; ++i)
+        {
+            bool state = (_relayFlashState.statesMask & static_cast<uint8_t>(1u << i)) != 0;
+            _module->setRelayOutput(i, state);
+        }
     }
 
 #ifdef OPENKNX_DEBUG

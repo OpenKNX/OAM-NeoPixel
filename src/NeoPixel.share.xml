@@ -311,6 +311,14 @@
               <ParameterType Id="%AID%_PT-NumberOfSegments" Name="NumberOfSegments">
                 <TypeNumber SizeInBit="5" Type="unsignedInt" minInclusive="1" maxInclusive="16" />
               </ParameterType>
+              <!-- External Relays -->
+              <ParameterType Id="%AID%_PT-ExternalRelayCount" Name="ExternalRelayCount">
+                <TypeRestriction Base="Value" SizeInBit="2" UIHint="DropDown">
+                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
+                  <Enumeration Text="1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="2" Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <!-- Startup Behavior Types -->
               <ParameterType Id="%AID%_PT-GlobalStartupBehavior" Name="GlobalStartupBehavior">
                 <TypeRestriction Base="Value" SizeInBit="2">
@@ -556,6 +564,14 @@
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: GPIO Clock Port Parameters -->
 
+              <!-- BEGIN AUTO-GENERATED: External Relay Configuration -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay Configuration -->
+
+              <!-- BEGIN AUTO-GENERATED: External Relay Conflict Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay Conflict Parameters -->
+
             </Parameters>
             <ParameterRefs>
               <ParameterRef Id="%AID%_P-%TT%00000_R-%TT%0000001" RefId="%AID%_P-%TT%00000" />
@@ -592,6 +608,10 @@
               <ParameterRef Id="%AID%_UP-%TT%00072_R-%TT%0007201" RefId="%AID%_UP-%TT%00072" />
               <ParameterRef Id="%AID%_UP-%TT%00073_R-%TT%0007301" RefId="%AID%_UP-%TT%00073" />
               <ParameterRef Id="%AID%_UP-%TT%00081_R-%TT%0008101" RefId="%AID%_UP-%TT%00081" />
+
+              <!-- BEGIN AUTO-GENERATED: External Relay ParameterRefs -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay ParameterRefs -->
 
               <!-- Global Startup Behavior Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00024_R-%TT%0002401" RefId="%AID%_UP-%TT%00024" />
@@ -772,11 +792,15 @@
                 <ParameterRefRef RefId="%AID%_UP-%TT%16051_R-%TT%1605101" AliasName="Seg16End" />
               </LParameters>
 
-              <RParameters>
-                <!-- 1 = at least one segment has StartLED > EndLED -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00080_R-%TT%0008001" AliasName="HasSegmentError" />
-              </RParameters>
-            </ParameterCalculation>
+            <RParameters>
+              <!-- 1 = at least one segment has StartLED > EndLED -->
+              <ParameterRefRef RefId="%AID%_UP-%TT%00080_R-%TT%0008001" AliasName="HasSegmentError" />
+            </RParameters>
+          </ParameterCalculation>
+
+          <!-- BEGIN AUTO-GENERATED: External Relay GPIO Copy ParameterCalculations -->
+          <!-- Cleaned - Ready for regeneration -->
+          <!-- END AUTO-GENERATED: External Relay GPIO Copy ParameterCalculations -->
 
             <!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculation -->
             <!-- Cleaned - Ready for regeneration -->
@@ -807,6 +831,10 @@
               <ComObject Id="%AID%_O-%TT%00003" Number="3"  Name="Brightness" Text="Helligkeit"          FunctionText="Helligkeit"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness Status -->
               <ComObject Id="%AID%_O-%TT%00004" Number="4"  Name="BrightnessState" Text="Helligkeit Status" FunctionText="Helligkeit Status" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 1 -->
+              <ComObject Id="%AID%_O-%TT%00005" Number="5"  Name="ExternalRelay1" Text="Relai 1" FunctionText="Relai 1: Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 2 -->
+              <ComObject Id="%AID%_O-%TT%00006" Number="6"  Name="ExternalRelay2" Text="Relai 2" FunctionText="Relai 2: Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Power -->
@@ -819,6 +847,9 @@
               <ComObjectRef Id="%AID%_O-%TT%00003_R-%TT%0000301" RefId="%AID%_O-%TT%00003" />
               <!-- Brightness Status -->
               <ComObjectRef Id="%AID%_O-%TT%00004_R-%TT%0000401" RefId="%AID%_O-%TT%00004" />
+              <!-- External Relays -->
+              <ComObjectRef Id="%AID%_O-%TT%00005_R-%TT%0000501" RefId="%AID%_O-%TT%00005" />
+              <ComObjectRef Id="%AID%_O-%TT%00006_R-%TT%0000601" RefId="%AID%_O-%TT%00006" />
             </ComObjectRefs>
             <Script>
               <op:include href="NeoPixel.script.js" type="script" />
@@ -868,7 +899,13 @@
                         <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
                       </when>
                     </choose>
+                    <!-- BEGIN AUTO-GENERATED: External Relay KOs -->
+                    <!-- Cleaned - Ready for regeneration -->
+                    <!-- END AUTO-GENERATED: External Relay KOs -->
                   </ParameterBlock>
+                  <!-- BEGIN AUTO-GENERATED: External Relay UI -->
+                  <!-- Cleaned - Ready for regeneration -->
+                  <!-- END AUTO-GENERATED: External Relay UI -->
                   <!-- Global Startup Behavior Dynamic UI -->
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten vor/nach Neustart" UIHint="Headline" />
@@ -1796,3 +1833,4 @@
     </Manufacturer>
   </ManufacturerData>
 </KNX>
+

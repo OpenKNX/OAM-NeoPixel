@@ -338,6 +338,18 @@ $script:Config = @{
     ClockConflictParamsEnd    = "<!-- END AUTO-GENERATED: GPIO Clock Conflict Parameters -->"
     ConflictParamsStart       = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Parameters -->"
     ConflictParamsEnd         = "<!-- END AUTO-GENERATED: GPIO Conflict Parameters -->"
+    RelayConfigStart          = "<!-- BEGIN AUTO-GENERATED: External Relay Configuration -->"
+    RelayConfigEnd            = "<!-- END AUTO-GENERATED: External Relay Configuration -->"
+    RelayConflictParamsStart  = "<!-- BEGIN AUTO-GENERATED: External Relay Conflict Parameters -->"
+    RelayConflictParamsEnd    = "<!-- END AUTO-GENERATED: External Relay Conflict Parameters -->"
+    RelayParamRefsStart       = "<!-- BEGIN AUTO-GENERATED: External Relay ParameterRefs -->"
+    RelayParamRefsEnd         = "<!-- END AUTO-GENERATED: External Relay ParameterRefs -->"
+    RelayCopyCalcStart        = "<!-- BEGIN AUTO-GENERATED: External Relay GPIO Copy ParameterCalculations -->"
+    RelayCopyCalcEnd          = "<!-- END AUTO-GENERATED: External Relay GPIO Copy ParameterCalculations -->"
+    RelayUIStart              = "<!-- BEGIN AUTO-GENERATED: External Relay UI -->"
+    RelayUIEnd                = "<!-- END AUTO-GENERATED: External Relay UI -->"
+    RelayKOsStart             = "<!-- BEGIN AUTO-GENERATED: External Relay KOs -->"
+    RelayKOsEnd               = "<!-- END AUTO-GENERATED: External Relay KOs -->"
     ConflictParamRefsStart    = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict ParameterRefs -->"
     ConflictParamRefsEnd      = "<!-- END AUTO-GENERATED: GPIO Conflict ParameterRefs -->"
     ShareConflictCalcStart    = "<!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculation -->"
@@ -760,6 +772,64 @@ function Generate-ClockPortParametersInShare {
     -NewContent $paramsXml
 }
 
+function Generate-RelayConfigParametersInShare {
+  param(
+    [string]$ShareXmlPath,
+    [array]$HardwareConfigs
+  )
+
+  # Generate External Relay configuration parameters (00130-00132 + HW-specific 00200.. / 00220..)
+  $paramsXml = "              <Union SizeInBit=`"24`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"73`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <!-- Byte 0: Relay 1 GPIO Port (shared) -->`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00131`" Offset=`"0`" BitOffset=`"0`" Name=`"NEOExternalRelay1Port`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Relai 1 Port`" Value=`"$GPIO_DUMMY_VALUE`" Access=`"None`"/>`n"
+  $paramsXml += "                <!-- Byte 1: Relay 2 GPIO Port (shared) -->`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00132`" Offset=`"1`" BitOffset=`"0`" Name=`"NEOExternalRelay2Port`" ParameterType=`"%AID%_PT-GPIOPort8Bit`" Text=`"Relai 2 Port`" Value=`"$GPIO_DUMMY_VALUE`" Access=`"None`"/>`n"
+  $paramsXml += "                <!-- Byte 2: Relay Count -->`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00130`" Offset=`"2`" BitOffset=`"0`" Name=`"NEOExternalRelayCount`" ParameterType=`"%AID%_PT-ExternalRelayCount`" Text=`"Externe Relai`" Value=`"0`"/>`n"
+  $paramsXml += "`n"
+  $paramsXml += "                <!-- Relay 1 GPIO Selection (hardware-specific) -->`n"
+
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $paramId = (200 + $hwIdx).ToString().PadLeft(5, '0')  # 00200, 00201, ...
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"0`" BitOffset=`"0`" Name=`"NEORelay1GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relai 1 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
+  }
+
+  $paramsXml += "`n"
+  $paramsXml += "                <!-- Relay 2 GPIO Selection (hardware-specific) -->`n"
+
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $paramId = (220 + $hwIdx).ToString().PadLeft(5, '0')  # 00220, 00221, ...
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"1`" BitOffset=`"0`" Name=`"NEORelay2GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relai 2 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
+  }
+
+  $paramsXml += "              </Union>"
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayConfigStart'] `
+    -EndMarker $markers['RelayConfigEnd'] `
+    -NewContent $paramsXml
+}
+
+function Generate-RelayConflictParametersInShare {
+  param(
+    [string]$ShareXmlPath
+  )
+
+  $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
+
+  $paramsXml = "              <Union SizeInBit=`"2`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"76`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00133`" Offset=`"0`" BitOffset=`"0`" Name=`"Relay1HasConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Relai 1 Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00134`" Offset=`"0`" BitOffset=`"1`" Name=`"Relay2HasConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Relai 2 Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
+  $paramsXml += "              </Union>"
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayConflictParamsStart'] `
+    -EndMarker $markers['RelayConflictParamsEnd'] `
+    -NewContent $paramsXml
+}
+
 function Generate-ConflictParametersInShare {
   param(
     [string]$ShareXmlPath,
@@ -929,6 +999,41 @@ function Generate-ConflictParameterRefsInShare {
     -NewContent $refsXml
 }
 
+# External Relay ParameterRefs in share.xml
+function Generate-RelayParameterRefsInShare {
+  param(
+    [string]$ShareXmlPath,
+    [array]$HardwareConfigs
+  )
+
+  $refsXml = "              <!-- External Relay Parameter References -->`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00130_R-%TT%0013001`" RefId=`"%AID%_UP-%TT%00130`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00131_R-%TT%0013101`" RefId=`"%AID%_UP-%TT%00131`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00132_R-%TT%0013201`" RefId=`"%AID%_UP-%TT%00132`" />`n"
+  $refsXml += "              <!-- External Relay GPIO Selection Parameter References (HW-specific) -->`n"
+
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $relay1ParamId = (200 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay1RefId = $relay1ParamId + "01"
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${relay1ParamId}_R-%TT%${relay1RefId}`" RefId=`"%AID%_UP-%TT%${relay1ParamId}`" />`n"
+  }
+
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $relay2ParamId = (220 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay2RefId = $relay2ParamId + "01"
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${relay2ParamId}_R-%TT%${relay2RefId}`" RefId=`"%AID%_UP-%TT%${relay2ParamId}`" />`n"
+  }
+
+  $refsXml += "              <!-- External Relay Conflict Flags -->`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00133_R-%TT%0013301`" RefId=`"%AID%_UP-%TT%00133`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00134_R-%TT%0013401`" RefId=`"%AID%_UP-%TT%00134`" />"
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayParamRefsStart'] `
+    -EndMarker $markers['RelayParamRefsEnd'] `
+    -NewContent $refsXml
+}
+
 # REMOVED: Old duplicate function definitions - moved to lines 1422+
 # Functions Generate-ConflictResultParameters, Generate-ConflictResultParameterRefs,
 # Generate-ConflictResultCalculations are now defined later in the script
@@ -936,7 +1041,8 @@ function Generate-ConflictParameterRefsInShare {
 function Generate-ConflictCalculation {
   param(
     [string]$ShareXmlPath,
-    [int]$NumStrips = 6
+    [int]$NumStrips = 6,
+    [array]$HardwareConfigs = @()
   )
 
   # Generate SINGLE ParameterCalculation in share.xml
@@ -962,6 +1068,25 @@ function Generate-ConflictCalculation {
   }
 
   $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00020_R-%TT%0002001`" AliasName=`"NumberOfLEDStrips`" />`n"
+  $lParams += "  <!-- External Relay Ports -->`n"
+  if ($HardwareConfigs.Count -gt 1) {
+    $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
+  }
+  $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`" AliasName=`"RelayCount`" />`n"
+  $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00131_R-%TT%0013101`" AliasName=`"Relay1Port`" />`n"
+  $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00132_R-%TT%0013201`" AliasName=`"Relay2Port`" />`n"
+
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $relay1ParamId = (200 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay1RefId = $relay1ParamId + "01"
+    $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${relay1ParamId}_R-%TT%${relay1RefId}`" AliasName=`"Relay1HW$hwIdx`" />`n"
+  }
+
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $relay2ParamId = (220 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay2RefId = $relay2ParamId + "01"
+    $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${relay2ParamId}_R-%TT%${relay2RefId}`" AliasName=`"Relay2HW$hwIdx`" />`n"
+  }
   $lParams += "</LParameters>"
 
   # RParameters: Write Data+Clock conflict flags
@@ -982,6 +1107,9 @@ function Generate-ConflictCalculation {
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${clockConflictParamId}_R-%TT%${clockRefId}`" AliasName=`"Strip${stripIdx}HasClockConflict`" />`n"
   }
 
+  $rParams += "  <!-- Relay conflict outputs -->`n"
+  $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00133_R-%TT%0013301`" AliasName=`"Relay1HasConflict`" />`n"
+  $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00134_R-%TT%0013401`" AliasName=`"Relay2HasConflict`" />`n"
   $rParams += "</RParameters>"
 
   # Single ParameterCalculation
@@ -1021,6 +1149,10 @@ function Generate-HardwareChangeResetCalculation {
     $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${portParamId}_R-%TT%${refId}`" AliasName=`"Strip${stripIdx}DataPort`" />`n"
   }
 
+  $rParams += "  <!-- Reset external relay ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
+  $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00131_R-%TT%0013101`" AliasName=`"Relay1Port`" />`n"
+  $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%00132_R-%TT%0013201`" AliasName=`"Relay2Port`" />`n"
+
   $rParams += "  <!-- Reset all Clock ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -1041,6 +1173,48 @@ function Generate-HardwareChangeResetCalculation {
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $markers['HWChangeResetCalcStart'] `
     -EndMarker $markers['HWChangeResetCalcEnd'] `
+    -NewContent $calcXml
+}
+
+function Generate-RelayCopyCalculationsInShare {
+  param(
+    [string]$ShareXmlPath,
+    [array]$HardwareConfigs
+  )
+
+  $calcXml = "          <!-- Relay 1 -->`n"
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $calcId = (140 + $hwIdx).ToString().PadLeft(5, '0')
+    $relayParamId = (200 + $hwIdx).ToString().PadLeft(5, '0')
+    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay1_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "            <LParameters>`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "            </LParameters>`n"
+    $calcXml += "            <RParameters>`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%00131_R-%TT%0013101`" AliasName=`"ShareGPIOPort`" />`n"
+    $calcXml += "            </RParameters>`n"
+    $calcXml += "          </ParameterCalculation>`n"
+  }
+
+  $calcXml += "`n          <!-- Relay 2 -->`n"
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $calcId = (160 + $hwIdx).ToString().PadLeft(5, '0')
+    $relayParamId = (220 + $hwIdx).ToString().PadLeft(5, '0')
+    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay2_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "            <LParameters>`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "            </LParameters>`n"
+    $calcXml += "            <RParameters>`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%00132_R-%TT%0013201`" AliasName=`"ShareGPIOPort`" />`n"
+    $calcXml += "            </RParameters>`n"
+    $calcXml += "          </ParameterCalculation>`n"
+  }
+
+  $calcXml = $calcXml.TrimEnd("`n")
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayCopyCalcStart'] `
+    -EndMarker $markers['RelayCopyCalcEnd'] `
     -NewContent $calcXml
 }
 
@@ -1172,6 +1346,128 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   return $xml
 }
 
+# External Relay UI generator for share.xml
+function Generate-RelayUIInShare {
+  param(
+    [string]$ShareXmlPath,
+    [array]$HardwareConfigs
+  )
+
+  $hasHardwareSelection = $HardwareConfigs.Count -gt 1
+
+  $buildRelayChooseBlock = {
+    param(
+      [int]$RelayIndex,
+      [array]$HardwareConfigs,
+      [bool]$HasHardwareSelection
+    )
+
+    $baseId = if ($RelayIndex -eq 1) { 200 } else { 220 }
+
+    if (-not $HasHardwareSelection) {
+      $paramId = ($baseId).ToString().PadLeft(5, '0')
+      return "    <ParameterRefRef RefId=`"%AID%_UP-%TT%${paramId}_R-%TT%${paramId}01`" IndentLevel=`"2`"/>"
+    }
+
+    $xml = "    <choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
+    for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+      $paramId = ($baseId + $hwIdx).ToString().PadLeft(5, '0')
+      $xml += "      <when test=`"$hwIdx`">`n"
+      $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%${paramId}_R-%TT%${paramId}01`" IndentLevel=`"2`"/>`n"
+      $xml += "      </when>`n"
+    }
+    $xml += "      <when default=`"true`">`n"
+    $xml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Unbekannte Hardware-Auswahl. Bitte prüfen Sie die Geräteeinstellung.`" UIHint=`"Error`"/>`n"
+    $xml += "      </when>`n"
+    $xml += "    </choose>"
+    return $xml
+  }
+
+  $relay1Choose = & $buildRelayChooseBlock 1 $HardwareConfigs $hasHardwareSelection
+  $relay2Choose = & $buildRelayChooseBlock 2 $HardwareConfigs $hasHardwareSelection
+
+  $uiXml = "<!-- External Relays -->`n"
+  if ($hasHardwareSelection) {
+    $uiXml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
+    $uiXml += "  <when test=`"!=255`">`n"
+  }
+
+  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"`" UIHint=`"HorizontalRuler`" />`n"
+  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Externe Relai`" UIHint=`"Headline`" />`n"
+  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Aktivieren Sie externe Relai und wählen Sie die passenden GPIO-Ports der Hardware. Pro Relai wird ein 1-Bit Schalt-KO eingeblendet.`" />`n"
+  $uiXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`" IndentLevel=`"1`" />`n"
+  $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
+  $uiXml += "      <when test=`">=1`">`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relai 1`" UIHint=`"Headline`" />`n"
+  $uiXml += $relay1Choose + "`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00133_R-%TT%0013301`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <choose ParamRefId=`"%AID%_UP-%TT%00133_R-%TT%0013301`">`n"
+  $uiXml += "          <when test=`"1`">`n"
+  $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"PORT KONFLIKT: Relai 1 verwendet einen bereits belegten Port. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  $uiXml += "          </when>`n"
+  $uiXml += "        </choose>`n"
+  $uiXml += "      </when>`n"
+  $uiXml += "    </choose>`n"
+  $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
+  $uiXml += "      <when test=`">=2`">`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relai 2`" UIHint=`"Headline`" />`n"
+  $uiXml += $relay2Choose + "`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00134_R-%TT%0013401`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <choose ParamRefId=`"%AID%_UP-%TT%00134_R-%TT%0013401`">`n"
+  $uiXml += "          <when test=`"1`">`n"
+  $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"PORT KONFLIKT: Relai 2 verwendet einen bereits belegten Port. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  $uiXml += "          </when>`n"
+  $uiXml += "        </choose>`n"
+  $uiXml += "      </when>`n"
+  $uiXml += "    </choose>`n"
+
+  if ($hasHardwareSelection) {
+    $uiXml += "  </when>`n"
+    $uiXml += "</choose>`n"
+  }
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayUIStart'] `
+    -EndMarker $markers['RelayUIEnd'] `
+    -NewContent $uiXml
+}
+
+function Generate-RelayKOsInShare {
+  param(
+    [string]$ShareXmlPath,
+    [array]$HardwareConfigs
+  )
+
+  $hasHardwareSelection = $HardwareConfigs.Count -gt 1
+  $koXml = "<!-- External Relay KOs -->`n"
+
+  if ($hasHardwareSelection) {
+    $koXml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
+    $koXml += "  <when test=`"!=255`">`n"
+  }
+
+  $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
+  $koXml += "      <when test=`">=1`">`n"
+  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00005_R-%TT%0000501`" />`n"
+  $koXml += "      </when>`n"
+  $koXml += "    </choose>`n"
+  $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
+  $koXml += "      <when test=`">=2`">`n"
+  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00006_R-%TT%0000601`" />`n"
+  $koXml += "      </when>`n"
+  $koXml += "    </choose>`n"
+
+  if ($hasHardwareSelection) {
+    $koXml += "  </when>`n"
+    $koXml += "</choose>`n"
+  }
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayKOsStart'] `
+    -EndMarker $markers['RelayKOsEnd'] `
+    -NewContent $koXml
+}
+
 # ============================================================================
 # JavaScript Generation
 # ============================================================================
@@ -1179,7 +1475,8 @@ function Generate-HardwareSpecificGPIOSelectionUI {
 function Generate-ConflictDetectionJS {
   param(
     [string]$JavaScriptPath,
-    [int]$NumStrips = 6
+    [int]$NumStrips = 6,
+    [array]$HardwareConfigs = @()
   )
 
   # Initialize port array
@@ -1196,6 +1493,31 @@ function Generate-ConflictDetectionJS {
   }
   $jsClockInit += "`n  ];"
 
+  # External relay setup
+  $jsRelaySetup = "  // External relays (only active when RelayCount > 0)`n"
+  $jsRelaySetup += "  var relayCount = toInt(input.RelayCount, 0);`n"
+  $jsRelaySetup += "  if (relayCount < 0) relayCount = 0;`n"
+  $jsRelaySetup += "  if (relayCount > 2) relayCount = 2;`n"
+  $jsRelaySetup += "`n"
+  $jsRelaySetup += "  // Resolve relay ports using shared params; fall back to HW-specific params`n"
+  $jsRelaySetup += "  var hwSel = toInt(input.HardwareSelection, 255);`n"
+  $jsRelaySetup += "`n"
+  $jsRelaySetup += "  function resolveRelayPort(relayIdx) {`n"
+  $jsRelaySetup += "    var shared = relayIdx === 1 ? toInt(input.Relay1Port, $GPIO_DUMMY_VALUE) : toInt(input.Relay2Port, $GPIO_DUMMY_VALUE);`n"
+  $jsRelaySetup += "    if (shared !== $GPIO_DUMMY_VALUE && shared !== $GPIO_MANUAL_VALUE) return shared;`n"
+  $jsRelaySetup += "`n"
+  $jsRelaySetup += "    switch (hwSel) {`n"
+  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
+    $jsRelaySetup += "      case ${hwIdx}:  return relayIdx === 1 ? toInt(input.Relay1HW${hwIdx}, $GPIO_DUMMY_VALUE) : toInt(input.Relay2HW${hwIdx}, $GPIO_DUMMY_VALUE);`n"
+  }
+  $jsRelaySetup += "      default: return shared;`n"
+  $jsRelaySetup += "    }`n"
+  $jsRelaySetup += "  }`n"
+  $jsRelaySetup += "`n"
+  $jsRelaySetup += "  var relayPorts = [];`n"
+  $jsRelaySetup += "  if (relayCount >= 1) relayPorts.push(resolveRelayPort(1));`n"
+  $jsRelaySetup += "  if (relayCount >= 2) relayPorts.push(resolveRelayPort(2));"
+
   # Initialize data outputs
   $jsOutputInit = "  // Alle Data Conflict Flags initial auf 0 setzen`n"
   for ($i = 1; $i -le $NumStrips; $i++) {
@@ -1209,6 +1531,11 @@ function Generate-ConflictDetectionJS {
     $jsClockOutputInit += "  output.Strip${i}HasClockConflict = 0;`n"
   }
   $jsClockOutputInit = $jsClockOutputInit.TrimEnd("`n")
+
+  # Initialize relay outputs
+  $jsRelayOutputInit = "  // Relay Conflict Flags initial auf 0 setzen`n"
+  $jsRelayOutputInit += "  output.Relay1HasConflict = 0;`n"
+  $jsRelayOutputInit += "  output.Relay2HasConflict = 0;"
 
   # Data conflict detection logic (if-else chain for ECMA3 compatibility)
   $jsConflictAssignmentsI = ""
@@ -1265,6 +1592,27 @@ function Generate-ConflictDetectionJS {
     $jsCrossClockConflictAssignments += "        }`n"
   }
 
+  # Relay vs Strip conflict assignments
+  $jsRelayStripDataAssignments = ""
+  for ($i = 0; $i -lt $NumStrips; $i++) {
+    $stripNum = $i + 1
+    $condition = "i == $i"
+    $jsRelayStripDataAssignments += "        if ($condition) output.Strip${stripNum}HasDataConflict = 1;`n"
+  }
+
+  $jsRelayStripClockAssignments = ""
+  for ($i = 0; $i -lt $NumStrips; $i++) {
+    $stripNum = $i + 1
+    $condition = "i == $i"
+    $jsRelayStripClockAssignments += "        if ($condition) {`n"
+    $jsRelayStripClockAssignments += "          output.Strip${stripNum}HasClockConflict = 1;`n"
+    $jsRelayStripClockAssignments += "          output.Strip${stripNum}HasDataConflict = 1;`n"
+    $jsRelayStripClockAssignments += "        }`n"
+  }
+
+  $jsRelayConflictAssignments = "        if (r == 0) output.Relay1HasConflict = 1;`n"
+  $jsRelayConflictAssignments += "        if (r == 1) output.Relay2HasConflict = 1;`n"
+
   # Full JavaScript function with helper
   $fullJS = "`n// ============================================================================================================`n"
   $fullJS += "// HELPER: Copy value from input to output`n"
@@ -1284,6 +1632,8 @@ function Generate-ConflictDetectionJS {
   for ($i = 1; $i -le $NumStrips; $i++) {
     $fullJS += "  output.Strip${i}ClockPort = $GPIO_DUMMY_VALUE;`n"
   }
+  $fullJS += "  output.Relay1Port = $GPIO_DUMMY_VALUE;`n"
+  $fullJS += "  output.Relay2Port = $GPIO_DUMMY_VALUE;`n"
   $fullJS += "}`n"
   $fullJS += "`n"
   $fullJS += "// ============================================================================================================`n"
@@ -1299,9 +1649,13 @@ function Generate-ConflictDetectionJS {
   $fullJS += "  // Clock Port-Werte für alle $NumStrips Strips lesen (0=Nicht verwendet, $GPIO_MANUAL_VALUE=Manuell)`n"
   $fullJS += $jsClockInit + "`n"
   $fullJS += "  `n"
+  $fullJS += $jsRelaySetup + "`n"
+  $fullJS += "  `n"
   $fullJS += $jsOutputInit + "`n"
   $fullJS += "  `n"
   $fullJS += $jsClockOutputInit + "`n"
+  $fullJS += "  `n"
+  $fullJS += $jsRelayOutputInit + "`n"
   $fullJS += "  `n"
   $fullJS += "  // CHECK 1: Data vs Data Konflikte`n"
   $fullJS += "  for (var i = 0; i < 6; i++) {`n"
@@ -1375,6 +1729,36 @@ function Generate-ConflictDetectionJS {
     $fullJS += "        output.Strip${stripNum}HasClockConflict = 1;`n"
     $fullJS += "      }`n"
   }
+  $fullJS += "    }`n"
+  $fullJS += "  }`n"
+  $fullJS += "`n"
+  $fullJS += "  // CHECK 5: Relais vs Strip-Konflikte`n"
+  $fullJS += "  for (var r = 0; r < relayPorts.length; r++) {`n"
+  $fullJS += "    var relayP = relayPorts[r];`n"
+  $fullJS += "    if (relayP == $GPIO_MANUAL_VALUE || relayP == $GPIO_DUMMY_VALUE) continue; // Manuell oder Dummy`n"
+  $fullJS += "`n"
+  $fullJS += "    for (var i = 0; i < 6; i++) {`n"
+  $fullJS += "      var dataI = dataPorts[i];`n"
+  $fullJS += "      if (relayP == dataI && dataI != $GPIO_MANUAL_VALUE && dataI != $GPIO_DUMMY_VALUE) {`n"
+  $fullJS += $jsRelayConflictAssignments
+  $fullJS += $jsRelayStripDataAssignments
+  $fullJS += "      }`n"
+  $fullJS += "`n"
+  $fullJS += "      var clockI = clockPorts[i];`n"
+  $fullJS += "      if (relayP == clockI && clockI != $GPIO_MANUAL_VALUE && clockI != $GPIO_DUMMY_VALUE) {`n"
+  $fullJS += $jsRelayConflictAssignments
+  $fullJS += $jsRelayStripClockAssignments
+  $fullJS += "      }`n"
+  $fullJS += "    }`n"
+  $fullJS += "  }`n"
+  $fullJS += "`n"
+  $fullJS += "  // CHECK 6: Relais vs Relais Konflikte`n"
+  $fullJS += "  if (relayPorts.length >= 2) {`n"
+  $fullJS += "    var r0 = relayPorts[0];`n"
+  $fullJS += "    var r1 = relayPorts[1];`n"
+  $fullJS += "    if (r0 == r1 && r0 != $GPIO_MANUAL_VALUE && r0 != $GPIO_DUMMY_VALUE) {`n"
+  $fullJS += "      output.Relay1HasConflict = 1;`n"
+  $fullJS += "      output.Relay2HasConflict = 1;`n"
   $fullJS += "    }`n"
   $fullJS += "  }`n"
   $fullJS += "}`n"
@@ -1844,7 +2228,7 @@ function Generate-ConflictUI {
   # References Share.xml parameter directly!
   $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
   $uiXml += "  <when test=`"1`">`n"
-  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem anderen physikalischen LED-Streifen verwendet. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem andren physikalischen Strip oder externen Relai verwendet. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
   $uiXml += "  </when>`n"
   $uiXml += "</choose>"
 
@@ -1938,6 +2322,36 @@ if ($Clean) {
     -CleaningMessage "share.xml (GPIO Clock Port Parameters)" `
     -StartMarker $markers['ClockPortParamsStart'] `
     -EndMarker $markers['ClockPortParamsEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay Parameters)" `
+    -StartMarker $markers['RelayConfigStart'] `
+    -EndMarker $markers['RelayConfigEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay Conflict Parameters)" `
+    -StartMarker $markers['RelayConflictParamsStart'] `
+    -EndMarker $markers['RelayConflictParamsEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay ParameterRefs)" `
+    -StartMarker $markers['RelayParamRefsStart'] `
+    -EndMarker $markers['RelayParamRefsEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay GPIO Copy ParameterCalculations)" `
+    -StartMarker $markers['RelayCopyCalcStart'] `
+    -EndMarker $markers['RelayCopyCalcEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay UI)" `
+    -StartMarker $markers['RelayUIStart'] `
+    -EndMarker $markers['RelayUIEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay KOs)" `
+    -StartMarker $markers['RelayKOsStart'] `
+    -EndMarker $markers['RelayKOsEnd']
 
   Clear-MarkerContent -FilePath $shareXmlPath `
     -CleaningMessage "share.xml (GPIO Conflict Parameters)" `
@@ -2855,6 +3269,60 @@ else {
   Write-WarningMsg "Share.xml Clock GPIO Port Parameter markers not found - skipped"
 }
 
+# Generate External Relay Parameters in share.xml
+Write-Host "  • Generating share.xml External Relay Parameters..." -ForegroundColor Cyan
+if (Generate-RelayConfigParametersInShare -ShareXmlPath $shareXmlPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "Share.xml External Relay Parameters generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay Parameter markers not found - skipped"
+}
+
+# Generate External Relay Conflict Parameters in share.xml
+Write-Host "  • Generating share.xml External Relay Conflict Parameters..." -ForegroundColor Cyan
+if (Generate-RelayConflictParametersInShare -ShareXmlPath $shareXmlPath) {
+  Write-Success "Share.xml External Relay Conflict Parameters generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay Conflict Parameter markers not found - skipped"
+}
+
+# Generate External Relay ParameterRefs in share.xml
+Write-Host "  • Generating share.xml External Relay ParameterRefs..." -ForegroundColor Cyan
+if (Generate-RelayParameterRefsInShare -ShareXmlPath $shareXmlPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "Share.xml External Relay ParameterRefs generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay ParameterRefs markers not found - skipped"
+}
+
+# Generate External Relay GPIO Copy ParameterCalculations in share.xml
+Write-Host "  • Generating share.xml External Relay GPIO Copy ParameterCalculations..." -ForegroundColor Cyan
+if (Generate-RelayCopyCalculationsInShare -ShareXmlPath $shareXmlPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "Share.xml External Relay GPIO Copy ParameterCalculations generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay GPIO Copy ParameterCalculation markers not found - skipped"
+}
+
+# Generate External Relay UI in share.xml
+Write-Host "  • Generating share.xml External Relay UI..." -ForegroundColor Cyan
+if (Generate-RelayUIInShare -ShareXmlPath $shareXmlPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "Share.xml External Relay UI generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay UI markers not found - skipped"
+}
+
+# Generate External Relay KOs in share.xml
+Write-Host "  • Generating share.xml External Relay KOs..." -ForegroundColor Cyan
+if (Generate-RelayKOsInShare -ShareXmlPath $shareXmlPath -HardwareConfigs $hardwareConfigs) {
+  Write-Success "Share.xml External Relay KOs generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay KOs markers not found - skipped"
+}
+
 # Generate Conflict Parameters in share.xml (00091-00096)
 Write-Host "  • Generating share.xml Conflict Parameters (00091-00096)..." -ForegroundColor Cyan
 if (Generate-ConflictParametersInShare -ShareXmlPath $shareXmlPath -NumStrips 6) {
@@ -2884,8 +3352,8 @@ else {
 
 # Generate SINGLE ParameterCalculation in share.xml
 Write-Host "  • Generating ParameterCalculation in share.xml..." -ForegroundColor Cyan
-if (Generate-ConflictCalculation -ShareXmlPath $shareXmlPath -NumStrips 6) {
-  Write-Success "ParameterCalculation generated in share.xml (reads 00101-00106, writes 00091-00096)"
+if (Generate-ConflictCalculation -ShareXmlPath $shareXmlPath -NumStrips 6 -HardwareConfigs $hardwareConfigs) {
+  Write-Success "ParameterCalculation generated in share.xml (reads strip+relay ports, writes strip+relay conflicts)"
 }
 else {
   Write-WarningMsg "ParameterCalculation markers not found - skipped"
@@ -2902,7 +3370,7 @@ else {
 
 # Generate JavaScript Detection Function
 Write-Host "  • Generating JavaScript (NEO_DetectGPIOConflicts)..." -ForegroundColor Cyan
-if (Generate-ConflictDetectionJS -JavaScriptPath $scriptJsPath -NumStrips 6) {
+if (Generate-ConflictDetectionJS -JavaScriptPath $scriptJsPath -NumStrips 6 -HardwareConfigs $hardwareConfigs) {
   Write-Success "JavaScript conflict detection generated"
 }
 else {
