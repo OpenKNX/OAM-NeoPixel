@@ -24,21 +24,62 @@ void EffectConfiguration::configureEffects()
     auto& segments = _module->getSegments();
     auto& neoPixel = _module->getNeoPixel();
 
+    // Read global startup behavior (used as default for segments)
+    _module->setChannelIndex(0);
+    uint8_t globalBehavior = ParamNEO_NEOGlobalStartupBehavior; // 0=Aus, 1=Letzter Zustand, 2=ETS-Parameterwert
+
     for (size_t i = 0; i < segments.size(); ++i)
     {
         if (segments[i].segment)
         {
             _module->setChannelIndex(i); // Set channel context for parameter access
             uint8_t _channelIndex = i;   // Local variable for ETS parameter macros
+
+            // 1. Load ETS configuration (Effect + Parameters)
             uint8_t effectType = ParamNEO_NEONEOEffectType;
             applyEffectToSegment(segments[i].segment, effectType);
-            setupEffectConfiguration(segments[i].segment);
+            setupEffectConfiguration(segments[i].segment, true); // loadDefaultColor = true at startup
+
             // Initialize saved effect state from ETS defaults
             segments[i].savedEffectType = effectType;
             segments[i].savedEffectValid = true;
-            // Note: Effect-specific parameters are loaded dynamically from ETS
 
-            logInfoP("Segment %zu: Applied effect type %d", i, effectType);
+            // 2. Determine startup behavior (segment can override global)
+            uint8_t segmentBehavior = ParamNEO_NEOSegmentStartupBehavior;
+            uint8_t effectiveBehavior;
+
+            if (segmentBehavior == 0)
+            {
+                // Use global setting
+                effectiveBehavior = globalBehavior;
+            }
+            else
+            {
+                // Segment-specific setting (subtract 1: 1=Aus->0, 2=Letzter->1, 3=ETS->2)
+                effectiveBehavior = segmentBehavior - 1;
+            }
+
+            // 3. Apply startup behavior
+            const char* behaviorNames[] = {"Aus", "Letzter Zustand", "ETS-Parameterwert"};
+
+            switch (effectiveBehavior)
+            {
+                case 0: // Ausgeschaltet
+                    segments[i].segment->setBrightness(0);
+                    logInfoP("Segment %zu: ETS-Config geladen, LEDs AUS (Behavior: %s)", i, behaviorNames[0]);
+                    break;
+
+                case 1: // Letzter Zustand (Flash)
+                    // Flash restore will be attempted in processAfterStartupDelay()
+                    // If no flash data exists, the ETS config (already loaded above) will remain
+                    logInfoP("Segment %zu: ETS-Config geladen, Flash-Restore später (Behavior: %s)", i, behaviorNames[1]);
+                    break;
+
+                case 2: // ETS-Parameterwert (DEFAULT)
+                    // ETS configuration already loaded above - nothing more to do!
+                    logInfoP("Segment %zu: ETS-Config geladen und aktiv (Behavior: %s, Effect: %d)", i, behaviorNames[2], effectType);
+                    break;
+            }
         }
     }
 
@@ -103,15 +144,24 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
         // Store effect type in config for parameter loading
         segment->getConfig().effectType = effectType;
 
-        // Clear the segment (turn all LEDs off) before starting the effect
-        segment->setPrimaryColor(0, 0, 0, 0);
+        // Don't clear the segment - preserve current color!
+        // Effects that generate their own colors (Rainbow, Fire) will override anyway
+        // Effects that need a color (Wipe, Theater Chase) will use the primary color
 
         segment->setEffect(effect);
-        
+
+        // Check if we should reset to default color on effect change
+        // This is controlled by the ETS parameter "Bei Effektwechsel Farbe auf Standard zurücksetzen"
+        uint8_t _channelIndex = _module->getChannelIndex();
+        bool resetToDefault = ParamNEO_NEOSegmentResetColorOnEffectChange;
+
         // Load effect-specific parameters from ETS after setting the effect
-        setupEffectConfiguration(segment);
-        
-        logInfoP("Applied effect '%s' (ID: %d) to segment (cleared first)", effect->getName(), effectType);
+        // If resetToDefault is true, also reload the default color from ETS
+        setupEffectConfiguration(segment, resetToDefault);
+
+        logInfoP("Applied effect '%s' (ID: %d) to segment %s",
+                 effect->getName(), effectType,
+                 resetToDefault ? "(with color reset)" : "(keeping current color)");
     }
     else
     {
@@ -122,7 +172,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
 // getEffectFromType() is now auto-generated in EffectTypeMapping.h by Build-EffectParameters.ps1
 // This ensures effect IDs stay synchronized with ETS XML and EffectPool.cpp registration order
 
-void EffectConfiguration::setupEffectConfiguration(Segment* segment)
+void EffectConfiguration::setupEffectConfiguration(Segment* segment, bool loadDefaultColor)
 {
     if (!segment) return;
 
@@ -143,8 +193,23 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment)
 #endif
     }
 
-    // Mirror effect (from segment configuration)
     uint8_t _channelIndex = _module->getChannelIndex(); // Local variable for ETS parameter macros
+
+    // Load default color from ETS ONLY at startup
+    // When switching effects, keep the current color set by user
+    if (loadDefaultColor)
+    {
+        // TypeColor RGB format: 0x00RRGGBB (24-bit)
+        uint32_t color = ParamNEO_NEOSegmentStartupColor;
+        uint8_t r = (color >> 16) & 0xFF;
+        uint8_t g = (color >> 8) & 0xFF;
+        uint8_t b = color & 0xFF;
+        uint8_t w = ParamNEO_NEOSegmentStartupW;
+        segment->setPrimaryColor(r, g, b, w);
+        logInfoP("Loaded default color from ETS: R=%d G=%d B=%d W=%d (0x%06X)", r, g, b, w, color);
+    }
+
+    // Mirror effect (from segment configuration)
     bool mirrorEffect = ParamNEO_NEOSegmentMirrorEffect;
     if (mirrorEffect)
     {

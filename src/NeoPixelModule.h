@@ -3,18 +3,24 @@
 #include "OpenKNX.h"
 #include "knxprod.h"
 
+#include "HclManager.h"         // HCL (Human Centric Lighting) manager
+#include "HclPixelTransform.h"  // HCL pixel transformation callback
 #include "NeoPixel.h"           // from https://github.com/OpenKNX/OFM-NeoPixel
 #include "Segment.h"            // Segment support from OFM-NeoPixel
 #include "effects/Effect.h"     // Effect system
 #include "effects/EffectPool.h" // Effect pool for singleton instances
 #include <vector>
 
+// ETS FunctionProperty Definitions (from NeoPixel.debug.xml)
+// These values are referenced in the ETS JavaScript for online functions
+#define NEOPIXEL_FUNCTION_OBJECT_INDEX 158 // NeoPixel module appliance object
+#define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Hardware detection property
+
 // Forward declarations
 class EffectConfiguration;
 class ColorManagement;
 class StripConfiguration;
 class SegmentController;
-class HclCurve;
 
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
@@ -142,9 +148,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     void setup(bool configured) override;
     void loop(bool configured) override;
     void processInputKo(GroupObject& ko) override;
-    void processBeforeRestart() override;     // Turn off all LEDs before restart/programming
+    void processBeforeRestart() override;      // Turn off all LEDs before restart/programming
     void processBeforeTablesUnload() override; // Turn off all LEDs before ETS programming
-    void processAfterStartupDelay() override; // Restore LED states after startup
+    void processAfterStartupDelay() override;  // Restore LED states after startup
 
     // Flash persistence (OGM-Common calls these automatically)
     uint16_t flashSize() override;
@@ -156,7 +162,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool processCommand(const std::string command, bool diagnose) override;
 
     // FunctionProperty: ETS online functions (hardware detection)
-    bool processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t *data, uint8_t *resultData, uint8_t &resultLength) override;
+    bool processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength) override;
 
     // Access to unified virtual strip (if created)
     VirtualStrip* getVirtualStrip() const { return _virtualStrip; }
@@ -193,6 +199,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void applyHclColorTemperature(uint16_t kelvin);
     void disableHclMode();
     void applyHclPostProcess();
+    void updateHclTransformContext(); // Update HCL pixel transformation context and register callback
 
     // Effects status
     bool areEffectsEnabled() const { return _effectsEnabled; }
@@ -216,10 +223,10 @@ class NeoPixelBusModule : public OpenKNX::Module
     static const char* getColorOrderName(ColorOrder order);
     static const char* getProtocolName(LedProtocol protocol);
 
-    // Debug: Show complete configuration analysis (OPENKNX_DEBUG only)
-    #ifdef OPENKNX_DEBUG
+// Debug: Show complete configuration analysis (OPENKNX_DEBUG only)
+#ifdef OPENKNX_DEBUG
     void debugShowConfiguration();
-    #endif
+#endif
 
   private:
     // OFM-NeoPixel library instance (not registered as separate module)
@@ -260,8 +267,11 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Sub-module: Segment Controller
     class SegmentController* _segmentController;
 
-    // Sub-module: HCL Curve (automatic Kelvin scheduling)
-    class HclCurve* _hclCurve;
+    // Global HCL Manager (for segments with Mode=1 "Global")
+    HclManager* _globalHclManager;
+
+    // HCL Pixel Transformation Context (passed to Library callback)
+    HclTransformContext _hclTransformContext;
 
     // Global Brightness Control
     uint8_t _globalBrightness = 255; // Global brightness multiplier (0-255, default full)
@@ -282,18 +292,23 @@ class NeoPixelBusModule : public OpenKNX::Module
     unsigned long _lastHclApplyMs = 0; // Rate limiting for post-processing
 
     // Performance & Rate Limiting
-    
+
     // Hardware Configuration Mismatch Detection
-    bool _hwConfigMismatch = false;          // True if ETS HW ID doesn't match compiled DEVICE_HW_ID
-    unsigned long _lastHwMismatchWarning = 0; // Timestamp of last warning
+    bool _hwConfigMismatch = false;                           // True if ETS HW ID doesn't match compiled DEVICE_HW_ID
+    unsigned long _lastHwMismatchWarning = 0;                 // Timestamp of last warning
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp
     static const unsigned long COLOR_UPDATE_INTERVAL_MS = 50; // Update color every 500ms to reduce logging overhead
 
     // Flash persistence handler
     class NeoPixelFlashPersistence* _flashPersistence;
 
+    // Power monitoring for KO updates
+    unsigned long _lastPowerMonitoringMs = 0;   // Last time power stats were sent
+    uint32_t _powerMonitoringIntervalMs = 5000; // Send power stats every 5 seconds
+
     // Configuration & Setup
     void configureFromETS();               // reads ETS params and builds phys+virt layout
+    void initializeGpioPins();             // Initialize all configured GPIO pins to LOW before strip creation
     void configurePowerManagement();       // Configure power management using OFM PowerManager
     void configureStripOptions();          // Configure swap and skip options from ETS parameters
     void configureSegments();              // Configure segments from ETS parameters
@@ -307,8 +322,12 @@ class NeoPixelBusModule : public OpenKNX::Module
     void applyPowerLimiting();
 
     // Segment Implementation
-    void createSegments();                                   // Create segments on virtual strip
-    void applySegmentConfiguration();                        // Apply segment-specific settings (grouping, spacing, reverse, mirror)
+    void createSegments();            // Create segments on virtual strip
+    void applySegmentConfiguration(); // Apply segment-specific settings (grouping, spacing, reverse, mirror)
+    void applySegmentConfiguration(size_t segmentIndex, const SegmentConfig& config);
+    void applySegmentHclConfiguration(size_t segmentIndex, const SegmentConfig& config);
+    void setupGlobalHclManager();                            // Setup global HCL manager for Mode=1 segments
+    void loopHclManagers();                                  // Update all HCL managers (global + segments)
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
     // Effect Implementation (delegated to EffectConfiguration)
@@ -319,6 +338,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Power Management Helpers
     static uint16_t calculateLedCurrentMa(uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0);
     static uint16_t getTypicalLedCurrentMa(LedProtocol protocol);
+
+    // Power Monitoring
+    void sendPowerMonitoringKOs(); // Send current/load KOs periodically
 
     // Strip Configuration Helpers
     static uint8_t mapSwapMode(uint8_t paramValue); // Map ETS swap parameter

@@ -712,8 +712,9 @@ function Generate-GPIOPortParametersInShare {
 
   # Generate GPIO Port selection parameters in share.xml (00101-00106)
   # These store which GPIO port each strip uses (0=unused, 1-7=D0-D6)
-  $paramsXml = "              <Union SizeInBit=`"48`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"60`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Data Port Configuration Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"48`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"70`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -740,8 +741,9 @@ function Generate-ClockPortParametersInShare {
 
   # Generate Clock GPIO Port selection parameters in share.xml (00111-00116)
   # These store which GPIO port each strip uses for Clock (0=unused, 1-7=D0-D6)
-  $paramsXml = "              <Union SizeInBit=`"48`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"67`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Clock Port Configuration Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"48`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"78`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -768,8 +770,9 @@ function Generate-ConflictParametersInShare {
 
   # Generate conflict flag parameters in share.xml (00091-00096)
   # Template will reference these with 0009%C% token
-  $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"59`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Data Conflict Flags Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"$NumStrips`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"76`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips conflict flags (6 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -795,8 +798,9 @@ function Generate-ClockConflictParametersInShare {
   )
 
   # Generate Clock conflict flag parameters in share.xml (00117-00122)
-  $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"66`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Clock Conflict Flags Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"$NumStrips`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"77`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock conflict flags (6 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -1840,11 +1844,19 @@ function Generate-ConflictUI {
   $uiXml += "<!-- Hidden Clock conflict parameter references -->`n"
   $uiXml += "<!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->`n"
 
-  # Combined conflict display - triggers on Data conflicts (which includes Cross-conflicts)
-  # References Share.xml parameter directly!
-  $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
-  $uiXml += "  <when test=`"1`">`n"
-  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem anderen physikalischen LED-Streifen verwendet. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  # Only show conflict warning if Hardware is selected (NOT 255)
+  $uiXml += "<!-- Only show conflict warning if Hardware is selected (NOT 255) -->`n"
+  $uiXml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
+  $uiXml += "  <when test=`"255`">`n"
+  $uiXml += "    <!-- No hardware selected → no conflict check -->`n"
+  $uiXml += "  </when>`n"
+  $uiXml += "  <when default=`"true`">`n"
+  $uiXml += "    <!-- Hardware selected → check for conflicts -->`n"
+  $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
+  $uiXml += "      <when test=`"1`">`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem anderen physikalischen LED-Streifen verwendet. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  $uiXml += "      </when>`n"
+  $uiXml += "    </choose>`n"
   $uiXml += "  </when>`n"
   $uiXml += "</choose>"
 

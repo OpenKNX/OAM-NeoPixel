@@ -22,27 +22,38 @@ class NeoPixelFlashPersistence
     const std::string logPrefix() const { return "NeoPixelFlashPersistence"; }
 
     /**
-     * @brief Flash state structure for segment persistence (10 bytes)
-     * 
-     * Phase 1 (NOW): Stores only power, color, brightness
-     *   - Effect type/parameters always come from ETS
-     * 
-     * Phase 2 (FUTURE): Will store KO-changed effect parameters
-     *   - reserved1: Bitflags for which params changed via KO
-     *   - reserved2-3: Effect parameter values when changed via KO
+     * @brief Flash state structure for segment persistence (14 bytes)
+     *
+     * Stores KO-changed values to restore runtime state after power cycle:
+     *   - ETS provides BASE configuration (defaults)
+     *   - KOs provide RUNTIME overrides (R/G/B, Brightness, Effect, etc.)
+     *   - Flash stores KO-CHANGED values for restoration
+     *
+     * validFlags bitfield indicates which values were changed via KO:
+     *   0x01 = power      (KoNEO_SegmentPower)
+     *   0x02 = rgb        (KoNEO_R/G/B)
+     *   0x04 = brightness (KoNEO_SegmentBrightness)
+     *   0x08 = effectType (KoNEO_Fx)
+     *   0x10 = effectFlags (effect state tracking)
+     *   0x20-0x80 = reserved for HSV, CCT, effect parameters
      */
     struct SegmentFlashState
     {
-        uint8_t power;      // 0 = off, 1 = on
-        uint8_t r, g, b;    // RGB color (0-255 each)
-        uint8_t ww, cw;     // Warm/Cool white (0-255 each)
-        uint8_t brightness; // Master brightness (0-255)
-        
-        // Reserved for Phase 2: KO-based effect parameter persistence
-        uint8_t reserved1;  // Future: effectParamsChangedFlags (bitfield)
-        uint8_t reserved2;  // Future: effect parameter value 1
-        uint8_t reserved3;  // Future: effect parameter value 2
-        // Total: 10 bytes per segment
+        uint8_t version;    // Structure version (0x01)
+        uint8_t validFlags; // Bitfield: which values are valid/changed via KO
+
+        // KO-changed values (restored if corresponding validFlags bit set):
+        uint8_t power;       // 0 = off, 1 = on (KoNEO_SegmentPower)
+        uint8_t r, g, b;     // RGB color (KoNEO_R/G/B)
+        uint8_t ww, cw;      // Warm/Cool white (reserved for future KOs)
+        uint8_t brightness;  // Master brightness (KoNEO_SegmentBrightness)
+        uint8_t effectType;  // Effect ID (KoNEO_Fx) - 0 = no effect
+        uint8_t effectFlags; // bit0=effectValid, bit1=lastWasEffect
+
+        // Reserved for future KO parameters (HSV, CCT, effect params):
+        uint8_t reserved[3]; // Phase 2: HSV/CCT/effect parameter values
+
+        // Total: 14 bytes per segment × 16 segments = 224 bytes max
     } __attribute__((packed));
 
     /**

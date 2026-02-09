@@ -1,23 +1,21 @@
-### Strom pro Kanal (mA)
+### Stromlimit für Strip (mA)
 
-Maximaler Stromverbrauch pro Kanal in Milliampere. Wird verwendet wenn "Strombegrenzung Typ" auf "Pro Kanal" gesetzt ist.
+Maximaler Stromverbrauch für diesen physischen LED-Streifen in Milliampere. Wird verwendet wenn "Strombegrenzung" auf "Fester Wert (mA)" gesetzt ist.
 
-**Berechnung pro Kanal:**
-1. **Anzahl LEDs** × **Strom pro LED** = Maximaler Kanalstrom
-2. Beispiel: 50 LEDs × 60mA = 3.000mA pro Kanal
-3. **Sicherheitsmargin** hinzufügen: 3.000mA × 1.2 = 3.600mA
+**Berechnung:**
+1. **Netzteilleistung** ermitteln (z.B. 5A = 5000mA)
+2. **Sicherheitsmargin** abziehen: 5000mA × 0.8 = 4000mA
+3. **Diesen Wert** als Limit eintragen
 
 **Anwendungsfälle:**
-- **Separate Netzteile**: Jeder Kanal hat eigenes Netzteil
-- **Verschiedene LED-Mengen**: Kanal 1 hat 30 LEDs, Kanal 2 hat 100 LEDs  
-- **Verschiedene LED-Typen**: Mix aus RGB und RGBW LEDs
-- **Zonierung**: Verschiedene Stromgrenzen für verschiedene Bereiche
+- **Eigenes Netzteil**: Dieser Strip hat dediziertes Netzteil
+- **Bekannte Kapazität**: Genaue Netzteilleistung ist bekannt
+- **Maximale Kontrolle**: Exakte Grenzwerte erforderlich
 
 **Typische Werte:**
-- **Kleiner Kanal** (20 LEDs): 1.500mA
-- **Mittlerer Kanal** (50 LEDs): 3.500mA
-- **Großer Kanal** (100 LEDs): 7.000mA
+- **Kleines Netzteil** (2A): 1600mA
+- **Mittleres Netzteil** (5A): 4000mA  
+- **Großes Netzteil** (10A): 8000mA
 
 **Vorteil:**
-Bessere Kontrolle und Ausnutzung bei unterschiedlichen Installationen pro Kanal.
-
+Direkte, vorhersagbare Begrenzung ohne automatische Berechnungen.

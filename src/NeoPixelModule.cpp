@@ -1,21 +1,34 @@
 #include "NeoPixelModule.h"
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
-#include "HclCurve.h"
+#include "HardwareMappingLogic.h"
 #include "SegmentController.h"
 #include "StripConfiguration.h"
-#include "HardwareMappingLogic.h"
+
+// Include Timer module for astronomical sunrise/sunset calculations (if available)
+#if defined(__has_include)
+    #if __has_include("Timer.h")
+        #define OPENKNX_TIMER_MODULE
+        #include "Timer.h"
+    #else
+        #warning "Timer module not found - Sun position-based HCL curve will not work without sunrise/sunset times from OAM layer"
+    #endif
+#else
+    #warning "Timer module not found - Sun position-based HCL curve will not work without sunrise/sunset times from OAM layer"
+#endif
 
 // Include generated effect parameters if available
 #if defined(__has_include)
     #if __has_include("EffectParameterMapping.h")
         #define EFFECT_PARAMETER_MAPPING_GENERATED
         #include "EffectParameterMapping.h"
+        #include "EffectTypeMapping.h"
     #endif
 #else
     // Fallback for older compilers: can define via build flags
     #ifdef EFFECT_PARAMETER_MAPPING_GENERATED
         #include "EffectParameterMapping.h"
+        #include "EffectTypeMapping.h"
     #endif
 #endif
 
@@ -78,22 +91,21 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
 NeoPixelBusModule openknxNeoPixelModule;
 
 NeoPixelBusModule::NeoPixelBusModule()
-    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _hclCurve(nullptr)
+    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _globalHclManager(nullptr)
 {
     _flashPersistence = new NeoPixelFlashPersistence(this);
     _effectConfiguration = new EffectConfiguration(this);
     _colorManagement = new ColorManagement(this);
     _segmentController = new SegmentController(this);
-    _hclCurve = new HclCurve();
 }
 
 NeoPixelBusModule::~NeoPixelBusModule()
 {
+    delete _globalHclManager;
     delete _flashPersistence;
     delete _effectConfiguration;
     delete _colorManagement;
     delete _segmentController;
-    delete _hclCurve;
 }
 
 void NeoPixelBusModule::setup(bool configured)
@@ -122,6 +134,12 @@ void NeoPixelBusModule::setup(bool configured)
         // Initialize all physical strips (PIO, DMA, etc.) - MUST be after configureFromETS()
         // which creates the PhysicalStrip objects, but BEFORE any show() calls
         _neoPixel.setup(configured);
+
+        // CRITICAL: Setup HCL pixel transformation context AFTER segment HCL managers are set!
+        // configureFromETS() calls applySegmentConfiguration() which calls setHclManager(),
+        // so the HclManager references must be set BEFORE building the transformation context.
+        updateHclTransformContext(); // Setup HCL pixel transformation callback
+
         // Now that hardware is initialized, clear LEDs if requested during configuration
         if (_clearLedsAfterSetup && _virtualStrip)
         {
@@ -130,12 +148,18 @@ void NeoPixelBusModule::setup(bool configured)
             _clearLedsAfterSetup = false;
         }
 
-        // Setup HCL curve for automatic Kelvin scheduling
-        if (_hclCurve)
-        {
-            logInfoP("Initializing HCL curve for automatic Kelvin scheduling");
-            _hclCurve->setup(0); // Index 0 for global HCL
-        }
+        // Global HCL manager was already setup in configureFromETS()
+        // Just initialize status KOs (make values immediately readable via bus)
+        loopHclManagers();        // Update HCL Status-KOs
+        sendPowerMonitoringKOs(); // Update Power monitoring KOs
+    }
+    else
+    {
+        logInfoP("NeoPixelBusModule setup skipped - not configured");
+        // Initialize GPIOs early to prevent floating states and send LED RESET signals
+        // NOTE: This only sets pins LOW - LEDs retain their color until proper protocol
+        //       data is sent (happens in configureFromETS() after strip creation)
+        initializeGpioPins();
     }
 #endif
 }
@@ -145,41 +169,42 @@ void NeoPixelBusModule::loop(bool configured)
     if (!configured || !_initialized) return;
 
     // Check for hardware configuration mismatch and warn periodically
-    if (_hwConfigMismatch) {
+    if (_hwConfigMismatch)
+    {
         unsigned long now = millis();
-        if (now - _lastHwMismatchWarning >= 5000) { // Every 5 seconds
+        if (now - _lastHwMismatchWarning >= 5000)
+        { // Every 5 seconds
             _lastHwMismatchWarning = now;
-            #ifdef DEVICE_HW_ID
-                #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-                    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
-                    
-                    if (selectedHwIndex == 255) {
-                        // ETS has dummy value - user hasn't configured hardware yet
-                        uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
-                        const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
-                        logErrorP("*** No hardware configured! Use 'Hardware auto-detect' button in ETS or manually select: %s (ID: 0x%04X)",
-                                  compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
-                    } else {
-                        // Hardware configured but mismatched - compare indices directly
-                        uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
-                        uint8_t etsHwIndex = selectedHwIndex;  // Parameter contains index directly now
-                        const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
-                        const char* etsHwName = HardwareMapping::getHardwareName(etsHwIndex);
-                        logErrorP("!!! HW MISMATCH: Firmware=%s (Index %d) vs ETS=%s (Index %d) - Update ETS config!",
-                                  compiledHwName ? compiledHwName : "Unknown", compiledHwIndex,
-                                  etsHwName ? etsHwName : "Unknown", etsHwIndex);
-                    }
-                #endif
-            #endif
+#ifdef DEVICE_HW_ID
+    #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
+            uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
+
+            if (selectedHwIndex == 255)
+            {
+                // ETS has dummy value - user hasn't configured hardware yet
+                uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
+                const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
+                logErrorP("*** No hardware configured! Use 'Hardware auto-detect' button in ETS or manually select: %s (ID: 0x%04X)",
+                          compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
+            }
+            else
+            {
+                // Hardware configured but mismatched - compare indices directly
+                uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
+                uint8_t etsHwIndex = selectedHwIndex; // Parameter contains index directly now
+                const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
+                const char* etsHwName = HardwareMapping::getHardwareName(etsHwIndex);
+                logErrorP("!!! HW MISMATCH: Firmware=%s (Index %d) vs ETS=%s (Index %d) - Update ETS config!",
+                          compiledHwName ? compiledHwName : "Unknown", compiledHwIndex,
+                          etsHwName ? etsHwName : "Unknown", etsHwIndex);
+            }
+    #endif
+#endif
         }
     }
 
-    // Process HCL curve scheduling (updates Kelvin target based on sun position or time)
-    // This runs even when power is OFF to maintain the curve state
-    if (_hclCurve)
-    {
-        _hclCurve->loop();
-    }
+    // Process all active HCL managers (global + segments)
+    loopHclManagers();
 
     // If global power is OFF, skip all effect processing and pixel updates
     if (!_globalPowerOn) return;
@@ -190,11 +215,13 @@ void NeoPixelBusModule::loop(bool configured)
     // Call library loop() for auto-update timer and effect processing
     _neoPixel.loop(configured);
 
-    // Apply HCL post-processing to rendered pixels (color temperature correction)
-    // This must happen AFTER effects are rendered but BEFORE pixels are sent to hardware
-    if (_colorManagement)
+    // Send power monitoring KOs periodically
+    unsigned long now = millis();
+    if (now - _lastPowerMonitoringMs >= _powerMonitoringIntervalMs)
     {
-        _colorManagement->applyHclPostProcess();
+        _lastPowerMonitoringMs = now;
+        // logDebugP("Power monitoring update: Sending KOs");
+        sendPowerMonitoringKOs();
     }
 }
 
@@ -265,10 +292,10 @@ void NeoPixelBusModule::readFlash(const uint8_t* data, const uint16_t size)
 
 void NeoPixelBusModule::processAfterStartupDelay()
 {
-    if (_flashPersistence)
-    {
-        _flashPersistence->restoreStatesAfterStartup();
-    }
+    // ETS configuration already applied in configureEffects()
+    // No restore needed - effects are already set according to ETS parameters
+    // Flash restore would override fresh ETS settings with stale data
+    logInfoP("Startup complete - ETS configuration active");
 }
 
 // Process active start/stop dimming for all segments
@@ -281,7 +308,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 {
     // Get the KO number for routing to correct channel/segment
     uint16_t koNumber = ko.asap();
-    logInfoP("processInputKo: KO Number %d", koNumber);
     // Global NeoPixel KOs
     if (koNumber == NEO_KoPower)
     {
@@ -307,6 +333,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 _virtualStrip->show();
             }
         }
+        // Note: Power ON doesn't need special handling - the loop() function
+        // will automatically resume updating segments and effects
 
         // Send state feedback
         bool changed = KoNEO_PowerState.valueNoSendCompare(powerState, DPT_Switch);
@@ -362,8 +390,20 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         // The KNX channels correspond to logical segments that users can control
         // Physical strips are hardware configuration and not directly controlled via KOs
 
-        logInfoP("Segment Channel %d KO Index %d received (_segments.size=%d, _numberOfSegments=%d)",
-                 channel, koIndex, (int)_segments.size(), _numberOfSegments);
+        // Only log non-status KOs to avoid console spam from read requests
+        if (koIndex != NEO_KoSegmentPowerState &&
+            koIndex != NEO_KoSegmentBrightnessState &&
+            koIndex != NEO_KoCCTState &&
+            koIndex != NEO_KoFxState &&
+            koIndex != NEO_KoPresetState &&
+            koIndex != NEO_KoRGBState &&
+            koIndex != NEO_KoHSVState &&
+            koIndex != NEO_KoRGBWState &&
+            koIndex != NEO_KoHCLState)
+        {
+            logInfoP("Segment Channel %d KO Index %d received (_segments.size=%d, _numberOfSegments=%d)",
+                     channel, koIndex, (int)_segments.size(), _numberOfSegments);
+        }
 
         // Validate channel against segment count, not physical strip count
         if (channel >= _segments.size())
@@ -955,16 +995,27 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 }
                 else
                 {
-                    // No saved color - use a default (white for effects, off for Solid)
+                    // No saved color - use ETS Default-Farbe (ETS-Parameterwert)
+                    uint32_t color = ParamNEO_NEOSegmentStartupColor;
+                    uint8_t r = (color >> 16) & 0xFF;
+                    uint8_t g = (color >> 8) & 0xFF;
+                    uint8_t b = color & 0xFF;
+                    uint8_t w = ParamNEO_NEOSegmentStartupW;
+
+                    targetSegment->setPrimaryColor(r, g, b, w);
+
                     if (effect == 0)
                     {
-                        targetSegment->setPrimaryColor(0, 0, 0, 0);
-                        logInfoP("Segment %d: No saved color, Solid effect off", channel);
+                        // For Solid effect, also apply startup brightness
+                        uint8_t brightness = ParamNEO_NEOSegmentStartupBrightness;
+                        targetSegment->setBrightness(brightness);
+                        logInfoP("Segment %d: No saved color, using ETS Default-Farbe (R=%d G=%d B=%d W=%d, Brightness=%d) for Solid",
+                                 channel, r, g, b, w, brightness);
                     }
                     else
                     {
-                        targetSegment->setPrimaryColor(255, 255, 255, 0);
-                        logInfoP("Segment %d: No saved color, using white for effect %d", channel, effect);
+                        logInfoP("Segment %d: No saved color, using ETS Default-Farbe (R=%d G=%d B=%d W=%d) for effect %d",
+                                 channel, r, g, b, w, effect);
                     }
                 }
                 // Auto-update will render the change on next cycle
@@ -1038,25 +1089,38 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoSegmentPower:
             {
                 bool power = ko.value(DPT_Switch);
-                logDebugP("Segment %d Power: %s", channel, power ? "ON" : "OFF");
+                // logDebugP("Segment %d Power: %s", channel, power ? "ON" : "OFF");
 
                 SegmentConfig& cfg = _segments[channel];
 
                 if (power)
                 {
-                    logDebugP("Segment %d Power ON: savedValid=%d, savedLastWasEffect=%d, savedEffectValid=%d, type=%d, savedRGB=(%d,%d,%d), savedBri=%d",
-                              channel, cfg.savedValid, cfg.savedLastWasEffect, cfg.savedEffectValid, cfg.savedEffectType,
-                              cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedBrightness);
+                    // logDebugP("Segment %d Power ON: savedValid=%d, savedLastWasEffect=%d, savedEffectValid=%d, type=%d, savedRGB=(%d,%d,%d), savedBri=%d",
+                    //           channel, cfg.savedValid, cfg.savedLastWasEffect, cfg.savedEffectValid, cfg.savedEffectType,
+                    //           cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedBrightness);
 
                     // Update power state for flash persistence
                     cfg.savedPower = 1;
 
-                    if (cfg.savedLastWasEffect && cfg.savedEffectValid && cfg.savedEffectType > 0)
+                    if (cfg.savedLastWasEffect && cfg.savedEffectValid)
                     {
-                        // Restore effect (parameters are loaded from ETS automatically)
+                        // Restore effect (including Solid effect type=0!)
                         applyEffectToSegment(targetSegment, cfg.savedEffectType);
                         _effectConfiguration->setupEffectConfiguration(targetSegment);
                         targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
+
+                        // For Solid effect (type=0), restore saved colors
+                        if (cfg.savedEffectType == 0)
+                        {
+                            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+                        }
+
+                        // Resume effect and reset state (in case stopped during Power OFF)
+                        targetSegment->resume();
+                        if (targetSegment->getEffect())
+                        {
+                            targetSegment->getEffect()->reset();
+                        }
                     }
                     else if (cfg.savedValid)
                     {
@@ -1072,37 +1136,43 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                             targetSegment->setBrightness(255);
                         }
                     }
+
+                    // Force immediate show() to update PowerManager with new pixel data
+                    if (_virtualStrip)
+                    {
+                        _virtualStrip->show();
+                    }
                 }
                 else
                 {
-                    // Snapshot BEFORE clearing
-                    uint8_t r = 0, g = 0, b = 0;
-                    if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
-                    {
-                        uint8_t w = 0;
-                        targetSegment->getPixel(0, r, g, b, w);
-                        cfg.savedWW = w;
-                    }
-                    else
-                    {
-                        targetSegment->getPixel(0, r, g, b);
-                    }
-                    cfg.savedR = r;
-                    cfg.savedG = g;
-                    cfg.savedB = b;
+                    // Snapshot PRIMARY COLOR (not current pixels!)
+                    // Effects constantly change pixel colors, but primaryColor is the base color
+                    uint32_t primaryRGBW = targetSegment->getPrimaryColor();
+
+                    // Extract RGBW components from uint32_t (format: 0xRRGGBBWW)
+                    cfg.savedR = (primaryRGBW >> 24) & 0xFF;
+                    cfg.savedG = (primaryRGBW >> 16) & 0xFF;
+                    cfg.savedB = (primaryRGBW >> 8) & 0xFF;
+                    cfg.savedWW = (primaryRGBW) & 0xFF;
                     cfg.savedBrightness = targetSegment->getBrightness();
                     cfg.savedValid = true;
 
                     // Update power state for flash persistence
                     cfg.savedPower = 0;
 
-                    // Track if effect was active (effect type already stored in cfg.savedEffectType)
-                    cfg.savedLastWasEffect = (targetSegment->getEffect() != nullptr);
+                    // Save current effect type (convert Effect* to type ID)
+                    Effect* currentEffect = targetSegment->getEffect();
+                    cfg.savedEffectType = getTypeFromEffect(currentEffect);
 
-                    logDebugP("Segment %d Power OFF: snapshot RGB=(%d,%d,%d), W=%d, Bri=%d, effectType=%d",
-                              channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedBrightness, cfg.savedEffectType);
+                    // Track if effect was active (Solid effect type=0 IS an effect!)
+                    cfg.savedLastWasEffect = (currentEffect != nullptr);
+                    cfg.savedEffectValid = cfg.savedLastWasEffect;
 
-                    targetSegment->setBrightness(0);
+                    // logDebugP("Segment %d Power OFF: snapshot RGB=(%d,%d,%d), W=%d, Bri=%d, effectType=%d",
+                    //           channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedBrightness, cfg.savedEffectType);
+
+                    // NOW stop effect and clear pixels
+                    targetSegment->stop();
                     if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
                     {
                         targetSegment->setPrimaryColor(0, 0, 0, 0);
@@ -1110,6 +1180,15 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     else
                     {
                         targetSegment->setPrimaryColor(0, 0, 0, 0);
+                    }
+
+                    // Force immediate sync and show to clear PhysicalStrip buffers
+                    // Must use NeoPixelManager to ensure PhysicalStrip buffers are updated!
+                    NeoPixelManager* manager = _neoPixel.getManager();
+                    if (manager)
+                    {
+                        manager->syncAll();
+                        manager->showAll();
                     }
                 }
 
@@ -1138,11 +1217,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (_globalBrightness < 255)
                 {
                     effectiveBrightness = (brightness * _globalBrightness) / 255;
-                    logDebugP("Segment %d: desired=%d%%, global=%d%%, effective=%d%%",
-                              channel,
-                              (brightness * 100 + 127) / 255,
-                              (_globalBrightness * 100 + 127) / 255,
-                              (effectiveBrightness * 100 + 127) / 255);
+                    // logDebugP("Segment %d: desired=%d%%, global=%d%%, effective=%d%%",
+                    //           channel,
+                    //           (brightness * 100 + 127) / 255,
+                    //           (_globalBrightness * 100 + 127) / 255,
+                    //           (effectiveBrightness * 100 + 127) / 255);
                 }
 
                 // Set the effective brightness level
@@ -1160,7 +1239,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoWW:
             {
                 uint8_t ww = ko.value(DPT_Value_1_Ucount); // 5.010
-                logInfoP("Segment %d Warm White: %d", channel, ww);
+                // logDebugP("Segment %d Warm White: %d", channel, ww);
 
                 // Store warm white in primaryWW, preserve cool white (5-channel RGBCCT)
                 uint8_t r = targetSegment->getConfig().r();
@@ -1174,7 +1253,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoCW:
             {
                 uint8_t cw = ko.value(DPT_Value_1_Ucount); // 5.010
-                logInfoP("Segment %d Cool White: %d", channel, cw);
+                // logDebugP("Segment %d Cool White: %d", channel, cw);
 
                 // Store cool white in primaryCW, preserve warm white (5-channel RGBCCT)
                 uint8_t r = targetSegment->getConfig().r();
@@ -1193,7 +1272,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t g = (rgbw >> 16) & 0xFF;
                 uint8_t b = (rgbw >> 8) & 0xFF;
                 uint8_t w = rgbw & 0xFF;
-                logInfoP("Segment %d RGBW: R=%d G=%d B=%d W=%d", channel, r, g, b, w);
+                // logDebugP("Segment %d RGBW: R=%d G=%d B=%d W=%d", channel, r, g, b, w);
 
                 // Store in config and apply
                 targetSegment->setPrimaryColor(r, g, b, w);
@@ -1313,8 +1392,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 newG = constrain(newG, 0, 255);
                 newB = constrain(newB, 0, 255);
 
-                logInfoP("Segment %d RGB Relative: R=%d->%d, G=%d->%d, B=%d->%d", channel,
-                         currentR, newR, currentG, newG, currentB, newB);
+                // logDebugP("Segment %d RGB Relative: R=%d->%d, G=%d->%d, B=%d->%d", channel,
+                //          currentR, newR, currentG, newG, currentB, newB);
 
                 // Update config and apply
                 targetSegment->setPrimaryColor((uint8_t)newR, (uint8_t)newG, (uint8_t)newB, currentW);
@@ -1406,6 +1485,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoRGBState:
             case NEO_KoHSVState:
             case NEO_KoRGBWState:
+            case NEO_KoHCLState:
                 // These are status/output-only KOs, ignore incoming writes
                 break;
 
@@ -1426,112 +1506,164 @@ void NeoPixelBusModule::showHelp()
 {
     // Print the 'neo' command group header via core module
     _neoPixel.showHelp();
-    
-    #ifdef OPENKNX_DEBUG
+
+#ifdef OPENKNX_DEBUG
     // Add NeoPixel-specific debug commands
     openknx.console.printHelpLine("neoa", "Show NeoPixel ETS configuration analysis");
-    #endif
+#endif
 }
 
 // Console: process commands by delegating 'neo' prefixed commands
 bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
 {
-    #ifdef OPENKNX_DEBUG
+#ifdef OPENKNX_DEBUG
     // Handle NeoPixel-specific debug commands
     if (command == "neoa")
     {
         debugShowConfiguration();
         return true;
     }
-    #endif
-    
+#endif
+
     // Forward to core module's console handler
     return _neoPixel.processCommand(command, diagnose);
 }
 
 // FunctionProperty: Handle ETS online functions (hardware detection)
-bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t *data, uint8_t *resultData, uint8_t &resultLength)
+bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength)
 {
-    // Object 158 = NeoPixel Module, Property 10 = Hardware Detection
-    if (objectIndex != 158 || propertyId != 10)
-        return false;
+    // ALWAYS log when called - even if wrong object/property
+    logDebugP("==> processFunctionProperty CALLED: ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
+    logDebugP("    Expected: ObjectIndex=%d, PropertyId=%d", NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID);
 
-    if (!knx.configured())
+    // Check if this is our hardware detection function property
+    if (objectIndex != NEOPIXEL_FUNCTION_OBJECT_INDEX || propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
     {
-        resultData[0] = 1; // Error: device not configured
-        resultLength = 1;
+        logErrorP("Hardware detection triggered from ETS with unexpected object/property (ObjectIndex: %d, PropertyId: %d). Expected %d/%d",
+                  objectIndex, propertyId, NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID);
         return false;
     }
 
-    // Read hardware ID from compile-time define
-    #ifdef DEVICE_HW_ID
-        uint16_t hwId = DEVICE_HW_ID;
-        
-        // Return format: [0, hwId_high, hwId_low]
-        resultData[0] = 0;              // Success
-        resultData[1] = (hwId >> 8);    // High byte
-        resultData[2] = (hwId & 0xFF);  // Low byte
-        resultLength = 3;
-        
-        logInfoP("Hardware detection: DEVICE_HW_ID = 0x%04X", hwId);
-        return true;
-    #else
-        // Hardware ID not defined in build
-        resultData[0] = 2; // Error: hardware ID not available
-        resultLength = 1;
-        logErrorP("Hardware detection failed: DEVICE_HW_ID not defined");
-        return false;
-    #endif
+// Read hardware ID from compile-time define
+#ifdef DEVICE_HW_ID
+    uint16_t hwId = DEVICE_HW_ID;
+
+    // Return format: [0, hwId_high, hwId_low]
+    resultData[0] = 0;             // Success
+    resultData[1] = (hwId >> 8);   // High byte
+    resultData[2] = (hwId & 0xFF); // Low byte
+    resultLength = 3;
+
+    logDebugP("==> Hardware detection SUCCESS: DEVICE_HW_ID = 0x%04X (resultLength=%d)", hwId, resultLength);
+    return true;
+#else
+    // Hardware ID not defined in build
+    resultData[0] = 2; // Error: hardware ID not available
+    resultLength = 1;
+    logErrorP("Hardware detection failed: DEVICE_HW_ID not defined");
+    return false;
+#endif
 }
+
+// =============================================================================
+// GPIO Pin Initialization
+// =============================================================================
+
+void NeoPixelBusModule::initializeGpioPins()
+{
+    logInfoP("Initializing GPIO pins - sending LED RESET signals...");
+
+    uint8_t initializedCount = 0;
+
+    // Iterate through ALL possible port indices (0-based) defined by hardware mapping
+    // This sets all hardware GPIOs to LOW and sends RESET to LEDs
+    // NOTE: WS2812 LEDs will RESET but keep their previous color in latches!
+    // To actually turn LEDs OFF, we must send RGB(0,0,0) via the timing protocol
+    // (this happens later in configureFromETS() after strip creation)
+    for (uint8_t portIndex = 0; portIndex < NEOPIXEL_HW_PORT_COUNT; portIndex++)
+    {
+        uint8_t gpio = mapPortIndexToGpio(portIndex);
+
+        // Skip undefined GPIOs (255 = not defined in platformio.hardware.ini)
+        if (gpio == 255) continue;
+
+        // Robust GPIO initialization to prevent undefined LED states
+        // Step 1: Reset pin to INPUT to clear any previous state/hardware functions
+        pinMode(gpio, INPUT);
+        // Step 2: Set to LOW while still INPUT (sets pull-down if available)
+        digitalWrite(gpio, LOW);
+        // Step 3: Switch to OUTPUT mode
+        pinMode(gpio, OUTPUT);
+        // Step 4: Ensure LOW state in OUTPUT mode
+        digitalWrite(gpio, LOW);
+        // Step 5: CRITICAL - Hold LOW for 300µs to send LED RESET signal for all LED types
+        // WS2812/WS2812B/SK6812: >50µs (typ. 280µs)
+        // WS2813: >300µs, WS2815: >280µs, APA106: >50µs, TM1814: >200µs
+        // 300µs is safe for ALL common LED types to reset and turn off
+        delayMicroseconds(300);
+        initializedCount++;
+
+        logDebugP("Port %d: GPIO %d set to LOW", portIndex + 1, gpio);
+    }
+
+    logInfoP("GPIO initialization complete - %d pins set to LOW (RESET sent to LEDs)", initializedCount);
+}
+
+// =============================================================================
+// Configuration & Setup
+// =============================================================================
 
 void NeoPixelBusModule::configureFromETS()
 {
     // Initialize the OFM-NeoPixel module first
     _neoPixel.init();
 
-    // Log hardware configuration and check for mismatch
-    #ifdef DEVICE_HW_ID
-        uint8_t hwIndex = getCurrentHardwareIndex();
-        const char* hwName = HardwareMapping::getHardwareName(hwIndex);
-        logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - Compile-time mode", 
-                 hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
-        
-        // Check if ETS configuration matches compiled hardware
-        #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-            uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;  // Parameter contains index now
-            uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);  // Convert HW_ID to index
-            if (selectedHwIndex != compiledHwIndex) {
-                _hwConfigMismatch = true;
-                const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
-                const char* etsHwName = HardwareMapping::getHardwareName(selectedHwIndex);
-                logErrorP("!!!! HARDWARE MISMATCH !!!!");
-                logErrorP("  Compiled for:  %s (Index: %d, ID: 0x%04X)", 
-                         compiledHwName ? compiledHwName : "Unknown", compiledHwIndex, DEVICE_HW_ID);
-                logErrorP("  ETS configured: %s (Index: %d)", 
-                         etsHwName ? etsHwName : "Unknown", selectedHwIndex);
-                logErrorP("  GPIO Port configuration from ETS will be IGNORED, to prevent damage and unexpected behaviors!");
-                logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
-                logErrorP("!!!! HARDWARE MISMATCH !!!!");
-                
-                // Set Prog LED to red + error code blinking (Prio 2 - overrides prog mode)
-                openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->color(OpenKNX::Led::Color::Red);
-                openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->errorCode(1); // 1x blink = HW mismatch
-            } else {
-                _hwConfigMismatch = false;
-            }
-        #endif
-    #else
-        #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-            uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;  // Parameter contains index now
-            const char* hwName = HardwareMapping::getHardwareName(selectedHwIndex);
-            logInfoP("Hardware: %s (Index: %d) - ETS runtime selection", 
-                     hwName ? hwName : "Unknown", selectedHwIndex);
-            _hwConfigMismatch = false; // No mismatch in runtime mode
-        #else
-            logWarningP("Hardware selection not available - using default configuration");
-            _hwConfigMismatch = false;
-        #endif
+// Log hardware configuration and check for mismatch
+#ifdef DEVICE_HW_ID
+    uint8_t hwIndex = getCurrentHardwareIndex();
+    const char* hwName = HardwareMapping::getHardwareName(hwIndex);
+    logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - Compile-time mode",
+             hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
+
+    // Check if ETS configuration matches compiled hardware
+    #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
+    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;      // Parameter contains index now
+    uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID); // Convert HW_ID to index
+    if (selectedHwIndex != compiledHwIndex)
+    {
+        _hwConfigMismatch = true;
+        const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
+        const char* etsHwName = HardwareMapping::getHardwareName(selectedHwIndex);
+        logErrorP("!!!! HARDWARE MISMATCH !!!!");
+        logErrorP("  Compiled for:  %s (Index: %d, ID: 0x%04X)",
+                  compiledHwName ? compiledHwName : "Unknown", compiledHwIndex, DEVICE_HW_ID);
+        logErrorP("  ETS configured: %s (Index: %d)",
+                  etsHwName ? etsHwName : "Unknown", selectedHwIndex);
+        logErrorP("  GPIO Port configuration from ETS will be IGNORED, to prevent damage and unexpected behaviors!");
+        logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
+        logErrorP("!!!! HARDWARE MISMATCH !!!!");
+
+        // Set Prog LED to red + error code blinking (Prio 2 - overrides prog mode)
+        openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->color(OpenKNX::Led::Color::Red);
+        openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->errorCode(1); // 1x blink = HW mismatch
+    }
+    else
+    {
+        _hwConfigMismatch = false;
+    }
     #endif
+#else
+    #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
+    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect; // Parameter contains index now
+    const char* hwName = HardwareMapping::getHardwareName(selectedHwIndex);
+    logInfoP("Hardware: %s (Index: %d) - ETS runtime selection",
+             hwName ? hwName : "Unknown", selectedHwIndex);
+    _hwConfigMismatch = false; // No mismatch in runtime mode
+    #else
+    logWarningP("Hardware selection not available - using default configuration");
+    _hwConfigMismatch = false;
+    #endif
+#endif
 
     // Track used GPIO pins to avoid conflicts
     std::vector<uint8_t> usedPins;
@@ -1587,7 +1719,8 @@ void NeoPixelBusModule::configureFromETS()
     logInfoP("Pre-scanning %d strips for manual GPIO configurations...", maxStrips);
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
-        _channelIndex = i;
+        // CRITICAL: Set module _channelIndex so ParamNEOSTRIP_* macros read from correct strip
+        setChannelIndex(i);
         logInfoP("PRE-SCAN Strip %d: Set _channelIndex = %d", i, _channelIndex);
 
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
@@ -1646,16 +1779,19 @@ void NeoPixelBusModule::configureFromETS()
         {
             // Hardware-assisted mode: Get GPIO from hardware-specific port selection
             // CRITICAL: Ignore hardware port config if there's a hardware mismatch!
-            if (_hwConfigMismatch) {
+            if (_hwConfigMismatch)
+            {
                 logErrorP("Strip %d: Hardware mismatch detected - ignoring hardware port selection", i);
                 // Don't pre-mark any hardware ports, force manual configuration
-            } else {
+            }
+            else
+            {
                 uint8_t dataPortIndex = getGpioDataPortForHw(i);
-                
+
                 if (isHardwarePortSelected(dataPortIndex))
                 {
                     uint8_t dataGpio = mapPortIndexToGpio(dataPortIndex);
-                    
+
                     if (dataGpio != 255) // Valid GPIO
                     {
                         if (!isPinUsed(dataGpio))
@@ -1667,16 +1803,16 @@ void NeoPixelBusModule::configureFromETS()
                         {
                             logErrorP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortIndex);
                         }
-                        
+
                         // For SPI protocols, also mark clock GPIO
                         if (isSpiProtocol(proto))
                         {
                             uint8_t clockPortIndex = getGpioClockPortForHw(i);
-                            
+
                             if (isHardwarePortSelected(clockPortIndex))
                             {
                                 uint8_t sckGpio = mapPortIndexToGpio(clockPortIndex);
-                                
+
                                 if (sckGpio != 255) // Valid GPIO
                                 {
                                     if (!isPinUsed(sckGpio))
@@ -1701,6 +1837,8 @@ void NeoPixelBusModule::configureFromETS()
     // 2) Create all physical strips in configuration order (auto-allocation will skip pre-marked pins)
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
+        // Set channel index for strip parameter access
+        // ParamNEOSTRIP_* macros use _channelIndex to calculate correct EEPROM address
         _channelIndex = i;
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
@@ -1724,20 +1862,20 @@ void NeoPixelBusModule::configureFromETS()
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
-        
+
         // DEBUG: Log all parameters for this strip
         logInfoP("Strip %d: LEDType=%d, pixels=%d (channelIndex=%d)", i, ledType, pixels, _channelIndex);
-        logInfoP("  -> Offset calculation: base=%d + (ch=%d * size=%d) = %d", 
+        logInfoP("  -> Offset calculation: base=%d + (ch=%d * size=%d) = %d",
                  NEOSTRIP_ParamBlockOffset, _channelIndex, NEOSTRIP_ParamBlockSize,
                  NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize);
-        
+
         // DEBUG: SPI-specific parameters
         if (isSpiProtocol(proto))
         {
             const uint8_t mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
             const uint8_t sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
-            logInfoP("  -> SPI: MOSI=%d (offset %d+%d=%d), SCK=%d (offset %d+%d=%d)", 
-                     mosiGpio, 
+            logInfoP("  -> SPI: MOSI=%d (offset %d+%d=%d), SCK=%d (offset %d+%d=%d)",
+                     mosiGpio,
                      NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize, NEOSTRIP_NEOSPIMOSIGPIO,
                      NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize + NEOSTRIP_NEOSPIMOSIGPIO,
                      sckGpio,
@@ -1771,23 +1909,24 @@ void NeoPixelBusModule::configureFromETS()
             {
                 // Hardware-assisted mode: Use hardware-specific port mapping
                 // CRITICAL: Block hardware port usage if there's a hardware mismatch!
-                if (_hwConfigMismatch) {
+                if (_hwConfigMismatch)
+                {
                     logErrorP("Strip %d: Hardware mismatch - cannot use hardware ports! Please configure GPIO manually.", i);
                     continue; // Skip this strip completely
                 }
-                
+
                 uint8_t dataPortIndex = getGpioDataPortForHw(i);
                 uint8_t clockPortIndex = getGpioClockPortForHw(i);
-                
+
                 if (isHardwarePortSelected(dataPortIndex) && isHardwarePortSelected(clockPortIndex))
                 {
                     // Map port indices to actual GPIO numbers
                     mosiGpio = mapPortIndexToGpio(dataPortIndex);
                     sckGpio = mapPortIndexToGpio(clockPortIndex);
-                    
+
                     if (mosiGpio == 255 || sckGpio == 255)
                     {
-                        logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d, clock:%d->%d)", 
+                        logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d, clock:%d->%d)",
                                   i, dataPortIndex, mosiGpio, clockPortIndex, sckGpio);
                         // Fallback to automatic allocation
                         mosiGpio = 19;
@@ -1802,7 +1941,7 @@ void NeoPixelBusModule::configureFromETS()
                 {
                     // Fallback to automatic pin allocation if hardware ports not selected
                     logWarningP("Strip %d: No hardware ports selected, using automatic allocation", i);
-                    
+
                     bool foundPins = false;
                     while (nextPinIndex + 1 < numAvailablePins)
                     {
@@ -1925,21 +2064,22 @@ void NeoPixelBusModule::configureFromETS()
             {
                 // Hardware-assisted mode: Use hardware-specific port mapping
                 // CRITICAL: Block hardware port usage if there's a hardware mismatch!
-                if (_hwConfigMismatch) {
+                if (_hwConfigMismatch)
+                {
                     logErrorP("Strip %d: Hardware mismatch - cannot use hardware ports! Please configure GPIO manually.", i);
                     continue; // Skip this strip completely
                 }
-                
+
                 uint8_t dataPortIndex = getGpioDataPortForHw(i);
-                
+
                 if (isHardwarePortSelected(dataPortIndex))
                 {
                     // Map port index to actual GPIO number
                     dataGpioPin = mapPortIndexToGpio(dataPortIndex);
-                    
+
                     if (dataGpioPin == 255)
                     {
-                        logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d)", 
+                        logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d)",
                                   i, dataPortIndex, dataGpioPin);
                         // Fallback to automatic allocation
                         dataGpioPin = dataGpio;
@@ -1953,7 +2093,7 @@ void NeoPixelBusModule::configureFromETS()
                 {
                     // Fallback to automatic pin allocation if hardware port not selected
                     logWarningP("Strip %d: No hardware port selected, using automatic allocation", i);
-                    
+
                     bool foundPin = false;
                     while (nextPinIndex < numAvailablePins)
                     {
@@ -2026,7 +2166,8 @@ void NeoPixelBusModule::configureFromETS()
             }
 
             // Configure color correction for this strip
-            if ((bool)ParamNEOSTRIP_NEOGammaCorrection || (bool)ParamNEOSTRIP_NEOWhiteBalanceCorrection)
+            bool colorCalibMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
+            if (colorCalibMaster && ((bool)ParamNEOSTRIP_NEOGammaCorrection || true))
             {
                 configureColorCorrection();
                 updateColorCorrection(); // Set correction parameters on VirtualStrip once
@@ -2053,6 +2194,35 @@ void NeoPixelBusModule::configureFromETS()
                          i,
                          _gammaCorrectionEnabled ? "ON" : "OFF", _gammaValue,
                          _whiteBalanceEnabled ? "ON" : "OFF", _whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue);
+            }
+
+            // Configure power limiting for this strip
+            auto* cfg = phys->getConfig();
+            if (cfg)
+            {
+                uint8_t powerMode = (uint8_t)ParamNEOSTRIP_NEOpowerLimitCombined;
+                cfg->setPowerLimitMode(powerMode);
+
+                if (powerMode == 2) // FixedValue
+                {
+                    uint16_t maxCurrent = (uint16_t)ParamNEOSTRIP_NEOcurrentPerChannel;
+                    cfg->setMaxCurrentMa(maxCurrent);
+                    logInfoP("Strip %d: Power limit FixedValue - %d mA", i, maxCurrent);
+                }
+                else if (powerMode == 3) // PerLED
+                {
+                    uint8_t currentPerLed = (uint8_t)ParamNEOSTRIP_NEOcurrentPerLED;
+                    cfg->setCurrentPerLedMa(currentPerLed);
+                    logInfoP("Strip %d: Power limit PerLED - %d mA/LED", i, currentPerLed);
+                }
+                else if (powerMode == 1)
+                {
+                    logInfoP("Strip %d: Power limit UseGlobal", i);
+                }
+                else if (powerMode == 0)
+                {
+                    logInfoP("Strip %d: Power limit Disabled", i);
+                }
             }
 
             // Configure strip options (swap mode and skip LEDs)
@@ -2094,21 +2264,12 @@ void NeoPixelBusModule::configureFromETS()
         if (_numberOfSegments > 0)
         {
             _effectConfiguration->configureEffects();
-            logInfoP("Applied effects to %d segments", _numberOfSegments);
+            logInfoP("Configured %d segments with ETS effects and startup behavior", _numberOfSegments);
 
-            // Turn off all segments after configuration to prevent showing ETS defaults
-            // They will be restored to correct state in processAfterStartupDelay()
-            // Note: show() is called later in setup() after _neoPixel.setup() initializes hardware
-            for (auto& segConfig : _segments)
-            {
-                if (segConfig.segment)
-                {
-                    segConfig.segment->setBrightness(0);
-                    segConfig.segment->clearAll();
-                }
-            }
-            _clearLedsAfterSetup = true; // Flag to call show() after hardware init
-            logInfoP("LEDs prepared for clearing - will show after hardware init");
+            // Note: Startup behavior is already applied:
+            //   - Mode "Aus": brightness=0
+            //   - Mode "Letzter Zustand": Will be restored from flash in processAfterStartupDelay()
+            //   - Mode "ETS-Parameterwert": Active with ETS configuration
         }
 
         // Configure power management using OFM PowerManager
@@ -2329,6 +2490,9 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
              _totalLeds, static_cast<int>(_virtualStripConfiguration.size()));
     logInfoP("ColorOrder Design: VirtualStrip=RGB (internal), PhysicalStrips=hardware-specific");
 
+    // HCL pixel transformation callback will be registered later in updateHclTransformContext()
+    // after all segments and HCL managers are created
+
     // Configure color correction parameters on VirtualStrip
     // (These are applied during rendering, NOT in-place!)
     // NOTE: setColorCorrection removed from VirtualStrip - color correction deactivated for now
@@ -2349,6 +2513,10 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
     // Create segments after virtual strip is ready
     if (_numberOfSegments > 0)
     {
+        // Setup global HCL manager BEFORE creating segments
+        // so segments with HCLMode=1 can reference it
+        setupGlobalHclManager();
+
         createSegments();
         applySegmentConfiguration();
         logInfoP("Created %d segments on virtual strip", _numberOfSegments);
@@ -2475,29 +2643,33 @@ void NeoPixelBusModule::configurePowerManagement()
         uint8_t ablSlewRate = (uint8_t)ParamNEO_NEOablSlewRatePercent;
 
         // Set power limit mode based on combined value
+        // ETS values: 0=Disabled, 1=Fester Wert (GLOBAL), 2=Pro LED (PER_LED)
         PowerLimitMode mode;
         switch (powerLimitCombined)
         {
-            case 1: mode = PowerLimitMode::GLOBAL; break;
-            case 2: mode = PowerLimitMode::PER_CHANNEL; break;
-            case 3: mode = PowerLimitMode::PER_LED; break;
+            case 1: mode = PowerLimitMode::GLOBAL; break;  // "Fester Wert (mA)"
+            case 2: mode = PowerLimitMode::PER_LED; break; // "Pro LED (automatisch)"
             default: mode = PowerLimitMode::GLOBAL; break;
         }
         powerManager->setPowerLimitMode(mode);
 
         // Configure limits based on mode
+        // Note: PER_CHANNEL mode is not exposed in ETS (only GLOBAL and PER_LED)
         switch (mode)
         {
             case PowerLimitMode::GLOBAL:
+                // "Fester Wert (mA)" - use global limit parameter
                 powerManager->setMaxCurrent(powerLimitGlobal);
                 break;
 
-            case PowerLimitMode::PER_CHANNEL:
-                powerManager->setMaxCurrentPerChannel(currentPerChannel);
+            case PowerLimitMode::PER_LED:
+                // "Pro LED (automatisch)" - use per-LED parameter
+                powerManager->setMaxCurrentPerLed(currentPerLed);
                 break;
 
-            case PowerLimitMode::PER_LED:
-                powerManager->setMaxCurrentPerLed(currentPerLed);
+            case PowerLimitMode::PER_CHANNEL:
+                // Not used in ETS, but keep for completeness
+                powerManager->setMaxCurrentPerChannel(currentPerChannel);
                 break;
         }
 
@@ -2583,13 +2755,13 @@ void NeoPixelBusModule::configurePowerManagement()
                 logInfoP("Power Management: %s mode - Limit=%dmA, Profile=R:%dmA G:%dmA B:%dmA WW:%dmA CW:%dmA",
                          modeNames[0], powerLimitGlobal, profile.redMA, profile.greenMA, profile.blueMA, profile.warmWhiteMA, profile.coolWhiteMA);
                 break;
+            case PowerLimitMode::PER_LED:
+                logInfoP("Power Management: %s mode - %dmA per LED, Profile=R:%dmA G:%dmA B:%dmA WW:%dmA CW:%dmA",
+                         modeNames[2], currentPerLed, profile.redMA, profile.greenMA, profile.blueMA, profile.warmWhiteMA, profile.coolWhiteMA);
+                break;
             case PowerLimitMode::PER_CHANNEL:
                 logInfoP("Power Management: %s mode - Limit=%dmA per channel, Profile=R:%dmA G:%dmA B:%dmA WW:%dmA CW:%dmA",
                          modeNames[1], currentPerChannel, profile.redMA, profile.greenMA, profile.blueMA, profile.warmWhiteMA, profile.coolWhiteMA);
-                break;
-            case PowerLimitMode::PER_LED:
-                logInfoP("Power Management: %s mode - Limit=%dmA per LED",
-                         modeNames[2], currentPerLed);
                 break;
         }
 
@@ -2878,8 +3050,106 @@ void NeoPixelBusModule::applySegmentConfiguration()
             logInfoP("Segment %zu: Mirror effect enabled", i);
         }
 
+        // ══════════════════════════════════════════════════════════════════════════════
+        // HCL (Human Centric Lighting) Configuration per Segment
+        // ══════════════════════════════════════════════════════════════════════════════
+        applySegmentHclConfiguration(i, config);
+
         logDebugP("Applied configuration to segment %zu", i);
     }
+}
+
+// Apply HCL configuration to a segment
+void NeoPixelBusModule::applySegmentHclConfiguration(size_t segmentIndex, const SegmentConfig& config)
+{
+    Segment* segment = config.segment;
+    if (!segment) return;
+
+    // Set channel index to read segment parameters
+    uint8_t oldChannelIndex = _channelIndex;
+    _channelIndex = segmentIndex;
+
+    // Read HCL mode (0=Disabled, 1=Global, 2=Custom-Zeit, 3=Custom-Sonne)
+    uint8_t hclMode = (uint8_t)ParamNEO_NEOHCLMode;
+
+    if (hclMode == 0)
+    {
+        // HCL disabled for this segment
+        logInfoP("Segment %zu: HCL disabled", segmentIndex);
+        _channelIndex = oldChannelIndex;
+        return;
+    }
+
+    if (hclMode == 1)
+    {
+        // Mode 1 = Global HCL settings
+        // Attach the global HCL manager (shared across all segments with Mode=1)
+        if (_globalHclManager)
+        {
+            segment->setHclManager(_globalHclManager);
+            logInfoP("Segment %zu: Using global HCL (shared)", segmentIndex);
+        }
+        else
+        {
+            logWarningP("Segment %zu: Global HCL requested but not configured!", segmentIndex);
+        }
+        _channelIndex = oldChannelIndex;
+        return;
+    }
+
+    // Mode 2 or 3 = Custom HCL settings for this segment
+    HclConfig hclConfig;
+    hclConfig.mode = HclMode::Custom;
+
+    // Map mode to curve type: Mode 2 → FixedTime, Mode 3 → SunPosition
+    hclConfig.curveType = (hclMode == 3) ? HclCurveType::SunPosition : HclCurveType::FixedTime;
+
+    // Read time settings (for FixedTime mode)
+    hclConfig.startHour = (uint8_t)ParamNEO_NEOHCLStartHour;
+    hclConfig.startMinute = (uint8_t)ParamNEO_NEOHCLStartMinute;
+    hclConfig.endHour = (uint8_t)ParamNEO_NEOHCLEndHour;
+    hclConfig.endMinute = (uint8_t)ParamNEO_NEOHCLEndMinute;
+
+    // Read sun position offsets (for SunPosition mode)
+    hclConfig.sunriseOffsetMin = (int16_t)ParamNEO_NEOHCLoffsetSunrise;
+    hclConfig.sunsetOffsetMin = (int16_t)ParamNEO_NEOHCLoffsetSunset;
+
+    // Read color temperature range
+    hclConfig.minKelvin = (uint16_t)ParamNEO_NEOHCLminKelvin;
+    hclConfig.maxKelvin = (uint16_t)ParamNEO_NEOHCLmaxKelvin;
+
+    // Read application parameters
+    hclConfig.strength = (uint8_t)ParamNEO_NEOHCLStrength;
+    hclConfig.slewRate = (uint8_t)ParamNEO_NEOHCLSlewRate;
+    hclConfig.saturationThreshold = (uint8_t)ParamNEO_NEOHCLSatThreshold;
+    hclConfig.brightnessCompensation = (uint8_t)ParamNEO_NEOHCLBrightnessCompensation;
+    hclConfig.whiteMix = (uint8_t)ParamNEO_NEOHCLWhiteMix;
+    hclConfig.preserveCurve = (uint8_t)ParamNEO_NEOHCLPreserveCurve;
+
+    // Read apply mode and map ETS values to enum
+    // ETS: 0=Nur Weiß, 1=Alle Farben, 2=Hohe Sättigung
+    uint8_t applyMode = (uint8_t)ParamNEO_NEOHclApplyMode;
+    if (applyMode == 0) hclConfig.applyMode = HclApplyMode::WhiteOnly;
+    else if (applyMode == 1)
+        hclConfig.applyMode = HclApplyMode::AllColors;
+    else
+        hclConfig.applyMode = HclApplyMode::HighSaturation;
+
+    // Create HCL manager
+    HclManager* hclManager = new HclManager(hclConfig);
+    hclManager->begin(); // Initialize with default lat/long (TODO: get from system)
+
+    // Attach to segment
+    config.segment->setHclManager(hclManager);
+
+    logInfoP("Segment %zu: Custom HCL configured - Type:%s, Min:%dK, Max:%dK, Strength:%d%%",
+             segmentIndex,
+             (hclConfig.curveType == HclCurveType::SunPosition) ? "SunPos" : "FixTime",
+             hclConfig.minKelvin,
+             hclConfig.maxKelvin,
+             hclConfig.strength);
+
+    _channelIndex = oldChannelIndex;
 }
 
 // Get segment by index
@@ -2893,6 +3163,394 @@ Segment* NeoPixelBusModule::getSegment(uint8_t index) const
 }
 
 // =============================================================================
+// HCL Management (Human Centric Lighting)
+// =============================================================================
+
+void NeoPixelBusModule::setupGlobalHclManager()
+{
+    // Read global HCL settings from share.xml parameters
+    // These are used when segments have Mode=1 "Global"
+
+    uint8_t hclType = (uint8_t)ParamNEO_HCLtype;
+    if (hclType == 0)
+    {
+        logInfoP("Global HCL: Disabled");
+        return; // HCL disabled globally
+    }
+
+    // Create global HCL configuration
+    HclConfig config;
+
+    // Curve type
+    config.curveType = (hclType == 1) ? HclCurveType::SunPosition : HclCurveType::FixedTime;
+
+    // Time settings
+    config.startHour = (uint8_t)ParamNEO_HCLStartHour;
+    config.startMinute = (uint8_t)ParamNEO_HCLStartMinute;
+    config.endHour = (uint8_t)ParamNEO_HCLEndHour;
+    config.endMinute = (uint8_t)ParamNEO_HCLEndMinute;
+
+    // Sun position offsets (10-bit signed)
+    config.sunriseOffsetMin = (int16_t)ParamNEO_HCLoffsetSunrise;
+    config.sunsetOffsetMin = (int16_t)ParamNEO_HCLoffsetSunset;
+
+    // Kelvin range (14-bit unsigned)
+    config.minKelvin = (uint16_t)ParamNEO_HCLminKelvin;
+    config.maxKelvin = (uint16_t)ParamNEO_HCLmaxKelvin;
+
+    // Strength and slew rate
+    config.strength = (uint8_t)ParamNEO_HCLStrength;
+    config.slewRate = (uint8_t)ParamNEO_HCLSlewRate;
+
+    // Advanced settings
+    config.saturationThreshold = (uint8_t)ParamNEO_HCLSatThreshold;
+    config.brightnessCompensation = (uint8_t)ParamNEO_HCLBrightnessCompensation;
+    config.whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
+    config.preserveCurve = (uint8_t)ParamNEO_HCLPreserveCurve;
+
+    // Apply mode - ETS Parameter Definition:
+    // 0 = Nur Weiß (WhiteOnly)
+    // 1 = Alle Farben (AllColors)
+    // 2 = Hohe Sättigung (HighSaturation)
+    uint8_t applyMode = (uint8_t)ParamNEO_HclApplyMode;
+    if (applyMode == 0) config.applyMode = HclApplyMode::WhiteOnly;
+    else if (applyMode == 1)
+        config.applyMode = HclApplyMode::AllColors;
+    else
+        config.applyMode = HclApplyMode::HighSaturation;
+
+    // Create global HCL manager
+    _globalHclManager = new HclManager(config);
+    _globalHclManager->begin();
+
+    // Register with Library layer so Console can access it
+    _neoPixel.setGlobalHclManager(_globalHclManager);
+
+    logInfoP("Global HCL: %s, Kelvin %u..%u K, Strength %u%%, Slew %u K/min, Ptr=0x%p",
+             (hclType == 1) ? "Sun" : "Time",
+             config.minKelvin, config.maxKelvin,
+             config.strength, config.slewRate,
+             _globalHclManager);
+}
+
+void NeoPixelBusModule::loopHclManagers()
+{
+    unsigned long now = millis();
+
+    // Get current time from OpenKNX time module
+    OpenKNX::DateTime localTime = openknx.time.getLocalTime();
+    uint8_t currentHour = localTime.hour;
+    uint8_t currentMinute = localTime.minute;
+    uint8_t currentDay = localTime.day;
+
+    // Update sunrise/sunset times from Timer module (once per day, or retry if invalid)
+    // This provides HCL with accurate astronomical calculations
+    static uint8_t lastUpdateDay = 255; // Force first update
+    static bool sunTimesValid = false;  // Track if we got valid times
+
+    // Try update on day change OR if we never got valid times yet
+    if (currentDay != lastUpdateDay || !sunTimesValid)
+    {
+#ifdef OPENKNX_TIMER_MODULE
+        // Get calculated sunrise/sunset from Timer module using public API
+        Timer& timer = Timer::instance();
+        sTime* sunrise = timer.getSunInfo(SUN_SUNRISE);
+        sTime* sunset = timer.getSunInfo(SUN_SUNSET);
+
+        if (sunrise && sunset)
+        {
+            // Validate sun times: Both 0:00 means Timer hasn't calculated yet
+            // (e.g., GPS position not set, calculation not triggered)
+            if (sunrise->hour == 0 && sunrise->minute == 0 &&
+                sunset->hour == 0 && sunset->minute == 0)
+            {
+                // Don't update lastUpdateDay - retry later
+                static uint32_t lastRetryLog = 0;
+                if (millis() - lastRetryLog > 60000) // Log max once per minute
+                {
+                    logDebugP("HCL: Sun times not yet calculated by Timer module (waiting for GPS position)");
+                    lastRetryLog = millis();
+                }
+            }
+            else
+            {
+                uint16_t sunriseMin = sunrise->hour * 60 + sunrise->minute;
+                uint16_t sunsetMin = sunset->hour * 60 + sunset->minute;
+
+                logInfoP("HCL: Updated sun times from Timer - Sunrise: %02d:%02d, Sunset: %02d:%02d",
+                         sunrise->hour, sunrise->minute,
+                         sunset->hour, sunset->minute);
+
+                // Update global HCL manager
+                if (_globalHclManager)
+                {
+                    _globalHclManager->setSunTimes(sunriseMin, sunsetMin);
+                }
+
+                // Update all segment HCL managers (including those using Global HCL)
+                for (size_t i = 0; i < _segments.size(); i++)
+                {
+                    Segment* segment = _segments[i].segment;
+                    if (segment && segment->hasHcl())
+                    {
+                        HclManager* hclManager = segment->getHclManager();
+                        if (hclManager)
+                        {
+                            hclManager->setSunTimes(sunriseMin, sunsetMin);
+                        }
+                    }
+                }
+
+                // Mark as successful - now only update on day change
+                sunTimesValid = true;
+                lastUpdateDay = currentDay;
+            }
+        }
+        else
+        {
+            logWarningP("HCL: Unable to get sunrise/sunset from Timer module (null pointer)");
+        }
+#else
+        logDebugP("HCL: Timer module not enabled - using fallback sun times (6:30/18:30)");
+        lastUpdateDay = currentDay; // Don't retry in this case
+#endif
+    }
+
+    // Update global HCL manager if it exists
+    if (_globalHclManager)
+    {
+        _globalHclManager->setCurrentTime(currentHour, currentMinute);
+        _globalHclManager->loop(now);
+
+        // Update global HCL Status-KO with current applied Kelvin value
+        uint16_t appliedKelvin = _globalHclManager->getAppliedKelvin();
+
+        // Only send if value changed (avoid flooding KNX bus)
+        static uint16_t lastGlobalKelvin = 0;
+        if (appliedKelvin != lastGlobalKelvin)
+        {
+            KoNEO_HCLGlobalState.value(appliedKelvin, Dpt(7, 600));
+            KoNEO_HCLGlobalState.objectWritten();
+            lastGlobalKelvin = appliedKelvin;
+        }
+    }
+
+    // Update all segment HCL managers
+    for (size_t i = 0; i < _segments.size(); i++)
+    {
+        Segment* segment = _segments[i].segment;
+        if (segment && segment->hasHcl())
+        {
+            HclManager* hclManager = segment->getHclManager();
+            if (hclManager)
+            {
+                // Only update Custom HCL managers (not Global)
+                // Global HCL segments reference _globalHclManager, so skip them here
+                if (hclManager != _globalHclManager)
+                {
+                    hclManager->setCurrentTime(currentHour, currentMinute);
+                    hclManager->loop(now);
+
+                    // Update segment HCL Status-KO with current applied Kelvin value (Custom HCL only)
+                    uint16_t appliedKelvin = hclManager->getAppliedKelvin();
+
+                    // Only send if value changed (avoid flooding KNX bus)
+                    static uint16_t lastSegmentKelvin[16] = {0}; // Max 16 segments
+                    if (i < 16 && appliedKelvin != lastSegmentKelvin[i])
+                    {
+                        // Set channel index for segment KO access
+                        uint8_t savedChannelIndex = _channelIndex;
+                        _channelIndex = i;
+
+                        // Write to segment-specific HCL KO
+                        KoNEO_HCLState.value(appliedKelvin, Dpt(7, 600));
+                        KoNEO_HCLState.objectWritten();
+
+                        _channelIndex = savedChannelIndex;
+                        lastSegmentKelvin[i] = appliedKelvin;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// =============================================================================
+// HCL Pixel Transform Context Update
+// =============================================================================
+
+/**
+ * @brief Update HCL pixel transformation context and register callback
+ *
+ * This method builds the HclTransformContext from current segment configurations
+ * and ETS parameters, then registers the Library's pixel transformation callback
+ * with VirtualStrip. This allows HCL to be applied to pixels without the Library
+ * directly accessing ETS parameters.
+ */
+void NeoPixelBusModule::updateHclTransformContext()
+{
+    if (!_virtualStrip) return;
+
+    // Clear and rebuild context
+    _hclTransformContext.segments.clear();
+    _hclTransformContext.segmentConfigs.clear();
+
+    // Build segment list and configurations
+    for (size_t i = 0; i < _segments.size(); i++)
+    {
+        Segment* segment = _segments[i].segment;
+        if (!segment) continue;
+
+        _hclTransformContext.segments.push_back(segment);
+
+        // Read segment HCL configuration from ETS
+        uint8_t savedChannelIndex = _channelIndex;
+        _channelIndex = i;
+
+        HclSegmentConfig segCfg;
+
+        // Read HCL Mode (0=Disabled, 1=UseGlobal, 2=Custom-Zeit, 3=Custom-Sonne)
+        uint8_t hclMode = ParamNEO_NEOHCLMode;
+
+        if (hclMode == 0)
+        {
+            segCfg.hclMode = HclMode::Disabled;
+        }
+        else if (hclMode == 1)
+        {
+            segCfg.hclMode = HclMode::Global;
+        }
+        else // 2 or 3 (Zeit or Sonne)
+        {
+            segCfg.hclMode = HclMode::Custom;
+
+            // Build custom HCL configuration from ETS parameters
+            segCfg.customHclConfig.mode = HclMode::Custom;
+            segCfg.customHclConfig.curveType = (hclMode == 2) ? HclCurveType::FixedTime : HclCurveType::SunPosition;
+
+            // Read Apply Mode - ETS Parameter Definition:
+            // 0 = Nur Weiß (WhiteOnly)
+            // 1 = Alle Farben (AllColors)
+            // 2 = Hohe Sättigung (HighSaturation)
+            uint8_t applyMode = ParamNEO_NEOHclApplyMode;
+            logInfoP("DEBUG Seg %u: Read applyMode=%u from ETS", (unsigned)i, applyMode);
+            if (applyMode == 0)
+                segCfg.customHclConfig.applyMode = HclApplyMode::WhiteOnly;
+            else if (applyMode == 1)
+                segCfg.customHclConfig.applyMode = HclApplyMode::AllColors;
+            else if (applyMode == 2)
+                segCfg.customHclConfig.applyMode = HclApplyMode::HighSaturation;
+            else // Unknown value → default to WhiteOnly (safest for colorful effects)
+                segCfg.customHclConfig.applyMode = HclApplyMode::WhiteOnly;
+
+            // Read other parameters
+            segCfg.customHclConfig.minKelvin = ParamNEO_NEOHCLminKelvin;
+            segCfg.customHclConfig.maxKelvin = ParamNEO_NEOHCLmaxKelvin;
+            segCfg.customHclConfig.strength = ParamNEO_NEOHCLStrength;
+            segCfg.customHclConfig.saturationThreshold = ParamNEO_NEOHCLSatThreshold;
+            logInfoP("DEBUG Seg %u: Read saturationThreshold=%u from ETS", (unsigned)i, segCfg.customHclConfig.saturationThreshold);
+            segCfg.customHclConfig.preserveCurve = ParamNEO_NEOHCLPreserveCurve;
+            segCfg.customHclConfig.brightnessCompensation = ParamNEO_NEOHCLBrightnessCompensation;
+            segCfg.customHclConfig.whiteMix = ParamNEO_NEOHCLWhiteMix;
+        }
+
+        _hclTransformContext.segmentConfigs.push_back(segCfg);
+
+        _channelIndex = savedChannelIndex;
+    }
+
+    // Build Pixel→Segment Lookup Table for O(1) segment lookup
+    // This eliminates the O(n) for-loop on EVERY pixel (8,280x/second)
+    // Reduces segment lookups from ~24,840/sec to 0!
+    const uint16_t totalLEDs = _virtualStrip->getTotalPhysicalLeds();
+    _hclTransformContext.pixelToSegmentIndex.clear();
+    _hclTransformContext.pixelToSegmentIndex.resize(totalLEDs, 0xFF); // 0xFF = no segment
+
+    for (size_t segIdx = 0; segIdx < _hclTransformContext.segments.size(); segIdx++)
+    {
+        Segment* seg = _hclTransformContext.segments[segIdx];
+        if (!seg) continue;
+
+        const uint16_t startLed = seg->getStartLed();
+        const uint16_t length = seg->getLength();
+        const uint16_t endLed = startLed + length;
+
+        // Mark all pixels of this segment
+        for (uint16_t pixelIdx = startLed; pixelIdx < endLed && pixelIdx < totalLEDs; pixelIdx++)
+        {
+            _hclTransformContext.pixelToSegmentIndex[pixelIdx] = static_cast<uint8_t>(segIdx);
+        }
+    }
+
+    logInfoP("Built pixel→segment lookup table: %u LEDs, %u segments",
+             totalLEDs, _hclTransformContext.segments.size());
+
+    // Set global HCL manager and configuration
+    _hclTransformContext.globalHclManager = _globalHclManager;
+
+    if (_globalHclManager)
+    {
+        // Build global HCL configuration from ETS parameters
+        uint8_t savedChannelIndex = _channelIndex;
+        _channelIndex = 0xFF; // Use global context
+
+        // Read Apply Mode - ETS Parameter Definition:
+        // 0 = Nur Weiß (WhiteOnly)
+        // 1 = Alle Farben (AllColors)
+        // 2 = Hohe Sättigung (HighSaturation)
+        uint8_t applyMode = ParamNEO_HclApplyMode;
+        if (applyMode == 0)
+            _hclTransformContext.globalHclConfig.applyMode = HclApplyMode::WhiteOnly;
+        else if (applyMode == 1)
+            _hclTransformContext.globalHclConfig.applyMode = HclApplyMode::AllColors;
+        else
+            _hclTransformContext.globalHclConfig.applyMode = HclApplyMode::HighSaturation;
+
+        // Read other global parameters
+        _hclTransformContext.globalHclConfig.minKelvin = ParamNEO_HCLminKelvin;
+        _hclTransformContext.globalHclConfig.maxKelvin = ParamNEO_HCLmaxKelvin;
+        _hclTransformContext.globalHclConfig.strength = ParamNEO_HCLStrength;
+        _hclTransformContext.globalHclConfig.saturationThreshold = ParamNEO_HCLSatThreshold;
+        _hclTransformContext.globalHclConfig.preserveCurve = ParamNEO_HCLPreserveCurve;
+        _hclTransformContext.globalHclConfig.brightnessCompensation = ParamNEO_HCLBrightnessCompensation;
+        _hclTransformContext.globalHclConfig.whiteMix = ParamNEO_HCLWhiteMix;
+
+        _channelIndex = savedChannelIndex;
+    }
+
+    // Register HCL pixel transformation callback ONLY if HCL is actually used
+    // Check if any segment has HCL enabled (Global or Custom mode)
+    bool hclActive = false;
+    if (_globalHclManager)
+    {
+        hclActive = true; // Global HCL is configured
+    }
+    else
+    {
+        // Check if any segment uses Custom HCL
+        for (const auto& segCfg : _hclTransformContext.segmentConfigs)
+        {
+            if (segCfg.hclMode != HclMode::Disabled)
+            {
+                hclActive = true;
+                break;
+            }
+        }
+    }
+
+    if (hclActive)
+    {
+        _virtualStrip->setPixelTransformCallback(HclPixelTransform::Callback, &_hclTransformContext);
+        logInfoP("HCL pixel transformation callback registered (active on %d segments)", _hclTransformContext.segments.size());
+    }
+    else
+    {
+        _virtualStrip->setPixelTransformCallback(nullptr, nullptr);
+        logInfoP("HCL pixel transformation callback NOT registered (all segments disabled)");
+    }
+}
+
+// =============================================================================
 // Debug: Configuration Analysis (OPENKNX_DEBUG only)
 // =============================================================================
 
@@ -2903,35 +3561,35 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("  NeoPixel ETS Configuration Analysis");
     logInfoP("════════════════════════════════════════════════════════════════════════");
     logInfoP("");
-    
+
     // ========================================================================
     // Hardware Configuration
     // ========================================================================
     logInfoP("▶ Hardware Configuration:");
     logInfoP("────────────────────────────────────────────────────────────────────────");
-    
+
     #ifdef DEVICE_HW_ID
-        uint8_t hwIndex = getCurrentHardwareIndex();
-        const char* hwName = HardwareMapping::getHardwareName(hwIndex);
-        logInfoP("  Mode:             Compile-time (DEVICE_HW_ID defined)");
-        logInfoP("  Device HW ID:     0x%04X (%d decimal)", DEVICE_HW_ID, DEVICE_HW_ID);
-        logInfoP("  Hardware Index:   %d", hwIndex);
-        logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
+    uint8_t hwIndex = getCurrentHardwareIndex();
+    const char* hwName = HardwareMapping::getHardwareName(hwIndex);
+    logInfoP("  Mode:             Compile-time (DEVICE_HW_ID defined)");
+    logInfoP("  Device HW ID:     0x%04X (%d decimal)", DEVICE_HW_ID, DEVICE_HW_ID);
+    logInfoP("  Hardware Index:   %d", hwIndex);
+    logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
     #else
         #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-            uint16_t selectedHwId = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
-            uint8_t hwIndex = getCurrentHardwareIndex();
-            const char* hwName = HardwareMapping::getHardwareName(hwIndex);
-            logInfoP("  Mode:             ETS Runtime Selection");
-            logInfoP("  Selected HW ID:   0x%04X (%d decimal)", selectedHwId, selectedHwId);
-            logInfoP("  Hardware Index:   %d", hwIndex);
-            logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
+    uint16_t selectedHwId = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
+    uint8_t hwIndex = getCurrentHardwareIndex();
+    const char* hwName = HardwareMapping::getHardwareName(hwIndex);
+    logInfoP("  Mode:             ETS Runtime Selection");
+    logInfoP("  Selected HW ID:   0x%04X (%d decimal)", selectedHwId, selectedHwId);
+    logInfoP("  Hardware Index:   %d", hwIndex);
+    logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
         #else
-            logInfoP("  Mode:             Not configured (no hardware selection)");
+    logInfoP("  Mode:             Not configured (no hardware selection)");
         #endif
     #endif
     logInfoP("");
-    
+
     // ========================================================================
     // Strip Configuration
     // ========================================================================
@@ -2941,33 +3599,67 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("  Total LEDs:       %d", _totalLeds);
     logInfoP("  Skip First LEDs:  %d (Global)", _skipFirstLeds);
     logInfoP("  Swap Mode:        %d (Global)", _swapMode);
+
+    // Global Power Limiting
+    uint8_t globalPowerMode = (uint8_t)ParamNEO_NEOpowerLimitCombined;
+    const char* globalPowerModeNames[] = {"Deaktiviert", "Fester Wert", "Pro LED"};
+    const char* globalPowerModeName = (globalPowerMode < 3) ? globalPowerModeNames[globalPowerMode] : "Unknown";
+    logInfoP("  Global Power:     %d (%s)", globalPowerMode, globalPowerModeName);
+    if (globalPowerMode == 1)
+    {
+        uint16_t maxCurrent = (uint16_t)ParamNEO_NEOcurrentPerChannel;
+        logInfoP("    Max Current:    %d mA", maxCurrent);
+    }
+    else if (globalPowerMode == 2)
+    {
+        uint8_t currentPerLed = (uint8_t)ParamNEO_NEOcurrentPerLED;
+        logInfoP("    Current/LED:    %d mA", currentPerLed);
+    }
+
+    // Global Startup Behavior & Start-Farbe
+    uint8_t startupBehavior = (uint8_t)ParamNEO_NEOGlobalStartupBehavior;
+    const char* startupBehaviorNames[] = {"Aus", "Letzter Zustand", "ETS-Parameterwert"};
+    const char* startupBehaviorName = (startupBehavior < 3) ? startupBehaviorNames[startupBehavior] : "Unknown";
+    logInfoP("  Startup Behavior: %d (%s)", startupBehavior, startupBehaviorName);
+    if (startupBehavior == 2)
+    { // ETS-Parameterwert
+        uint8_t r = (uint8_t)ParamNEO_NEOGlobalStartupR;
+        uint8_t g = (uint8_t)ParamNEO_NEOGlobalStartupG;
+        uint8_t b = (uint8_t)ParamNEO_NEOGlobalStartupB;
+        uint8_t w = (uint8_t)ParamNEO_NEOGlobalStartupW;
+        uint8_t brightness = (uint8_t)ParamNEO_NEOGlobalStartupBrightness;
+        uint8_t effect = (uint8_t)ParamNEO_NEOGlobalStartupEffect;
+        logInfoP("    Color (RGBW):   R=%d G=%d B=%d W=%d", r, g, b, w);
+        logInfoP("    Brightness:     %d", brightness);
+        logInfoP("    Effect:         %d", effect);
+    }
     logInfoP("");
-    
+
     // Show each physical strip with ETS and actual values
     for (size_t i = 0; i < _physicalStrips.size(); i++)
     {
         PhysicalStrip* strip = _physicalStrips[i];
         if (!strip) continue;
-        
+
         // Set _channelIndex to read ETS parameters for this strip
         uint8_t _channelIndex = i;
-        
+
         logInfoP("  ┌─ Strip %d:", i + 1);
         logInfoP("  │");
-        
+
         // === ETS Configuration (Raw Parameters) ===
         logInfoP("  │  📋 ETS Configuration:");
         logInfoP("  │    LED Count:        %d", (uint16_t)ParamNEOSTRIP_NEOLength);
-        
+
         uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const char* ledTypeNames[] = {
-            "WS2811/WS2812/WS2812B (GRB)", 
-            "WS2813 (GRB)", 
+            "WS2811/WS2812/WS2812B (GRB)",
+            "WS2813 (GRB)",
             "WS2815 (GRB)",
-            "SK6812 (GRB)", 
-            "TM1804 (RGB)", 
+            "SK6812 (GRB)",
+            "TM1804 (RGB)",
             "TM1829 (RGB/WRGB)",
-            "APA106 (RGB)", 
+            "APA106 (RGB)",
             "UCS1904 (RGB)",
             "SK6812/WS2814 (RGBW)",
             "LPD6803 (RGB SPI)",
@@ -2975,20 +3667,19 @@ void NeoPixelBusModule::debugShowConfiguration()
             "WS2801 (RGB SPI)",
             "P9813 (RGB SPI)",
             "APA102 (RGB SPI)",
-            "SK9822 (RGB SPI)"
-        };
+            "SK9822 (RGB SPI)"};
         const char* ledTypeName = (ledTypeParam < 15) ? ledTypeNames[ledTypeParam] : "Unknown";
         logInfoP("  │    LED Type:         %d (%s)", ledTypeParam, ledTypeName);
-        
+
         uint8_t colorOrderParam = (uint8_t)ParamNEOSTRIP_NEOColourOrder;
         const char* colorOrderNames[] = {"RGB", "RBG", "GRB", "GBR", "BRG", "BGR", "WRGB", "WRBG", "WGRB", "WGBR", "WBRG", "WBGR", "RGBW", "RBGW", "GRBW", "GBRW", "BRGW", "BGRW", "RWGB", "RWBG", "GWRB", "GWBR", "BWRG", "BWGR", "RGBW", "RBWG", "GRBW", "GBWR", "BRWG", "BGWR"};
         const char* colorOrderName = (colorOrderParam < 30) ? colorOrderNames[colorOrderParam] : "Unknown";
         logInfoP("  │    Color Order:      %d (%s)", colorOrderParam, colorOrderName);
-        
+
         // GPIO Configuration Mode
         bool gpioManual = (bool)ParamNEOSTRIP_NEOGPIOManual;
         logInfoP("  │    GPIO Mode:        %s", gpioManual ? "Manual" : "Hardware-assisted");
-        
+
         if (gpioManual)
         {
             // Manual mode: show configured pins
@@ -2996,7 +3687,7 @@ void NeoPixelBusModule::debugShowConfiguration()
             {
                 logInfoP("  │      MOSI GPIO:      %d", (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO);
                 logInfoP("  │      SCK GPIO:       %d", (uint8_t)ParamNEOSTRIP_NEOClockGPIO);
-                
+
                 // SPI Frequency
                 bool spiClkManual = (ParamNEOSTRIP_NEOSPICLKMode == 1);
                 if (spiClkManual)
@@ -3021,7 +3712,7 @@ void NeoPixelBusModule::debugShowConfiguration()
             // Hardware-assisted mode: show port selection
             uint8_t hwIndex = getCurrentHardwareIndex();
             uint8_t dataPortIndex = getGpioDataPortForHw(i, hwIndex);
-            
+
             if (isHardwarePortSelected(dataPortIndex))
             {
                 logInfoP("  │      Data Port:      %d (ETS selection)", dataPortIndex);
@@ -3030,7 +3721,7 @@ void NeoPixelBusModule::debugShowConfiguration()
             {
                 logInfoP("  │      Data Port:      Auto (not selected in ETS)");
             }
-            
+
             if (isSpiProtocol(strip->getProtocol()))
             {
                 uint8_t clockPortIndex = getGpioClockPortForHw(i, hwIndex);
@@ -3044,29 +3735,47 @@ void NeoPixelBusModule::debugShowConfiguration()
                 }
             }
         }
-        
+
         // Timing Mode
         uint8_t timingMode = (uint8_t)ParamNEOSTRIP_NEOTiming;
         const char* timingModes[] = {
             "AUTO", "AUTO_LEGACY",
             "SLOW_20%", "SLOW_15%", "SLOW_10%", "SLOW_5%",
-            "FAST_5%", "FAST_10%", "FAST_15%", "FAST_20%", "FAST_25%"
-        };
+            "FAST_5%", "FAST_10%", "FAST_15%", "FAST_20%", "FAST_25%"};
         const char* timingName = (timingMode < 11) ? timingModes[timingMode] : "UNKNOWN";
         logInfoP("  │    Timing Mode:      %d (%s)", timingMode, timingName);
-        
+
         // Skip First LEDs
         uint16_t skipLeds = (uint16_t)ParamNEOSTRIP_NEOSkipFirstLEDs;
         logInfoP("  │    Skip First LEDs:  %d", skipLeds);
-        
-        // Color Correction
-        bool gammaEnabled = (bool)ParamNEOSTRIP_NEOGammaCorrection;
-        bool whiteBalEnabled = (bool)ParamNEOSTRIP_NEOWhiteBalanceCorrection;
-        logInfoP("  │    Gamma Corr:       %s", gammaEnabled ? "Yes" : "No");
-        logInfoP("  │    White Balance:    %s", whiteBalEnabled ? "Yes" : "No");
-        
+
+        // Color Correction (Master + Sub-Checkboxen)
+        bool colorCalibMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
+        bool gammaSubCheckbox = (bool)ParamNEOSTRIP_NEOGammaCorrection;
+        bool gammaEffectivelyEnabled = colorCalibMaster && gammaSubCheckbox;
+        bool whiteBalEffectivelyEnabled = colorCalibMaster;
+        logInfoP("  │    Farbkalibrierung: %s", colorCalibMaster ? "Yes" : "No");
+        logInfoP("  │      Gamma Corr:    %s (Master:%s, Sub:%s)", gammaEffectivelyEnabled ? "ACTIVE" : "Off", colorCalibMaster ? "✓" : "✗", gammaSubCheckbox ? "✓" : "✗");
+        logInfoP("  │      White Balance: %s", whiteBalEffectivelyEnabled ? "ACTIVE" : "Off");
+
+        // Power Limiting
+        uint8_t powerMode = (uint8_t)ParamNEOSTRIP_NEOpowerLimitCombined;
+        const char* powerModeNames[] = {"Deaktiviert", "Global verwenden", "Fester Wert", "Pro LED"};
+        const char* powerModeName = (powerMode < 4) ? powerModeNames[powerMode] : "Unknown";
+        logInfoP("  │    Power Limit:      %d (%s)", powerMode, powerModeName);
+        if (powerMode == 2)
+        {
+            uint16_t maxCurrent = (uint16_t)ParamNEOSTRIP_NEOcurrentPerChannel;
+            logInfoP("  │      Max Current:    %d mA", maxCurrent);
+        }
+        else if (powerMode == 3)
+        {
+            uint8_t currentPerLed = (uint8_t)ParamNEOSTRIP_NEOcurrentPerLED;
+            logInfoP("  │      Current/LED:    %d mA", currentPerLed);
+        }
+
         logInfoP("  │");
-        
+
         // === Actual Hardware (What's running) ===
         logInfoP("  │  ⚙️  Actual Hardware:");
         logInfoP("  │    LEDs:             %d", strip->getLedCount());
@@ -3077,11 +3786,11 @@ void NeoPixelBusModule::debugShowConfiguration()
         {
             logInfoP("  │    Clock GPIO:       %d", strip->getClockPin());
         }
-        
+
         logInfoP("  └──");
     }
     logInfoP("");
-    
+
     // ========================================================================
     // Segment Configuration
     // ========================================================================
@@ -3089,30 +3798,71 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("────────────────────────────────────────────────────────────────────────");
     logInfoP("  Number of Segments: %d", _numberOfSegments);
     logInfoP("");
-    
+
     for (size_t i = 0; i < _segments.size(); i++)
     {
         const auto& seg = _segments[i];
+        _channelIndex = i; // Set for macro access
+
         logInfoP("  ┌─ Segment %d:", i + 1);
-        logInfoP("  │  LED Range:     %d - %d (%d LEDs)", 
-                                          seg.startLed, seg.endLed, seg.endLed - seg.startLed + 1);
+        logInfoP("  │  LED Range:     %d - %d (%d LEDs)",
+                 seg.startLed, seg.endLed, seg.endLed - seg.startLed + 1);
         logInfoP("  │  Offset:        %d", seg.offset);
         logInfoP("  │  Grouping:      %d", seg.grouping);
         logInfoP("  │  Spacing:       %d", seg.spacing);
         logInfoP("  │  Reverse:       %s", seg.reverseDirection ? "Yes" : "No");
         logInfoP("  │  Mirror:        %s", seg.mirrorEffect ? "Yes" : "No");
-        logInfoP("  │  Effect Type:   %d", seg.savedEffectType);
-        
+
+        // Show CURRENT effect (from segment), not savedEffectType (from flash)
+        uint8_t currentEffectType = seg.segment ? seg.segment->getConfig().effectType : 0;
+        const char* effectName = seg.segment && seg.segment->getEffect() ? seg.segment->getEffect()->getName() : "None";
+        logInfoP("  │  Effect:        %d (%s)", currentEffectType, effectName);
+
+        // Start-Farbe (aus ETS Config)
+        uint32_t startupColorRGB = (uint32_t)ParamNEO_NEOSegmentStartupColor;
+        uint8_t startupR = (startupColorRGB >> 16) & 0xFF;
+        uint8_t startupG = (startupColorRGB >> 8) & 0xFF;
+        uint8_t startupB = startupColorRGB & 0xFF;
+        uint8_t startupW = (uint8_t)ParamNEO_NEOSegmentStartupW;
+        uint8_t startupBr = (uint8_t)ParamNEO_NEOSegmentStartupBrightness;
+        logInfoP("  │  Start-Farbe: R=%d G=%d B=%d W=%d Br=%d",
+                 startupR, startupG, startupB, startupW, startupBr);
+
         if (seg.savedValid)
         {
-            logInfoP("  │  Saved State:   R=%d G=%d B=%d WW=%d CW=%d Br=%d", 
-                                              seg.savedR, seg.savedG, seg.savedB, seg.savedWW, seg.savedCW, seg.savedBrightness);
+            logInfoP("  │  Saved State:   R=%d G=%d B=%d WW=%d CW=%d Br=%d",
+                     seg.savedR, seg.savedG, seg.savedB, seg.savedWW, seg.savedCW, seg.savedBrightness);
         }
-        
+
+        // HCL Configuration
+        uint8_t hclMode = (uint8_t)ParamNEO_NEOHCLMode;
+        const char* hclModeNames[] = {"Disabled", "Global", "Custom-Zeit", "Custom-Sonne"};
+        const char* hclModeName = (hclMode < 4) ? hclModeNames[hclMode] : "Unknown";
+        logInfoP("  │  HCL Mode:      %d (%s)", hclMode, hclModeName);
+
+        if (seg.segment && seg.segment->hasHcl())
+        {
+            HclManager* hcl = seg.segment->getHclManager();
+            bool isGlobal = (hcl == _globalHclManager) && (_globalHclManager != nullptr);
+
+            if (isGlobal)
+            {
+                logInfoP("  │    Type:         GLOBAL (Ptr=0x%p)", hcl);
+                logInfoP("  │    Applied:      %u K", hcl->getAppliedKelvin());
+            }
+            else
+            {
+                logInfoP("  │    Type:         CUSTOM (Ptr=0x%p)", hcl);
+                const HclConfig& cfg = hcl->getConfig();
+                logInfoP("  │    Kelvin:       %u - %u K", cfg.minKelvin, cfg.maxKelvin);
+                logInfoP("  │    Applied:      %u K", hcl->getAppliedKelvin());
+            }
+        }
+
         logInfoP("  └──");
     }
     logInfoP("");
-    
+
     // ========================================================================
     // Color Correction
     // ========================================================================
@@ -3137,7 +3887,7 @@ void NeoPixelBusModule::debugShowConfiguration()
         logInfoP("  HCL Temperature:    %d K", _hclAppliedKelvin);
     }
     logInfoP("");
-    
+
     // ========================================================================
     // Effects Configuration
     // ========================================================================
@@ -3145,7 +3895,7 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("────────────────────────────────────────────────────────────────────────");
     logInfoP("  Effects Enabled:    %s", _effectsEnabled ? "Yes" : "No");
     logInfoP("");
-    
+
     logInfoP("════════════════════════════════════════════════════════════════════════");
 }
 #endif
@@ -3170,4 +3920,330 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
 {
     // Delegate to EffectConfiguration sub-module
     _effectConfiguration->setupEffectConfiguration(segment);
+}
+
+// =============================================================================
+// Power Monitoring Implementation
+// =============================================================================
+
+void NeoPixelBusModule::sendPowerMonitoringKOs()
+{
+    auto* mgr = _neoPixel.getManager();
+    if (!mgr) return;
+
+    bool isEnabled = mgr->getPowerManager()->isEnabled();
+
+    // If power management is disabled, send 0 values to ensure KOs are readable
+    if (!isEnabled)
+    {
+        if (KoNEO_PowerCurrentTotal.valueNoSendCompare((uint32_t)0, DPT_Value_2_Ucount))
+            KoNEO_PowerCurrentTotal.objectWritten();
+        if (KoNEO_PowerLoadTotal.valueNoSendCompare((uint8_t)0, DPT_Scaling))
+            KoNEO_PowerLoadTotal.objectWritten();
+        // logDebugP("Power management disabled - sent zero values for power KOs");
+        return;
+    }
+
+    PowerLimitMode mode = mgr->getPowerManager()->getPowerLimitMode();
+
+    if (mode == PowerLimitMode::GLOBAL)
+    {
+        // GLOBAL MODE: Send global + per-strip KOs
+        uint32_t currentMa, limitMa;
+        uint8_t loadPercent;
+        mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
+
+        // Global KOs
+        if (KoNEO_PowerCurrentTotal.valueNoSendCompare(currentMa, DPT_Value_2_Ucount))
+            KoNEO_PowerCurrentTotal.objectWritten();
+
+        if (KoNEO_PowerLoadTotal.valueNoSendCompare(loadPercent, DPT_Scaling))
+            KoNEO_PowerLoadTotal.objectWritten();
+
+        // Calculate total power in watts (sum of all UseGlobal strips)
+        float totalWatts = 0.0f;
+        for (size_t i = 0; i < _physicalStrips.size(); i++)
+        {
+            auto* phys = _physicalStrips[i];
+            if (!phys) continue;
+
+            auto* cfg = phys->getConfig();
+            if (!cfg || cfg->getPowerLimitMode() != 1) continue; // Only UseGlobal
+
+            uint32_t stripCurrent = mgr->getPowerManager()->calculateStripCurrent(
+                phys->getBuffer(), phys->getLedCount(),
+                phys->getProtocol(), phys->getColorOrder(), true);
+
+            totalWatts += phys->getPowerWatts(stripCurrent);
+        }
+
+        if (KoNEO_PowerWattsTotal.valueNoSendCompare(totalWatts, DPT_Value_Power))
+        {
+            // logDebugP("Updating KoNEO_PowerWattsTotal: %f W", totalWatts);
+            KoNEO_PowerWattsTotal.objectWritten();
+        }
+
+        // Per-strip KOs (for ALL strips, regardless of power mode)
+        for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
+        {
+            auto* phys = _physicalStrips[i];
+            if (!phys) continue;
+
+            auto* cfg = phys->getConfig();
+            if (!cfg) continue;
+
+            uint32_t stripCurrent = mgr->getPowerManager()->calculateStripCurrent(
+                phys->getBuffer(), phys->getLedCount(),
+                phys->getProtocol(), phys->getColorOrder(), true);
+
+            float stripWatts = phys->getPowerWatts(stripCurrent);
+
+            // Calculate load percentage (if limit configured)
+            uint8_t stripLoad = 0;
+            uint16_t stripLimit = cfg->getMaxCurrentMa();
+            if (stripLimit > 0)
+                stripLoad = (uint8_t)((stripCurrent * 100) / stripLimit);
+
+            // Set channel index to access correct strip KOs
+            uint8_t savedChannelIndex = _channelIndex;
+            _channelIndex = i;
+
+            if (KoNEOSTRIP_PowerCurrent.valueNoSendCompare(stripCurrent, DPT_Value_2_Ucount))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerCurrent for strip %u: %u mA", (unsigned)i, stripCurrent);
+                KoNEOSTRIP_PowerCurrent.objectWritten();
+            }
+
+            if (KoNEOSTRIP_PowerLoad.valueNoSendCompare(stripLoad, DPT_Scaling))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerLoad for strip %u: %u %%", (unsigned)i, stripLoad);
+                KoNEOSTRIP_PowerLoad.objectWritten();
+            }
+
+            if (KoNEOSTRIP_PowerWatts.valueNoSendCompare(stripWatts, DPT_Value_Power))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerWatts for strip %u: %f W", (unsigned)i, stripWatts);
+                KoNEOSTRIP_PowerWatts.objectWritten();
+            }
+
+            _channelIndex = savedChannelIndex;
+        }
+    }
+    else if (mode == PowerLimitMode::PER_CHANNEL)
+    {
+        // PER_CHANNEL MODE: Send global + per-strip KOs
+        uint32_t currentMa, limitMa;
+        uint8_t loadPercent;
+
+        // Global KOs (sum of all strips)
+        mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
+
+        if (KoNEO_PowerCurrentTotal.valueNoSendCompare(currentMa, DPT_Value_2_Ucount))
+        {
+            // logDebugP("Updating KoNEO_PowerCurrentTotal: %u mA", currentMa);
+            KoNEO_PowerCurrentTotal.objectWritten();
+        }
+        if (KoNEO_PowerLoadTotal.valueNoSendCompare(loadPercent, DPT_Scaling))
+        {
+            // logDebugP("Updating KoNEO_PowerLoadTotal: %u %%", loadPercent);
+            KoNEO_PowerLoadTotal.objectWritten();
+        }
+
+        // Calculate total power in watts (use cached values from applyPowerLimit)
+        float totalWatts = 0.0f;
+        for (size_t i = 0; i < _physicalStrips.size(); i++)
+        {
+            auto* phys = _physicalStrips[i];
+            if (!phys) continue;
+
+            // Use cached current from applyPowerLimit (requested current BEFORE ABL scaling)
+            uint32_t stripCurrent = 0;
+            if (mgr->getStripPowerStats(phys, stripCurrent, limitMa, loadPercent))
+            {
+                // Got cached value - requested current before ABL scaling
+                totalWatts += phys->getPowerWatts(stripCurrent);
+            }
+            else
+            {
+                // Fallback: calculate from buffer (shouldn't happen in normal operation)
+                stripCurrent = mgr->getPowerManager()->calculateStripCurrent(
+                    phys->getBuffer(), phys->getLedCount(),
+                    phys->getProtocol(), phys->getColorOrder(), true);
+                totalWatts += phys->getPowerWatts(stripCurrent);
+            }
+        }
+
+        if (KoNEO_PowerWattsTotal.valueNoSendCompare(totalWatts, DPT_Value_Power))
+        {
+            // logDebugP("Updating KoNEO_PowerWattsTotal: %f W", totalWatts);
+            KoNEO_PowerWattsTotal.objectWritten();
+        }
+
+        // Per-strip KOs (for ALL strips)
+        for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
+        {
+            auto* phys = _physicalStrips[i];
+            if (!phys) continue;
+
+            auto* cfg = phys->getConfig();
+            if (!cfg) continue;
+
+            // Use cached values from applyPowerLimit (requested current BEFORE ABL scaling)
+            uint32_t stripCurrent = 0;
+            if (!mgr->getStripPowerStats(phys, currentMa, limitMa, loadPercent))
+            {
+                // Fallback: calculate from buffer if cache miss
+                stripCurrent = mgr->getPowerManager()->calculateStripCurrent(
+                    phys->getBuffer(), phys->getLedCount(),
+                    phys->getProtocol(), phys->getColorOrder(), true);
+
+                // Fallback load calculation
+                uint16_t stripLimit = cfg->getMaxCurrentMa();
+                if (stripLimit > 0)
+                    loadPercent = (uint8_t)((stripCurrent * 100) / stripLimit);
+                else
+                    loadPercent = 0;
+            }
+            else
+            {
+                // Use cached current (requested BEFORE ABL scaling)
+                stripCurrent = currentMa;
+            }
+
+            float stripWatts = phys->getPowerWatts(stripCurrent);
+
+            // Set channel index to access correct strip KOs
+            uint8_t savedChannelIndex = _channelIndex;
+            _channelIndex = i;
+
+            if (KoNEOSTRIP_PowerCurrent.valueNoSendCompare(stripCurrent, DPT_Value_2_Ucount))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerCurrent for strip %u: %u mA", (unsigned)i, stripCurrent);
+                KoNEOSTRIP_PowerCurrent.objectWritten();
+            }
+
+            if (KoNEOSTRIP_PowerLoad.valueNoSendCompare(loadPercent, DPT_Scaling))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerLoad for strip %u: %u %%", (unsigned)i, loadPercent);
+                KoNEOSTRIP_PowerLoad.objectWritten();
+            }
+
+            if (KoNEOSTRIP_PowerWatts.valueNoSendCompare(stripWatts, DPT_Value_Power))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerWatts for strip %u: %f W", (unsigned)i, stripWatts);
+                KoNEOSTRIP_PowerWatts.objectWritten();
+            }
+
+            _channelIndex = savedChannelIndex;
+        }
+    }
+    else if (mode == PowerLimitMode::PER_LED)
+    {
+        // PER_LED MODE: Send global + per-strip KOs (same as PER_CHANNEL)
+        uint32_t currentMa, limitMa;
+        uint8_t loadPercent;
+
+        // Global KOs (sum of all strips)
+        mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
+
+        if (KoNEO_PowerCurrentTotal.valueNoSendCompare(currentMa, DPT_Value_2_Ucount))
+        {
+            // logDebugP("Updating KoNEO_PowerCurrentTotal: %u mA", currentMa);
+            KoNEO_PowerCurrentTotal.objectWritten();
+        }
+
+        if (KoNEO_PowerLoadTotal.valueNoSendCompare(loadPercent, DPT_Scaling))
+        {
+            // logDebugP("Updating KoNEO_PowerLoadTotal: %u %%", loadPercent);
+            KoNEO_PowerLoadTotal.objectWritten();
+        }
+
+        // Calculate total power in watts (use cached values from applyPowerLimit)
+        float totalWatts = 0.0f;
+        for (size_t i = 0; i < _physicalStrips.size(); i++)
+        {
+            auto* phys = _physicalStrips[i];
+            if (!phys) continue;
+
+            // Use cached current from applyPowerLimit (requested current BEFORE ABL scaling)
+            uint32_t stripCurrent = 0;
+            if (mgr->getStripPowerStats(phys, stripCurrent, limitMa, loadPercent))
+            {
+                // Got cached value - requested current before ABL scaling
+                totalWatts += phys->getPowerWatts(stripCurrent);
+            }
+            else
+            {
+                // Fallback: calculate from buffer (shouldn't happen in normal operation)
+                stripCurrent = mgr->getPowerManager()->calculateStripCurrent(
+                    phys->getBuffer(), phys->getLedCount(),
+                    phys->getProtocol(), phys->getColorOrder(), true);
+                totalWatts += phys->getPowerWatts(stripCurrent);
+            }
+        }
+
+        if (KoNEO_PowerWattsTotal.valueNoSendCompare(totalWatts, DPT_Value_Power))
+        {
+            // logDebugP("Updating KoNEO_PowerWattsTotal: %f W", totalWatts);
+            KoNEO_PowerWattsTotal.objectWritten();
+        }
+
+        // Per-strip KOs (for ALL strips)
+        for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
+        {
+            auto* phys = _physicalStrips[i];
+            if (!phys) continue;
+
+            auto* cfg = phys->getConfig();
+            if (!cfg) continue;
+
+            // Use cached values from applyPowerLimit (requested current BEFORE ABL scaling)
+            uint32_t stripCurrent = 0;
+            if (!mgr->getStripPowerStats(phys, currentMa, limitMa, loadPercent))
+            {
+                // Fallback: calculate from buffer if cache miss
+                stripCurrent = mgr->getPowerManager()->calculateStripCurrent(
+                    phys->getBuffer(), phys->getLedCount(),
+                    phys->getProtocol(), phys->getColorOrder(), true);
+
+                // Fallback load calculation
+                uint16_t stripLimit = cfg->getMaxCurrentMa();
+                if (stripLimit > 0)
+                    loadPercent = (uint8_t)((stripCurrent * 100) / stripLimit);
+                else
+                    loadPercent = 0;
+            }
+            else
+            {
+                // Use cached current (requested BEFORE ABL scaling)
+                stripCurrent = currentMa;
+            }
+
+            float stripWatts = phys->getPowerWatts(stripCurrent);
+
+            // Set channel index to access correct strip KOs
+            uint8_t savedChannelIndex = _channelIndex;
+            _channelIndex = i;
+
+            if (KoNEOSTRIP_PowerCurrent.valueNoSendCompare(stripCurrent, DPT_Value_2_Ucount))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerCurrent for strip %u: %u mA", (unsigned)i, stripCurrent);
+                KoNEOSTRIP_PowerCurrent.objectWritten();
+            }
+
+            if (KoNEOSTRIP_PowerLoad.valueNoSendCompare(loadPercent, DPT_Scaling))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerLoad for strip %u: %u %%", (unsigned)i, loadPercent);
+                KoNEOSTRIP_PowerLoad.objectWritten();
+            }
+
+            if (KoNEOSTRIP_PowerWatts.valueNoSendCompare(stripWatts, DPT_Value_Power))
+            {
+                // logDebugP("Updating KoNEOSTRIP_PowerWatts for strip %u: %f W", (unsigned)i, stripWatts);
+                KoNEOSTRIP_PowerWatts.objectWritten();
+            }
+
+            _channelIndex = savedChannelIndex;
+        }
+    }
 }

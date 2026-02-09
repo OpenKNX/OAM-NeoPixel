@@ -92,6 +92,43 @@ void ColorManagement::restoreOriginalBrightness()
 }
 
 // ============================================================================
+// HCL (Human Centric Lighting) post-processing implementation
+//
+// Goal: Circadian Kelvin correction without destroying effects/scenes.
+// We post-process the rendered pixels and apply a Kelvin whitepoint mainly to
+// white/low-saturation pixels (configurable). For RGBW/RGBCCT we can also
+// extract neutral luminance into W to preserve saturation.
+//
+// Controlled via ETS params (generated in knxprod.h):
+//   - ParamNEO_HCLenableKelvin (bool)
+//   - ParamNEO_HclApplyMode (0=Nur Weiß, 1=Alle Farben)
+//   - ParamNEO_HCLSatThreshold (0..255)
+//   - ParamNEO_HCLPreserveCurve (0=Linear,1=Smooth,2=Gamma)
+//   - ParamNEO_HCLStrength (0..100 %) : overall mix strength
+//   - ParamNEO_HCLTransitionTime (0..255 s) : Kelvin slew time
+//   - ParamNEO_HCLBrightnessCompensation (0..100 %) : perceived brightness equalization
+//   - ParamNEO_HCLWhiteMix (0..100 %) : how much neutral goes to W (RGBW only)
+// ============================================================================
+
+// Structure to pass HCL parameters to the callback
+struct HclCallbackData
+{
+    uint16_t kelvin;
+    uint8_t applyMode;
+    uint8_t satThreshold;
+    uint8_t preserveCurve;
+    uint8_t strength;
+    uint8_t brightnessComp;
+    uint8_t whiteMix;
+    uint16_t minKelvin;        // Strip's minimum Kelvin (warm white, e.g., 2700K)
+    uint16_t maxKelvin;        // Strip's maximum Kelvin (cool white, e.g., 6500K)
+    NeoPixelBusModule* module; // Module pointer for segment access
+};
+
+// Static storage for HCL callback data (one global HCL state)
+static HclCallbackData s_hclData = {0, 0, 128, 0, 100, 50, 50, 2700, 6500, nullptr};
+
+// ============================================================================
 // HCL Color Temperature Control Implementation
 // ============================================================================
 
@@ -133,27 +170,6 @@ void ColorManagement::applyHclColorTemperature(uint16_t kelvin)
     logInfoP("HCL target set to %dK (post-processing enabled)", (int)_hclTargetKelvin);
 }
 
-// ============================================================================
-// HCL Callback Data (forward declaration for disableHclMode)
-// ============================================================================
-
-// Structure to pass HCL parameters to the callback
-struct HclCallbackData
-{
-    uint16_t kelvin;
-    uint8_t applyMode;
-    uint8_t satThreshold;
-    uint8_t preserveCurve;
-    uint8_t strength;
-    uint8_t brightnessComp;
-    uint8_t whiteMix;
-    uint16_t minKelvin; // Strip's minimum Kelvin (warm white, e.g., 2700K)
-    uint16_t maxKelvin; // Strip's maximum Kelvin (cool white, e.g., 6500K)
-};
-
-// Static storage for HCL callback data (one global HCL state)
-static HclCallbackData s_hclData = {0, 0, 128, 0, 100, 50, 50, 2700, 6500};
-
 void ColorManagement::disableHclMode()
 {
     if (!_hclEnabled && !_module->_hclModeEnabled)
@@ -179,412 +195,6 @@ void ColorManagement::disableHclMode()
 }
 
 // ============================================================================
-// HCL (Human Centric Lighting) post-processing implementation
-//
-// Goal: Circadian Kelvin correction without destroying effects/scenes.
-// We post-process the rendered pixels and apply a Kelvin whitepoint mainly to
-// white/low-saturation pixels (configurable). For RGBW/RGBCCT we can also
-// extract neutral luminance into W to preserve saturation.
-//
-// Controlled via ETS params (generated in knxprod.h):
-//   - ParamNEO_HCLenableKelvin (bool)
-//   - ParamNEO_HclApplyMode (0=Nur Wei�, 1=Alle Farben)
-//   - ParamNEO_HCLSatThreshold (0..255)
-//   - ParamNEO_HCLPreserveCurve (0=Linear,1=Smooth,2=Gamma)
-//   - ParamNEO_HCLStrength (0..100 %) : overall mix strength
-//   - ParamNEO_HCLTransitionTime (0..255 s) : Kelvin slew time
-//   - ParamNEO_HCLBrightnessCompensation (0..100 %) : perceived brightness equalization
-//   - ParamNEO_HCLWhiteMix (0..100 %) : how much neutral goes to W (RGBW only)
-// ============================================================================
-
-namespace
-{
-    inline uint8_t u8_max3(uint8_t a, uint8_t b, uint8_t c)
-    {
-        return (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);
-    }
-
-    inline uint8_t u8_min3(uint8_t a, uint8_t b, uint8_t c)
-    {
-        return (a < b) ? ((a < c) ? a : c) : ((b < c) ? b : c);
-    }
-
-    inline uint8_t lerp_u8(uint8_t a, uint8_t b, uint8_t frac /*0..255*/)
-    {
-        const uint16_t inv = 255u - frac;
-        return (uint8_t)((a * inv + b * (uint16_t)frac + 127u) / 255u);
-    }
-
-    inline uint8_t clamp_u8(int v)
-    {
-        if (v < 0) return 0;
-        if (v > 255) return 255;
-        return (uint8_t)v;
-    }
-
-    // Integer smoothstep (t in 0..255)
-    inline uint8_t smoothstep_u8(uint8_t t)
-    {
-        // t^2 * (3 - 2t) in 0..1 (scaled to 0..255)
-        const uint32_t tt = (uint32_t)t * (uint32_t)t;   // 0..65025
-        const uint32_t a = 3u * 255u - 2u * (uint32_t)t; // 0..765
-        const uint32_t v = (tt * a + (255u * 255u / 2u)) / (255u * 255u);
-        return (uint8_t)((v > 255u) ? 255u : v);
-    }
-
-    // HCL blend weight from saturation.
-    //
-    // applyMode=0 (Nur Weiss):
-    //   - Only pixels below threshold are affected (hard cutoff) unless they already have W.
-    //   - Weight falls from 255 (sat=0) to 0 (sat=threshold).
-    //
-    // applyMode=1 (Alle Farben):
-    //   - All pixels can be affected.
-    //   - Threshold defines the point where we start fading out; above threshold we fade to 0 at sat=255.
-    //   - This matches typical "commercial" HCL behavior: whites get strong correction, saturated colors less.
-    inline uint8_t hclWeightFromSat(uint8_t sat, uint8_t threshold, uint8_t applyMode, uint8_t curve /*0..2*/)
-    {
-        uint32_t w = 0;
-
-        if (applyMode == 0)
-        {
-            // Nur Weiss: weight 255..0 within [0..threshold]
-            if (threshold == 0)
-            {
-                w = (sat == 0) ? 255u : 0u;
-            }
-            else
-            {
-                if (sat >= threshold) return 0;
-                w = 255u - ((uint32_t)sat * 255u) / threshold;
-            }
-        }
-        else
-        {
-            // Alle Farben: full weight below threshold, then fade to 0 at sat=255
-            if (sat <= threshold)
-            {
-                w = 255u;
-            }
-            else
-            {
-                const uint32_t denom = (threshold >= 255) ? 1u : (255u - (uint32_t)threshold);
-                w = ((255u - (uint32_t)sat) * 255u) / denom;
-            }
-        }
-
-        if (w > 255u) w = 255u;
-        const uint8_t ww = (uint8_t)w;
-
-        switch (curve)
-        {
-            default:
-            case 0: // Linear
-                return ww;
-            case 1: // Smooth
-                return smoothstep_u8(ww);
-            case 2: // Gamma (approx gamma=2)
-                return (uint8_t)(((uint16_t)ww * (uint16_t)ww + 127u) / 255u);
-        }
-    }
-
-    inline void apply_hcl_pixel(uint16_t kelvin,
-                                uint8_t applyMode,
-                                uint8_t satThreshold,
-                                uint8_t preserveCurve,
-                                uint8_t strengthPct,
-                                uint8_t brightnessCompPct,
-                                uint8_t whiteMixPct,
-                                uint16_t minKelvin,
-                                uint16_t maxKelvin,
-                                uint8_t& r, uint8_t& g, uint8_t& b,
-                                uint8_t* wwOpt,
-                                uint8_t* cwOpt)
-    {
-        // For RGBCCT (5-channel): Use WW/CW ratio for color temperature
-        // This is more efficient and provides pure white light
-        if (wwOpt && cwOpt)
-        {
-            // Calculate WW/CW ratio based on Kelvin
-            // At minKelvin (e.g., 2700K): 100% WW, 0% CW
-            // At maxKelvin (e.g., 6500K): 0% WW, 100% CW
-            // Linear interpolation between them
-
-            uint8_t wwIn = *wwOpt;
-            uint8_t cwIn = *cwOpt;
-
-            // Only apply HCL to pixels that have white content
-            uint8_t totalWhite = wwIn;
-            if (cwIn > totalWhite) totalWhite = cwIn;
-
-            // If no white channel active, nothing to adjust
-            if (totalWhite == 0) return;
-
-            // Calculate position in Kelvin range (0.0 = warm, 1.0 = cool)
-            uint16_t kMin = (minKelvin < 1000) ? 1000 : minKelvin;
-            uint16_t kMax = (maxKelvin > 10000) ? 10000 : maxKelvin;
-            if (kMax <= kMin)
-            {
-                kMax = kMin + 1;
-            }
-
-            // Clamp target Kelvin to range
-            uint16_t targetK = kelvin;
-            if (targetK < kMin) targetK = kMin;
-            if (targetK > kMax) targetK = kMax;
-
-            // Calculate ratio: 0 = full warm, 255 = full cool
-            uint16_t range = kMax - kMin;
-            uint8_t coolRatio = (uint8_t)(((uint32_t)(targetK - kMin) * 255u) / range);
-            uint8_t warmRatio = 255 - coolRatio;
-
-            // Apply strength
-            uint8_t strength = (strengthPct > 100) ? 100 : strengthPct;
-
-            // Blend between original WW/CW and target WW/CW based on strength
-            // Target: redistribute total white between WW and CW based on Kelvin
-            uint8_t targetWW = (uint8_t)(((uint32_t)totalWhite * warmRatio) / 255u);
-            uint8_t targetCW = (uint8_t)(((uint32_t)totalWhite * coolRatio) / 255u);
-
-            // Apply strength-based blend
-            *wwOpt = lerp_u8(wwIn, targetWW, (uint8_t)((strength * 255u) / 100u));
-            *cwOpt = lerp_u8(cwIn, targetCW, (uint8_t)((strength * 255u) / 100u));
-
-            return;
-        }
-
-        // For RGB/RGBW: Use the existing RGB tinting approach
-        uint8_t kr, kg, kb;
-        ColorHelper::kelvinToRGB(kelvin, kr, kg, kb);
-
-        const uint8_t vmax = u8_max3(r, g, b);
-        const uint8_t vmin = u8_min3(r, g, b);
-        const uint8_t sat = (vmax == 0) ? 0 : (uint8_t)(((uint16_t)(vmax - vmin) * 255u) / vmax);
-        const uint8_t wIn = (wwOpt) ? *wwOpt : 0;
-
-        // ApplyMode=Nur Weiss: hard cutoff above threshold unless explicit W
-        if (applyMode == 0 && sat >= satThreshold && wIn == 0) return;
-
-        const uint8_t preserve = hclWeightFromSat(sat, satThreshold, applyMode, preserveCurve);
-        uint8_t strength = (strengthPct > 100) ? 100 : strengthPct;
-
-        uint16_t wFrac16 = (uint16_t)preserve * (uint16_t)strength; // 0..25500
-        uint8_t frac = (uint8_t)((wFrac16 + 50u) / 100u);           // 0..255
-
-        if (frac == 0) return;
-
-        // Use current pixel value/brightness basis (include W)
-        uint8_t v = vmax;
-        if (wIn > v) v = wIn;
-
-        int tr = ((int)kr * (int)v) / 255;
-        int tg = ((int)kg * (int)v) / 255;
-        int tb = ((int)kb * (int)v) / 255;
-        int tw = 0;
-
-        // Perceived brightness compensation (optional)
-        if (brightnessCompPct > 0)
-        {
-            uint8_t rr, rg, rb;
-            ColorHelper::kelvinToRGB(6500, rr, rg, rb);
-
-            const uint32_t yRef = 54u * rr + 183u * rg + 19u * rb;
-            const uint32_t yKel = 54u * kr + 183u * kg + 19u * kb;
-            if (yKel > 0)
-            {
-                uint32_t scaleQ8 = (yRef << 8) / yKel; // 256=1.0
-                if (scaleQ8 < 128u) scaleQ8 = 128u;
-                if (scaleQ8 > 512u) scaleQ8 = 512u;
-
-                uint8_t comp = (brightnessCompPct > 100) ? 100 : brightnessCompPct;
-                int32_t delta = (int32_t)scaleQ8 - 256;
-                scaleQ8 = (uint32_t)(256 + (delta * comp) / 100);
-
-                tr = (int)((tr * (int)scaleQ8 + 128) >> 8);
-                tg = (int)((tg * (int)scaleQ8 + 128) >> 8);
-                tb = (int)((tb * (int)scaleQ8 + 128) >> 8);
-            }
-        }
-
-        // RGBW: extract neutral part into W (configurable)
-        if (wwOpt)
-        {
-            int n = u8_min3((uint8_t)clamp_u8(tr), (uint8_t)clamp_u8(tg), (uint8_t)clamp_u8(tb));
-            uint8_t mix = (whiteMixPct > 100) ? 100 : whiteMixPct;
-            int extracted = (n * (int)mix + 50) / 100;
-            tr -= extracted;
-            tg -= extracted;
-            tb -= extracted;
-            tw = extracted;
-        }
-
-        r = lerp_u8(r, clamp_u8(tr), frac);
-        g = lerp_u8(g, clamp_u8(tg), frac);
-        b = lerp_u8(b, clamp_u8(tb), frac);
-        if (wwOpt) *wwOpt = lerp_u8(wIn, clamp_u8(tw), frac);
-    }
-} // namespace
-
-// ============================================================================
-// HCL Pixel Transform Callback (called from VirtualStrip::syncToPhysical)
-// ============================================================================
-
-/**
- * @brief Static callback for HCL pixel transformation
- *
- * This is called from VirtualStrip::syncToPhysical() for each pixel,
- * AFTER effects have rendered but BEFORE sending to hardware.
- * The effect buffer is NOT modified, so effects that read back pixels work correctly.
- *
- * For RGBCCT strips: Adjusts WW/CW ratio based on target Kelvin
- * For RGB/RGBW strips: Applies RGB tinting based on Kelvin
- */
-static void hclPixelTransformCallback(uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* ww, uint8_t* cw, void* userData)
-{
-    (void)userData; // Use static data instead
-
-    if (s_hclData.kelvin == 0) return; // HCL disabled
-
-    apply_hcl_pixel(s_hclData.kelvin,
-                    s_hclData.applyMode,
-                    s_hclData.satThreshold,
-                    s_hclData.preserveCurve,
-                    s_hclData.strength,
-                    s_hclData.brightnessComp,
-                    s_hclData.whiteMix,
-                    s_hclData.minKelvin,
-                    s_hclData.maxKelvin,
-                    r, g, b, ww, cw);
-}
-
-void ColorManagement::applyHclPostProcess()
-{
-    if (!_module || !_module->_initialized) return;
-
-    // Check if HCL is configured in ETS (type != disabled)
-    uint8_t hclType = (uint8_t)ParamNEO_HCLtype;
-    if (hclType == 0) return; // HCL disabled in ETS
-
-    // Read current Kelvin from KO (set by HclCurve::loop or external KNX telegram)
-    uint16_t koKelvin = (uint16_t)KoNEO_HCLState.value(Dpt(7, 600));
-
-    // Auto-enable HCL if we have a valid Kelvin value from the curve
-    if (koKelvin > 0 && !_hclEnabled)
-    {
-        _hclEnabled = true;
-        _hclTargetKelvin = koKelvin;
-        _hclAppliedKelvin = koKelvin; // Start at target (no initial slew)
-        _module->_hclModeEnabled = true;
-        logInfoP("HCL auto-enabled from curve: %dK", (int)koKelvin);
-    }
-    else if (koKelvin > 0 && koKelvin != _hclTargetKelvin)
-    {
-        // Update target if changed
-        _hclTargetKelvin = koKelvin;
-    }
-
-    if (!_hclEnabled) return;
-    if (_hclTargetKelvin == 0) return;
-    // Note: HCL enable/disable controlled by HCLtype parameter (checked in HclCurve::loop)
-
-    const unsigned long now = millis();
-
-    // Rate limit
-    constexpr unsigned long kMinIntervalMs = 20; // 50 Hz
-    if (_lastHclApplyMs != 0 && (now - _lastHclApplyMs) < kMinIntervalMs)
-        return;
-    const unsigned long dtMs = (_lastHclApplyMs == 0) ? kMinIntervalMs : (now - _lastHclApplyMs);
-    _lastHclApplyMs = now;
-
-    // Kelvin slew rate (K/min)
-    uint16_t target = _hclTargetKelvin;
-    uint16_t applied = _hclAppliedKelvin;
-
-    uint16_t slewRateKPerMin = (uint16_t)ParamNEO_HCLSlewRate;
-
-    // Calculate difference for jump detection
-    int32_t diff = (int32_t)target - (int32_t)applied;
-    uint32_t adiff = (uint32_t)((diff < 0) ? -diff : diff);
-
-    // Threshold for instant jump (e.g., first time sync, large changes)
-    // Skip slewing for differences > 500K to quickly reach correct value after time sync
-    constexpr uint32_t kInstantJumpThresholdK = 500u;
-
-    if (slewRateKPerMin == 0 || adiff > kInstantJumpThresholdK)
-    {
-        // Slew rate 0 = instant change
-        // Large difference = instant jump (e.g., after first time sync)
-        if (adiff > kInstantJumpThresholdK && applied != 0)
-        {
-            logInfoP("HCL: Large Kelvin jump detected (%u K), applying instantly", (unsigned)adiff);
-        }
-        applied = target;
-        _hclSlewAccumulatorMs = 0;
-    }
-    else if (diff != 0)
-    {
-        // Calculate milliseconds per 1 Kelvin step from slew rate (K/min)
-        // msPerKelvin = 60000 / slewRateKPerMin
-        // For 100 K/min: 60000 / 100 = 600ms per Kelvin
-        // For 10 K/min: 60000 / 10 = 6000ms (6s) per Kelvin
-        uint32_t msPerKelvin = 60000u / (uint32_t)slewRateKPerMin;
-        if (msPerKelvin == 0) msPerKelvin = 1;
-
-        // Accumulate time until we have enough for at least 1K step
-        _hclSlewAccumulatorMs += dtMs;
-
-        if (_hclSlewAccumulatorMs >= msPerKelvin)
-        {
-            uint32_t steps = _hclSlewAccumulatorMs / msPerKelvin;
-            if (steps > adiff) steps = adiff; // Don't overshoot
-
-            applied = (uint16_t)((int32_t)applied + ((diff < 0) ? -(int32_t)steps : (int32_t)steps));
-            _hclSlewAccumulatorMs -= steps * msPerKelvin; // Keep remainder for next iteration
-        }
-    }
-    else
-    {
-        // diff == 0: already at target
-        _hclSlewAccumulatorMs = 0;
-    }
-    _hclAppliedKelvin = applied;
-
-    // Log Kelvin transitions
-    if (applied != _module->_hclAppliedKelvin)
-    {
-        logDebugP("HCL Kelvin slewed: %u K → %u K (target=%u K, rate=%u K/min)",
-                  (unsigned)_module->_hclAppliedKelvin, (unsigned)applied,
-                  (unsigned)target, (unsigned)slewRateKPerMin);
-    }
-
-    // Keep module state in sync for status getters / diagnostics
-    _module->_hclTargetKelvin = target;
-    _module->_hclAppliedKelvin = applied;
-    _module->_hclModeEnabled = true;
-
-    // Update HCL callback parameters (used during syncToPhysical)
-    s_hclData.kelvin = applied;
-    s_hclData.applyMode = (uint8_t)ParamNEO_HclApplyMode;
-    s_hclData.satThreshold = (uint8_t)ParamNEO_HCLSatThreshold;
-    s_hclData.preserveCurve = (uint8_t)ParamNEO_HCLPreserveCurve;
-    s_hclData.strength = (uint8_t)ParamNEO_HCLStrength;
-    s_hclData.brightnessComp = (uint8_t)ParamNEO_HCLBrightnessCompensation;
-    s_hclData.whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
-    s_hclData.minKelvin = (uint16_t)ParamNEO_HCLminKelvin;
-    s_hclData.maxKelvin = (uint16_t)ParamNEO_HCLmaxKelvin;
-
-    // Register the HCL callback on VirtualStrip (if not already done)
-    // The callback is called during syncToPhysical() for each pixel
-    if (_module->_virtualStrip)
-    {
-        _module->_virtualStrip->setPixelTransformCallback(hclPixelTransformCallback, nullptr);
-    }
-
-    // NOTE: Pixel transformation now happens in VirtualStrip::syncToPhysical()
-    // This preserves the effect buffer, so effects like Cylon that read back pixels work correctly
-}
-
-// ============================================================================
 // Color Correction Implementation
 // ============================================================================
 
@@ -592,9 +202,15 @@ void ColorManagement::configureColorCorrection()
 {
     // Local variable for ETS parameter macros
     uint8_t _channelIndex = _module->getChannelIndex();
+    // ═════════════════════════════════════════════════════════════════════════════
+    // Color Calibration Master Switch (UP-046)
+    // If disabled: Ignore both white balance AND gamma correction
+    // ═════════════════════════════════════════════════════════════════════════════
+    bool colorCalibrationMasterEnabled = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
 
     // Gamma correction configuration (for colors)
-    _module->_gammaCorrectionEnabled = (bool)ParamNEOSTRIP_NEOGammaCorrection;
+    // Only applied if Master-Checkbox is ON AND Gamma-Checkbox is ON
+    _module->_gammaCorrectionEnabled = colorCalibrationMasterEnabled && (bool)ParamNEOSTRIP_NEOGammaCorrection;
     if (_module->_gammaCorrectionEnabled)
     {
         uint8_t gammaParam = ParamNEOSTRIP_NEOGammaValue;
@@ -603,7 +219,8 @@ void ColorManagement::configureColorCorrection()
     }
 
     // White balance configuration
-    _module->_whiteBalanceEnabled = (bool)ParamNEOSTRIP_NEOWhiteBalanceCorrection;
+    // Only applied if Master-Checkbox is ON (Weißabgleich has no separate checkbox)
+    _module->_whiteBalanceEnabled = colorCalibrationMasterEnabled;
     if (_module->_whiteBalanceEnabled)
     {
         _module->_whiteBalanceRed = mapWhiteBalanceValue(ParamNEOSTRIP_NEOWhiteBalanceRed);

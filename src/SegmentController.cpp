@@ -222,8 +222,17 @@ bool SegmentController::processSegmentKo(GroupObject& ko, uint16_t koNumber, uin
             return true;
 
         case NEO_KoH:
+            processHueKo(channel, ko);
+            return true;
+
         case NEO_KoS:
+            processSaturationKo(channel, ko);
+            return true;
+
         case NEO_KoV:
+            processValueKo(channel, ko);
+            return true;
+
         case NEO_KoHSV:
             processHsvKo(channel, ko);
             return true;
@@ -288,11 +297,69 @@ void SegmentController::processCctKo(uint8_t channel, GroupObject& ko)
     _module->_channelIndex = _channelIndex;
 }
 
+void SegmentController::processHueKo(uint8_t channel, GroupObject& ko)
+{
+    uint8_t hue = ko.value(DPT_Value_1_Ucount);
+    processHsvChannelKo(channel, ko, hue, 0, "Hue");
+}
+
+void SegmentController::processSaturationKo(uint8_t channel, GroupObject& ko)
+{
+    uint8_t saturation = ko.value(DPT_Value_1_Ucount);
+    processHsvChannelKo(channel, ko, saturation, 1, "Saturation");
+}
+
+void SegmentController::processValueKo(uint8_t channel, GroupObject& ko)
+{
+    uint8_t value = ko.value(DPT_Value_1_Ucount);
+    processHsvChannelKo(channel, ko, value, 2, "Value");
+}
+
 void SegmentController::processHsvKo(uint8_t channel, GroupObject& ko)
 {
-    // HSV handling - simplified version, can be expanded
-    logInfoP("Segment %d: HSV KO received", channel);
-    // TODO: Implement full HSV handling similar to processRedKo/Green/Blue
+    // Combined HSV KO - 3-byte value (H, S, V)
+    uint32_t hsvValue = ko.value(DPT_Colour_RGB); // Using RGB DPT for 3-byte HSV data
+    uint8_t h = (hsvValue >> 16) & 0xFF;
+    uint8_t s = (hsvValue >> 8) & 0xFF;
+    uint8_t v = hsvValue & 0xFF;
+
+    logInfoP("Segment %d: HSV = H:%d S:%d V:%d", channel, h, s, v);
+
+    auto& cfg = _module->_segments[channel];
+    Segment* targetSegment = cfg.segment;
+
+    // Update HSV state
+    cfg.currentH = h;
+    cfg.currentS = s;
+    cfg.currentV = v;
+
+    // Convert HSV to RGB
+    uint8_t r, g, b;
+    ColorHelper::hsvToRGB(h, s, v, r, g, b);
+
+    // Update pending and saved RGB
+    cfg.pendingSolidR = r;
+    cfg.pendingSolidG = g;
+    cfg.pendingSolidB = b;
+    cfg.savedR = r;
+    cfg.savedG = g;
+    cfg.savedB = b;
+    cfg.savedBrightness = targetSegment->getBrightness();
+    cfg.savedValid = true;
+
+    // If Solid effect is running, update immediately
+    if (targetSegment->getEffect() == EffectPool::getSolid())
+    {
+        targetSegment->setPrimaryColor(r, g, b, cfg.savedWW);
+        logInfoP("Segment %d: Updated Solid effect with HSV->RGB (%d,%d,%d)", channel, r, g, b);
+    }
+    else
+    {
+        logInfoP("Segment %d: Stored pending HSV->RGB (%d,%d,%d)", channel, r, g, b);
+    }
+
+    // Send status feedback
+    sendColorStatusFeedback(channel);
 }
 
 void SegmentController::startStopDimming(uint8_t channel, uint8_t dimmingChannel, uint8_t rel)
@@ -328,7 +395,7 @@ void SegmentController::applyColorChannelDimming(Segment* seg, uint8_t colorChan
 {
     uint8_t r, g, b;
     uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
-    
+
     if (bytesPerLed == 5) // RGBCCT
     {
         uint8_t ww, cw;
@@ -381,7 +448,12 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
         cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
         cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
         cfg.savedR = colorValue;
-        if (!cfg.savedValid) { cfg.savedG = 0; cfg.savedB = 0; cfg.savedWW = 0; }
+        if (!cfg.savedValid)
+        {
+            cfg.savedG = 0;
+            cfg.savedB = 0;
+            cfg.savedWW = 0;
+        }
     }
     else if (colorChannel == 1) // Green
     {
@@ -390,7 +462,12 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
         cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
         cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
         cfg.savedG = colorValue;
-        if (!cfg.savedValid) { cfg.savedR = 0; cfg.savedB = 0; cfg.savedWW = 0; }
+        if (!cfg.savedValid)
+        {
+            cfg.savedR = 0;
+            cfg.savedB = 0;
+            cfg.savedWW = 0;
+        }
     }
     else if (colorChannel == 2) // Blue
     {
@@ -399,7 +476,12 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
         cfg.pendingSolidB = colorValue;
         cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
         cfg.savedB = colorValue;
-        if (!cfg.savedValid) { cfg.savedR = 0; cfg.savedG = 0; cfg.savedWW = 0; }
+        if (!cfg.savedValid)
+        {
+            cfg.savedR = 0;
+            cfg.savedG = 0;
+            cfg.savedWW = 0;
+        }
     }
     else if (colorChannel == 3) // White
     {
@@ -408,7 +490,12 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
         cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
         cfg.pendingSolidWW = colorValue;
         cfg.savedWW = colorValue;
-        if (!cfg.savedValid) { cfg.savedR = 0; cfg.savedG = 0; cfg.savedB = 0; }
+        if (!cfg.savedValid)
+        {
+            cfg.savedR = 0;
+            cfg.savedG = 0;
+            cfg.savedB = 0;
+        }
     }
 
     cfg.savedBrightness = targetSegment->getBrightness();
@@ -432,10 +519,62 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
     sendColorStatusFeedback(channel);
 }
 
+void SegmentController::processHsvChannelKo(uint8_t channel, GroupObject& ko, uint8_t hsvValue, uint8_t hsvChannel, const char* channelName)
+{
+    logInfoP("Segment %d %s: %d", channel, channelName, hsvValue);
+
+    auto& cfg = _module->_segments[channel];
+    Segment* targetSegment = cfg.segment;
+
+    // Update HSV state based on channel
+    if (hsvChannel == 0) // Hue
+    {
+        cfg.currentH = hsvValue;
+    }
+    else if (hsvChannel == 1) // Saturation
+    {
+        cfg.currentS = hsvValue;
+    }
+    else if (hsvChannel == 2) // Value
+    {
+        cfg.currentV = hsvValue;
+    }
+
+    // Convert current HSV to RGB
+    uint8_t r, g, b;
+    ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
+
+    // Update pending and saved RGB
+    cfg.pendingSolidR = r;
+    cfg.pendingSolidG = g;
+    cfg.pendingSolidB = b;
+    cfg.savedR = r;
+    cfg.savedG = g;
+    cfg.savedB = b;
+    cfg.savedBrightness = targetSegment->getBrightness();
+    cfg.savedValid = true;
+
+    // If Solid effect is running, update immediately
+    if (targetSegment->getEffect() == EffectPool::getSolid())
+    {
+        targetSegment->setPrimaryColor(r, g, b, cfg.savedWW);
+        logInfoP("Segment %d: Updated Solid effect with %s=%d -> RGB(%d,%d,%d)",
+                 channel, channelName, hsvValue, r, g, b);
+    }
+    else
+    {
+        logInfoP("Segment %d: Stored pending %s=%d -> RGB(%d,%d,%d) (will apply when effect stops)",
+                 channel, channelName, hsvValue, r, g, b);
+    }
+
+    // Send status feedback
+    sendColorStatusFeedback(channel);
+}
+
 void SegmentController::sendColorStatusFeedback(uint8_t channel)
 {
     auto& cfg = _module->_segments[channel];
-    
+
     // Store original channel index and switch to target channel
     uint8_t originalChannelIndex = _module->getChannelIndex();
     _module->_channelIndex = channel;

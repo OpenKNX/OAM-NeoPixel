@@ -11,7 +11,7 @@
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Segment Parameters -->
-              <Union SizeInBit="1120">
+              <Union SizeInBit="1280">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0..1: 16b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%050" Offset="0" BitOffset="0" Name="NEO%C%SegmentStart" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Start LED" Value="1"/>
@@ -22,28 +22,78 @@
                 <!-- Byte 6..7: 16b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%053" Offset="6" BitOffset="0" Name="NEO%C%SegmentGrouping" ParameterType="%AID%_PT-MinMaxValue" Text="Gruppierung" Value="0"/>
                 <!-- Byte 8..9: 16b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%054" Offset="8" BitOffset="0" Name="NEO%C%SegmentSpacing" ParameterType="%AID%_PT-MinMaxValue" Text="Spacing" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%054" Offset="8" BitOffset="0" Name="NEO%C%SegmentSpacing" ParameterType="%AID%_PT-MinMaxValue" Text="Dunkelabstand" Value="0"/>
                 <!-- Byte 10: 0 (1b), 1 (1b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%055" Offset="10" BitOffset="0" Name="NEO%C%SegmentReverseDirection" ParameterType="%AID%_PT-Boolean" Text="ReverseDirection" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%055" Offset="10" BitOffset="0" Name="NEO%C%SegmentReverseDirection" ParameterType="%AID%_PT-Boolean" Text="Richtung umkehren" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%056" Offset="10" BitOffset="1" Name="NEO%C%SegmentMirrorEffect" ParameterType="%AID%_PT-Boolean" Text="Spiegelung des Effekts" Value="0"/>
                 <!-- Byte 10: Bits 2-4 - Segment Startup Behavior (3 bits) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%066" Offset="10" BitOffset="2" Name="NEO%C%SegmentStartupBehavior" ParameterType="%AID%_PT-SegmentStartupBehavior" Text="Verhalten nach Neustart" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%066" Offset="10" BitOffset="2" Name="NEO%C%SegmentStartupBehavior" ParameterType="%AID%_PT-SegmentStartupBehavior" Text="Verhalten nach Neustart" Value="2"/>
                 <!-- Byte 10: Bits 5-7 frei -->
                 <!-- Byte 11: 8b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%057" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt Typ" Value="0"/>
                 <!-- Bytes 12-23: Reserved (replaced by dynamic effect parameters) -->
-                <!-- Segment Startup Color Parameters (Bytes 24-29) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%068" Offset="25" BitOffset="0" Name="NEO%C%SegmentStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%069" Offset="26" BitOffset="0" Name="NEO%C%SegmentStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe B" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe W" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Helligkeit" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Standard-Effekt" Value="0"/>
+                <!-- Segment Startup Color Parameters (Bytes 24-27: RGB + W) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupColor" ParameterType="%AID%_PT-ColorRGB" Text="Start-Farbe RGB" Value="#FFFFFF"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%194" Offset="23" BitOffset="3" Name="NEO%C%SegmentResetColorOnEffectChange" ParameterType="%AID%_PT-Boolean" Text="Bei Effektwechsel Farbe auf Standard zurücksetzen" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                 <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
         <!-- END AUTO-GENERATED: Effect Parameters Union -->
+                
+                <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                     HCL (Human Centric Lighting) Parameters per Segment
+                     Offset 133-152 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
+                     ═══════════════════════════════════════════════════════════════════════════════════ -->
+                <!-- Byte 133: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
+                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="133" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
+                <!-- Byte 133: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
+                
+                <!-- Byte 134..135: Start time (only for HCL Type = Feste Zeit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="134" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
+                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="135" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
+                
+                <!-- Byte 136..137: End time (only for HCL Type = Feste Zeit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="136" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
+                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="137" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
+                
+                <!-- Byte 138..139: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="138" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
+                
+                <!-- Byte 140: HclApplyMode (3 bits) + frei -->
+                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="140" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
+                
+                <!-- Byte 141..142: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="141" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
+                
+                <!-- Byte 142: HCLPreserveCurve (3 bits at offset 4-6) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="142" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
+                
+                <!-- Byte 143: Saturation Threshold -->
+                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="143" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
+                
+                <!-- Byte 144..145: Min Kelvin (14b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="144" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
+                
+                <!-- Byte 146..147: Max Kelvin (14b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="146" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
+                
+                <!-- Byte 148: HCL Strength (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="148" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
+                
+                <!-- Byte 149: Slew Rate -->
+                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="149" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
+                
+                <!-- Byte 150: Brightness Compensation (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="150" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
+                
+                <!-- Byte 151: White Mix (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="151" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
+                
+                <!-- Byte 152: Reserved for future HCL parameters -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -59,14 +109,40 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" RefId="%AID%_UP-%TT%%CC%057" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" RefId="%AID%_UP-%TT%%CC%067" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%068_R-%TT%%CC%06801" RefId="%AID%_UP-%TT%%CC%068" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%069_R-%TT%%CC%06901" RefId="%AID%_UP-%TT%%CC%069" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" RefId="%AID%_UP-%TT%%CC%070" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" RefId="%AID%_UP-%TT%%CC%071" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%194_R-%TT%%CC%19401" RefId="%AID%_UP-%TT%%CC%194" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
               <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
               <!-- END AUTO-GENERATED: Effect ParameterRefs -->
+
+              <!--  PARAMETER ID ARCHITECTURE: -->
+              <!--  - IDs 73-175:  Auto-generated effect parameters (current: 26 effects, 103 parameters) -->
+              <!--  - IDs 176-193: BUFFER ZONE - Reserved for future auto-generated effect parameters (MUST remain empty!) -->
+              <!--  - IDs 194-211: Manual HCL/utility parameters (defined below) -->
+
+              <!--  When adding new effects, Build-EffectParameters.ps1 will use IDs 176-193 first. -->
+              <!--  If buffer is exhausted, manual parameters must be migrated to higher IDs (e.g., 220+). -->
+              
+              <!-- HCL Parameter References -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" RefId="%AID%_UP-%TT%%CC%195" />
+              <!-- Parameter 178 (HCLtype) removed - Type is derived from Mode (2→FixedTime, 3→SunPosition) -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" RefId="%AID%_UP-%TT%%CC%196" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" RefId="%AID%_UP-%TT%%CC%197" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%198_R-%TT%%CC%19801" RefId="%AID%_UP-%TT%%CC%198" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%199_R-%TT%%CC%19901" RefId="%AID%_UP-%TT%%CC%199" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%200_R-%TT%%CC%20001" RefId="%AID%_UP-%TT%%CC%200" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" RefId="%AID%_UP-%TT%%CC%201" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%202_R-%TT%%CC%20201" RefId="%AID%_UP-%TT%%CC%202" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" RefId="%AID%_UP-%TT%%CC%203" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" RefId="%AID%_UP-%TT%%CC%204" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" RefId="%AID%_UP-%TT%%CC%205" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" RefId="%AID%_UP-%TT%%CC%206" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" RefId="%AID%_UP-%TT%%CC%207" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" RefId="%AID%_UP-%TT%%CC%208" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" RefId="%AID%_UP-%TT%%CC%209" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" RefId="%AID%_UP-%TT%%CC%210" />
             </ParameterRefs>
             <ComObjectTable>
                <!-- Segment Power -->
@@ -147,6 +223,8 @@
               <ComObject Id="%AID%_O-%TT%%CC%038" Number="%K37%" Name="%C%HSVRel"     Text="HSV dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGBWRel (6 bytes total; first 4 = R,G,B,W) -->
               <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K38%" Name="%C%RGBWRel"    Text="RGBW dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- HCL State (only for segments with HCL Mode = Benutzerdefiniert) -->
+              <ComObject Id="%AID%_O-%TT%%CC%044" Number="%K39%" Name="%C%HCLState"   Text="HCL Zustand"        FunctionText="NeoPixel Segment %C%: HCL Kurve Zustandswert" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Segment Power -->
@@ -227,9 +305,30 @@
               <ComObjectRef Id="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" RefId="%AID%_O-%TT%%CC%038" Text="{{0:%C%}}: HSV dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGBWRel -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" RefId="%AID%_O-%TT%%CC%039" Text="{{0:%C%}}: RGBW dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- HCL State -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" RefId="%AID%_O-%TT%%CC%044" Text="{{0:%C%}}: HCL Zustand" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
-          </Static>   
+          </Static>
           <Dynamic>
+            <!-- ========================================================================================================= -->
+            <!-- HCL Segment KOs Block - wird in share.xml unter HCL/Segmente eingefügt -->
+            <!-- WICHTIG: KEINE choose für Segment-Anzahl hier! Das Include expandiert bereits für jedes Segment! -->
+            <!-- ========================================================================================================= -->
+            <HCLSegmentKOsBlock>
+              <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
+                <when test="2"> <!-- Benutzerdefiniert (Zeit) -->
+                  <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
+                  </ParameterBlock>
+                </when>
+                <when test="3"> <!-- Benutzerdefiniert (Sonne) -->
+                  <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
+                  </ParameterBlock>
+                </when>
+              </choose>
+            </HCLSegmentKOsBlock>
+            <!-- ========================================================================================================= -->
             <ChannelIndependentBlock>
               <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                 <when test=">=%C%">
@@ -254,6 +353,15 @@
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->
+                    <!-- ETS-Konfiguration beim Start (immer sichtbar) -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Start-Konfiguration" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Initiale Farbe beim Start. Wird verwendet wenn 'Verhalten nach Neustart' = 'ETS-Parameterwert'. Kann zur Laufzeit über Segment-KO individuell überschrieben werden."/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" IndentLevel="1" HelpContext="NEO-Start-Farbe"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" IndentLevel="1" HelpContext="%DOC%"/>
+
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-Einstellungen" UIHint="Headline" />
                     <!-- Effect Type -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="%DOC%"/>
@@ -263,20 +371,62 @@
               <!-- END AUTO-GENERATED: Effect Dynamic UI -->
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                    <!-- ========================================================================================================= -->
-                    <!-- Segment Startup Behavior Dynamic UI -->
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten nach Neustart" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" IndentLevel="1" HelpContext="%DOC%"/>
-                    <choose ParamRefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601">
-                      <when test="3">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%068_R-%TT%%CC%06801" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%069_R-%TT%%CC%06901" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" IndentLevel="2" HelpContext="%DOC%"/>
+                    <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                         HCL (Human Centric Lighting) - Segment-basiert
+                         ═══════════════════════════════════════════════════════════════════════════════════ -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL (Human Centric Lighting)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Human Centric Lighting (HCL) passt die Lichtfarbe global und automatisch an die Tageszeit an (von warmweiß morgens/abends bis kaltweiß mittags). Wirkt auf alle Modi (Solid, Effekte) und alle Farben oder nur Weiß. Simuliert natürlichen Tagesverlauf." />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" IndentLevel="1" HelpContext="%DOC%"/> <!-- HCL Mode Dropdown -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
+                      <when test="2"> <!-- Benutzerdefiniert (Feste Zeiten) -->
+                        <!-- Zeitbasierte HCL-Kurve -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Zeitbasierte Kurve:" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Start Stunde -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" IndentLevel="2" HelpContext="%DOC%"/> <!-- Start Minute -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%198_R-%TT%%CC%19801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Ende Stunde -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%199_R-%TT%%CC%19901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Ende Minute -->
+                        
+                        <!-- Gemeinsame HCL-Einstellungen -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbtemperatur &amp; Stärke:" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" IndentLevel="2" HelpContext="%DOC%"/> <!-- Min Kelvin -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Max Kelvin -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" IndentLevel="2" HelpContext="%DOC%"/> <!-- HCL Strength -->
+                        
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweiterte Einstellungen:" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" IndentLevel="2" HelpContext="%DOC%"/> <!-- Apply Mode -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" IndentLevel="2" HelpContext="%DOC%"/> <!-- Preserve Curve -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" IndentLevel="2" HelpContext="%DOC%"/> <!-- Sat Threshold -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Slew Rate -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Brightness Comp -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" IndentLevel="2" HelpContext="%DOC%"/> <!-- White Mix -->
+                      </when>
+                      <when test="3"> <!-- Benutzerdefiniert (Sonnenstand) -->
+                        <!-- Sonnenstand-basierte HCL-Kurve -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenstand-basierte Kurve:" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%200_R-%TT%%CC%20001" IndentLevel="2" HelpContext="%DOC%"/> <!-- Offset Sonnenaufgang -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%202_R-%TT%%CC%20201" IndentLevel="2" HelpContext="%DOC%"/> <!-- Offset Sonnenuntergang -->
+                        
+                        <!-- Gemeinsame HCL-Einstellungen -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbtemperatur &amp; Stärke:" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" IndentLevel="2" HelpContext="%DOC%"/> <!-- Min Kelvin -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Max Kelvin -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" IndentLevel="2" HelpContext="%DOC%"/> <!-- HCL Strength -->
+                        
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweiterte Einstellungen:" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" IndentLevel="2" HelpContext="%DOC%"/> <!-- Apply Mode -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" IndentLevel="2" HelpContext="%DOC%"/> <!-- Preserve Curve -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" IndentLevel="2" HelpContext="%DOC%"/> <!-- Sat Threshold -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Slew Rate -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Brightness Comp -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" IndentLevel="2" HelpContext="%DOC%"/> <!-- White Mix -->
                       </when>
                     </choose>
+
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    <!-- ========================================================================================================= -->
+                    <!-- Verhalten nach Neustart -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten nach Neustart" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" IndentLevel="1" HelpContext="%DOC%"/>
 
                     <!-- Segment Power -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" />
@@ -356,6 +506,15 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" />
                     <!-- RGBWRel -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" />
+                    <!-- HCL State (nur angezeigt wenn HCL Mode = 2 oder 3) -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
+                      <when test="2"> <!-- Benutzerdefiniert (Zeit) -->
+                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
+                      </when>
+                      <when test="3"> <!-- Benutzerdefiniert (Sonne) -->
+                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
+                      </when>
+                    </choose>
                   </ParameterBlock>
                 </when>
               </choose>

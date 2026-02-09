@@ -1,4 +1,5 @@
 #include "StripConfiguration.h"
+#include "HardwareMappingLogic.h"
 #include "NeoPixelModule.h"
 #include "OpenKNX.h"
 #include "knxprod.h"
@@ -18,32 +19,6 @@ void StripConfiguration::configureFromETS()
 
     // Track used GPIO pins to avoid conflicts
     std::vector<uint8_t> usedPins;
-
-// Available GPIO pins in order (PIN1-PIN8)
-#if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-    const uint8_t availablePins[] = {
-        KNXIAO_RP2040_PIN1, KNXIAO_RP2040_PIN2, KNXIAO_RP2040_PIN3, KNXIAO_RP2040_PIN4,
-        KNXIAO_RP2040_PIN5, KNXIAO_RP2040_PIN6, KNXIAO_RP2040_PIN7, KNXIAO_RP2040_PIN8};
-#elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-    const uint8_t availablePins[] = {
-        KNXIAO_ESP32S3_PIN1, KNXIAO_ESP32S3_PIN2, KNXIAO_ESP32S3_PIN3, KNXIAO_ESP32S3_PIN4,
-        KNXIAO_ESP32S3_PIN5, KNXIAO_ESP32S3_PIN6, KNXIAO_ESP32S3_PIN7, KNXIAO_ESP32S3_PIN8};
-#else
-    const uint8_t availablePins[] = {27, 28, 29, 6, 7, 2, 4, 3}; // Fallback
-#endif
-    const uint8_t numAvailablePins = sizeof(availablePins) / sizeof(availablePins[0]);
-    uint8_t nextPinIndex = 0; // Index into availablePins array
-
-    // Helper lambda to get next available pin(s)
-    auto getNextPin = [&](uint8_t count = 1) -> bool {
-        // Check if we have enough pins available
-        if (nextPinIndex + count > numAvailablePins)
-        {
-            return false; // Not enough pins
-        }
-        nextPinIndex += count;
-        return true;
-    };
 
     // Helper lambda to check if a pin is already used
     auto isPinUsed = [&usedPins](uint8_t pin) {
@@ -67,7 +42,9 @@ void StripConfiguration::configureFromETS()
 
     // PRE-SCAN: Mark all manually configured GPIO pins as used BEFORE auto-allocation starts
     // This prevents auto-allocation from using pins that are manually configured on other strips
-    logInfoP("Pre-scanning %d strips for manual GPIO configurations...", maxStrips);
+    logInfoP("Pre-scanning %d strips for GPIO pin conflicts...", maxStrips);
+    std::vector<uint8_t> conflictedStrips; // Track strips with conflicts
+
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         _module->setChannelIndex(i);
@@ -80,52 +57,99 @@ void StripConfiguration::configureFromETS()
         const LedProtocol proto = mapProtocol(ledTypeParam);
         const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
-        if (gpioManualConfig)
+        bool hasConflict = false;
+
+        if (isSpiProtocol(proto))
         {
-            if (isSpiProtocol(proto))
+            uint8_t mosiGpio, sckGpio;
+
+            if (gpioManualConfig)
             {
-                // SPI protocols need 2 pins
-                uint8_t mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
-                uint8_t sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
-
-                if (!isPinUsed(sckGpio))
-                {
-                    usedPins.push_back(sckGpio);
-                    logInfoP("Strip %d: Pre-marked manual SCK GPIO %d as used", i, sckGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual SCK GPIO %d already marked as used!", i, sckGpio);
-                }
-
-                if (!isPinUsed(mosiGpio))
-                {
-                    usedPins.push_back(mosiGpio);
-                    logInfoP("Strip %d: Pre-marked manual MOSI GPIO %d as used", i, mosiGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual MOSI GPIO %d already marked as used!", i, mosiGpio);
-                }
+                // Manual: User-configured GPIOs
+                mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
+                sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
             }
             else
             {
-                // 1-Wire protocols need 1 pin
-                const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
+                // Hardware: Get from hardware port mapping
+                mosiGpio = getActualDataGpio(i, (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, false);
+                sckGpio = getActualClockGpio(i, (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false);
+            }
 
-                if (!isPinUsed(dataGpio))
-                {
-                    usedPins.push_back(dataGpio);
-                    logInfoP("Strip %d: Pre-marked manual Data GPIO %d as used", i, dataGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual Data GPIO %d already marked as used!", i, dataGpio);
-                }
+            // Skip if no valid pins (255 = not configured)
+            if (mosiGpio == 255 || sckGpio == 255) continue;
+
+            // Check SCK conflict
+            if (isPinUsed(sckGpio))
+            {
+                logErrorP("Strip %d: SCK GPIO %d CONFLICT - already used by another strip!", i, sckGpio);
+                hasConflict = true;
+            }
+            else
+            {
+                usedPins.push_back(sckGpio);
+                logInfoP("Strip %d: Registered SCK GPIO %d%s", i, sckGpio, gpioManualConfig ? " (Manual)" : " (HW)");
+            }
+
+            // Check MOSI conflict
+            if (isPinUsed(mosiGpio))
+            {
+                logErrorP("Strip %d: MOSI GPIO %d CONFLICT - already used by another strip!", i, mosiGpio);
+                hasConflict = true;
+            }
+            else
+            {
+                usedPins.push_back(mosiGpio);
+                logInfoP("Strip %d: Registered MOSI GPIO %d%s", i, mosiGpio, gpioManualConfig ? " (Manual)" : " (HW)");
             }
         }
+        else
+        {
+            // 1-Wire: Data GPIO only
+            uint8_t dataGpio;
+
+            if (gpioManualConfig)
+            {
+                dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
+            }
+            else
+            {
+                dataGpio = getActualDataGpio(i, (uint8_t)ParamNEOSTRIP_NEODataGPIO, false);
+            }
+
+            // Skip if not configured
+            if (dataGpio == 255) continue;
+
+            // Check conflict
+            if (isPinUsed(dataGpio))
+            {
+                logErrorP("Strip %d: Data GPIO %d CONFLICT - already used by another strip!", i, dataGpio);
+                hasConflict = true;
+            }
+            else
+            {
+                usedPins.push_back(dataGpio);
+                logInfoP("Strip %d: Registered Data GPIO %d%s", i, dataGpio, gpioManualConfig ? " (Manual)" : " (HW)");
+            }
+        }
+
+        // Mark this strip as conflicted
+        if (hasConflict)
+        {
+            conflictedStrips.push_back(i);
+        }
     }
-    logInfoP("Pre-scan complete: %d manual GPIO pins marked as used", (int)usedPins.size());
+
+    if (!conflictedStrips.empty())
+    {
+        logErrorP("GPIO PIN CONFLICTS detected! %d strip(s) will be SKIPPED:", (int)conflictedStrips.size());
+        for (auto stripIdx : conflictedStrips)
+        {
+            logErrorP("  - Strip %d (GPIO conflict)", stripIdx);
+        }
+    }
+
+    logInfoP("Pre-scan complete: %d pins registered, %d conflicts", (int)usedPins.size(), (int)conflictedStrips.size());
 
     // 2) Create all physical strips in configuration order (auto-allocation will skip pre-marked pins)
     for (uint8_t i = 0; i < maxStrips; ++i)
@@ -133,15 +157,26 @@ void StripConfiguration::configureFromETS()
         _module->setChannelIndex(i);
         uint8_t& _channelIndex = _module->_channelIndex; // Reference to module member for ETS parameter macros
 
+        // Skip strips with GPIO conflicts
+        if (std::find(conflictedStrips.begin(), conflictedStrips.end(), i) != conflictedStrips.end())
+        {
+            logErrorP("Strip %d: SKIPPED due to GPIO conflict", i);
+            continue;
+        }
+
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = mapProtocol(ledTypeParam);
 
         // Get color order from ETS configuration
         ColorOrder order = mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
 
-        const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
+        // Get voltage from ETS configuration (0=5V, 1=12V, 2=24V)
+        uint8_t voltageParam = (uint8_t)ParamNEOSTRIP_NEOVoltage;
+        uint8_t voltage = (voltageParam == 0) ? 5 : (voltageParam == 1) ? 12
+                                                                        : 24;
+
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
-        
+
         // DEBUG: Log LED count for each strip
         logInfoP("Strip %d: Reading ParamNEOSTRIP_NEOLength = %d (channelIndex=%d)", i, pixels, _channelIndex);
 
@@ -157,49 +192,25 @@ void StripConfiguration::configureFromETS()
         if (isSpiProtocol(proto))
         {
             uint8_t mosiGpio, sckGpio;
-
-            // Check if manual GPIO configuration is enabled
             bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
             if (gpioManualConfig)
             {
-                // Use ETS configured GPIO pins (already pre-marked as used during pre-scan)
+                // Manual: Use ETS configured GPIO pins
                 mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
                 sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
             }
             else
             {
-                // Automatic pin allocation: SPI needs 2 consecutive pins
-                // Skip to next available pair of pins that aren't used
-                bool foundPins = false;
-                while (nextPinIndex + 1 < numAvailablePins)
-                {
-                    sckGpio = availablePins[nextPinIndex];
-                    mosiGpio = availablePins[nextPinIndex + 1];
+                // Hardware: Get from hardware port mapping
+                mosiGpio = getActualDataGpio(i, (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, false);
+                sckGpio = getActualClockGpio(i, (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false);
 
-                    // Check if both pins are free
-                    if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio))
-                    {
-                        foundPins = true;
-                        // Mark pins as used immediately
-                        usedPins.push_back(sckGpio);
-                        usedPins.push_back(mosiGpio);
-                        nextPinIndex += 2; // Consume both pins
-                        break;
-                    }
-                    // If conflict, skip to next pin and try again
-                    nextPinIndex++;
-                }
-
-                if (!foundPins)
+                // Skip if hardware port not configured (255 = dummy/not selected)
+                if (mosiGpio == 255 || sckGpio == 255)
                 {
-                    logErrorP("Strip %d: No available GPIO pins for SPI strip!", i);
-                    // Fallback to last resort pins
-                    sckGpio = 18;
-                    mosiGpio = 19;
-                    // Mark fallback pins as used
-                    usedPins.push_back(sckGpio);
-                    usedPins.push_back(mosiGpio);
+                    logInfoP("SPI Strip %d: Skipped (hardware port not configured)", i);
+                    continue;
                 }
             }
 
@@ -260,6 +271,53 @@ void StripConfiguration::configureFromETS()
                     // Apply the configuration (prepares for init)
                     phys->applyConfig();
                     logInfoP("SPI Strip %d: Configuration applied successfully", i);
+
+                    // Configure power limiting for this strip
+                    // Level 1: Main mode (0=Disabled, 1=UseGlobal, 2=Custom)
+                    uint8_t powerMainMode = (uint8_t)ParamNEOSTRIP_NEOpowerLimitCombined;
+
+                    if (powerMainMode == 0)
+                    {
+                        // Disabled
+                        spiCfg->setPowerLimitMode(0);
+                        logInfoP("SPI Strip %d: Power limiting disabled", i);
+                    }
+                    else if (powerMainMode == 1)
+                    {
+                        // Use Global
+                        spiCfg->setPowerLimitMode(1);
+                        logInfoP("SPI Strip %d: Using global power limiting settings", i);
+                    }
+                    else if (powerMainMode == 2)
+                    {
+                        // Mode 2: Custom (Fixed value)
+                        spiCfg->setPowerLimitMode(2);
+                        uint16_t maxCurrent = ParamNEOSTRIP_NEOcurrentPerChannel;
+                        spiCfg->setMaxCurrentMa(maxCurrent);
+                        logInfoP("SPI Strip %d: Custom power limit = %d mA (fixed)", i, maxCurrent);
+                    }
+                    else if (powerMainMode == 3)
+                    {
+                        // Mode 3: Custom (Per LED)
+                        spiCfg->setPowerLimitMode(3);
+                        uint8_t currentPerLed = ParamNEOSTRIP_NEOcurrentPerLED;
+                        spiCfg->setCurrentPerLedMa(currentPerLed);
+                        logInfoP("SPI Strip %d: Custom power limit = %d mA/LED (calculated: %d mA total)",
+                                 i, currentPerLed, currentPerLed * pixels);
+                    }
+
+                    // Load ABL parameters (for Mode 2 or 3)
+                    if (powerMainMode == 2 || powerMainMode == 3)
+                    {
+                        uint8_t autoBrLimit = (uint8_t)ParamNEOSTRIP_NEOautoBrightnessLimit;
+                        uint8_t threshold = (uint8_t)ParamNEOSTRIP_NEOpowerLimitThreshold;
+                        uint8_t slewRate = (uint8_t)ParamNEOSTRIP_NEOablSlewRatePercent;
+                        spiCfg->setAutoBrightnessLimit(autoBrLimit);
+                        spiCfg->setPowerLimitThreshold(threshold);
+                        spiCfg->setAblSlewRate(slewRate);
+                        logInfoP("SPI Strip %d: ABL settings = autoBrLimit:%d%%, threshold:%d%%, slew:%d%%",
+                                 i, autoBrLimit, threshold, slewRate);
+                    }
                 }
                 else
                 {
@@ -279,43 +337,23 @@ void StripConfiguration::configureFromETS()
         {
             // 1-Wire protocols use Data GPIO
             uint8_t dataGpioPin;
-
-            // Check if manual GPIO configuration is enabled
             bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
             if (gpioManualConfig)
             {
-                // Use ETS configured GPIO pin (already pre-marked as used during pre-scan)
-                dataGpioPin = dataGpio;
+                // Manual: Use ETS configured GPIO pin
+                dataGpioPin = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
             }
             else
             {
-                // Automatic pin allocation: 1-Wire needs 1 pin
-                // Find next available unused pin
-                bool foundPin = false;
-                while (nextPinIndex < numAvailablePins)
-                {
-                    dataGpioPin = availablePins[nextPinIndex];
+                // Hardware: Get from hardware port mapping
+                dataGpioPin = getActualDataGpio(i, (uint8_t)ParamNEOSTRIP_NEODataGPIO, false);
 
-                    // Check if pin is free
-                    if (!isPinUsed(dataGpioPin))
-                    {
-                        foundPin = true;
-                        // Mark pin as used immediately
-                        usedPins.push_back(dataGpioPin);
-                        nextPinIndex++; // Consume this pin
-                        break;
-                    }
-                    // If conflict, skip to next pin
-                    nextPinIndex++;
-                }
-
-                if (!foundPin)
+                // Skip if hardware port not configured (255 = dummy/not selected)
+                if (dataGpioPin == 255)
                 {
-                    logErrorP("Strip %d: No available GPIO pins for 1-Wire strip!", i);
-                    // Fallback to ETS parameter
-                    dataGpioPin = dataGpio;
-                    usedPins.push_back(dataGpioPin);
+                    logInfoP("1-Wire Strip %d: Skipped (hardware port not configured)", i);
+                    continue;
                 }
             }
 
@@ -337,12 +375,63 @@ void StripConfiguration::configureFromETS()
                     {
                         logInfoP("1-Wire Strip %d: Skip mode enabled - first %d LEDs will stay black", i, skipLeds);
                     }
+
+                    // Configure power limiting for this strip
+                    // Level 1: Main mode (0=Disabled, 1=UseGlobal, 2=Custom)
+                    uint8_t powerMainMode = (uint8_t)ParamNEOSTRIP_NEOpowerLimitCombined;
+
+                    if (powerMainMode == 0)
+                    {
+                        // Disabled
+                        cfg->setPowerLimitMode(0);
+                        logInfoP("1-Wire Strip %d: Power limiting disabled", i);
+                    }
+                    else if (powerMainMode == 1)
+                    {
+                        // Use Global
+                        cfg->setPowerLimitMode(1);
+                        logInfoP("1-Wire Strip %d: Using global power limiting settings", i);
+                    }
+                    else if (powerMainMode == 2)
+                    {
+                        // Mode 2: Custom (Fixed value)
+                        cfg->setPowerLimitMode(2);
+                        uint16_t maxCurrent = ParamNEOSTRIP_NEOcurrentPerChannel;
+                        cfg->setMaxCurrentMa(maxCurrent);
+                        logInfoP("1-Wire Strip %d: Custom power limit = %d mA (fixed)", i, maxCurrent);
+                    }
+                    else if (powerMainMode == 3)
+                    {
+                        // Mode 3: Custom (Per LED)
+                        cfg->setPowerLimitMode(3);
+                        uint8_t currentPerLed = ParamNEOSTRIP_NEOcurrentPerLED;
+                        cfg->setCurrentPerLedMa(currentPerLed);
+                        logInfoP("1-Wire Strip %d: Custom power limit = %d mA/LED (calculated: %d mA total)",
+                                 i, currentPerLed, currentPerLed * pixels);
+                    }
+
+                    // Load ABL parameters (for Mode 2 or 3)
+                    if (powerMainMode == 2 || powerMainMode == 3)
+                    {
+                        uint8_t autoBrLimit = (uint8_t)ParamNEOSTRIP_NEOautoBrightnessLimit;
+                        uint8_t threshold = (uint8_t)ParamNEOSTRIP_NEOpowerLimitThreshold;
+                        uint8_t slewRate = (uint8_t)ParamNEOSTRIP_NEOablSlewRatePercent;
+                        cfg->setAutoBrightnessLimit(autoBrLimit);
+                        cfg->setPowerLimitThreshold(threshold);
+                        cfg->setAblSlewRate(slewRate);
+                        logInfoP("1-Wire Strip %d: ABL settings = autoBrLimit:%d%%, threshold:%d%%, slew:%d%%",
+                                 i, autoBrLimit, threshold, slewRate);
+                    }
                 }
             }
         }
 
         if (phys)
         {
+            // Set voltage for power calculation (must be done BEFORE init)
+            phys->setVoltage(voltage);
+            logInfoP("Strip %d: Voltage set to %dV (for power calculation)", i, voltage);
+
             _module->_totalLeds += pixels;
             _module->_physicalStrips.push_back(phys);
 
@@ -362,8 +451,9 @@ void StripConfiguration::configureFromETS()
                 logInfoP("Strip %d: Timing mode=%d (%s)", i, timingMode, timingName);
             }
 
-            // Configure color correction for this strip
-            if ((bool)ParamNEOSTRIP_NEOGammaCorrection || (bool)ParamNEOSTRIP_NEOWhiteBalanceCorrection)
+            // Configure color correction for this strip (only if Master-Checkbox is ON)
+            bool colorCalibrationMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
+            if (colorCalibrationMaster && ((bool)ParamNEOSTRIP_NEOGammaCorrection || true))
             {
                 _module->configureColorCorrection();
                 _module->updateColorCorrection(); // Set correction parameters on VirtualStrip once

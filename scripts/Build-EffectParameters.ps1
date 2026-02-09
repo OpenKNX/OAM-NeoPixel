@@ -1155,10 +1155,43 @@ function Generate-EffectMappingCpp {
     $cppLines += "        default: return EffectPool::getSolid(); // Fallback to Solid"
     $cppLines += "    }"
     $cppLines += "}"
+    $cppLines += ""
+    $cppLines += "/**"
+    $cppLines += " * @brief Maps Effect instance pointer back to ETS effect type ID (reverse mapping)"
+    $cppLines += " * "
+    $cppLines += " * This function is synchronized with getEffectFromType() and provides the reverse mapping."
+    $cppLines += " * Used for power-off snapshots to save the currently active effect type ID."
+    $cppLines += " * "
+    $cppLines += " * @param effect Pointer to Effect instance"
+    $cppLines += " * @return Effect type ID (0-$($sorted.Count - 1)), or 0 (Solid) if effect is nullptr or unknown"
+    $cppLines += " */"
+    $cppLines += "inline uint8_t getTypeFromEffect(Effect* effect)"
+    $cppLines += "{"
+    $cppLines += "    if (!effect) return 0; // nullptr -> Solid"
+    $cppLines += ""
+
+    # Generate reverse mapping checks
+    $id = 0
+    foreach ($effect in $sorted) {
+        $methodName = $effect.ClassName -replace 'Effect', ''
+        
+        $comment = "// $($effect.NameEN)"
+        if ($effect.NameDE -ne $effect.NameEN) {
+            $comment += " (DE: $($effect.NameDE))"
+        }
+
+        $cppLines += "    if (effect == EffectPool::get${methodName}()) return ${id}; $comment"
+        $id++
+    }
+
+    $cppLines += ""
+    $cppLines += "    return 0; // Unknown effect -> fallback to Solid"
+    $cppLines += "}"
 
     Write-Host ""
-    Write-Host "  Generated C++ mapping for $($sorted.Count) effects (IDs 0-$($id-1))" -ForegroundColor Green
-    Write-ScriptVerbose "C++ effect mapping generation complete" "Green"
+    Write-Host "  Generated C++ forward mapping: getEffectFromType() for $($sorted.Count) effects (IDs 0-$($id-1))" -ForegroundColor Green
+    Write-Host "  Generated C++ reverse mapping: getTypeFromEffect() for $($sorted.Count) effects" -ForegroundColor Green
+    Write-ScriptVerbose "C++ effect mapping generation complete (bidirectional)" "Green"
     Write-Host ""
 
     return ($cppLines -join "`n")
@@ -1952,14 +1985,36 @@ function Validate-GeneratedXml {
         }
     }
 
-    # 5. Check that generated IDs are in expected range
+    # 5. Check that generated IDs are EXACTLY in expected range (no gaps, no overflow into buffer zone)
+    # Expected: IDs 73-175 (103 parameters total)
+    # Buffer Zone: IDs 176-193 MUST remain empty for future effects
+    # Manual Parameters: IDs 194+ (HCL, ResetColor, etc.)
     $generatedParamCount = ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum
     $expectedMaxId = $StartId + $generatedParamCount - 1
-
-    foreach ($paramId in $paramIds) {
-        $id = [int]$paramId
-        if ($id -ge $StartId -and $id -gt $expectedMaxId) {
-            $warnings += "Parameter ID $id is beyond expected range (StartId=$StartId, Expected Max=$expectedMaxId)"
+    
+    # Get all generated IDs in the effect parameter range
+    $generatedIds = $paramIds | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $StartId } | Sort-Object
+    
+    # Check for IDs BELOW the start
+    foreach ($id in $generatedIds) {
+        if ($id -lt $StartId) {
+            $warnings += "WARNUNG: Parameter ID $id liegt UNTER dem Start-Bereich ($StartId)!"
+        }
+    }
+    
+    # Check for IDs in the BUFFER ZONE (should be empty!)
+    $bufferZoneStart = $expectedMaxId + 1
+    $bufferZoneEnd = 193  # Hard-coded buffer zone limit
+    foreach ($id in $generatedIds) {
+        if ($id -ge $bufferZoneStart -and $id -le $bufferZoneEnd) {
+            $errors += "FEHLER: Parameter ID $id liegt in der BUFFER ZONE ($bufferZoneStart-$bufferZoneEnd)! Diese Range muss für zukünftige Effekte FREI bleiben!"
+        }
+    }
+    
+    # Check for gaps in the generated range
+    for ($expectedId = $StartId; $expectedId -le $expectedMaxId; $expectedId++) {
+        if ($generatedIds -notcontains $expectedId) {
+            $warnings += "WARNUNG: Fehlende Parameter ID: $expectedId (erwartet in Range $StartId-$expectedMaxId)"
         }
     }
 
