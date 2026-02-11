@@ -1,4 +1,4 @@
-# Spacing
+# Dunkelabstand
 
 Fügt dunkle Lücken von M LEDs zwischen den Gruppen ein.
 

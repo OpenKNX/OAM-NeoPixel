@@ -55,8 +55,9 @@ class EffectConfiguration
      * Also handles mirror effect configuration.
      *
      * @param segment Segment with effect to configure
+     * @param loadDefaultColor If true, loads default color from ETS (for startup). If false, keeps current color (for effect changes)
      */
-    void setupEffectConfiguration(Segment* segment);
+    void setupEffectConfiguration(Segment* segment, bool loadDefaultColor = false);
 
     // Note: getEffectFromType() is now a global function in EffectTypeMapping.h (auto-generated)
 

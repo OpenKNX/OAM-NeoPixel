@@ -5,8 +5,9 @@
 #include <string>
 #include <vector>
 
-// Forward declaration
+// Forward declarations
 class NeoPixelBusModule;
+class Segment;
 
 /**
  * @brief Manages color correction, global brightness, and HCL color temperature

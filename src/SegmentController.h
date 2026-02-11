@@ -105,7 +105,28 @@ class SegmentController
     void processCctKo(uint8_t channel, GroupObject& ko);
 
     /**
-     * @brief Process HSV (Hue/Saturation/Value) KO
+     * @brief Process Hue channel KO
+     * @param channel Segment index
+     * @param ko GroupObject reference
+     */
+    void processHueKo(uint8_t channel, GroupObject& ko);
+
+    /**
+     * @brief Process Saturation channel KO
+     * @param channel Segment index
+     * @param ko GroupObject reference
+     */
+    void processSaturationKo(uint8_t channel, GroupObject& ko);
+
+    /**
+     * @brief Process Value (brightness) channel KO
+     * @param channel Segment index
+     * @param ko GroupObject reference
+     */
+    void processValueKo(uint8_t channel, GroupObject& ko);
+
+    /**
+     * @brief Process combined HSV KO (3-byte H/S/V)
      * @param channel Segment index
      * @param ko GroupObject reference
      */
@@ -135,6 +156,16 @@ class SegmentController
      * @param channelName Channel name for logging
      */
     void processColorChannelKo(uint8_t channel, GroupObject& ko, uint8_t colorValue, uint8_t colorChannel, const char* channelName);
+
+    /**
+     * @brief Helper: Process single HSV channel KO (shared by H/S/V)
+     * @param channel Segment index
+     * @param ko GroupObject reference
+     * @param hsvValue New HSV component value (0-255)
+     * @param hsvChannel Which HSV channel (0=H, 1=S, 2=V)
+     * @param channelName Channel name for logging
+     */
+    void processHsvChannelKo(uint8_t channel, GroupObject& ko, uint8_t hsvValue, uint8_t hsvChannel, const char* channelName);
 
     /**
      * @brief Helper: Send RGBW/RGB status feedback

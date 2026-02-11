@@ -26,6 +26,16 @@
               <ParameterType Id="%AID%_PT-GPIOPort8Bit" Name="GPIOPort8Bit">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
               </ParameterType>
+              <!-- HCL Mode (per Segment: Deaktiviert / Global / Benutzerdefiniert-Zeit / Benutzerdefiniert-Sonne) -->
+              <ParameterType Id="%AID%_PT-HCLModeCombined" Name="HCLModeCombined">
+                <TypeRestriction Base="Value" SizeInBit="3">
+                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%"/>
+                  <Enumeration Text="Global verwenden" Value="1" Id="%ENID%"/>
+                  <Enumeration Text="Benutzerdefiniert (Feste Zeiten)" Value="2" Id="%ENID%"/>
+                  <Enumeration Text="Benutzerdefiniert (Sonnenstand)" Value="3" Id="%ENID%"/>
+                </TypeRestriction>
+              </ParameterType>
+
               <!-- HCL Curve Types -->
               <ParameterType Id="%AID%_PT-HclType" Name="HclType">
                 <TypeRestriction Base="Value" SizeInBit="3">
@@ -47,6 +57,7 @@
                 <TypeRestriction Base="Value" SizeInBit="3">
                   <Enumeration Text="Nur Weiß" Value="0" Id="%ENID%" />
                   <Enumeration Text="Alle Farben" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Hohe Sättigung" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- HCL Offset Value -->
@@ -95,6 +106,10 @@
                   <Enumeration Text="Nein" Value="0" Id="%ENID%" />
                   <Enumeration Text="Ja"   Value="1" Id="%ENID%" />
                 </TypeRestriction>
+              </ParameterType>
+              <!-- RGB Color Type for Color Picker -->
+              <ParameterType Id="%AID%_PT-ColorRGB" Name="ColorRGB">
+                <TypeColor Space="RGB" />
               </ParameterType>
               <!-- SPI Clock Mode -->
               <ParameterType Id="%AID%_PT-SPIClockMode" Name="SPIClockMode">
@@ -174,6 +189,14 @@
                   <Enumeration Text="GRBCTW" Value="11" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
+              <!-- Voltage Type -->
+              <ParameterType Id="%AID%_PT-NEOVoltage" Name="NEOVoltage">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Text="5V"  Value="0" Id="%ENID%" />
+                  <Enumeration Text="12V" Value="1" Id="%ENID%" />
+                  <Enumeration Text="24V" Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <!-- Swap -->
               <ParameterType Id="%AID%_PT-NEOSwap" Name="NEOSwap">
                 <TypeRestriction Base="Value" SizeInBit="3">
@@ -211,10 +234,28 @@
               <!-- Power Limit Combined (UI-Dropdown: Disabled + Type combined) -->
               <ParameterType Id="%AID%_PT-NEOPowerLimitCombined" Name="NEOPowerLimitCombined">
                 <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
-                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
-                  <Enumeration Text="Global"      Value="1" Id="%ENID%" />
-                  <Enumeration Text="Pro Kanal"   Value="2" Id="%ENID%" />
-                  <Enumeration Text="Pro LED"     Value="3" Id="%ENID%" />
+                  <Enumeration Text="Deaktiviert"          Value="0" Id="%ENID%" />
+                  <Enumeration Text="Fester Wert (mA)"     Value="1" Id="%ENID%" />
+                  <Enumeration Text="Pro LED (automatisch)" Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Power Limit Main Mode for Strips (Level 1: Main Decision) -->
+              <ParameterType Id="%AID%_PT-NEOPowerLimitCombinedStrip" Name="NEOPowerLimitCombinedStrip">
+                <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
+                  <Enumeration Text="Deaktiviert"                           Value="0" Id="%ENID%" />
+                  <Enumeration Text="Global verwenden"                      Value="1" Id="%ENID%" />
+                  <Enumeration Text="Benutzerdefiniert (Fester Wert)"      Value="2" Id="%ENID%" />
+                  <Enumeration Text="Benutzerdefiniert (Pro LED)"          Value="3" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Power Limit Mode REMOVED - now combined into single parameter (0/1/2/3) -->
+              <!-- HCL Mode for Segments (3-bit: Deaktiviert / Global / Benutzerdefiniert-Zeit / Benutzerdefiniert-Sonne) -->
+              <ParameterType Id="%AID%_PT-HCLModeCombined" Name="HCLModeCombined">
+                <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
+                  <Enumeration Text="Deaktiviert"                          Value="0" Id="%ENID%" />
+                  <Enumeration Text="Global verwenden"                     Value="1" Id="%ENID%" />
+                  <Enumeration Text="Benutzerdefiniert (Feste Zeiten)"    Value="2" Id="%ENID%" />
+                  <Enumeration Text="Benutzerdefiniert (Sonnenstand)"     Value="3" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit -->
@@ -324,7 +365,7 @@
                 <TypeRestriction Base="Value" SizeInBit="2">
                   <Enumeration Text="Aus" Value="0" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Standard-Farbe" Value="2" Id="%ENID%" />
+                  <Enumeration Text="ETS-Parameterwert" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <ParameterType Id="%AID%_PT-SegmentStartupBehavior" Name="SegmentStartupBehavior">
@@ -332,7 +373,6 @@
                   <Enumeration Text="Global verwenden" Value="0" Id="%ENID%" />
                   <Enumeration Text="Aus" Value="1" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="2" Id="%ENID%" />
-                  <Enumeration Text="Standard-Farbe (eigene)" Value="3" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Virtual Strip Selection for exactly 1 strip -->
@@ -390,6 +430,7 @@
             <Parameters>
               <Parameter Id="%AID%_P-%TT%00000" Name="TriggerName" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- HCL Curve Parameters -->
+              <!-- HCL Curve Parameters -->
               <Union SizeInBit="160">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0 -->
@@ -437,7 +478,7 @@
                 <Parameter Id="%AID%_UP-%TT%00065" Offset="17" BitOffset="0" Name="HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
               </Union>
 
-              <!-- Global Hardware Selection Union (16 bits) -->
+              <!-- Global Hardware Selection Union (Hardware Platform) -->
               <Union SizeInBit="16">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="20" BitOffset="0" />
                 <!-- BEGIN AUTO-GENERATED: Hardware Selection Parameter -->
@@ -445,6 +486,7 @@
                 <!-- END AUTO-GENERATED: Hardware Selection Parameter -->
               </Union>
 
+              <!-- Global Power Settings Union (Strips, Segments, Power Limits) -->
               <Union SizeInBit="112">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="22" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
@@ -461,9 +503,9 @@
                 <!-- Byte 5: 7 (1b) = frei -->
                 <!-- Byte 6..7: 16b -->
                 <Parameter Id="%AID%_UP-%TT%00070" Offset="6" BitOffset="0" Name="NEOcurrentPerChannel" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Strom pro Kanal (mA)" Value="500"/>
-                <!-- Byte 8: 0..1 (2b) = Combined Power Limit (0=Disabled, 1=Global, 2=PerChannel, 3=PerLED) -->
+                <!-- Byte 8: 0..2 (3b) = Combined Power Limit (0=Disabled, 1=FixedValue, 2=PerLED) -->
                 <Parameter Id="%AID%_UP-%TT%00081" Offset="8" BitOffset="0" Name="NEOpowerLimitCombined" ParameterType="%AID%_PT-NEOPowerLimitCombined" Text="Strombegrenzung" Value="0"/>
-                <!-- Byte 8: 2..7 (6b) - frei -->
+                <!-- Byte 8: 3..7 (5b) - frei -->
                 <!-- Byte 9: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%00071" Offset="9" BitOffset="0" Name="NEOautoBrightnessLimit" ParameterType="%AID%_PT-NEOPercent" Text="Auto-Helligkeitsbegrenzung (%)" Value="100"/>
                 <!-- Byte 9: 7 (1b) - frei -->
@@ -475,19 +517,21 @@
                 <!-- Byte 12-13: frei-->
               </Union>
               <!-- Global Startup Behavior Union -->
+              <!-- FIXED: Changed Offset from 25 to 36 to avoid overlap with Power Settings (22-35) -->
               <Union SizeInBit="56">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="25" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="36" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe R" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe G" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00027" Offset="3" BitOffset="0" Name="NEOGlobalStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe B" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00028" Offset="4" BitOffset="0" Name="NEOGlobalStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Farbe W" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%00029" Offset="5" BitOffset="0" Name="NEOGlobalStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Standard-Helligkeit" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Standard-Effekt" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe R" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe G" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00027" Offset="3" BitOffset="0" Name="NEOGlobalStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe B" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00028" Offset="4" BitOffset="0" Name="NEOGlobalStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00029" Offset="5" BitOffset="0" Name="NEOGlobalStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
+                <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
               </Union>
               <!-- Virtual Strip Configuration -->
+              <!-- FIXED: Changed Offset from 32 to 43 (after Startup Union 36+7=43) -->
               <Union SizeInBit="24">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="32" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="43" BitOffset="0" />
                 <!-- Canonical (full 1..6) -->
                 <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
@@ -525,8 +569,9 @@
               </Union>
 
               <!-- Virtual Strip Start Indices (for UI only) -->
+              <!-- FIXED: Changed Offset from 35 to 46 (after Virtual Strip 43+3=46) -->
               <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="35" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="46" BitOffset="0" />
                 <!-- 6 * 16 bit = 96 bit -->
                 <Parameter Id="%AID%_UP-%TT%00051" Offset="0" BitOffset="0"  Name="VirtualStripStart1" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 1" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00052" Offset="2" BitOffset="0"  Name="VirtualStripStart2" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 2" Value="1" Access="Read"/>
@@ -537,8 +582,9 @@
               </Union>
 
               <!-- Virtual Strip End Indices (for UI only) -->
+              <!-- FIXED: Changed Offset from 47 to 58 (after Strip Start 46+12=58) -->
               <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="47" BitOffset="0" />
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="58" BitOffset="0" />
                 <!-- 6 * 16 bit = 96 bit -->
                 <Parameter Id="%AID%_UP-%TT%00057" Offset="0" BitOffset="0"  Name="VirtualStripEnd1" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 1" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00058" Offset="2" BitOffset="0"  Name="VirtualStripEnd2" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 2" Value="0" Access="Read"/>
@@ -825,31 +871,44 @@
               <ComObject Id="%AID%_O-%TT%00000" Number="0"  Name="Power"     Text="Ein"                 FunctionText="Ein"                 ObjectSize="1 Bit"   DatapointType="DPST-1-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Status -->
               <ComObject Id="%AID%_O-%TT%00001" Number="1"  Name="PowerState" Text="Ein Status"          FunctionText="Ein Status"          ObjectSize="1 Bit"   DatapointType="DPST-1-11"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- HCL State -->
-              <ComObject Id="%AID%_O-%TT%00002" Number="2"  Name="HCLState"   Text="HCL Zustand"         FunctionText="HCL Kurve Zustandswert" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness -->
-              <ComObject Id="%AID%_O-%TT%00003" Number="3"  Name="Brightness" Text="Helligkeit"          FunctionText="Helligkeit"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00002" Number="2"  Name="Brightness" Text="Helligkeit"          FunctionText="Helligkeit"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness Status -->
-              <ComObject Id="%AID%_O-%TT%00004" Number="4"  Name="BrightnessState" Text="Helligkeit Status" FunctionText="Helligkeit Status" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00003" Number="3"  Name="BrightnessState" Text="Helligkeit Status" FunctionText="Helligkeit Status" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Power Current Total -->
+              <ComObject Id="%AID%_O-%TT%00004" Number="4"  Name="PowerCurrentTotal" Text="Stromverbrauch Gesamt" FunctionText="Stromverbrauch Gesamt (mA)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Power Load Total -->
+              <ComObject Id="%AID%_O-%TT%00005" Number="5"  Name="PowerLoadTotal" Text="Auslastung Gesamt" FunctionText="Auslastung Gesamt (%)" ObjectSize="1 Byte" DatapointType="DPST-5-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Power Watts Total -->
+              <ComObject Id="%AID%_O-%TT%00006" Number="6"  Name="PowerWattsTotal" Text="Leistung Gesamt" FunctionText="Leistung Gesamt (W)" ObjectSize="4 Bytes" DatapointType="DPST-14-056" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- HCL Global State -->
+              <ComObject Id="%AID%_O-%TT%00007" Number="7"  Name="HCLGlobalState" Text="HCL Global Zustand" FunctionText="HCL Global Zustand (K)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- External Relay 1 -->
-              <ComObject Id="%AID%_O-%TT%00005" Number="5"  Name="ExternalRelay1" Text="Relai 1" FunctionText="Relai 1: Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00008" Number="8"  Name="ExternalRelay1" Text="Relai 1" FunctionText="Relai 1 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- External Relay 2 -->
-              <ComObject Id="%AID%_O-%TT%00006" Number="6"  Name="ExternalRelay2" Text="Relai 2" FunctionText="Relai 2: Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00009" Number="9"  Name="ExternalRelay2" Text="Relai 2" FunctionText="Relai 2 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Power -->
               <ComObjectRef Id="%AID%_O-%TT%00000_R-%TT%0000001" RefId="%AID%_O-%TT%00000" />
               <!-- Power Status -->
               <ComObjectRef Id="%AID%_O-%TT%00001_R-%TT%0000101" RefId="%AID%_O-%TT%00001" />
-              <!-- HCL State -->
-              <ComObjectRef Id="%AID%_O-%TT%00002_R-%TT%0000201" RefId="%AID%_O-%TT%00002" />
               <!-- Brightness -->
-              <ComObjectRef Id="%AID%_O-%TT%00003_R-%TT%0000301" RefId="%AID%_O-%TT%00003" />
+              <ComObjectRef Id="%AID%_O-%TT%00002_R-%TT%0000201" RefId="%AID%_O-%TT%00002" />
               <!-- Brightness Status -->
+              <ComObjectRef Id="%AID%_O-%TT%00003_R-%TT%0000301" RefId="%AID%_O-%TT%00003" />
+              <!-- Power Current Total -->
               <ComObjectRef Id="%AID%_O-%TT%00004_R-%TT%0000401" RefId="%AID%_O-%TT%00004" />
-              <!-- External Relays -->
+              <!-- Power Load Total -->
               <ComObjectRef Id="%AID%_O-%TT%00005_R-%TT%0000501" RefId="%AID%_O-%TT%00005" />
+              <!-- Power Watts Total -->
               <ComObjectRef Id="%AID%_O-%TT%00006_R-%TT%0000601" RefId="%AID%_O-%TT%00006" />
+              <!-- HCL Global State -->
+              <ComObjectRef Id="%AID%_O-%TT%00007_R-%TT%0000701" RefId="%AID%_O-%TT%00007" />
+              <!-- External Relay 1 -->
+              <ComObjectRef Id="%AID%_O-%TT%00008_R-%TT%0000801" RefId="%AID%_O-%TT%00008" />
+              <!-- External Relay 2 -->
+              <ComObjectRef Id="%AID%_O-%TT%00009_R-%TT%0000901" RefId="%AID%_O-%TT%00009" />
             </ComObjectRefs>
             <Script>
               <op:include href="NeoPixel.script.js" type="script" />
@@ -894,9 +953,9 @@
                         <!-- Global Power State KO -->
                         <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />
                         <!-- Global Brightness KO -->
-                        <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00002_R-%TT%0000201" />
                         <!-- Global Brightness State KO -->
-                        <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
                       </when>
                     </choose>
                     <!-- BEGIN AUTO-GENERATED: External Relay KOs -->
@@ -995,10 +1054,69 @@
                     </when>
                   </choose>
                 </ParameterBlock>
-                <ParameterBlock Id="%AID%_PB-nnn" Name="HCL" Text="HCL" Inline="true" ShowInComObjectTree="true">
-                <!-- HCL State  -->
-                <ComObjectRefRef RefId="%AID%_O-%TT%00002_R-%TT%0000201" />
+              <!-- ========================================================================================================= -->
+              <!-- KO-Tree: HCL Hauptkategorie (nur für KOs) -->
+              <!-- ========================================================================================================= -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="HCL" Text="HCL" Inline="true" ShowInComObjectTree="true">
+                <!-- Global KO -->
+                <ParameterBlock Id="%AID%_PB-nnn" Name="HCLGlobalKO" Text="Global" Inline="true" ShowInComObjectTree="true">
+                  <ComObjectRefRef RefId="%AID%_O-%TT%00007_R-%TT%0000701" />
+                </ParameterBlock>
+                <!-- Segment KOs Container -->
+                <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegmentsKOs" Text="Segmente" Icon="segment" Inline="true" ShowInComObjectTree="true">
+                  <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/HCLSegmentKOsBlock/*" type="template" prefix="NEO" IsInner="true" />
+                </ParameterBlock>
               </ParameterBlock>
+              <!-- ========================================================================================================= -->
+              <!-- Strombegrenzung (Global) -->
+              <!-- ========================================================================================================= -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimit" Text="Strombegrenzung" Icon="flash" HelpContext="NEO-Strombegrenzung" ShowInComObjectTree="true">
+              <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung (Global)" UIHint="Headline" />
+              <ParameterSeparator Id="%AID%_PS-nnn" Text="Intelligente Strombegrenzung mit automatischer Helligkeitsreduktion (ABL) schützt Netzteil und LED-Streifen vor Überlastung. Die Helligkeit wird dynamisch an den berechneten Stromverbrauch angepasst." />
+              <!-- Combined UI Dropdown -->
+              <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" HelpContext="%DOC%"/>
+              <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
+                <when test="!=0">
+                  <!-- Not Deaktiviert -->
+                  <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101"> 
+                    <!-- Check which mode -->
+                    <when test="1"> 
+                      <!-- Fester Wert (mA) -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="2" HelpContext="%DOC%"/>
+                    </when>
+                    <when test="2"> 
+                      <!-- Pro LED (automatisch) -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="2" HelpContext="%DOC%"/>
+                    </when>
+                  </choose>
+                  <!-- Common parameters when enabled -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="2" HelpContext="%DOC%"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="2" HelpContext="%DOC%"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="2" HelpContext="%DOC%"/>
+                </when>
+              </choose>
+              <ParameterSeparator Id="%AID%_PS-nnn" Text="Globale Standardwerte für alle physischen LED-Streifen. Jeder Streifen kann individuell überschrieben werden: Global verwenden, Benutzerdefiniert oder Deaktiviert." UIHint="Information" />
+              </ParameterBlock>
+              <!-- ========================================================================================================= -->
+              <!-- KO-Tree: Strombegrenzung Hauptkategorie (nur für KOs) -->
+              <!-- ========================================================================================================= -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitKOs" Text="Strombegrenzung" Inline="true" ShowInComObjectTree="true">
+                <!-- Global KOs -->
+                <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitGlobalKOs" Text="Global" Inline="true" ShowInComObjectTree="true">
+                  <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
+                    <when test="!=0">
+                      <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
+                      <ComObjectRefRef RefId="%AID%_O-%TT%00005_R-%TT%0000501" />
+                      <ComObjectRefRef RefId="%AID%_O-%TT%00006_R-%TT%0000601" />
+                    </when>
+                  </choose>
+                </ParameterBlock>
+                <!-- Phys KOs Container -->
+                <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitPhysKOs" Text="Physikalische LED Streifen" Icon="ledstrip" Inline="true" ShowInComObjectTree="true">
+                  <op:include href="NeoPixel.Strip.templ.xml" xpath="//Dynamic/PowerLimitKOsBlock/*" type="template" prefix="NEOSTRIP" IsInner="true" />
+                </ParameterBlock>
+              </ParameterBlock>
+              <!-- ========================================================================================================= -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="Physikalisch" Text="Physikalische LED Streifen" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalische LED-Streifen:" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie hier die Anzahl der angeschlossenen LED-Streifen. Konfigurieren Sie anschließend die einzelnen Streifen in dem Sie jeweils auf den jeweiligen LED-Streifen in der Baumstruktur klicken." />
@@ -1784,32 +1902,6 @@
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Segment Einstellungen:" UIHint="Headline" />
                     <!-- Update Speed -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Combined UI Dropdown -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" HelpContext="%DOC%"/>
-                      <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
-                        <!-- Not Deaktiviert -->
-                        <when test="!=0">
-                            <!-- Check which mode -->
-                            <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
-                              <!-- Global: powerLimitGlobal -->
-                              <when test="1"> 
-                                <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              <!-- Per Channel: powerLimitPerChannel -->
-                              <when test="2">
-                                <ParameterRefRef RefId="%AID%_UP-%TT%00070_R-%TT%0007001" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              <!-- Per LED: powerLimitPerLED -->
-                              <when test="3">
-                                <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                            </choose>
-                            <!-- Common parameters when enabled -->
-                            <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="1" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="1" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="1" HelpContext="%DOC%"/>
-                        </when>
-                      </choose>
                     <!-- ========================================================================================================= -->
                 </ParameterBlock>
                 <!-- ========================================================================================================= -->
@@ -1833,4 +1925,3 @@
     </Manufacturer>
   </ManufacturerData>
 </KNX>
-

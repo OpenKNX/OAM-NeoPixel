@@ -15,10 +15,10 @@
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: 0..7 (8b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>
-                <!-- Byte 1: 0..3 (4b), 4..5 (2b) -->
+                <!-- Byte 1: 0..3 (4b), 4..6 (3b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%031" Offset="1" BitOffset="0" Name="NEO%C%ColourOrder" ParameterType="%AID%_PT-NEOColourOrder" Text="LED Farbordnung" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%032" Offset="1" BitOffset="4" Name="NEO%C%Swap" ParameterType="%AID%_PT-NEOSwap" Text="Kanal-Tausch" Value="0"/>
-                <!-- Byte 1: Bits 6..7 frei -->
+                <!-- Byte 1: Bit 7 frei -->
                 <!-- Byte 2: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%033" Offset="2" BitOffset="0" Name="NEO%C%DataGPIO" ParameterType="%AID%_PT-NEODataGPIO" Text="Daten GPIO" Value="6"/>
                 <!-- Byte 2: Bit 7 frei -->
@@ -45,10 +45,10 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%037" Offset="6" BitOffset="0" Name="NEO%C%Length" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Anzahl an LEDs/LEDs-Gruppen" Value="30"/>
                 <!-- Byte 8..9: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%038" Offset="8" BitOffset="0" Name="NEO%C%SkipFirstLEDs" ParameterType="%AID%_PT-MinMaxValue" Text="Überspringe erste LEDs" Value="0"/>
-                <!-- Byte 10: 0..1 (2b) = Combined Power Limit (0=Disabled, 1=Global, 2=PerChannel, 3=PerLED) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%081" Offset="10" BitOffset="0" Name="NEO%C%powerLimitCombined" ParameterType="%AID%_PT-NEOPowerLimitCombined" Text="Strombegrenzung" Value="0"/>
-
-                <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="2" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
+                <!-- Byte 10: Bit 0-2 (3b) = Combined Power Limit (0=Aus, 1=Global, 2=Fester Wert, 3=Pro LED) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%081" Offset="10" BitOffset="0" Name="NEO%C%powerLimitCombined" ParameterType="%AID%_PT-NEOPowerLimitCombinedStrip" Text="Strombegrenzung" Value="1"/>
+                <!-- Parameter 082 REMOVED: Mode now derived from Combined (2→Fixed, 3→PerLED) -->
+                <Parameter Id="%AID%_UP-%TT%9%C%072" Offset="10" BitOffset="3" Name="NEO%C%Timing" ParameterType="%AID%_PT-NEOTiming" Text="Timing" Value="0"/>
                 <!-- Byte 11..12: 16b -->
                 <Parameter Id="%AID%_UP-%TT%9%C%041" Offset="11" BitOffset="0" Name="NEO%C%powerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
                 <!-- Byte 13: 0..6 (7b) -->
@@ -62,11 +62,12 @@
                 <!-- Byte 17: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%045" Offset="17" BitOffset="0" Name="NEO%C%powerLimitThreshold" ParameterType="%AID%_PT-NEOPercent" Text="Strombegrenzung Schwellwert (%)" Value="80"/>
                 <!-- Byte 17: Bit 7 frei -->
-                <!-- Byte 18: 0 (1b), 1 (1b), 2..5 (4b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%046" Offset="18" BitOffset="0" Name="NEO%C%WhiteBalanceCorrection" ParameterType="%AID%_PT-Boolean" Text="Weißabgleich" Value="0"/>
+                <!-- Byte 18: 0 (1b) = Farbkalibrierung Master, 1 (1b) = Gamma Sub-Checkbox, 2..5 (4b) = Gamma Value -->
+                <Parameter Id="%AID%_UP-%TT%9%C%046" Offset="18" BitOffset="0" Name="NEO%C%ColorCalibrationMaster" ParameterType="%AID%_PT-Boolean" Text="Farbkalibrierung" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%047" Offset="18" BitOffset="1" Name="NEO%C%GammaCorrection" ParameterType="%AID%_PT-Boolean" Text="Gamma Korrektur (empfohlen!)" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%048" Offset="18" BitOffset="2" Name="NEO%C%GammaValue" ParameterType="%AID%_PT-NEOGammaValue" Text="Gamma Wert" Value="8"/>
-                <!-- Byte 18: Bits 6..7 frei -->
+                <!-- Byte 18: Bits 6..7 (2b) = Voltage -->
+                <Parameter Id="%AID%_UP-%TT%9%C%039" Offset="18" BitOffset="6" Name="NEO%C%Voltage" ParameterType="%AID%_PT-NEOVoltage" Text="Versorgungsspannung" Value="0"/>
                 <!-- Byte 19: -->
                 <Parameter Id="%AID%_UP-%TT%9%C%066" Offset="19" BitOffset="0" Name="NEO%C%ablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
                 <!-- Byte 20: -->
@@ -97,7 +98,9 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" RefId="%AID%_UP-%TT%9%C%036" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" RefId="%AID%_UP-%TT%9%C%037" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" RefId="%AID%_UP-%TT%9%C%038" />
+              <ParameterRef Id="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" RefId="%AID%_UP-%TT%9%C%039" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101" RefId="%AID%_UP-%TT%9%C%081" />
+              <!-- ParameterRef 082 REMOVED: Mode now derived from Combined parameter (2→Fixed, 3→PerLED) -->
               <ParameterRef Id="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" RefId="%AID%_UP-%TT%9%C%041" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" RefId="%AID%_UP-%TT%9%C%042" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" RefId="%AID%_UP-%TT%9%C%043" />
@@ -155,24 +158,32 @@
               <ComObject Id="%AID%_O-%TT%9%C%000" Number="%K0%"  Name="Power%C%"     Text="Ein"                 FunctionText="%C%: Ein"                  ObjectSize="1 Bit"   DatapointType="DPST-1-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Status -->
               <ComObject Id="%AID%_O-%TT%9%C%001" Number="%K1%"  Name="PowerState%C%" Text="Ein Status"          FunctionText="%C%: Ein Status"          ObjectSize="1 Bit"   DatapointType="DPST-1-11"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- HCL State -->
-              <ComObject Id="%AID%_O-%TT%9%C%002" Number="%K2%"  Name="HCLState%C%"   Text="HCL Zustand"         FunctionText="%C%: HCL Kurve Zustandswert" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness -->
               <ComObject Id="%AID%_O-%TT%9%C%003" Number="%K3%"  Name="Brightness%C%" Text="Helligkeit"          FunctionText="%C%: Helligkeit"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness Status -->
               <ComObject Id="%AID%_O-%TT%9%C%004" Number="%K4%"  Name="BrightnessState%C%" Text="Helligkeit Status" FunctionText="%C%: Helligkeit Status" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Power Current Strip -->
+              <ComObject Id="%AID%_O-%TT%9%C%005" Number="%K5%"  Name="PowerCurrent%C%" Text="Stromverbrauch" FunctionText="%C%: Stromverbrauch (mA)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Power Load Strip -->
+              <ComObject Id="%AID%_O-%TT%9%C%006" Number="%K6%"  Name="PowerLoad%C%" Text="Auslastung" FunctionText="%C%: Auslastung (%)" ObjectSize="1 Byte" DatapointType="DPST-5-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Power Watts Strip -->
+              <ComObject Id="%AID%_O-%TT%9%C%007" Number="%K7%"  Name="PowerWatts%C%" Text="Leistung" FunctionText="%C%: Leistung (W)" ObjectSize="4 Bytes" DatapointType="DPST-14-056" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Power -->
               <ComObjectRef Id="%AID%_O-%TT%9%C%000_R-%TT%9%C%00001" RefId="%AID%_O-%TT%9%C%000" Text="{{0:%C% Ein}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001" />
               <!-- Power Status -->
               <ComObjectRef Id="%AID%_O-%TT%9%C%001_R-%TT%9%C%00101" RefId="%AID%_O-%TT%9%C%001" Text="{{0:%C% Ein Status}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
-              <!-- HCL State -->
-              <ComObjectRef Id="%AID%_O-%TT%9%C%002_R-%TT%9%C%00201" RefId="%AID%_O-%TT%9%C%002" Text="{{0:%C% HCL Zustand}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
               <!-- Brightness -->
               <ComObjectRef Id="%AID%_O-%TT%9%C%003_R-%TT%9%C%00301" RefId="%AID%_O-%TT%9%C%003" Text="{{0:%C% Helligkeit}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
               <!-- Brightness Status -->
               <ComObjectRef Id="%AID%_O-%TT%9%C%004_R-%TT%9%C%00401" RefId="%AID%_O-%TT%9%C%004" Text="{{0:%C% Helligkeit Status}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
+              <!-- Power Current Strip -->
+              <ComObjectRef Id="%AID%_O-%TT%9%C%005_R-%TT%9%C%00501" RefId="%AID%_O-%TT%9%C%005" Text="{{0:%C% Stromverbrauch}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
+              <!-- Power Load Strip -->
+              <ComObjectRef Id="%AID%_O-%TT%9%C%006_R-%TT%9%C%00601" RefId="%AID%_O-%TT%9%C%006" Text="{{0:%C% Auslastung}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
+              <!-- Power Watts Strip -->
+              <ComObjectRef Id="%AID%_O-%TT%9%C%007_R-%TT%9%C%00701" RefId="%AID%_O-%TT%9%C%007" Text="{{0:%C% Leistung}}" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001"/>
             </ComObjectRefs>
           </Static>   
           <Dynamic>
@@ -191,6 +202,8 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" IndentLevel="1" HelpContext="%DOC%" />    
                       <!-- LED Colour Order -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%031_R-%TT%9%C%03101" IndentLevel="1" HelpContext="%DOC%"/>
+                      <!-- Voltage (für Leistungsberechnung) -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" IndentLevel="1" HelpContext="%DOC%"/>
                       <!-- LED Swap (jetzt mit besserem Text) -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%032_R-%TT%9%C%03201" IndentLevel="1" HelpContext="%DOC%"/>
                       <!-- Timing -->
@@ -231,82 +244,117 @@
                            HARDWARE GPIO CONFLICT WARNING UI (from Hardware.templ.xml)
                            ═══════════════════════════════════════════════════════════════════════════════════ -->
                       <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/GPIOConflictWarning/*" />
-                      <!-- SPI Takt Configuration (nur für SPI) -->
+                      
+                      <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                            SPI CLOCK CONFIGURATION (only for SPI LEDs)
+                            ═══════════════════════════════════════════════════════════════════════════════════ -->
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
                         <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
                         <when test="5 21 22 23 24 25">
-                        <!-- SPI Takt -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" IndentLevel="1" HelpContext="%DOC%"/>
-                        <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">
-                          <when test="1">
-                            <!-- Warnung bei manuellem SPI Takt -->
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Die manuelle SPI-Takt-Konfiguration kann zu Problemen führen!&#xD;&#xA;Bei zu hohen Frequenzen können die LEDs flackern oder nicht funktionieren." UIHint="Information" />
-                            <!-- SPI Clock Frequenz -->
-                            <ParameterRefRef RefId="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" IndentLevel="2" HelpContext="%DOC%"/>
-                          </when>
-                        </choose>
-                      </when>
+                          <!-- SPI Takt -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" IndentLevel="1" HelpContext="%DOC%"/>
+                          <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">
+                            <when test="1">
+                              <!-- Warnung bei manuellem SPI Takt -->
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Die manuelle SPI-Takt-Konfiguration kann zu Problemen führen!&#xD;&#xA;Bei zu hohen Frequenzen können die LEDs flackern oder nicht funktionieren." UIHint="Information" />
+                              <!-- SPI Clock Frequenz -->
+                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" IndentLevel="2" HelpContext="%DOC%"/>
+                            </when>
+                          </choose>
+                        </when>
+                      </choose>
+
+                      <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                           FARBKALIBRIERUNG (Master-Checkbox blendet komplette Sektion ein/aus)
+                           ═══════════════════════════════════════════════════════════════════════════════════ -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbkalibrierung:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Optimiert die Farbwiedergabe durch Weißabgleich und Gamma-Korrektur. Der Weißabgleich kompensiert Fertigungstoleranzen der LEDs, die Gamma-Korrektur sorgt für eine natürlichere Helligkeitswahrnehmung (empfohlen)."/>
+                      <!-- Master-Checkbox: Farbkalibrierung -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601" IndentLevel="1" HelpContext="%DOC%"/>
+                      <choose ParamRefId="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601">
+                        <when test="1"> <!-- Farbkalibrierung aktiviert -->
+                          <!-- Weißabgleich Sub-Sektion -->
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Weißabgleich (RGB-Korrektur):" UIHint="Headline" />
+                          <!-- Weißabgleich Rot (%) -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%067_R-%TT%9%C%06701" IndentLevel="2" HelpContext="NEO-Weissabgleich-Rot"/>
+                          <!-- Weißabgleich Grün (%) -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%068_R-%TT%9%C%06801" IndentLevel="2" HelpContext="NEO-Weissabgleich-Gruen"/>
+                          <!-- Weißabgleich Blau (%) -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%069_R-%TT%9%C%06901" IndentLevel="2" HelpContext="NEO-Weissabgleich-Blau"/>
+                          
+                          <!-- Gamma-Korrektur Sub-Sektion -->
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Gamma-Korrektur:" UIHint="Headline" />
+                          <!-- Checkbox: Gamma-Korrektur -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%047_R-%TT%9%C%04701" IndentLevel="2" HelpContext="%DOC%"/>
+                          <choose ParamRefId="%AID%_UP-%TT%9%C%047_R-%TT%9%C%04701">
+                            <!-- Gamma aktiviert -->
+                            <when test="1"> 
+                              <!-- Gamma-Wert -->
+                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%048_R-%TT%9%C%04801" IndentLevel="3" HelpContext="%DOC%"/>
+                            </when>
+                          </choose>
+                        </when>
+                      </choose>
+                      <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                           STROMBEGRENZUNG (Flattened: 0=Aus, 1=Global, 2=Fester Wert, 3=Pro LED)
+                           ═══════════════════════════════════════════════════════════════════════════════════ -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung:" UIHint="Headline" />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Intelligente Strombegrenzung mit ABL (automatische Helligkeitsreduktion) schützt vor Überlastung. Die Helligkeit wird dynamisch an den berechneten Stromverbrauch angepasst. Hier können die globalen Einstellungen überschrieben werden." />
+                      
+                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101" IndentLevel="1" HelpContext="NEO-Strombegrenzung"/>
+                      <choose ParamRefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101">
+                        <!-- Mode 2: Benutzerdefiniert (Fester Wert) -->
+                        <when test="2">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" IndentLevel="2" HelpContext="%DOC%"/>
+                          <!-- ABL Settings -->
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Automatische Helligkeitsreduktion (ABL):" UIHint="Headline" />
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" IndentLevel="2" HelpContext="%DOC%"/>
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" IndentLevel="2" HelpContext="%DOC%"/>
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" IndentLevel="2" HelpContext="%DOC%"/>
+                        </when>
+                        <!-- Mode 3: Benutzerdefiniert (Pro LED) -->
+                        <when test="3">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" IndentLevel="2" HelpContext="%DOC%"/>
+                          <!-- ABL Settings -->
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Automatische Helligkeitsreduktion (ABL):" UIHint="Headline" />
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" IndentLevel="2" HelpContext="%DOC%"/>
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" IndentLevel="2" HelpContext="%DOC%"/>
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" IndentLevel="2" HelpContext="%DOC%"/>
+                        </when>
                       </choose>
                       
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                      <!-- ========================================================================================================= -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbkalibrierung:" UIHint="Headline" />
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Optimieren Sie die Farbwiedergabe durch Weißabgleich und Gamma-Korrektur. Der Weißabgleich kompensiert Fertigungstoleranzen der LEDs, die Gamma-Korrektur sorgt für eine natürlichere Helligkeitswahrnehmung (empfohlen)." />
-                      <!-- White correction -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601" IndentLevel="1" HelpContext="%DOC%"/>
-                      <choose ParamRefId="%AID%_UP-%TT%9%C%046_R-%TT%9%C%04601">
-                      <when test="1"> <!-- 1 = Ja -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%067_R-%TT%9%C%06701" IndentLevel="1" HelpContext="NEO-Weissabgleich-Rot"/> <!-- Weißabgleich Rot (%) -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%068_R-%TT%9%C%06801" IndentLevel="1" HelpContext="NEO-Weissabgleich-Gruen"/> <!-- Weißabgleich Grün (%) -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%069_R-%TT%9%C%06901" IndentLevel="1" HelpContext="NEO-Weissabgleich-Blau"/> <!-- Weißabgleich Blau (%) -->
-                      </when>
-                      </choose>
-                      <!-- Gamma correction -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%047_R-%TT%9%C%04701" IndentLevel="1" HelpContext="%DOC%"/>
-                      <choose ParamRefId="%AID%_UP-%TT%9%C%047_R-%TT%9%C%04701">
-                      <when test="!=0">
-                      <!-- Gamma value -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%048_R-%TT%9%C%04801" IndentLevel="1" HelpContext="%DOC%"/>
-                      </when>
-                      </choose>
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                      <!-- ========================================================================================================= -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung:" UIHint="Headline" />
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Schützen Sie Ihre Hardware durch intelligente Strombegrenzung. Die automatische Helligkeitsreduktion (ABL) verhindert Überlastung des Netzteils und der LED-Streifen, indem die Helligkeit dynamisch an den aktuellen Stromverbrauch angepasst wird." />
-                          <!-- Combined UI Dropdown -->
-                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101" IndentLevel="1" HelpContext="%DOC%"/>
-                          <choose ParamRefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101">
-                          <when test="!=0">
-                            <!-- Not Deaktiviert -->
-                              <choose ParamRefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101"> 
-                                <!-- Check which mode -->
-                              <when test="1"> 
-                                <!-- Global -->
-                                  <!-- powerLimitGlobal -->
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%041_R-%TT%9%C%04101" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              <when test="2"> 
-                                <!-- Per Channel -->
-                                  <!-- currentPerChannel -->
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%043_R-%TT%9%C%04301" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              <when test="3"> 
-                                <!-- Per LED -->
-                                  <!-- powerLimitPerLED -->
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%042_R-%TT%9%C%04201" IndentLevel="1" HelpContext="%DOC%"/>
-                              </when>
-                              </choose>
-                              <!-- Common parameters when enabled -->
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%044_R-%TT%9%C%04401" IndentLevel="1" HelpContext="%DOC%"/>
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%045_R-%TT%9%C%04501" IndentLevel="1" HelpContext="%DOC%"/>
-                              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%066_R-%TT%9%C%06601" IndentLevel="1" HelpContext="%DOC%"/>
-                        </when>
-                        </choose>
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                   </ParameterBlock>
                 </when>
               </choose>
             </ChannelIndependentBlock>
+            <!-- Separate KO-Block für KO-Tree (wird in share.xml included) -->
+            <PowerLimitKOsBlock>
+              <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                <when test=">=%C%">
+                  <choose ParamRefId="%AID%_UP-%TT%9%C%081_R-%TT%9%C%08101">
+                    <when test="2">
+                      <!-- KOs anzeigen wenn Benutzerdefiniert (Fester Wert) -->
+                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitStrip%C%KOs" Text="LED Streifen %C%: {{0:-}}" Icon="ledstrip" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%9%C%005_R-%TT%9%C%00501" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%9%C%006_R-%TT%9%C%00601" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%9%C%007_R-%TT%9%C%00701" />
+                      </ParameterBlock>
+                    </when>
+                    <when test="3">
+                      <!-- KOs anzeigen wenn Benutzerdefiniert (Pro LED) -->
+                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitStrip%C%KOs" Text="LED Streifen %C%: {{0:-}}" Icon="ledstrip" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%9%C%005_R-%TT%9%C%00501" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%9%C%006_R-%TT%9%C%00601" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%9%C%007_R-%TT%9%C%00701" />
+                      </ParameterBlock>
+                    </when>
+                  </choose>
+                </when>
+              </choose>
+            </PowerLimitKOsBlock>
           </Dynamic>
         </ApplicationProgram>
       </ApplicationPrograms>

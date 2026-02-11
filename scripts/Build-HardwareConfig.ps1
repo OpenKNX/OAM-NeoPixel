@@ -724,8 +724,9 @@ function Generate-GPIOPortParametersInShare {
 
   # Generate GPIO Port selection parameters in share.xml (00101-00106)
   # These store which GPIO port each strip uses (0=unused, 1-7=D0-D6)
-  $paramsXml = "              <Union SizeInBit=`"48`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"60`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Data Port Configuration Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"48`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"70`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -752,8 +753,9 @@ function Generate-ClockPortParametersInShare {
 
   # Generate Clock GPIO Port selection parameters in share.xml (00111-00116)
   # These store which GPIO port each strip uses for Clock (0=unused, 1-7=D0-D6)
-  $paramsXml = "              <Union SizeInBit=`"48`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"67`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Clock Port Configuration Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"48`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"78`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock GPIO port selections (6 * 8 bit = 48 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -838,8 +840,9 @@ function Generate-ConflictParametersInShare {
 
   # Generate conflict flag parameters in share.xml (00091-00096)
   # Template will reference these with 0009%C% token
-  $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"59`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Data Conflict Flags Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"$NumStrips`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"76`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips conflict flags (6 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -865,8 +868,9 @@ function Generate-ClockConflictParametersInShare {
   )
 
   # Generate Clock conflict flag parameters in share.xml (00117-00122)
-  $paramsXml = "              <Union SizeInBit=`"$NumStrips`">`n"
-  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"66`" BitOffset=`"0`" />`n"
+  $paramsXml = "              <!-- GPIO Clock Conflict Flags Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"$NumStrips`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"77`" BitOffset=`"0`" />`n"
   $paramsXml += "                <!-- All 6 strips Clock conflict flags (6 bit total) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
@@ -1448,12 +1452,12 @@ function Generate-RelayKOsInShare {
 
   $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $koXml += "      <when test=`">=1`">`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00005_R-%TT%0000501`" />`n"
+  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00008_R-%TT%0000801`" />`n"
   $koXml += "      </when>`n"
   $koXml += "    </choose>`n"
   $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $koXml += "      <when test=`">=2`">`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00006_R-%TT%0000601`" />`n"
+  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00009_R-%TT%0000901`" />`n"
   $koXml += "      </when>`n"
   $koXml += "    </choose>`n"
 
@@ -1502,21 +1506,9 @@ function Generate-ConflictDetectionJS {
   $jsRelaySetup += "  // Resolve relay ports using shared params; fall back to HW-specific params`n"
   $jsRelaySetup += "  var hwSel = toInt(input.HardwareSelection, 255);`n"
   $jsRelaySetup += "`n"
-  $jsRelaySetup += "  function resolveRelayPort(relayIdx) {`n"
-  $jsRelaySetup += "    var shared = relayIdx === 1 ? toInt(input.Relay1Port, $GPIO_DUMMY_VALUE) : toInt(input.Relay2Port, $GPIO_DUMMY_VALUE);`n"
-  $jsRelaySetup += "    if (shared !== $GPIO_DUMMY_VALUE && shared !== $GPIO_MANUAL_VALUE) return shared;`n"
-  $jsRelaySetup += "`n"
-  $jsRelaySetup += "    switch (hwSel) {`n"
-  for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $jsRelaySetup += "      case ${hwIdx}:  return relayIdx === 1 ? toInt(input.Relay1HW${hwIdx}, $GPIO_DUMMY_VALUE) : toInt(input.Relay2HW${hwIdx}, $GPIO_DUMMY_VALUE);`n"
-  }
-  $jsRelaySetup += "      default: return shared;`n"
-  $jsRelaySetup += "    }`n"
-  $jsRelaySetup += "  }`n"
-  $jsRelaySetup += "`n"
   $jsRelaySetup += "  var relayPorts = [];`n"
-  $jsRelaySetup += "  if (relayCount >= 1) relayPorts.push(resolveRelayPort(1));`n"
-  $jsRelaySetup += "  if (relayCount >= 2) relayPorts.push(resolveRelayPort(2));"
+  $jsRelaySetup += "  if (relayCount >= 1) relayPorts.push(NEO_ResolveRelayPort(input, hwSel, 1));`n"
+  $jsRelaySetup += "  if (relayCount >= 2) relayPorts.push(NEO_ResolveRelayPort(input, hwSel, 2));"
 
   # Initialize data outputs
   $jsOutputInit = "  // Alle Data Conflict Flags initial auf 0 setzen`n"
@@ -1634,6 +1626,20 @@ function Generate-ConflictDetectionJS {
   }
   $fullJS += "  output.Relay1Port = $GPIO_DUMMY_VALUE;`n"
   $fullJS += "  output.Relay2Port = $GPIO_DUMMY_VALUE;`n"
+  $fullJS += "}`n"
+  $fullJS += "`n"
+  $fullJS += "// ============================================================================================================`n"
+  $fullJS += "// HELPER: RESOLVE RELAY PORT`n"
+  $fullJS += "// Resolves relay port from shared param (RelayNPort) or hardware-specific fallback (RelayNHWx)`n"
+  $fullJS += "// ============================================================================================================`n"
+  $fullJS += "function NEO_ResolveRelayPort(input, hwSel, relayIdx) {`n"
+  $fullJS += "  var sharedPortParam = 'Relay' + relayIdx + 'Port';`n"
+  $fullJS += "  var hwSpecificParam = 'Relay' + relayIdx + 'HW' + hwSel;`n"
+  $fullJS += "  var port = toInt(input[sharedPortParam], -1);`n"
+  $fullJS += "  if (port === -1 || port === $GPIO_DUMMY_VALUE) {`n"
+  $fullJS += "    port = toInt(input[hwSpecificParam], $GPIO_DUMMY_VALUE);`n"
+  $fullJS += "  }`n"
+  $fullJS += "  return port;`n"
   $fullJS += "}`n"
   $fullJS += "`n"
   $fullJS += "// ============================================================================================================`n"
@@ -2224,11 +2230,19 @@ function Generate-ConflictUI {
   $uiXml += "<!-- Hidden Clock conflict parameter references -->`n"
   $uiXml += "<!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->`n"
 
-  # Combined conflict display - triggers on Data conflicts (which includes Cross-conflicts)
-  # References Share.xml parameter directly!
-  $uiXml += "<choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
-  $uiXml += "  <when test=`"1`">`n"
-  $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem andren physikalischen Strip oder externen Relai verwendet. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  # Only show conflict warning if Hardware is selected (NOT 255)
+  $uiXml += "<!-- Only show conflict warning if Hardware is selected (NOT 255) -->`n"
+  $uiXml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
+  $uiXml += "  <when test=`"255`">`n"
+  $uiXml += "    <!-- No hardware selected → no conflict check -->`n"
+  $uiXml += "  </when>`n"
+  $uiXml += "  <when default=`"true`">`n"
+  $uiXml += "    <!-- Hardware selected → check for conflicts -->`n"
+  $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01`">`n"
+  $uiXml += "      <when test=`"1`">`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-gpioconflict%C%`" Text=`"PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem anderen physikalischen LED-Streifen verwendet. Bitte wählen Sie einen freien Port aus!`" UIHint=`"Error`" />`n"
+  $uiXml += "      </when>`n"
+  $uiXml += "    </choose>`n"
   $uiXml += "  </when>`n"
   $uiXml += "</choose>"
 
