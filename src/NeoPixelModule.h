@@ -283,10 +283,10 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool _globalPowerOn = true; // Global power state (default ON)
 
     // External Relays (max derived from knxprod.h)
-    #if defined(NEO_KoExternalRelay2) && defined(NEO_KoExternalRelay1)
+    #if defined(NEO_KoExternalRelay4) && defined(NEO_KoExternalRelay1)
     static constexpr uint8_t kMaxExternalRelays =
-        (NEO_KoExternalRelay2 >= NEO_KoExternalRelay1)
-            ? (uint8_t)(NEO_KoExternalRelay2 - NEO_KoExternalRelay1 + 1)
+        (NEO_KoExternalRelay4 >= NEO_KoExternalRelay1)
+            ? (uint8_t)(NEO_KoExternalRelay4 - NEO_KoExternalRelay1 + 1)
             : 0;
     #elif defined(NEO_KoExternalRelay1)
     static constexpr uint8_t kMaxExternalRelays = 1;
@@ -294,9 +294,18 @@ class NeoPixelBusModule : public OpenKNX::Module
     static constexpr uint8_t kMaxExternalRelays = 0;
     #endif
     static constexpr uint8_t kRelayStorageSize = (kMaxExternalRelays > 0) ? kMaxExternalRelays : 1;
+    
+    struct RelayTimerState {
+        bool targetState = false;      // Desired output state
+        bool pendingChange = false;    // Timer active
+        unsigned long triggerTime = 0; // When to execute change (millis)
+        unsigned long lastOffTime = 0; // Last off timestamp (for min off-time protection)
+    };
+    
     uint8_t _relayCount = 0;
     uint8_t _relayPins[kRelayStorageSize] = {255};
     bool _relayStates[kRelayStorageSize] = {false};
+    RelayTimerState _relayTimers[kRelayStorageSize];
 
     // HCL (Human Centric Lighting) / Circadian whitepoint control
     //
@@ -367,6 +376,8 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Relay Helpers
     void setRelayOutput(uint8_t relayIndex, bool state);
+    void scheduleRelayChange(uint8_t relayIndex, bool targetState);
+    void processRelayTimers();
 };
 
 extern NeoPixelBusModule openknxNeoPixelModule;

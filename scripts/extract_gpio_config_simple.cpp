@@ -1051,3 +1051,10 @@ HW_HAS_NETWORK=EXPAND(NEOPIXEL_HW_HAS_NETWORK)
 #else
 HW_HAS_NETWORK=0
 #endif
+
+// External Relays Support (0=None, 1-4=Count, default=2 if not defined)
+#ifdef NEOPIXEL_EXT_RELAIS
+HW_EXT_RELAIS=EXPAND(NEOPIXEL_EXT_RELAIS)
+#else
+HW_EXT_RELAIS=0
+#endif

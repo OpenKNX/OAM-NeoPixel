@@ -153,14 +153,19 @@ void StripConfiguration::configureFromETS()
     // PRE-SCAN: Relay GPIO Conflict Detection
     // Check external relay GPIOs to prevent conflicts with strips
     // ═══════════════════════════════════════════════════════════════════════════
-    uint8_t relayCount = std::min<uint8_t>(2, ParamNEO_NEOExternalRelayCount);
+    uint8_t relayCount = std::min<uint8_t>(4, ParamNEO_NEOExternalRelayCount);
     logInfoP("Relay pre-scan: Checking %d relay(s) for GPIO conflicts...", relayCount);
 
     for (uint8_t r = 0; r < relayCount; ++r)
     {
-        uint8_t portIndex = (r == 0)
-            ? (uint8_t)ParamNEO_NEOExternalRelay1Port
-            : (uint8_t)ParamNEO_NEOExternalRelay2Port;
+        uint8_t portIndex;
+        switch (r) {
+            case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
+            case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
+            case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
+            case 3: portIndex = (uint8_t)ParamNEO_NEOExternalRelay4Port; break;
+            default: portIndex = 15; break;
+        }
 
         // Check if hardware port is selected (not 15=Dummy, not 10=Manual)
         if (!isHardwarePortSelected(portIndex))

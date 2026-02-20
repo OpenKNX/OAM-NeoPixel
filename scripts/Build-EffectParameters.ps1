@@ -1436,7 +1436,8 @@ function Update-NeoEffModule {
 
   <!-- Effect Parameter Types - MUST be loaded BEFORE NEO module! -->
   <op:define prefix="NEOEFF" ModuleType="$($script:Config.ModuleType)"
-    share="NeoPixel.Effects.ParameterTypes.generated.xml">
+    share="NeoPixel.Effects.ParameterTypes.generated.xml"
+    configTransferName="NeoPixel Effect Parameters">
   </op:define>
 "@
 

@@ -46,6 +46,7 @@
     share="NeoPixel.share.xml"
     template="NeoPixel.Segment.templ.xml"
     NumChannels="16"
+    configTransferName="NeoPixel"
     KoOffset="600"
     KoSingleOffset="400">
     <op:verify File="../library.json" ModuleVersion="%NEO_VerifyVersion%" />
@@ -55,7 +56,7 @@
     template="NeoPixel.Strip.templ.xml"
     NumChannels="6"
     prefixDoc="NEO"
-    configTransferName="  Strip"
+    configTransferName="NeoPixel Strip"
     KoOffset="500">
   </op:define>
 <generate>

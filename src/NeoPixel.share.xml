@@ -15,6 +15,7 @@
 
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
+  <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
   
   <ManufacturerData>
     <Manufacturer RefId="M-00FA">
@@ -339,7 +340,20 @@
                   <Enumeration Value="1" Text="Konflikt erkannt!" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
-              
+
+              <!-- External Relay ParameterTypes -->
+              <ParameterType Id="%AID%_PT-RelayDelay" Name="RelayDelay">
+                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="0" maxInclusive="65535" />
+              </ParameterType>
+
+              <ParameterType Id="%AID%_PT-RelayMinOffTime" Name="RelayMinOffTime">
+                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="0" maxInclusive="65535" />
+              </ParameterType>
+
+              <ParameterType Id="%AID%_PT-GPIONumber" Name="GPIONumber">
+                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
+              </ParameterType>
+
               <!-- BEGIN AUTO-GENERATED: GPIO Port Selection Types -->
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: GPIO Port Selection Types -->
@@ -353,13 +367,9 @@
                 <TypeNumber SizeInBit="5" Type="unsignedInt" minInclusive="1" maxInclusive="16" />
               </ParameterType>
               <!-- External Relays -->
-              <ParameterType Id="%AID%_PT-ExternalRelayCount" Name="ExternalRelayCount">
-                <TypeRestriction Base="Value" SizeInBit="2" UIHint="DropDown">
-                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
-                  <Enumeration Text="1" Value="1" Id="%ENID%" />
-                  <Enumeration Text="2" Value="2" Id="%ENID%" />
-                </TypeRestriction>
-              </ParameterType>
+              <!-- BEGIN AUTO-GENERATED: External Relay ParameterType -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay ParameterType -->
               <!-- Startup Behavior Types -->
               <ParameterType Id="%AID%_PT-GlobalStartupBehavior" Name="GlobalStartupBehavior">
                 <TypeRestriction Base="Value" SizeInBit="2">
@@ -618,7 +628,20 @@
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: External Relay Conflict Parameters -->
 
+              <!-- BEGIN AUTO-GENERATED: External Relay Delay Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay Delay Parameters -->
+
+              <!-- BEGIN AUTO-GENERATED: External Relay MinOffTime Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay MinOffTime Parameters -->
+
+              <!-- BEGIN AUTO-GENERATED: External Relay Manual GPIO Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay Manual GPIO Parameters -->
+
             </Parameters>
+
             <ParameterRefs>
               <ParameterRef Id="%AID%_P-%TT%00000_R-%TT%0000001" RefId="%AID%_P-%TT%00000" />
               <!-- HCL Parameter References -->
@@ -884,9 +907,21 @@
               <!-- HCL Global State -->
               <ComObject Id="%AID%_O-%TT%00007" Number="7"  Name="HCLGlobalState" Text="HCL Global Zustand" FunctionText="HCL Global Zustand (K)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- External Relay 1 -->
-              <ComObject Id="%AID%_O-%TT%00008" Number="8"  Name="ExternalRelay1" Text="Relai 1" FunctionText="Relai 1 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00008" Number="8"  Name="ExternalRelay1" Text="Relais 1" FunctionText="Relais 1 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- External Relay 2 -->
-              <ComObject Id="%AID%_O-%TT%00009" Number="9"  Name="ExternalRelay2" Text="Relai 2" FunctionText="Relai 2 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00009" Number="9"  Name="ExternalRelay2" Text="Relais 2" FunctionText="Relais 2 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 3 -->
+              <ComObject Id="%AID%_O-%TT%00010" Number="10" Name="ExternalRelay3" Text="Relais 3" FunctionText="Relais 3 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 4 -->
+              <ComObject Id="%AID%_O-%TT%00011" Number="11" Name="ExternalRelay4" Text="Relais 4" FunctionText="Relais 4 Ein/Aus" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 1 Status -->
+              <ComObject Id="%AID%_O-%TT%00012" Number="12" Name="ExternalRelay1State" Text="Relais 1 Status" FunctionText="Relais 1 Status" ObjectSize="1 Bit" DatapointType="DPST-1-11" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 2 Status -->
+              <ComObject Id="%AID%_O-%TT%00013" Number="13" Name="ExternalRelay2State" Text="Relais 2 Status" FunctionText="Relais 2 Status" ObjectSize="1 Bit" DatapointType="DPST-1-11" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 3 Status -->
+              <ComObject Id="%AID%_O-%TT%00014" Number="14" Name="ExternalRelay3State" Text="Relais 3 Status" FunctionText="Relais 3 Status" ObjectSize="1 Bit" DatapointType="DPST-1-11" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- External Relay 4 Status -->
+              <ComObject Id="%AID%_O-%TT%00015" Number="15" Name="ExternalRelay4State" Text="Relais 4 Status" FunctionText="Relais 4 Status" ObjectSize="1 Bit" DatapointType="DPST-1-11" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Power -->
@@ -905,10 +940,14 @@
               <ComObjectRef Id="%AID%_O-%TT%00006_R-%TT%0000601" RefId="%AID%_O-%TT%00006" />
               <!-- HCL Global State -->
               <ComObjectRef Id="%AID%_O-%TT%00007_R-%TT%0000701" RefId="%AID%_O-%TT%00007" />
-              <!-- External Relay 1 -->
               <ComObjectRef Id="%AID%_O-%TT%00008_R-%TT%0000801" RefId="%AID%_O-%TT%00008" />
-              <!-- External Relay 2 -->
               <ComObjectRef Id="%AID%_O-%TT%00009_R-%TT%0000901" RefId="%AID%_O-%TT%00009" />
+              <ComObjectRef Id="%AID%_O-%TT%00010_R-%TT%0001001" RefId="%AID%_O-%TT%00010" />
+              <ComObjectRef Id="%AID%_O-%TT%00011_R-%TT%0001101" RefId="%AID%_O-%TT%00011" />
+              <ComObjectRef Id="%AID%_O-%TT%00012_R-%TT%0001201" RefId="%AID%_O-%TT%00012" />
+              <ComObjectRef Id="%AID%_O-%TT%00013_R-%TT%0001301" RefId="%AID%_O-%TT%00013" />
+              <ComObjectRef Id="%AID%_O-%TT%00014_R-%TT%0001401" RefId="%AID%_O-%TT%00014" />
+              <ComObjectRef Id="%AID%_O-%TT%00015_R-%TT%0001501" RefId="%AID%_O-%TT%00015" />
             </ComObjectRefs>
             <Script>
               <op:include href="NeoPixel.script.js" type="script" />
@@ -958,13 +997,7 @@
                         <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
                       </when>
                     </choose>
-                    <!-- BEGIN AUTO-GENERATED: External Relay KOs -->
-                    <!-- Cleaned - Ready for regeneration -->
-                    <!-- END AUTO-GENERATED: External Relay KOs -->
                   </ParameterBlock>
-                  <!-- BEGIN AUTO-GENERATED: External Relay UI -->
-                  <!-- Cleaned - Ready for regeneration -->
-                  <!-- END AUTO-GENERATED: External Relay UI -->
                   <!-- Global Startup Behavior Dynamic UI -->
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten vor/nach Neustart" UIHint="Headline" />
@@ -1066,6 +1099,17 @@
                 <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegmentsKOs" Text="Segmente" Icon="segment" Inline="true" ShowInComObjectTree="true">
                   <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/HCLSegmentKOsBlock/*" type="template" prefix="NEO" IsInner="true" />
                 </ParameterBlock>
+              </ParameterBlock>
+              <!-- ========================================================================================================= -->
+              <!-- Relais -->
+              <!-- ========================================================================================================= -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Relais" Text="Relais" Icon="relay" HelpContext="NEO-Relais" ShowInComObjectTree="true">
+                <!-- BEGIN AUTO-GENERATED: External Relay KOs -->
+                <!-- Cleaned - Ready for regeneration -->
+                <!-- END AUTO-GENERATED: External Relay KOs -->
+                <!-- BEGIN AUTO-GENERATED: External Relay UI -->
+                <!-- Cleaned - Ready for regeneration -->
+                <!-- END AUTO-GENERATED: External Relay UI -->
               </ParameterBlock>
               <!-- ========================================================================================================= -->
               <!-- Strombegrenzung (Global) -->

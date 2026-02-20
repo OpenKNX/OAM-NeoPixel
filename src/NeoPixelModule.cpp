@@ -213,6 +213,9 @@ void NeoPixelBusModule::loop(bool configured)
     // Process all active HCL managers (global + segments)
     loopHclManagers();
 
+    // Process relay timers for delayed on/off switching
+    processRelayTimers();
+
     // If global power is OFF, skip all effect processing and pixel updates
     if (!_globalPowerOn) return;
 
@@ -330,7 +333,142 @@ void NeoPixelBusModule::setRelayOutput(uint8_t relayIndex, bool state)
 
     _relayStates[relayIndex] = state;
     digitalWrite(pin, state ? HIGH : LOW);
-    logInfoP("Relay %d set to %s (GPIO %d)", relayIndex + 1, state ? "ON" : "OFF", pin);
+    
+    // Track off-time for minimum off-time protection
+    if (!state) {
+        _relayTimers[relayIndex].lastOffTime = millis();
+    }
+    
+    // Send status feedback to KNX bus
+    #if defined(NEO_KoExternalRelay1State)
+    if (relayIndex == 0) {
+        bool changed = KoNEO_ExternalRelay1State.valueNoSendCompare(state, DPT_Switch);
+        if (changed) KoNEO_ExternalRelay1State.objectWritten();
+    }
+    #endif
+    #if defined(NEO_KoExternalRelay2State)
+    if (relayIndex == 1) {
+        bool changed = KoNEO_ExternalRelay2State.valueNoSendCompare(state, DPT_Switch);
+        if (changed) KoNEO_ExternalRelay2State.objectWritten();
+    }
+    #endif
+    #if defined(NEO_KoExternalRelay3State)
+    if (relayIndex == 2) {
+        bool changed = KoNEO_ExternalRelay3State.valueNoSendCompare(state, DPT_Switch);
+        if (changed) KoNEO_ExternalRelay3State.objectWritten();
+    }
+    #endif
+    #if defined(NEO_KoExternalRelay4State)
+    if (relayIndex == 3) {
+        bool changed = KoNEO_ExternalRelay4State.valueNoSendCompare(state, DPT_Switch);
+        if (changed) KoNEO_ExternalRelay4State.objectWritten();
+    }
+    #endif
+    
+    logDebugP("Relay %d set to %s (GPIO %d)", relayIndex + 1, state ? "ON" : "OFF", pin);
+}
+
+void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState)
+{
+    if (relayIndex >= kRelayStorageSize) return;
+    if (_relayCount == 0 || relayIndex >= _relayCount) return;
+    
+    // Check minimum off-time (only when turning ON)
+    if (targetState && !_relayStates[relayIndex]) {
+        uint16_t minOffSeconds = 0;
+        
+        #if defined(ParamNEO_NEOExternalRelay1MinOffTime)
+        if (relayIndex == 0) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay1MinOffTime;
+        #endif
+        #if defined(ParamNEO_NEOExternalRelay2MinOffTime)
+        if (relayIndex == 1) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay2MinOffTime;
+        #endif
+        #if defined(ParamNEO_NEOExternalRelay3MinOffTime)
+        if (relayIndex == 2) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay3MinOffTime;
+        #endif
+        #if defined(ParamNEO_NEOExternalRelay4MinOffTime)
+        if (relayIndex == 3) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay4MinOffTime;
+        #endif
+        
+        if (minOffSeconds > 0 && _relayTimers[relayIndex].lastOffTime != 0) {
+            unsigned long now = millis();
+            unsigned long minOffMillis = minOffSeconds * 1000UL;
+            
+            // Handle millis() overflow with signed comparison (same as processRelayTimers)
+            long elapsed = (long)(now - _relayTimers[relayIndex].lastOffTime);
+            if (elapsed >= 0 && (unsigned long)elapsed < minOffMillis) {
+                // Min off-time not yet elapsed
+                unsigned long remaining = minOffMillis - (unsigned long)elapsed;
+                logInfoP("Relay %d: Ignoring ON command (min off-time %ds not elapsed, %lus remaining)",
+                         relayIndex + 1, minOffSeconds, remaining / 1000);
+                return; // Block turn-on
+            }
+        }
+    }
+    
+    // Read delay parameters (in seconds) based on target state
+    uint16_t delaySeconds = 0;
+    
+    #if defined(ParamNEO_NEOExternalRelay1OnDelay)
+    if (relayIndex == 0) {
+        delaySeconds = targetState 
+            ? (uint16_t)ParamNEO_NEOExternalRelay1OnDelay 
+            : (uint16_t)ParamNEO_NEOExternalRelay1OffDelay;
+    }
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay2OnDelay)
+    if (relayIndex == 1) {
+        delaySeconds = targetState 
+            ? (uint16_t)ParamNEO_NEOExternalRelay2OnDelay 
+            : (uint16_t)ParamNEO_NEOExternalRelay2OffDelay;
+    }
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay3OnDelay)
+    if (relayIndex == 2) {
+        delaySeconds = targetState 
+            ? (uint16_t)ParamNEO_NEOExternalRelay3OnDelay 
+            : (uint16_t)ParamNEO_NEOExternalRelay3OffDelay;
+    }
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay4OnDelay)
+    if (relayIndex == 3) {
+        delaySeconds = targetState 
+            ? (uint16_t)ParamNEO_NEOExternalRelay4OnDelay 
+            : (uint16_t)ParamNEO_NEOExternalRelay4OffDelay;
+    }
+    #endif
+    
+    // Cancel any pending timer for this relay
+    _relayTimers[relayIndex].pendingChange = false;
+    
+    if (delaySeconds == 0) {
+        // No delay - execute immediately
+        setRelayOutput(relayIndex, targetState);
+    } else {
+        // Schedule delayed execution
+        _relayTimers[relayIndex].targetState = targetState;
+        _relayTimers[relayIndex].pendingChange = true;
+        _relayTimers[relayIndex].triggerTime = millis() + (delaySeconds * 1000UL);
+        logInfoP("Relay %d change to %s scheduled in %d seconds", 
+                 relayIndex + 1, targetState ? "ON" : "OFF", delaySeconds);
+    }
+}
+
+void NeoPixelBusModule::processRelayTimers()
+{
+    if (_relayCount == 0) return;
+    
+    unsigned long now = millis();
+    for (uint8_t i = 0; i < _relayCount; ++i) {
+        if (_relayTimers[i].pendingChange) {
+            // Handle millis() overflow (wraps every ~49 days)
+            if ((long)(now - _relayTimers[i].triggerTime) >= 0) {
+                // Time to execute
+                setRelayOutput(i, _relayTimers[i].targetState);
+                _relayTimers[i].pendingChange = false;
+            }
+        }
+    }
 }
 
 void NeoPixelBusModule::processInputKo(GroupObject& ko)
@@ -410,7 +548,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     if (koNumber == NEO_KoExternalRelay1)
     {
         bool state = ko.value(DPT_Switch);
-        setRelayOutput(0, state);
+        scheduleRelayChange(0, state);
         return;
     }
     #endif
@@ -419,7 +557,25 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     if (koNumber == NEO_KoExternalRelay2)
     {
         bool state = ko.value(DPT_Switch);
-        setRelayOutput(1, state);
+        scheduleRelayChange(1, state);
+        return;
+    }
+    #endif
+
+    #if defined(NEO_KoExternalRelay3)
+    if (koNumber == NEO_KoExternalRelay3)
+    {
+        bool state = ko.value(DPT_Switch);
+        scheduleRelayChange(2, state);
+        return;
+    }
+    #endif
+
+    #if defined(NEO_KoExternalRelay4)
+    if (koNumber == NEO_KoExternalRelay4)
+    {
+        bool state = ko.value(DPT_Switch);
+        scheduleRelayChange(3, state);
         return;
     }
     #endif
@@ -1759,9 +1915,37 @@ void NeoPixelBusModule::configureFromETS()
         else
         {
             auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
-                uint8_t portIndex = (relayIndex == 0)
-                    ? (uint8_t)ParamNEO_NEOExternalRelay1Port
-                    : (uint8_t)ParamNEO_NEOExternalRelay2Port;
+                // Get port selection from ETS
+                uint8_t portIndex;
+                switch (relayIndex) {
+                    case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
+                    case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
+                    case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
+                    case 3: portIndex = (uint8_t)ParamNEO_NEOExternalRelay4Port; break;
+                    default: portIndex = 255; break;
+                }
+                
+                // Check if "Manuell" (Value 10) is selected in Port dropdown
+                if (portIndex == 10) {
+                    // Return manual GPIO number from ETS parameter
+                    switch (relayIndex) {
+                        #if defined(ParamNEO_NEOExternalRelay1GPIO)
+                        case 0: return (uint8_t)ParamNEO_NEOExternalRelay1GPIO;
+                        #endif
+                        #if defined(ParamNEO_NEOExternalRelay2GPIO)
+                        case 1: return (uint8_t)ParamNEO_NEOExternalRelay2GPIO;
+                        #endif
+                        #if defined(ParamNEO_NEOExternalRelay3GPIO)
+                        case 2: return (uint8_t)ParamNEO_NEOExternalRelay3GPIO;
+                        #endif
+                        #if defined(ParamNEO_NEOExternalRelay4GPIO)
+                        case 3: return (uint8_t)ParamNEO_NEOExternalRelay4GPIO;
+                        #endif
+                        default: return 255;
+                    }
+                }
+                
+                // Otherwise use hardware port mapping (portIndex 0-N)
 
                 if (!isHardwarePortSelected(portIndex))
                 {

@@ -422,7 +422,14 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         for (uint8_t i = 0; i < restoreCount; ++i)
         {
             bool state = (_relayFlashState.statesMask & static_cast<uint8_t>(1u << i)) != 0;
-            _module->setRelayOutput(i, state);
+            // Direct GPIO control without updating lastOffTime (post-reset, no min-off protection needed)
+            uint8_t pin = _module->_relayPins[i];
+            if (pin != 255)
+            {
+                digitalWrite(pin, state ? HIGH : LOW);
+                _module->_relayStates[i] = state;
+                logInfoP("Relay %d restored to %s (GPIO %d)", i + 1, state ? "ON" : "OFF", pin);
+            }
         }
     }
 
