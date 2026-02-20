@@ -332,7 +332,8 @@ void NeoPixelBusModule::setRelayOutput(uint8_t relayIndex, bool state)
     if (pin == 255) return;
 
     _relayStates[relayIndex] = state;
-    digitalWrite(pin, state ? HIGH : LOW);
+    bool physicalState = _relayInverted[relayIndex] ? !state : state;
+    digitalWrite(pin, physicalState ? HIGH : LOW);
     
     // Track off-time for minimum off-time protection
     if (!state) {
@@ -1903,6 +1904,7 @@ void NeoPixelBusModule::configureFromETS()
     {
         _relayPins[i] = 255;
         _relayStates[i] = false;
+        _relayInverted[i] = false;
     }
 
     if (_relayCount > 0)
@@ -1979,6 +1981,21 @@ void NeoPixelBusModule::configureFromETS()
                 digitalWrite(gpio, LOW); // Default OFF for safety
                 _relayStates[i] = false;
                 logInfoP("Relay %d: Initial state OFF", i + 1);
+
+                // Read output logic (invert) setting per relay
+                #if defined(ParamNEO_NEOExternalRelay1OutputLogic)
+                if (i == 0) _relayInverted[i] = (ParamNEO_NEOExternalRelay1OutputLogic != 0);
+                #endif
+                #if defined(ParamNEO_NEOExternalRelay2OutputLogic)
+                if (i == 1) _relayInverted[i] = (ParamNEO_NEOExternalRelay2OutputLogic != 0);
+                #endif
+                #if defined(ParamNEO_NEOExternalRelay3OutputLogic)
+                if (i == 2) _relayInverted[i] = (ParamNEO_NEOExternalRelay3OutputLogic != 0);
+                #endif
+                #if defined(ParamNEO_NEOExternalRelay4OutputLogic)
+                if (i == 3) _relayInverted[i] = (ParamNEO_NEOExternalRelay4OutputLogic != 0);
+                #endif
+                if (_relayInverted[i]) logInfoP("Relay %d: Output logic INVERTED (LOW = ON)", i + 1);
             }
         }
     }

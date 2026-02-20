@@ -80,7 +80,7 @@ $script:Config = @{
 
     # Application/Module Numbers
     ApplicationNumber = 40
-    ModuleType = 40
+    ModuleType = 45
 
     # Parameter Type Defaults
     DefaultMaxUint8 = 255

@@ -305,6 +305,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint8_t _relayCount = 0;
     uint8_t _relayPins[kRelayStorageSize] = {255};
     bool _relayStates[kRelayStorageSize] = {false};
+    bool _relayInverted[kRelayStorageSize] = {false};
     RelayTimerState _relayTimers[kRelayStorageSize];
 
     // HCL (Human Centric Lighting) / Circadian whitepoint control

@@ -426,7 +426,8 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             uint8_t pin = _module->_relayPins[i];
             if (pin != 255)
             {
-                digitalWrite(pin, state ? HIGH : LOW);
+                bool physicalState = _module->_relayInverted[i] ? !state : state;
+                digitalWrite(pin, physicalState ? HIGH : LOW);
                 _module->_relayStates[i] = state;
                 logInfoP("Relay %d restored to %s (GPIO %d)", i + 1, state ? "ON" : "OFF", pin);
             }

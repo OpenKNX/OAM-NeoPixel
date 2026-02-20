@@ -16,6 +16,7 @@
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
   <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
+  <op:nowarn="true"/>
   
   <ManufacturerData>
     <Manufacturer RefId="M-00FA">
@@ -354,6 +355,13 @@
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
               </ParameterType>
 
+              <ParameterType Id="%AID%_PT-RelayOutputLogic" Name="RelayOutputLogic">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Text="normal (HIGH = EIN)" Value="0" Id="%ENID%" />
+                  <Enumeration Text="invertiert (LOW = EIN)" Value="1" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+
               <!-- BEGIN AUTO-GENERATED: GPIO Port Selection Types -->
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: GPIO Port Selection Types -->
@@ -640,6 +648,10 @@
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: External Relay Manual GPIO Parameters -->
 
+              <!-- BEGIN AUTO-GENERATED: External Relay Invert Parameters -->
+              <!-- Cleaned - Ready for regeneration -->
+              <!-- END AUTO-GENERATED: External Relay Invert Parameters -->
+
             </Parameters>
 
             <ParameterRefs>
@@ -884,16 +896,16 @@
                 <ParameterRefRef RefId="%AID%_UP-4000018_R-400001801" AliasName="HardwareSelect" />
               </LParameters>
               <RParameters>
-                <ParameterRefRef RefId="%AID%_UP-0099902_R-009990201" AliasName="ShowNetworkModule" />
+                <ParameterRefRef RefId="%AID%_UP-0099911_R-009991101" AliasName="ShowNetworkModule" />
               </RParameters>
             </ParameterCalculation>
 
             </ParameterCalculations>
             <ComObjectTable>
               <!-- Power -->
-              <ComObject Id="%AID%_O-%TT%00000" Number="0"  Name="Power"     Text="Ein"                 FunctionText="Ein"                 ObjectSize="1 Bit"   DatapointType="DPST-1-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00000" Number="0"  Name="Power"     Text="Alle LEDs"            FunctionText="Ein/Aus"             ObjectSize="1 Bit"   DatapointType="DPST-1-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Status -->
-              <ComObject Id="%AID%_O-%TT%00001" Number="1"  Name="PowerState" Text="Ein Status"          FunctionText="Ein Status"          ObjectSize="1 Bit"   DatapointType="DPST-1-11"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00001" Number="1"  Name="PowerState" Text="Alle LEDs Status"     FunctionText="Ein/Aus Status"      ObjectSize="1 Bit"   DatapointType="DPST-1-11"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness -->
               <ComObject Id="%AID%_O-%TT%00002" Number="2"  Name="Brightness" Text="Helligkeit"          FunctionText="Helligkeit"          ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Brightness Status -->

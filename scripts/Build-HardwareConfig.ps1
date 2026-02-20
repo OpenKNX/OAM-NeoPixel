@@ -350,6 +350,8 @@ $script:Config = @{
     RelayMinOffTimeParamsEnd   = "<!-- END AUTO-GENERATED: External Relay MinOffTime Parameters -->"
     RelayManualGpioParamsStart = "<!-- BEGIN AUTO-GENERATED: External Relay Manual GPIO Parameters -->"
     RelayManualGpioParamsEnd   = "<!-- END AUTO-GENERATED: External Relay Manual GPIO Parameters -->"
+    RelayInvertParamsStart     = "<!-- BEGIN AUTO-GENERATED: External Relay Invert Parameters -->"
+    RelayInvertParamsEnd       = "<!-- END AUTO-GENERATED: External Relay Invert Parameters -->"
     RelayParamRefsStart       = "<!-- BEGIN AUTO-GENERATED: External Relay ParameterRefs -->"
     RelayParamRefsEnd         = "<!-- END AUTO-GENERATED: External Relay ParameterRefs -->"
     RelayCopyCalcStart        = "<!-- BEGIN AUTO-GENERATED: External Relay GPIO Copy ParameterCalculations -->"
@@ -950,6 +952,28 @@ function Generate-RelayManualGpioParametersInShare {
     -NewContent $paramsXml
 }
 
+function Generate-RelayInvertParametersInShare {
+  param(
+    [string]$ShareXmlPath
+  )
+
+  # Generate Output Logic (Invert) Parameters (00159-00162, 4 bits at Offset 118)
+  # One 1-bit flag per relay: 0 = normal (HIGH=ON), 1 = invertiert (LOW=ON)
+  $paramsXml = "              <!-- External Relay Output Logic (Invert) Union -->`n"
+  $paramsXml += "              <Union SizeInBit=`"4`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"118`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00159`" Offset=`"0`" BitOffset=`"0`" Name=`"NEOExternalRelay1OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00160`" Offset=`"0`" BitOffset=`"1`" Name=`"NEOExternalRelay2OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00161`" Offset=`"0`" BitOffset=`"2`" Name=`"NEOExternalRelay3OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00162`" Offset=`"0`" BitOffset=`"3`" Name=`"NEOExternalRelay4OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
+  $paramsXml += "              </Union>"
+
+  return Replace-MarkerContent -FilePath $ShareXmlPath `
+    -StartMarker $markers['RelayInvertParamsStart'] `
+    -EndMarker $markers['RelayInvertParamsEnd'] `
+    -NewContent $paramsXml
+}
+
 function Generate-ConflictParametersInShare {
   param(
     [string]$ShareXmlPath,
@@ -1186,7 +1210,13 @@ function Generate-RelayParameterRefsInShare {
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00155_R-%TT%0015501`" RefId=`"%AID%_UP-%TT%00155`" />`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00156_R-%TT%0015601`" RefId=`"%AID%_UP-%TT%00156`" />`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00157_R-%TT%0015701`" RefId=`"%AID%_UP-%TT%00157`" />`n"
-  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00158_R-%TT%0015801`" RefId=`"%AID%_UP-%TT%00158`" />"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00158_R-%TT%0015801`" RefId=`"%AID%_UP-%TT%00158`" />`n"
+
+  $refsXml += "              <!-- External Relay Output Logic (Invert) Parameters -->`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00159_R-%TT%0015901`" RefId=`"%AID%_UP-%TT%00159`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00160_R-%TT%0016001`" RefId=`"%AID%_UP-%TT%00160`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00161_R-%TT%0016101`" RefId=`"%AID%_UP-%TT%00161`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00162_R-%TT%0016201`" RefId=`"%AID%_UP-%TT%00162`" />"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $markers['RelayParamRefsStart'] `
@@ -1721,6 +1751,7 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00140_R-%TT%0014001`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00147_R-%TT%0014701`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00159_R-%TT%0015901`" IndentLevel=`"2`" />`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
@@ -1740,6 +1771,7 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00142_R-%TT%0014201`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00148_R-%TT%0014801`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00160_R-%TT%0016001`" IndentLevel=`"2`" />`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
@@ -1759,6 +1791,7 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00144_R-%TT%0014401`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00149_R-%TT%0014901`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00161_R-%TT%0016101`" IndentLevel=`"2`" />`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
@@ -1778,6 +1811,7 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00146_R-%TT%0014601`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00150_R-%TT%0015001`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00162_R-%TT%0016201`" IndentLevel=`"2`" />`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
 
@@ -2739,6 +2773,11 @@ if ($Clean) {
     -CleaningMessage "share.xml (External Relay Manual GPIO Parameters)" `
     -StartMarker $markers['RelayManualGpioParamsStart'] `
     -EndMarker $markers['RelayManualGpioParamsEnd']
+
+  Clear-MarkerContent -FilePath $shareXmlPath `
+    -CleaningMessage "share.xml (External Relay Invert Parameters)" `
+    -StartMarker $markers['RelayInvertParamsStart'] `
+    -EndMarker $markers['RelayInvertParamsEnd']
 
   Clear-MarkerContent -FilePath $shareXmlPath `
     -CleaningMessage "share.xml (External Relay ParameterRefs)" `
@@ -3729,6 +3768,15 @@ if (Generate-RelayManualGpioParametersInShare -ShareXmlPath $shareXmlPath) {
 }
 else {
   Write-WarningMsg "Share.xml External Relay Manual GPIO Parameter markers not found - skipped"
+}
+
+# Generate External Relay Invert Parameters in share.xml
+Write-Host "  • Generating share.xml External Relay Invert Parameters..." -ForegroundColor Cyan
+if (Generate-RelayInvertParametersInShare -ShareXmlPath $shareXmlPath) {
+  Write-Success "Share.xml External Relay Invert Parameters generated"
+}
+else {
+  Write-WarningMsg "Share.xml External Relay Invert Parameter markers not found - skipped"
 }
 
 # Generate External Relay ParameterRefs in share.xml
