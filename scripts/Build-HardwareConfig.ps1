@@ -851,8 +851,8 @@ function Generate-RelayConflictParametersInShare {
 
   $accessMode = if ($ShowDebugParamsInEtsApp) { "Read" } else { "None" }
 
-  $paramsXml = "              <!-- External Relay Conflict Flags Union -->`n"
-  $paramsXml += "              <Union SizeInBit=`"4`">`n"
+  $paramsXml = "              <!-- External Relay Conflict Flags Union (4 flags in 1 byte, Access=None, JS-only) -->`n"
+  $paramsXml += "              <Union SizeInBit=`"8`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"89`" BitOffset=`"0`" />`n"
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00133`" Offset=`"0`" BitOffset=`"0`" Name=`"Relay1HasConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Relais 1 Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00134`" Offset=`"0`" BitOffset=`"1`" Name=`"Relay2HasConflict`" ParameterType=`"%AID%_PT-ConflictFlag`" Text=`"Relais 2 Conflict`" Value=`"0`" Access=`"$accessMode`"/>`n"
@@ -959,8 +959,8 @@ function Generate-RelayInvertParametersInShare {
 
   # Generate Output Logic (Invert) Parameters (00159-00162, 4 bits at Offset 118)
   # One 1-bit flag per relay: 0 = normal (HIGH=ON), 1 = invertiert (LOW=ON)
-  $paramsXml = "              <!-- External Relay Output Logic (Invert) Union -->`n"
-  $paramsXml += "              <Union SizeInBit=`"4`">`n"
+  $paramsXml = "              <!-- External Relay Output Logic (Invert) Union (4 flags in 1 byte, Access=None, JS-only) -->`n"
+  $paramsXml += "              <Union SizeInBit=`"8`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"118`" BitOffset=`"0`" />`n"
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00159`" Offset=`"0`" BitOffset=`"0`" Name=`"NEOExternalRelay1OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00160`" Offset=`"0`" BitOffset=`"1`" Name=`"NEOExternalRelay2OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
@@ -982,10 +982,10 @@ function Generate-ConflictParametersInShare {
 
   # Generate conflict flag parameters in share.xml (00091-00096)
   # Template will reference these with 0009%C% token
-  $paramsXml = "              <!-- GPIO Data Conflict Flags Union -->`n"
-  $paramsXml += "              <Union SizeInBit=`"$NumStrips`">`n"
+  $paramsXml = "              <!-- GPIO Data Conflict Flags Union ($NumStrips flags in 1 byte, Access=None, JS-only) -->`n"
+  $paramsXml += "              <Union SizeInBit=`"8`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"76`" BitOffset=`"0`" />`n"
-  $paramsXml += "                <!-- All 6 strips conflict flags (6 bit total) -->`n"
+  $paramsXml += "                <!-- All $NumStrips strips conflict flags ($NumStrips bits in 1 byte) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = "000" + (90 + $stripIdx).ToString()  # 00091, 00092, ..., 00096
@@ -1010,10 +1010,10 @@ function Generate-ClockConflictParametersInShare {
   )
 
   # Generate Clock conflict flag parameters in share.xml (00117-00122)
-  $paramsXml = "              <!-- GPIO Clock Conflict Flags Union -->`n"
-  $paramsXml += "              <Union SizeInBit=`"$NumStrips`">`n"
+  $paramsXml = "              <!-- GPIO Clock Conflict Flags Union ($NumStrips flags in 1 byte, Access=None, JS-only) -->`n"
+  $paramsXml += "              <Union SizeInBit=`"8`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"77`" BitOffset=`"0`" />`n"
-  $paramsXml += "                <!-- All 6 strips Clock conflict flags (6 bit total) -->`n"
+  $paramsXml += "                <!-- All $NumStrips strips Clock conflict flags ($NumStrips bits in 1 byte) -->`n"
 
   for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
     $paramId = (116 + $stripIdx).ToString().PadLeft(5, '0')  # 00117, 00118, ..., 00122

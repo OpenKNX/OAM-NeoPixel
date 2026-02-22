@@ -16,8 +16,7 @@
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
   <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
-  <op:nowarn="true"/>
-  
+
   <ManufacturerData>
     <Manufacturer RefId="M-00FA">
       <ApplicationPrograms>
@@ -548,7 +547,7 @@
               </Union>
               <!-- Virtual Strip Configuration -->
               <!-- FIXED: Changed Offset from 32 to 43 (after Startup Union 36+7=43) -->
-              <Union SizeInBit="24">
+              <Union SizeInBit="32" op:nowarn="true">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="43" BitOffset="0" />
                 <!-- Canonical (full 1..6) -->
                 <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
@@ -896,7 +895,7 @@
                 <ParameterRefRef RefId="%AID%_UP-4000018_R-400001801" AliasName="HardwareSelect" />
               </LParameters>
               <RParameters>
-                <ParameterRefRef RefId="%AID%_UP-0099911_R-009991101" AliasName="ShowNetworkModule" />
+                <ParameterRefRef RefId="%AID%_UP-0099811_R-009981101" AliasName="ShowNetworkModule" />
               </RParameters>
             </ParameterCalculation>
 
