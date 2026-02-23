@@ -7,5 +7,5 @@ b46cb4f v1dev lib/OFM-FileTransferModule https://github.com/OpenKNX/OFM-FileTran
 7175df0 v1dev lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 55119fc v1dev lib/OFM-UsbExchange https://github.com/OpenKNX/OFM-UsbExchange.git
 204d96d ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
-b47d6bb v1dev lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
+846eb48 v1dev lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
 419f08d main-ec lib/TPUart https://github.com/OpenKNX/TPUart
