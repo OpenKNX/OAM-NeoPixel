@@ -11,7 +11,7 @@
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Segment Parameters (overlapping unions by design: effect params share same offsets, only one effect active at a time) -->
-              <Union SizeInBit="1280" op:nowarn="true">
+              <Union SizeInBit="2016" op:nowarn="true">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0..1: 16b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%050" Offset="0" BitOffset="0" Name="NEO%C%SegmentStart" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Start LED" Value="1"/>
@@ -46,54 +46,54 @@
                 
                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
                      HCL (Human Centric Lighting) Parameters per Segment
-                     Offset 133-152 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
+                     Offset 233-252 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
                      ═══════════════════════════════════════════════════════════════════════════════════ -->
-                <!-- Byte 133: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
-                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="133" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
-                <!-- Byte 133: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
+                <!-- Byte 233: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
+                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="233" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
+                <!-- Byte 233: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
                 
-                <!-- Byte 134..135: Start time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="134" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="135" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
+                <!-- Byte 234..235: Start time (only for HCL Type = Feste Zeit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="234" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
+                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="235" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
                 
-                <!-- Byte 136..137: End time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="136" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
-                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="137" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
+                <!-- Byte 236..237: End time (only for HCL Type = Feste Zeit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="236" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
+                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="237" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
                 
-                <!-- Byte 138..139: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="138" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
+                <!-- Byte 238..239: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="238" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
                 
-                <!-- Byte 140: HclApplyMode (3 bits) + frei -->
-                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="140" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
+                <!-- Byte 240: HclApplyMode (3 bits) + frei -->
+                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="240" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
                 
-                <!-- Byte 141..142: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="141" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
+                <!-- Byte 241..242: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="241" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
                 
-                <!-- Byte 142: HCLPreserveCurve (3 bits at offset 4-6) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="142" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
+                <!-- Byte 242: HCLPreserveCurve (3 bits at offset 4-6) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="242" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
                 
-                <!-- Byte 143: Saturation Threshold -->
-                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="143" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
+                <!-- Byte 243: Saturation Threshold -->
+                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="243" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
                 
-                <!-- Byte 144..145: Min Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="144" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
+                <!-- Byte 244..245: Min Kelvin (14b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="244" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
                 
-                <!-- Byte 146..147: Max Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="146" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
+                <!-- Byte 246..247: Max Kelvin (14b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="246" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
                 
-                <!-- Byte 148: HCL Strength (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="148" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
+                <!-- Byte 248: HCL Strength (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="248" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
                 
-                <!-- Byte 149: Slew Rate -->
-                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="149" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
+                <!-- Byte 249: Slew Rate -->
+                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="249" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
                 
-                <!-- Byte 150: Brightness Compensation (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="150" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
+                <!-- Byte 250: Brightness Compensation (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="250" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
                 
-                <!-- Byte 151: White Mix (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="151" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
+                <!-- Byte 251: White Mix (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="251" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
                 
-                <!-- Byte 152: Reserved for future HCL parameters -->
+                <!-- Byte 252: Reserved for future HCL parameters -->
               </Union>
             </Parameters>
             <ParameterRefs>

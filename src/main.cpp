@@ -2,6 +2,7 @@
 #include "Logic.h"
 #include "OpenKNX.h"
 // #include "VirtualButtonModule.h"
+#include "FunctionBlocksModule.h"
 #include "NeoPixelModule.h"
 // #include <async_http_client.h>
 
@@ -45,6 +46,7 @@ void setup()
     openknx.addModule(1, openknxNeoPixelModule);
 #endif
     openknx.addModule(3, openknxLogic);
+    openknx.addModule(10, openknxFunctionBlocksModule);
 
 #if defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)
     openknx.addModule(7, openknxNetwork);

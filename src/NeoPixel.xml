@@ -5,8 +5,8 @@
   <op:ETS
     OpenKnxId="0xAF"
     ApplicationNumber="1"
-    ApplicationVersion="0.1"
-    ReplacesVersions="0.0" 
+    ApplicationVersion="0.2"
+    ReplacesVersions="0.1" 
     ApplicationRevision="0"
     ProductName="NeoPixel KNX Adapter"
     BusCurrent="30"
@@ -38,6 +38,17 @@
     <op:verify File="../lib/OFM-LogicModule/library.json" ModuleVersion="%LOG_VerifyVersion%" /> 
   </op:define>
 
+  <!-- Reserve [1240,1400] fuer zukünftige NEO-Erweiterungen / weitere Segment-KOs -->
+  <!-- 10 KOs / Channel => 10*10=100 KOs => [1400,1500]-->
+  <op:define prefix="FCB"
+    share="../lib/OFM-FunctionBlocks/src/FunctionBlocks.share.xml"
+    template="../lib/OFM-FunctionBlocks/src/FunctionBlocks.templ.xml"
+    NumChannels="10"
+    KoOffset="1400"
+    ModuleType="26">
+    <op:verify File="../lib/OFM-FunctionBlocks/library.json" ModuleVersion="%FCB_VerifyVersion%" />
+  </op:define>
+
   <!-- BEGIN AUTO-GENERATED: NEOEFF Module -->
   <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
   <!-- END AUTO-GENERATED: NEOEFF Module -->
@@ -65,6 +76,7 @@
             <op:include href="../lib/OFM-Network/src/Network.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="NET" />
             <op:include href="../lib/OFM-ConfigTransfer/src/ConfigTransfer.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="UCT" />
             <op:include href="../lib/OFM-LogicModule/src/Logikmodul.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="LOG" />
+            <op:include href="../lib/OFM-FunctionBlocks/src/FunctionBlocks.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="FCB" />
             <op:include href="NeoPixel.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="NEO" />
           </Dynamic>
 </generate>
