@@ -1,6 +1,6 @@
 {
-	"version": "2.0.0",
-	"tasks": [
+    "version": "2.0.0",
+    "tasks": [
         {
             "label": "OpenKNXproducer",
             "type": "shell",
@@ -49,5 +49,68 @@
             "group": "test",
             "dependsOn": ["Pull"]
         },
-	]
+        {
+            "label": "Build Release (-Release)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/Build-Release.ps1",
+            "args": [
+                "-Release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Build Release (-SkipFirmware)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/Build-Release.ps1",
+            "args": [
+                "-SkipFirmware"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Build Release (-Clean)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/Build-Release.ps1",
+            "args": [
+                "-Clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Build HardwareConfig",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/Build-HardwareConfig.ps1",
+            "args": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Build EffectParameters",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/Build-EffectParameters.ps1",
+            "args": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        }
+    ]
 }
