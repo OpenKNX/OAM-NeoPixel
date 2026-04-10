@@ -21,6 +21,7 @@ class EffectConfiguration;
 class ColorManagement;
 class StripConfiguration;
 class SegmentController;
+class SceneManager;
 
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
@@ -53,6 +54,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     friend class ColorManagement;
     friend class StripConfiguration;
     friend class SegmentController;
+    friend class SceneManager;
 
   public:
     // Segment Configuration Structure
@@ -85,6 +87,9 @@ class NeoPixelBusModule : public OpenKNX::Module
 
         // Which rendering mode was active before power-off
         bool savedLastWasEffect = false;
+
+        // Last active scene number (0 = no scene active, 1-15 = scene number)
+        uint8_t savedSceneNumber = 0;
 
         // Persistent HSV values for independent H/S/V control
         uint8_t currentH = 0;   // Current Hue (0-255)
@@ -266,6 +271,9 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Sub-module: Segment Controller
     class SegmentController* _segmentController;
+
+    // Sub-module: Scene Manager (ETS-configurable scenes/presets)
+    class SceneManager* _sceneManager;
 
     // Global HCL Manager (for segments with Mode=1 "Global")
     HclManager* _globalHclManager;

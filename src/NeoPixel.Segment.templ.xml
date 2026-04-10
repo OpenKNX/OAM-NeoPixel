@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
-   
+
+    <!-- Scene part: defines one scene slot, repeated 10 times via op:part -->
+    <!-- Generic Slot Approach: only 18 IDs per scene (8 fixed + 10 generic slots) -->
+    <op:part href="NeoPixel.Scene.part.xml" name="Scene" instances="10">
+        <op:param name="%PPP%" value="300" increment="20" />
+        <op:param name="%MO%" value="140" increment="22" digits="1"/>
+        <op:param name="%SZ%" value="1" increment="1" digits="1"/>
+        <op:param name="%SN%" value="0" increment="1" asLetter="true"/>
+    </op:part>
+
     <ManufacturerData>
     <Manufacturer RefId="M-00FA">
       <ApplicationPrograms>
@@ -11,7 +20,7 @@
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Segment Parameters (overlapping unions by design: effect params share same offsets, only one effect active at a time) -->
-              <Union SizeInBit="2016" op:nowarn="true">
+              <Union SizeInBit="3072" op:nowarn="true">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0..1: 16b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%050" Offset="0" BitOffset="0" Name="NEO%C%SegmentStart" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Start LED" Value="1"/>
@@ -43,57 +52,67 @@
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                 <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
         <!-- END AUTO-GENERATED: Effect Parameters Union -->
-                
+
+                <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                     Scene/Preset Configuration (op:part based, 10 scenes × 22 bytes = 220 bytes)
+                     Offset 137: SceneCount, Offset 140-359: Scene data
+                     ═══════════════════════════════════════════════════════════════════════════════════ -->
+                <!-- Byte 137: SceneCount (4 bits: 0=disabled, 1-10 scenes) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%212" Offset="137" BitOffset="0" Name="NEO%C%SceneCount" ParameterType="%AID%_PT-SceneCount" Text="Anzahl Szenen" Value="0"/>
+
+                <!-- Scene parameters (injected via op:part, offsets 140-469) -->
+                <op:usePart name="Scene" xpath="//Parameters/*" />
+
                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
                      HCL (Human Centric Lighting) Parameters per Segment
-                     Offset 233-252 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
+                     Offset 360-379 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
                      ═══════════════════════════════════════════════════════════════════════════════════ -->
-                <!-- Byte 233: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
-                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="233" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
-                <!-- Byte 233: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
-                
-                <!-- Byte 234..235: Start time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="234" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="235" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
-                
-                <!-- Byte 236..237: End time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="236" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
-                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="237" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
-                
-                <!-- Byte 238..239: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="238" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
-                
-                <!-- Byte 240: HclApplyMode (3 bits) + frei -->
-                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="240" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
-                
-                <!-- Byte 241..242: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="241" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
-                
-                <!-- Byte 242: HCLPreserveCurve (3 bits at offset 4-6) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="242" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
-                
-                <!-- Byte 243: Saturation Threshold -->
-                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="243" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
-                
-                <!-- Byte 244..245: Min Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="244" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
-                
-                <!-- Byte 246..247: Max Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="246" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
-                
-                <!-- Byte 248: HCL Strength (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="248" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
-                
-                <!-- Byte 249: Slew Rate -->
-                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="249" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
-                
-                <!-- Byte 250: Brightness Compensation (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="250" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
-                
-                <!-- Byte 251: White Mix (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="251" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
-                
-                <!-- Byte 252: Reserved for future HCL parameters -->
+                <!-- Byte 360: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
+                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="360" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
+                <!-- Byte 360: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
+
+                <!-- Byte 361..362: Start time (only for HCL Type = Feste Zeit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="361" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
+                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="362" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
+
+                <!-- Byte 363..364: End time (only for HCL Type = Feste Zeit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="363" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
+                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="364" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
+
+                <!-- Byte 365..366: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="365" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
+
+                <!-- Byte 367: HclApplyMode (3 bits) + frei -->
+                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="367" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
+
+                <!-- Byte 368..369: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="368" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
+
+                <!-- Byte 369: HCLPreserveCurve (3 bits at offset 4-6) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="369" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
+
+                <!-- Byte 370: Saturation Threshold -->
+                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="370" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
+
+                <!-- Byte 371..372: Min Kelvin (14b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="371" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
+
+                <!-- Byte 373..374: Max Kelvin (14b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="373" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
+
+                <!-- Byte 375: HCL Strength (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="375" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
+
+                <!-- Byte 376: Slew Rate -->
+                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="376" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
+
+                <!-- Byte 377: Brightness Compensation (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="377" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
+
+                <!-- Byte 378: White Mix (7b) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="378" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
+
+                <!-- Byte 379: Reserved for future HCL parameters -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -116,6 +135,11 @@
               <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
               <!-- END AUTO-GENERATED: Effect ParameterRefs -->
+
+              <!-- Scene Count ParameterRef -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%212_R-%TT%%CC%21201" RefId="%AID%_UP-%TT%%CC%212" />
+              <!-- Scene ParameterRefs (injected via op:part) -->
+              <op:usePart name="Scene" xpath="//ParameterRefs/*" />
 
               <!--  PARAMETER ID ARCHITECTURE: -->
               <!--  - IDs 73-175:  Auto-generated effect parameters (current: 26 effects, 103 parameters) -->
@@ -308,6 +332,9 @@
               <!-- HCL State -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" RefId="%AID%_O-%TT%%CC%044" Text="{{0:%C%}}: HCL Zustand" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
+            <ParameterCalculations>
+              <op:usePart name="Scene" xpath="//ParameterCalculations/*" />
+            </ParameterCalculations>
           </Static>
           <Dynamic>
             <!-- ========================================================================================================= -->
@@ -369,6 +396,17 @@
                       <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                       <!-- Dynamic choose/when blocks for effect-specific parameters -->
               <!-- END AUTO-GENERATED: Effect Dynamic UI -->
+
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                         Szenen / Presets (ETS-konfigurierbar)
+                         ═══════════════════════════════════════════════════════════════════════════════════ -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Szenen / Presets" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Konfigurierbare Lichtszenen mit Effekt, Farben, Helligkeit und Effekt-spezifischen Parametern. Szenen werden über das Preset-KO per Szenennummer abgerufen." />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%212_R-%TT%%CC%21201" IndentLevel="1" HelpContext="%DOC%"/>
+
+                    <!-- Scene blocks (injected via op:part, each scene self-gates visibility via SceneCount >= %SZ%) -->
+                    <op:usePart name="Scene" xpath="//Dynamic/ChannelIndependentBlock/ParameterBlock[@Id='Scene']/*" />
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ═══════════════════════════════════════════════════════════════════════════════════

@@ -417,3 +417,11 @@ function NEO_detectHardware(device, online, progress, context) {
 // BEGIN AUTO-GENERATED: Network Module Visibility
 // Cleaned - Ready for regeneration
 // END AUTO-GENERATED: Network Module Visibility
+
+// BEGIN AUTO-GENERATED: Scene Effect Defaults
+var NEO_SceneEffectDefaults = {};
+// END AUTO-GENERATED: Scene Effect Defaults
+
+// BEGIN AUTO-GENERATED: Scene Effect Defaults Function
+function NEO_SetSceneEffectDefaults(input, output, context) { }
+// END AUTO-GENERATED: Scene Effect Defaults Function

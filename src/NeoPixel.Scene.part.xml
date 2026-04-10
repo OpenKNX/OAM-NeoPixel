@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer"
+    xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
+    <ManufacturerData>
+        <Manufacturer>
+            <ApplicationPrograms>
+                <ApplicationProgram>
+                    <Static>
+                        <Parameters>
+                            <!-- Scene %SZ%: 22 bytes at offset %MO% within segment Union -->
+                            <!-- Generic Slot Approach: 10 generic Parameters + aliased ParameterRefs per effect -->
+                            <!-- Byte %MO%+0: Effect Type (1 byte) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+0%" Offset="%MO%" BitOffset="0" Name="NEO%C%Scene%SN%EffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt Typ" Value="0"/>
+
+                            <!-- Byte %MO%+1..3: Primary Color RGB (3 bytes) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+1%" Offset="%MO+1%" BitOffset="0" Name="NEO%C%Scene%SN%PrimaryColor" ParameterType="%AID%_PT-ColorRGB" Text="Primärfarbe RGB" Value="#FFFFFF"/>
+
+                            <!-- Byte %MO%+4: Primary Warm White (1 byte) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+2%" Offset="%MO+4%" BitOffset="0" Name="NEO%C%Scene%SN%PrimaryWW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Primärfarbe Warmweiß" Value="0"/>
+
+                            <!-- Byte %MO%+5: Primary Cool White (1 byte) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+3%" Offset="%MO+5%" BitOffset="0" Name="NEO%C%Scene%SN%PrimaryCW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Primärfarbe Kaltweiß" Value="0"/>
+
+                            <!-- Byte %MO%+6..8: Secondary Color RGB (3 bytes) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+4%" Offset="%MO+6%" BitOffset="0" Name="NEO%C%Scene%SN%SecondaryColor" ParameterType="%AID%_PT-ColorRGB" Text="Sekundärfarbe RGB" Value="#000000"/>
+
+                            <!-- Byte %MO%+9: Secondary Warm White (1 byte) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+5%" Offset="%MO+9%" BitOffset="0" Name="NEO%C%Scene%SN%SecondaryWW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sekundärfarbe Warmweiß" Value="0"/>
+
+                            <!-- Byte %MO%+10: Secondary Cool White (1 byte) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+6%" Offset="%MO+10%" BitOffset="0" Name="NEO%C%Scene%SN%SecondaryCW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sekundärfarbe Kaltweiß" Value="0"/>
+
+                            <!-- Byte %MO%+11: Brightness (1 byte) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+7%" Offset="%MO+11%" BitOffset="0" Name="NEO%C%Scene%SN%Brightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Helligkeit" Value="255"/>
+
+                            <!-- Bytes %MO%+12 .. %MO%+21: Effect-specific parameters (10 generic slots) -->
+                            <!-- Generic Slots: Only 10 Parameters defined, aliased via ParameterRefs per effect -->
+                            <!-- BEGIN AUTO-GENERATED: Scene Effect Parameters -->
+
+                            <!-- END AUTO-GENERATED: Scene Effect Parameters -->
+
+                        </Parameters>
+                        <ParameterRefs>
+                            <!-- Scene %SZ% ParameterRefs (fixed params) -->
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" RefId="%AID%_UP-%TT%%CC%%PPP+0%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+1%_R-%TT%%CC%%PPP+1%01" RefId="%AID%_UP-%TT%%CC%%PPP+1%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+2%_R-%TT%%CC%%PPP+2%01" RefId="%AID%_UP-%TT%%CC%%PPP+2%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+3%_R-%TT%%CC%%PPP+3%01" RefId="%AID%_UP-%TT%%CC%%PPP+3%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+4%_R-%TT%%CC%%PPP+4%01" RefId="%AID%_UP-%TT%%CC%%PPP+4%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+5%_R-%TT%%CC%%PPP+5%01" RefId="%AID%_UP-%TT%%CC%%PPP+5%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+6%_R-%TT%%CC%%PPP+6%01" RefId="%AID%_UP-%TT%%CC%%PPP+6%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+7%_R-%TT%%CC%%PPP+7%01" RefId="%AID%_UP-%TT%%CC%%PPP+7%" />
+                            <!-- BEGIN AUTO-GENERATED: Scene Effect ParameterRefs -->
+
+                            <!-- END AUTO-GENERATED: Scene Effect ParameterRefs -->
+                        </ParameterRefs>
+                        <ParameterCalculations>
+                            <ParameterCalculation Id="%AID%_PC-%TT%%CC%%PPP+0%01" Language="JavaScript" Name="Scene%SN%_SetEffectDefaults" LRTransformationFunc="NEO_SetSceneEffectDefaults" RLTransformationFunc="NEO_Empty">
+                                <LParameters>
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" AliasName="EffectType" />
+                                </LParameters>
+                                <RParameters>
+                                    <!-- BEGIN AUTO-GENERATED: Scene Effect PC RParameters -->
+
+                                    <!-- END AUTO-GENERATED: Scene Effect PC RParameters -->
+                                </RParameters>
+                            </ParameterCalculation>
+                        </ParameterCalculations>
+                    </Static>
+                    <Dynamic>
+                        <ChannelIndependentBlock>
+                            <ParameterBlock Id="Scene">
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%212_R-%TT%%CC%21201">
+                                <when test=">=%SZ%">
+                                <ParameterSeparator Id="%AID%_PS-nnn" Text="Szene %SZ%" UIHint="Headline" />
+
+                                <!-- Effect Type -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene-%SZ%"/>
+
+                                <!-- Primary Color RGB -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+1%_R-%TT%%CC%%PPP+1%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-RGB-Szene-%SZ%"/>
+                                <!-- Primary WW -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+2%_R-%TT%%CC%%PPP+2%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-Warmweiss-Szene-%SZ%"/>
+                                <!-- Primary CW -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+3%_R-%TT%%CC%%PPP+3%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-Kaltweiss-Szene-%SZ%"/>
+
+                                <!-- Secondary Color RGB -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+4%_R-%TT%%CC%%PPP+4%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-RGB-Szene-%SZ%"/>
+                                <!-- Secondary WW -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+5%_R-%TT%%CC%%PPP+5%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-Warmweiss-Szene-%SZ%"/>
+                                <!-- Secondary CW -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+6%_R-%TT%%CC%%PPP+6%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-Kaltweiss-Szene-%SZ%"/>
+
+                                <!-- Brightness -->
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+7%_R-%TT%%CC%%PPP+7%01" IndentLevel="2" HelpContext="NEO-Helligkeit-Szene-%SZ%"/>
+
+                                <!-- Effect-specific parameters via choose/when on aliased ParameterRefs -->
+                                <!-- BEGIN AUTO-GENERATED: Scene Effect Dynamic UI -->
+
+                                <!-- END AUTO-GENERATED: Scene Effect Dynamic UI -->
+                                </when>
+                              </choose>
+                            </ParameterBlock>
+                        </ChannelIndependentBlock>
+                    </Dynamic>
+                </ApplicationProgram>
+            </ApplicationPrograms>
+        </Manufacturer>
+    </ManufacturerData>
+</KNX>

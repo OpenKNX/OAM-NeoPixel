@@ -1,5 +1,6 @@
 #include "NeoPixelFlashPersistence.h"
 #include "NeoPixelModule.h"
+#include "SceneManager.h"
 #include "Segment.h"
 #include <algorithm>
 
@@ -219,6 +220,9 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
             cfg.savedLastWasEffect = (state.effectFlags & 0x02) != 0;
         }
 
+        // Restore last active scene number from reserved[0]
+        cfg.savedSceneNumber = state.reserved[0];
+
         // Mark data as valid if ANY flag is set
         cfg.savedValid = (state.validFlags != 0);
 
@@ -341,6 +345,27 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         // Mode is "Letzter Zustand" - try to restore from flash
         if (cfg.savedValid)
         {
+            // Check if a scene was active — if so, recall it directly
+            if (cfg.savedSceneNumber > 0 && _module->_sceneManager)
+            {
+                bool sceneRecalled = _module->_sceneManager->recallScene(i, cfg.savedSceneNumber, seg);
+                if (sceneRecalled)
+                {
+                    // Restore power state on top of scene
+                    if (cfg.savedPower == 0)
+                    {
+                        seg->setBrightness(0);
+                    }
+#ifdef OPENKNX_DEBUG
+                    logInfoP("[Segment %d] RESTORED Scene %d from Flash (power=%s)",
+                             i, cfg.savedSceneNumber, cfg.savedPower ? "ON" : "OFF");
+                    restoredCount++;
+#endif
+                    continue; // Scene recall handled everything, skip individual restore
+                }
+                // If scene recall failed (e.g. scene count changed), fall through to individual restore
+            }
+
             // Determine effect source: Flash (if KO-changed) or ETS (base config)
             uint8_t effectType;
             bool effectFromFlash = false;
@@ -354,7 +379,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             else
             {
                 // No KO-change → use ETS base config (already loaded in configureEffects)
-                effectType = ParamNEO_NEONEOEffectType;
+                effectType = static_cast<uint8_t>(ParamNEO_NEONEOEffectType);
             }
 
             // Apply effect (from flash or ETS)
@@ -534,8 +559,8 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
         state.effectFlags = 0;
     }
 
-    // Reserved for future KO parameters (HSV, CCT, effect params)
-    state.reserved[0] = 0;
+    // reserved[0] = last active scene number (0 = no scene)
+    state.reserved[0] = cfg.savedSceneNumber;
     state.reserved[1] = 0;
     state.reserved[2] = 0;
 

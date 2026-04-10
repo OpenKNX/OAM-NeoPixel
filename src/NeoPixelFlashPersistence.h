@@ -13,7 +13,7 @@ class Segment;
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
  *
- * Storage: 10 bytes per segment × 16 segments = 160 bytes max (+ relay state)
+ * Storage: 14 bytes per segment × 16 segments = 224 bytes max (+ relay state)
  */
 class NeoPixelFlashPersistence
 {
@@ -51,7 +51,8 @@ class NeoPixelFlashPersistence
         uint8_t effectFlags; // bit0=effectValid, bit1=lastWasEffect
 
         // Reserved for future KO parameters (HSV, CCT, effect params):
-        uint8_t reserved[3]; // Phase 2: HSV/CCT/effect parameter values
+        uint8_t reserved[3]; // reserved[0] = last active scene number (0 = no scene)
+                             // reserved[1..2] = Phase 2: HSV/CCT values
 
         // Total: 14 bytes per segment × 16 segments = 224 bytes max
     } __attribute__((packed));
@@ -75,7 +76,7 @@ class NeoPixelFlashPersistence
 
     /**
      * @brief Calculate flash size needed for storing segment states
-     * @return Number of bytes required (10 bytes × configured segments)
+     * @return Number of bytes required (14 bytes × configured segments)
      */
     uint16_t calculateFlashSize() const;
 

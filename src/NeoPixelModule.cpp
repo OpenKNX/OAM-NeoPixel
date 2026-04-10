@@ -2,6 +2,7 @@
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
 #include "HardwareMappingLogic.h"
+#include "SceneManager.h"
 #include "SegmentController.h"
 #include "StripConfiguration.h"
 
@@ -91,12 +92,13 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
 NeoPixelBusModule openknxNeoPixelModule;
 
 NeoPixelBusModule::NeoPixelBusModule()
-    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _globalHclManager(nullptr)
+    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr), _globalHclManager(nullptr)
 {
     _flashPersistence = new NeoPixelFlashPersistence(this);
     _effectConfiguration = new EffectConfiguration(this);
     _colorManagement = new ColorManagement(this);
     _segmentController = new SegmentController(this);
+    _sceneManager = new SceneManager(this);
 }
 
 NeoPixelBusModule::~NeoPixelBusModule()
@@ -113,6 +115,7 @@ NeoPixelBusModule::~NeoPixelBusModule()
     delete _effectConfiguration;
     delete _colorManagement;
     delete _segmentController;
+    delete _sceneManager;
 }
 
 void NeoPixelBusModule::setup(bool configured)
@@ -334,38 +337,43 @@ void NeoPixelBusModule::setRelayOutput(uint8_t relayIndex, bool state)
     _relayStates[relayIndex] = state;
     bool physicalState = _relayInverted[relayIndex] ? !state : state;
     digitalWrite(pin, physicalState ? HIGH : LOW);
-    
+
     // Track off-time for minimum off-time protection
-    if (!state) {
+    if (!state)
+    {
         _relayTimers[relayIndex].lastOffTime = millis();
     }
-    
-    // Send status feedback to KNX bus
-    #if defined(NEO_KoExternalRelay1State)
-    if (relayIndex == 0) {
+
+// Send status feedback to KNX bus
+#if defined(NEO_KoExternalRelay1State)
+    if (relayIndex == 0)
+    {
         bool changed = KoNEO_ExternalRelay1State.valueNoSendCompare(state, DPT_Switch);
         if (changed) KoNEO_ExternalRelay1State.objectWritten();
     }
-    #endif
-    #if defined(NEO_KoExternalRelay2State)
-    if (relayIndex == 1) {
+#endif
+#if defined(NEO_KoExternalRelay2State)
+    if (relayIndex == 1)
+    {
         bool changed = KoNEO_ExternalRelay2State.valueNoSendCompare(state, DPT_Switch);
         if (changed) KoNEO_ExternalRelay2State.objectWritten();
     }
-    #endif
-    #if defined(NEO_KoExternalRelay3State)
-    if (relayIndex == 2) {
+#endif
+#if defined(NEO_KoExternalRelay3State)
+    if (relayIndex == 2)
+    {
         bool changed = KoNEO_ExternalRelay3State.valueNoSendCompare(state, DPT_Switch);
         if (changed) KoNEO_ExternalRelay3State.objectWritten();
     }
-    #endif
-    #if defined(NEO_KoExternalRelay4State)
-    if (relayIndex == 3) {
+#endif
+#if defined(NEO_KoExternalRelay4State)
+    if (relayIndex == 3)
+    {
         bool changed = KoNEO_ExternalRelay4State.valueNoSendCompare(state, DPT_Switch);
         if (changed) KoNEO_ExternalRelay4State.objectWritten();
     }
-    #endif
-    
+#endif
+
     logDebugP("Relay %d set to %s (GPIO %d)", relayIndex + 1, state ? "ON" : "OFF", pin);
 }
 
@@ -373,31 +381,34 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
 {
     if (relayIndex >= kRelayStorageSize) return;
     if (_relayCount == 0 || relayIndex >= _relayCount) return;
-    
+
     // Check minimum off-time (only when turning ON)
-    if (targetState && !_relayStates[relayIndex]) {
+    if (targetState && !_relayStates[relayIndex])
+    {
         uint16_t minOffSeconds = 0;
-        
-        #if defined(ParamNEO_NEOExternalRelay1MinOffTime)
+
+#if defined(ParamNEO_NEOExternalRelay1MinOffTime)
         if (relayIndex == 0) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay1MinOffTime;
-        #endif
-        #if defined(ParamNEO_NEOExternalRelay2MinOffTime)
+#endif
+#if defined(ParamNEO_NEOExternalRelay2MinOffTime)
         if (relayIndex == 1) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay2MinOffTime;
-        #endif
-        #if defined(ParamNEO_NEOExternalRelay3MinOffTime)
+#endif
+#if defined(ParamNEO_NEOExternalRelay3MinOffTime)
         if (relayIndex == 2) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay3MinOffTime;
-        #endif
-        #if defined(ParamNEO_NEOExternalRelay4MinOffTime)
+#endif
+#if defined(ParamNEO_NEOExternalRelay4MinOffTime)
         if (relayIndex == 3) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay4MinOffTime;
-        #endif
-        
-        if (minOffSeconds > 0 && _relayTimers[relayIndex].lastOffTime != 0) {
+#endif
+
+        if (minOffSeconds > 0 && _relayTimers[relayIndex].lastOffTime != 0)
+        {
             unsigned long now = millis();
             unsigned long minOffMillis = minOffSeconds * 1000UL;
-            
+
             // Handle millis() overflow with signed comparison (same as processRelayTimers)
             long elapsed = (long)(now - _relayTimers[relayIndex].lastOffTime);
-            if (elapsed >= 0 && (unsigned long)elapsed < minOffMillis) {
+            if (elapsed >= 0 && (unsigned long)elapsed < minOffMillis)
+            {
                 // Min off-time not yet elapsed
                 unsigned long remaining = minOffMillis - (unsigned long)elapsed;
                 logInfoP("Relay %d: Ignoring ON command (min off-time %ds not elapsed, %lus remaining)",
@@ -406,51 +417,58 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
             }
         }
     }
-    
+
     // Read delay parameters (in seconds) based on target state
     uint16_t delaySeconds = 0;
-    
-    #if defined(ParamNEO_NEOExternalRelay1OnDelay)
-    if (relayIndex == 0) {
-        delaySeconds = targetState 
-            ? (uint16_t)ParamNEO_NEOExternalRelay1OnDelay 
-            : (uint16_t)ParamNEO_NEOExternalRelay1OffDelay;
+
+#if defined(ParamNEO_NEOExternalRelay1OnDelay)
+    if (relayIndex == 0)
+    {
+        delaySeconds = targetState
+                           ? (uint16_t)ParamNEO_NEOExternalRelay1OnDelay
+                           : (uint16_t)ParamNEO_NEOExternalRelay1OffDelay;
     }
-    #endif
-    #if defined(ParamNEO_NEOExternalRelay2OnDelay)
-    if (relayIndex == 1) {
-        delaySeconds = targetState 
-            ? (uint16_t)ParamNEO_NEOExternalRelay2OnDelay 
-            : (uint16_t)ParamNEO_NEOExternalRelay2OffDelay;
+#endif
+#if defined(ParamNEO_NEOExternalRelay2OnDelay)
+    if (relayIndex == 1)
+    {
+        delaySeconds = targetState
+                           ? (uint16_t)ParamNEO_NEOExternalRelay2OnDelay
+                           : (uint16_t)ParamNEO_NEOExternalRelay2OffDelay;
     }
-    #endif
-    #if defined(ParamNEO_NEOExternalRelay3OnDelay)
-    if (relayIndex == 2) {
-        delaySeconds = targetState 
-            ? (uint16_t)ParamNEO_NEOExternalRelay3OnDelay 
-            : (uint16_t)ParamNEO_NEOExternalRelay3OffDelay;
+#endif
+#if defined(ParamNEO_NEOExternalRelay3OnDelay)
+    if (relayIndex == 2)
+    {
+        delaySeconds = targetState
+                           ? (uint16_t)ParamNEO_NEOExternalRelay3OnDelay
+                           : (uint16_t)ParamNEO_NEOExternalRelay3OffDelay;
     }
-    #endif
-    #if defined(ParamNEO_NEOExternalRelay4OnDelay)
-    if (relayIndex == 3) {
-        delaySeconds = targetState 
-            ? (uint16_t)ParamNEO_NEOExternalRelay4OnDelay 
-            : (uint16_t)ParamNEO_NEOExternalRelay4OffDelay;
+#endif
+#if defined(ParamNEO_NEOExternalRelay4OnDelay)
+    if (relayIndex == 3)
+    {
+        delaySeconds = targetState
+                           ? (uint16_t)ParamNEO_NEOExternalRelay4OnDelay
+                           : (uint16_t)ParamNEO_NEOExternalRelay4OffDelay;
     }
-    #endif
-    
+#endif
+
     // Cancel any pending timer for this relay
     _relayTimers[relayIndex].pendingChange = false;
-    
-    if (delaySeconds == 0) {
+
+    if (delaySeconds == 0)
+    {
         // No delay - execute immediately
         setRelayOutput(relayIndex, targetState);
-    } else {
+    }
+    else
+    {
         // Schedule delayed execution
         _relayTimers[relayIndex].targetState = targetState;
         _relayTimers[relayIndex].pendingChange = true;
         _relayTimers[relayIndex].triggerTime = millis() + (delaySeconds * 1000UL);
-        logInfoP("Relay %d change to %s scheduled in %d seconds", 
+        logInfoP("Relay %d change to %s scheduled in %d seconds",
                  relayIndex + 1, targetState ? "ON" : "OFF", delaySeconds);
     }
 }
@@ -458,12 +476,15 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
 void NeoPixelBusModule::processRelayTimers()
 {
     if (_relayCount == 0) return;
-    
+
     unsigned long now = millis();
-    for (uint8_t i = 0; i < _relayCount; ++i) {
-        if (_relayTimers[i].pendingChange) {
+    for (uint8_t i = 0; i < _relayCount; ++i)
+    {
+        if (_relayTimers[i].pendingChange)
+        {
             // Handle millis() overflow (wraps every ~49 days)
-            if ((long)(now - _relayTimers[i].triggerTime) >= 0) {
+            if ((long)(now - _relayTimers[i].triggerTime) >= 0)
+            {
                 // Time to execute
                 setRelayOutput(i, _relayTimers[i].targetState);
                 _relayTimers[i].pendingChange = false;
@@ -545,41 +566,41 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         return;
     }
 
-    #if defined(NEO_KoExternalRelay1)
+#if defined(NEO_KoExternalRelay1)
     if (koNumber == NEO_KoExternalRelay1)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(0, state);
         return;
     }
-    #endif
+#endif
 
-    #if defined(NEO_KoExternalRelay2)
+#if defined(NEO_KoExternalRelay2)
     if (koNumber == NEO_KoExternalRelay2)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(1, state);
         return;
     }
-    #endif
+#endif
 
-    #if defined(NEO_KoExternalRelay3)
+#if defined(NEO_KoExternalRelay3)
     if (koNumber == NEO_KoExternalRelay3)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(2, state);
         return;
     }
-    #endif
+#endif
 
-    #if defined(NEO_KoExternalRelay4)
+#if defined(NEO_KoExternalRelay4)
     if (koNumber == NEO_KoExternalRelay4)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(3, state);
         return;
     }
-    #endif
+#endif
 
     // Channel-specific KOs (segment-based) - Calculate which channel this KO belongs to
     int channel = NEO_KoCalcChannel(koNumber);
@@ -1238,54 +1259,67 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoPreset:
             {
                 uint8_t preset = ko.value(DPT_SceneNumber);
-                logInfoP("Segment %d Preset: %d", channel, preset);
+                logInfoP("Segment %d Preset/Scene: %d", channel, preset);
 
-                // Apply preset configuration to segment (predefined color/effect combinations)
-                switch (preset)
+                // Try ETS-configured scenes first (SceneManager)
+                bool sceneApplied = _sceneManager->recallScene(channel, preset, targetSegment);
+
+                if (sceneApplied)
                 {
-                    case 1: // Red
-                        targetSegment->setPrimaryColor(255, 0, 0, 0);
-                        targetSegment->setBrightness(255);
-                        break;
-                    case 2: // Green
-                        targetSegment->setPrimaryColor(0, 255, 0, 0);
-                        targetSegment->setBrightness(255);
-                        break;
-                    case 3: // Blue
-                        targetSegment->setPrimaryColor(0, 0, 255, 0);
-                        targetSegment->setBrightness(255);
-                        break;
-                    case 4: // White
-                        targetSegment->setPrimaryColor(255, 255, 255, 0);
-                        targetSegment->setBrightness(255);
-                        break;
-                    case 5: // Warm White (using color temperature)
+                    // Save scene number for flash persistence
+                    _segments[channel].savedSceneNumber = preset;
+                }
+                else
+                {
+                    // Fallback: hardcoded presets for backward compatibility
+                    // (only used when scene number exceeds configured SceneCount)
+                    _segments[channel].savedSceneNumber = 0; // Clear scene number
+                    switch (preset)
                     {
-                        uint8_t r, g, b;
-                        ColorHelper::kelvinToRGB(2700, r, g, b); // Warm white ~2700K
-                        targetSegment->setPrimaryColor(r, g, b, 0);
-                        targetSegment->setBrightness(255);
+                        case 1: // Red
+                            targetSegment->setPrimaryColor(255, 0, 0, 0);
+                            targetSegment->setBrightness(255);
+                            break;
+                        case 2: // Green
+                            targetSegment->setPrimaryColor(0, 255, 0, 0);
+                            targetSegment->setBrightness(255);
+                            break;
+                        case 3: // Blue
+                            targetSegment->setPrimaryColor(0, 0, 255, 0);
+                            targetSegment->setBrightness(255);
+                            break;
+                        case 4: // White
+                            targetSegment->setPrimaryColor(255, 255, 255, 0);
+                            targetSegment->setBrightness(255);
+                            break;
+                        case 5: // Warm White (using color temperature)
+                        {
+                            uint8_t r, g, b;
+                            ColorHelper::kelvinToRGB(2700, r, g, b); // Warm white ~2700K
+                            targetSegment->setPrimaryColor(r, g, b, 0);
+                            targetSegment->setBrightness(255);
+                        }
+                        break;
+                        case 6: // Cool White
+                        {
+                            uint8_t r, g, b;
+                            ColorHelper::kelvinToRGB(6500, r, g, b); // Cool white ~6500K
+                            targetSegment->setPrimaryColor(r, g, b, 0);
+                            targetSegment->setBrightness(255);
+                        }
+                        break;
+                        case 7:                                     // Rainbow Effect
+                            applyEffectToSegment(targetSegment, 1); // Rainbow effect
+                            targetSegment->setBrightness(200);
+                            break;
+                        case 8: // Off
+                            targetSegment->setPrimaryColor(0, 0, 0, 0);
+                            targetSegment->setBrightness(0);
+                            break;
+                        default:
+                            logWarningP("Unknown preset %d for segment %d", preset, channel);
+                            break;
                     }
-                    break;
-                    case 6: // Cool White
-                    {
-                        uint8_t r, g, b;
-                        ColorHelper::kelvinToRGB(6500, r, g, b); // Cool white ~6500K
-                        targetSegment->setPrimaryColor(r, g, b, 0);
-                        targetSegment->setBrightness(255);
-                    }
-                    break;
-                    case 7:                                     // Rainbow Effect
-                        applyEffectToSegment(targetSegment, 1); // Rainbow effect
-                        targetSegment->setBrightness(200);
-                        break;
-                    case 8: // Off
-                        targetSegment->setPrimaryColor(0, 0, 0, 0);
-                        targetSegment->setBrightness(0);
-                        break;
-                    default:
-                        logWarningP("Unknown preset %d for segment %d", preset, channel);
-                        break;
                 }
                 break;
             }
@@ -1314,7 +1348,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
 
                         // For Solid effect (type=0), restore saved colors
-                        if (cfg.savedEffectType == 0)
+                        if (cfg.savedEffectType == static_cast<uint8_t>(PT_NEOEffectType::Solid))
                         {
                             targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                         }
@@ -1919,34 +1953,37 @@ void NeoPixelBusModule::configureFromETS()
             auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
                 // Get port selection from ETS
                 uint8_t portIndex;
-                switch (relayIndex) {
+                switch (relayIndex)
+                {
                     case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
                     case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
                     case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
                     case 3: portIndex = (uint8_t)ParamNEO_NEOExternalRelay4Port; break;
                     default: portIndex = 255; break;
                 }
-                
+
                 // Check if "Manuell" (Value 10) is selected in Port dropdown
-                if (portIndex == 10) {
+                if (portIndex == 10)
+                {
                     // Return manual GPIO number from ETS parameter
-                    switch (relayIndex) {
-                        #if defined(ParamNEO_NEOExternalRelay1GPIO)
+                    switch (relayIndex)
+                    {
+#if defined(ParamNEO_NEOExternalRelay1GPIO)
                         case 0: return (uint8_t)ParamNEO_NEOExternalRelay1GPIO;
-                        #endif
-                        #if defined(ParamNEO_NEOExternalRelay2GPIO)
+#endif
+#if defined(ParamNEO_NEOExternalRelay2GPIO)
                         case 1: return (uint8_t)ParamNEO_NEOExternalRelay2GPIO;
-                        #endif
-                        #if defined(ParamNEO_NEOExternalRelay3GPIO)
+#endif
+#if defined(ParamNEO_NEOExternalRelay3GPIO)
                         case 2: return (uint8_t)ParamNEO_NEOExternalRelay3GPIO;
-                        #endif
-                        #if defined(ParamNEO_NEOExternalRelay4GPIO)
+#endif
+#if defined(ParamNEO_NEOExternalRelay4GPIO)
                         case 3: return (uint8_t)ParamNEO_NEOExternalRelay4GPIO;
-                        #endif
+#endif
                         default: return 255;
                     }
                 }
-                
+
                 // Otherwise use hardware port mapping (portIndex 0-N)
 
                 if (!isHardwarePortSelected(portIndex))
@@ -1982,19 +2019,19 @@ void NeoPixelBusModule::configureFromETS()
                 _relayStates[i] = false;
                 logInfoP("Relay %d: Initial state OFF", i + 1);
 
-                // Read output logic (invert) setting per relay
-                #if defined(ParamNEO_NEOExternalRelay1OutputLogic)
+// Read output logic (invert) setting per relay
+#if defined(ParamNEO_NEOExternalRelay1OutputLogic)
                 if (i == 0) _relayInverted[i] = (ParamNEO_NEOExternalRelay1OutputLogic != 0);
-                #endif
-                #if defined(ParamNEO_NEOExternalRelay2OutputLogic)
+#endif
+#if defined(ParamNEO_NEOExternalRelay2OutputLogic)
                 if (i == 1) _relayInverted[i] = (ParamNEO_NEOExternalRelay2OutputLogic != 0);
-                #endif
-                #if defined(ParamNEO_NEOExternalRelay3OutputLogic)
+#endif
+#if defined(ParamNEO_NEOExternalRelay3OutputLogic)
                 if (i == 2) _relayInverted[i] = (ParamNEO_NEOExternalRelay3OutputLogic != 0);
-                #endif
-                #if defined(ParamNEO_NEOExternalRelay4OutputLogic)
+#endif
+#if defined(ParamNEO_NEOExternalRelay4OutputLogic)
                 if (i == 3) _relayInverted[i] = (ParamNEO_NEOExternalRelay4OutputLogic != 0);
-                #endif
+#endif
                 if (_relayInverted[i]) logInfoP("Relay %d: Output logic INVERTED (LOW = ON)", i + 1);
             }
         }
@@ -3130,7 +3167,7 @@ void NeoPixelBusModule::forceColorCorrectionUpdate()
 void NeoPixelBusModule::configureStripOptions()
 {
     // Swap mode configuration
-    _swapMode = mapSwapMode(ParamNEOSTRIP_NEOSwap);
+    _swapMode = mapSwapMode(static_cast<uint8_t>(ParamNEOSTRIP_NEOSwap));
     logDebugP("Swap mode configured: %d", _swapMode);
 
     // Skip first LEDs - now handled automatically in VirtualStrip::syncToPhysical()

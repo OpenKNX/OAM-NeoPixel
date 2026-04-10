@@ -118,6 +118,17 @@ $script:Config = @{
     EffectBaseHeader = "../lib/OFM-NeoPixel/src/effects/Effect.h"
     SegmentHeader = "../lib/OFM-NeoPixel/src/Segment.h"
 
+    # Scene Configuration
+    ScenePartXml = "src/NeoPixel.Scene.part.xml"
+    SceneDataStart = 140         # First scene at offset 140 within Union
+    SceneSize = 22               # Bytes per scene
+    SceneEffectParamOffset = 12  # Effect params start at byte 12 within each scene
+    SceneEffectParamSize = 10    # 10 bytes for effect-specific params per scene
+    SceneCountOffset = 137       # SceneCount param offset within Union
+    SceneBaseParamId = 8         # First free ID within scene part (after 0-7 for fixed params)
+    SceneGenericSlotCount = 10   # Number of generic slots (8 uint8 + 2 bool)
+    SceneInstances = 10          # Number of scene instances (must match instances= in Segment.templ.xml)
+
     # File names and extensions
     EffectHeaderPattern = "*.h"
     MarkdownPattern = "*.md"
@@ -151,6 +162,15 @@ $script:Config = @{
         ModuleEnd = "<!-- END AUTO-GENERATED: NEOEFF Module -->"
         EnumStart = "<!-- GENERATED_EFFECT_ENUMERATIONS_START -->"
         EnumEnd = "<!-- GENERATED_EFFECT_ENUMERATIONS_END -->"
+        # Scene markers (in NeoPixel.Scene.part.xml)
+        SceneEffectParamsStart = "<!-- BEGIN AUTO-GENERATED: Scene Effect Parameters -->"
+        SceneEffectParamsEnd = "<!-- END AUTO-GENERATED: Scene Effect Parameters -->"
+        SceneEffectRefsStart = "<!-- BEGIN AUTO-GENERATED: Scene Effect ParameterRefs -->"
+        SceneEffectRefsEnd = "<!-- END AUTO-GENERATED: Scene Effect ParameterRefs -->"
+        SceneEffectDynamicStart = "<!-- BEGIN AUTO-GENERATED: Scene Effect Dynamic UI -->"
+        SceneEffectDynamicEnd = "<!-- END AUTO-GENERATED: Scene Effect Dynamic UI -->"
+        SceneEffectPCParamsStart = "<!-- BEGIN AUTO-GENERATED: Scene Effect PC RParameters -->"
+        SceneEffectPCParamsEnd = "<!-- END AUTO-GENERATED: Scene Effect PC RParameters -->"
     }
 
     # String cleaning/replacement patterns
@@ -442,6 +462,20 @@ if ($Clean) {
         Write-Host "  effectsDir: $effectsDir → Exists: $(Test-Path $effectsDir)" -ForegroundColor Yellow
     }
 
+    # 5. Collect auto-generated scene help files (NEO-*-Szene-*.md and NEO-Anzahl-Szenen.md)
+    if (Test-Path $helpDir) {
+        $sceneHelpFiles = Get-ChildItem -Path $helpDir -Filter "NEO-*-Szene-*.md" -ErrorAction SilentlyContinue
+        foreach ($file in $sceneHelpFiles) {
+            if (-not ($filesToDelete | Where-Object { $_.Path -eq $file.FullName })) {
+                $filesToDelete += [PSCustomObject]@{ Type = "Scene Help File"; Name = $file.Name; Path = $file.FullName }
+            }
+        }
+        $sceneCountHelp = Join-Path $helpDir "NEO-Anzahl-Szenen.md"
+        if (Test-Path $sceneCountHelp) {
+            $filesToDelete += [PSCustomObject]@{ Type = "Scene Help File"; Name = "NEO-Anzahl-Szenen.md"; Path = $sceneCountHelp }
+        }
+    }
+
     Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
     Write-Host ""
 
@@ -465,7 +499,9 @@ if ($Clean) {
     Write-Host "    • Empty Effect Parameters Union block" -ForegroundColor DarkGray
     Write-Host "    • Empty Effect ParameterRefs block" -ForegroundColor DarkGray
     Write-Host "    • Empty Effect Dynamic UI block" -ForegroundColor DarkGray
+    Write-Host "    • Empty Scene Effect Parameters/ParameterRefs/Dynamic UI in part.xml" -ForegroundColor DarkGray
     Write-Host "    • Empty Effect Type Enumeration in share.xml" -ForegroundColor DarkGray
+    Write-Host "    • Empty Scene Effect Defaults in script.js" -ForegroundColor DarkGray
 
     Write-Host "  " -NoNewline
     Write-Host ("─" * 116) -ForegroundColor DarkGray
@@ -619,6 +655,52 @@ if ($Clean) {
 "@
             Set-Content -Path $effectParamMappingPath -Value $placeholderContent -NoNewline -Encoding UTF8
             Write-Host "    ✓ EffectParameterMapping.h - Emptied with placeholder" -ForegroundColor Green
+        }
+
+        # 6. Empty Scene part.xml marker blocks
+        $scenePartPath = Resolve-RepoPath $script:Config.ScenePartXml
+        if (Test-Path $scenePartPath) {
+            $content = Get-Content $scenePartPath -Raw -Encoding UTF8
+            $markers = $script:Config.Markers
+
+            $pattern = "(?s)($([regex]::Escape($markers.SceneEffectParamsStart))\r?\n)(.*?)($([regex]::Escape($markers.SceneEffectParamsEnd)))"
+            $content = $content -replace $pattern, ('$1' + [Environment]::NewLine + '                            $3')
+
+            $pattern = "(?s)($([regex]::Escape($markers.SceneEffectRefsStart))\r?\n)(.*?)($([regex]::Escape($markers.SceneEffectRefsEnd)))"
+            $content = $content -replace $pattern, ('$1' + [Environment]::NewLine + '                            $3')
+
+            $pattern = "(?s)($([regex]::Escape($markers.SceneEffectDynamicStart))\r?\n)(.*?)($([regex]::Escape($markers.SceneEffectDynamicEnd)))"
+            $content = $content -replace $pattern, ('$1' + [Environment]::NewLine + '                                $3')
+
+            $pattern = "(?s)($([regex]::Escape($markers.SceneEffectPCParamsStart))\r?\n)(.*?)($([regex]::Escape($markers.SceneEffectPCParamsEnd)))"
+            $content = $content -replace $pattern, ('$1' + [Environment]::NewLine + '                                    $3')
+
+            Set-Content -Path $scenePartPath -Value $content -NoNewline -Encoding UTF8
+            Write-Host "    ✓ NeoPixel.Scene.part.xml - Scene effect marker blocks emptied" -ForegroundColor Green
+        }
+
+        # 7. Empty Scene Effect Defaults in NeoPixel.script.js
+        $scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.js"
+        if (Test-Path $scriptJsPath) {
+            $content = Get-Content $scriptJsPath -Raw -Encoding UTF8
+
+            $startMarker = "// BEGIN AUTO-GENERATED: Scene Effect Defaults"
+            $endMarker = "// END AUTO-GENERATED: Scene Effect Defaults"
+
+            # Use (?m) multiline + \s*$ to avoid matching "Scene Effect Defaults Function" markers
+            $pattern = "(?sm)($([regex]::Escape($startMarker))\s*$)(.*?)($([regex]::Escape($endMarker))\s*$)"
+            $replacement = ('$1' + [Environment]::NewLine + 'var NEO_SceneEffectDefaults = {};' + [Environment]::NewLine + '$3')
+            $content = $content -replace $pattern, $replacement
+
+            $funcStartMarker = "// BEGIN AUTO-GENERATED: Scene Effect Defaults Function"
+            $funcEndMarker = "// END AUTO-GENERATED: Scene Effect Defaults Function"
+
+            $pattern = "(?s)($([regex]::Escape($funcStartMarker))\r?\n)(.*?)($([regex]::Escape($funcEndMarker)))"
+            $replacement = '$1' + 'function NEO_SetSceneEffectDefaults(input, output, context) { }' + [Environment]::NewLine + '$3'
+            $content = $content -replace $pattern, $replacement
+
+            Set-Content -Path $scriptJsPath -Value $content -NoNewline -Encoding UTF8
+            Write-Host "    ✓ NeoPixel.script.js - Scene Effect Defaults emptied" -ForegroundColor Green
         }
 
     # Summary
@@ -1018,20 +1100,24 @@ function Generate-EffectTypeEnumeration {
         Write-ScriptVerbose "Successfully ordered $($sorted.Count) effects" "Green"
     }
 
-    # Generate XML enumeration entries - use German as default
+    # Generate XML enumeration entries - use German as default, add op:headerName for C++ enum export
     Write-ScriptVerbose "Generating XML enumeration entries"
     $xmlLines = @()
     $id = 0
 
     foreach ($effect in $sorted) {
         $text = $effect.NameDE
+        # Derive clean C++ enum name from ClassName (remove "Effect" prefix/suffix)
+        $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
+        if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }
+
         # Add comment with English name if different
         if ($effect.NameDE -ne $effect.NameEN) {
-            $xmlLines += "                <Enumeration Text=`"$text`" Value=`"$id`" Id=`"%ENID%`"/> <!-- EN: $($effect.NameEN) -->"
+            $xmlLines += "                <Enumeration Text=`"$text`" Value=`"$id`" Id=`"%ENID%`" op:headerName=`"$enumName`"/> <!-- EN: $($effect.NameEN) -->"
         } else {
-            $xmlLines += "                <Enumeration Text=`"$text`" Value=`"$id`" Id=`"%ENID%`"/>"
+            $xmlLines += "                <Enumeration Text=`"$text`" Value=`"$id`" Id=`"%ENID%`" op:headerName=`"$enumName`"/>"
         }
-        Write-ScriptVerbose "  XML Entry ID ${id}: '$text'" "DarkGray"
+        Write-ScriptVerbose "  XML Entry ID ${id}: '$text' -> enum '$enumName'" "DarkGray"
         $id++
     }
 
@@ -1137,10 +1223,10 @@ function Generate-EffectMappingCpp {
     $cppLines += " */"
     $cppLines += "inline Effect* getEffectFromType(uint8_t effectType)"
     $cppLines += "{"
-    $cppLines += "    switch (effectType)"
+    $cppLines += "    switch (static_cast<PT_NEOEffectType>(effectType))"
     $cppLines += "    {"
 
-    # Generate switch cases
+    # Generate switch cases using enum names
     $id = 0
     foreach ($effect in $sorted) {
         # Convert ClassName to getXXX() function name
@@ -1148,12 +1234,16 @@ function Generate-EffectMappingCpp {
         # EffectSolid -> getSolid()
         $methodName = $effect.ClassName -replace 'Effect', ''
 
+        # Derive enum name (same logic as enumeration generation)
+        $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
+        if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }
+
         $comment = "// $($effect.NameEN)"
         if ($effect.NameDE -ne $effect.NameEN) {
             $comment += " (DE: $($effect.NameDE))"
         }
 
-        $cppLines += "        case ${id}: return EffectPool::get${methodName}(); $comment"
+        $cppLines += "        case PT_NEOEffectType::${enumName}: return EffectPool::get${methodName}(); $comment"
         $id++
     }
 
@@ -1176,17 +1266,19 @@ function Generate-EffectMappingCpp {
     $cppLines += "    if (!effect) return 0; // nullptr -> Solid"
     $cppLines += ""
 
-    # Generate reverse mapping checks
+    # Generate reverse mapping checks using enum cast
     $id = 0
     foreach ($effect in $sorted) {
         $methodName = $effect.ClassName -replace 'Effect', ''
+        $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
+        if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }
         
         $comment = "// $($effect.NameEN)"
         if ($effect.NameDE -ne $effect.NameEN) {
             $comment += " (DE: $($effect.NameDE))"
         }
 
-        $cppLines += "    if (effect == EffectPool::get${methodName}()) return ${id}; $comment"
+        $cppLines += "    if (effect == EffectPool::get${methodName}()) return static_cast<uint8_t>(PT_NEOEffectType::${enumName}); $comment"
         $id++
     }
 
@@ -1511,18 +1603,37 @@ function Test-OpenKNXproducer {
     Write-Host "  " -NoNewline
     Write-Host ("═" * 114) -ForegroundColor DarkGray
 
-    # Run OpenKNXproducer WITHOUT redirecting output (show in real-time)
-    # BUT capture exit code
+    # Run OpenKNXproducer and capture output to detect known vs unknown errors
     try {
         Push-Location $WorkingDir
 
         Write-Information "Starting OpenKNXproducer in directory: $WorkingDir with Argutments: create --Debug -h $HeaderFile $SourceDir" -InformationAction Continue
-        # Execute without redirect - output goes directly to console
+
+        # Capture output to temp file while also showing it
+        $tempOut = [System.IO.Path]::GetTempFileName()
+        $tempErr = [System.IO.Path]::GetTempFileName()
         $process = Start-Process -FilePath $openKnxExe `
             -ArgumentList "create", "--Debug", "-h", $HeaderFile, $SourceDir `
-            -NoNewWindow -Wait -PassThru
+            -NoNewWindow -Wait -PassThru `
+            -RedirectStandardOutput $tempOut `
+            -RedirectStandardError $tempErr
 
         $exitCode = $process.ExitCode
+        $stdoutContent = Get-Content $tempOut -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        $stderrContent = Get-Content $tempErr -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        Remove-Item $tempOut -Force -ErrorAction SilentlyContinue
+        Remove-Item $tempErr -Force -ErrorAction SilentlyContinue
+
+        # Combine stdout and stderr for analysis
+        $outputParts = @()
+        if ($stdoutContent) { $outputParts += $stdoutContent }
+        if ($stderrContent) { $outputParts += $stderrContent }
+        $capturedOutput = $outputParts -join "`n"
+
+        # Show captured output
+        if ($capturedOutput) {
+            Write-Host $capturedOutput
+        }
 
         Pop-Location
 
@@ -1537,14 +1648,42 @@ function Test-OpenKNXproducer {
             return @{
                 Success = $true
                 ExitCode = $exitCode
-                Output = "(output shown above)"
+                Output = $capturedOutput
             }
         } else {
-            Write-Host "  ERROR OpenKNXproducer failed with exit code $exitCode" -ForegroundColor Red
-            return @{
-                Success = $false
-                ExitCode = $exitCode
-                Output = "(output shown above)"
+            # Non-zero exit code - check if warnings-only or real errors
+            $outputLines = if ($capturedOutput) { $capturedOutput -split "`n" } else { @() }
+            $duplicateErrors = $outputLines | Where-Object { $_ -match "^\s*-->" -and $_ -match "duplicate Id" }
+            $headerWritten = $outputLines | Where-Object { $_ -match "Writing header file|Unchanged header file" }
+            $ptNotDeclared = $outputLines | Where-Object { $_ -match "ParameterType.*was not declared" }
+            $helpContextMissing = $outputLines | Where-Object { $_ -match "^\s*-->.*HelpContext.*not found in HelpContext baggage" }
+
+            if ($duplicateErrors.Count -eq 0 -and $ptNotDeclared.Count -eq 0 -and $headerWritten) {
+                # Only non-fatal warnings (e.g. missing HelpContext files) - treat as success
+                $warnings = @()
+                if ($helpContextMissing.Count -gt 0) { $warnings += "$($helpContextMissing.Count) missing HelpContext file(s)" }
+                $warningText = if ($warnings.Count -gt 0) { " - warnings: $($warnings -join ', ')" } else { "" }
+                Write-Host "  " -NoNewline
+                Write-Host "OK" -NoNewline -ForegroundColor Green
+                Write-Host " OpenKNXproducer completed (Exit Code: $exitCode$warningText)" -ForegroundColor Yellow
+                return @{
+                    Success = $true
+                    ExitCode = $exitCode
+                    Output = $capturedOutput
+                }
+            } else {
+                Write-Host "  ERROR OpenKNXproducer failed with exit code $exitCode" -ForegroundColor Red
+                if ($ptNotDeclared.Count -gt 0) {
+                    Write-Host "  Found $($ptNotDeclared.Count) undeclared ParameterType error(s)" -ForegroundColor Red
+                }
+                if ($duplicateErrors.Count -gt 0) {
+                    Write-Host "  Found $($duplicateErrors.Count) duplicate ID error(s)" -ForegroundColor Red
+                }
+                return @{
+                    Success = $false
+                    ExitCode = $exitCode
+                    Output = $capturedOutput
+                }
             }
         }
     } catch {
@@ -1854,6 +1993,105 @@ function Generate-HelpFiles {
         Count = $createdFiles.Count
         EffectsWithoutDescription = $effectsWithoutDesc
     }
+}
+
+function Generate-SceneHelpFiles {
+    param([array]$Effects)
+
+    $helpDir = Resolve-RepoPath $script:Config.HelpDir
+    if (-not (Test-Path $helpDir)) {
+        New-Item -ItemType Directory -Path $helpDir -Force | Out-Null
+    }
+
+    $sceneCount = $script:Config.SceneInstances
+    $createdFiles = @()
+
+    # Fixed scene parameters (from NeoPixel.Scene.part.xml Text attributes)
+    # OpenKNXproducer derives HelpContext from Text: "Effekt Typ (Szene 1)" → NEO-Effekt-Typ-Szene-1
+    $fixedParams = @(
+        @{ Name = "Effekt-Typ"; Desc = "Wählt den Lichteffekt für diese Szene aus." }
+        @{ Name = "Primaerfarbe-RGB"; Desc = "Primärfarbe (RGB) für diese Szene." }
+        @{ Name = "Primaerfarbe-Warmweiss"; Desc = "Warmweiß-Anteil der Primärfarbe." }
+        @{ Name = "Primaerfarbe-Kaltweiss"; Desc = "Kaltweiß-Anteil der Primärfarbe." }
+        @{ Name = "Sekundaerfarbe-RGB"; Desc = "Sekundärfarbe (RGB) für diese Szene." }
+        @{ Name = "Sekundaerfarbe-Warmweiss"; Desc = "Warmweiß-Anteil der Sekundärfarbe." }
+        @{ Name = "Sekundaerfarbe-Kaltweiss"; Desc = "Kaltweiß-Anteil der Sekundärfarbe." }
+        @{ Name = "Helligkeit"; Desc = "Helligkeit der Szene (0-255)." }
+    )
+
+    # SceneCount (not per-scene, just one file)
+    $sceneCountFile = Join-Path $helpDir "NEO-Anzahl-Szenen.md"
+    if (-not (Test-Path $sceneCountFile)) {
+        $content = @(
+            "# Anzahl Szenen"
+            ""
+            "Legt fest, wie viele vorkonfigurierte Szenen für dieses Segment verfügbar sind."
+            ""
+            "**Wertebereich:** 0 (deaktiviert) - $sceneCount"
+        )
+        Set-Content -Path $sceneCountFile -Value ($content -join "`n") -Encoding UTF8
+        $createdFiles += "NEO-Anzahl-Szenen.md"
+    }
+
+    # Fixed params: one file per scene instance
+    for ($s = 1; $s -le $sceneCount; $s++) {
+        foreach ($fp in $fixedParams) {
+            $fileName = "NEO-$($fp.Name)-Szene-$s.md"
+            $filePath = Join-Path $helpDir $fileName
+            if (-not (Test-Path $filePath)) {
+                $content = @(
+                    "# $($fp.Name -replace '-', ' ')"
+                    ""
+                    "**Szene:** $s"
+                    ""
+                    $fp.Desc
+                )
+                Set-Content -Path $filePath -Value ($content -join "`n") -Encoding UTF8
+                $createdFiles += $fileName
+            }
+        }
+    }
+
+    # Effect-specific params: one file per param per scene instance
+    # The Text in scene part XML is: "{ParamName}"
+    # OpenKNXproducer derives: NEO-{ParamName}-Szene-{N}
+    foreach ($effect in $Effects) {
+        if ($effect.Parameters.Count -eq 0) { continue }
+        foreach ($param in $effect.Parameters) {
+            $paramNameCleaned = $param.Name -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
+            for ($s = 1; $s -le $sceneCount; $s++) {
+                $fileName = "NEO-$paramNameCleaned-Szene-$s.md"
+                $filePath = Join-Path $helpDir $fileName
+                if (-not (Test-Path $filePath)) {
+                    $effectNameDE = $effect.NameDE
+                    $content = @(
+                        "# $($param.Name)"
+                        ""
+                        "**Szene:** $s | **Effekt:** $effectNameDE"
+                        ""
+                    )
+                    if ($param.Description) {
+                        $content += $param.Description
+                    } else {
+                        $content += "Parameter '$($param.Name)' für den $effectNameDE-Effekt."
+                    }
+                    $content += ""
+                    $content += "**Wertebereich:** $($param.Min) - $($param.Max)"
+                    $content += "**Standardwert:** $($param.Default)"
+                    Set-Content -Path $filePath -Value ($content -join "`n") -Encoding UTF8
+                    $createdFiles += $fileName
+                }
+            }
+        }
+    }
+
+    if ($createdFiles.Count -gt 0) {
+        Write-Host ""
+        Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
+        Write-Host "$($createdFiles.Count) scene help file(s) newly created" -ForegroundColor White
+    }
+
+    return @{ Count = $createdFiles.Count }
 }
 
 function Read-StartingIdsFromMarkers {
@@ -2245,11 +2483,14 @@ function Generate-CppMapping {
     $cpp += '    // Macro names match OpenKNXproducer format: ParamNEO_NEO{EffectName}{ParamName}'
     $cpp += '    // (automatically derived from Parameter Name attribute in XML)'
     $cpp += '    '
-    $cpp += '    switch (effectID)'
+    $cpp += '    switch (static_cast<PT_NEOEffectType>(effectID))'
     $cpp += '    {'
 
     foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
-        $cpp += "        case $($effect.EffectID):  // $($effect.NameDE) Effect"
+        # Derive enum name from ClassName
+        $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
+        if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }
+        $cpp += "        case PT_NEOEffectType::${enumName}:  // $($effect.NameDE) Effect"
 
         # Effect name for macro (remove spaces/hyphens)
         $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
@@ -2269,7 +2510,6 @@ function Generate-CppMapping {
         $cpp += '            '
     }
 
-    $cpp += '        // Effects without parameters: 0,1,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21'
     $cpp += '        default:'
     $cpp += '            // No effect-specific parameters to load'
     $cpp += '            break;'
@@ -2278,6 +2518,439 @@ function Generate-CppMapping {
     $cpp += ''
     $cpp += '#endif // EFFECT_PARAMETER_MAPPING_H'
     $cpp += ''
+
+    return $cpp -join "`n"
+}
+
+# ====================================================================
+# Scene Effect Parameter Generation
+# ====================================================================
+
+function Generate-SceneEffectParameters {
+    param([array]$Effects)
+
+    Write-Host "    ▸ Generating Scene Effect Parameters (Generic Slot Approach)..." -ForegroundColor DarkGray
+
+    # Generic Slot Approach: Instead of 107 per-effect Parameters, define only 10 generic slots.
+    # All 10 slots are sequential uint8 at offsets +12..+21 (no bool overlay).
+    # Aliased ParameterRefs in the ParameterRefs section provide per-effect labels.
+
+    $xml = @()
+    $xml += ''
+    $xml += '                            <!-- Generic Slot Parameters (10 bytes: offsets +12..+21, all uint8) -->'
+    for ($i = 0; $i -lt $script:Config.SceneGenericSlotCount; $i++) {
+        $id = $script:Config.SceneBaseParamId + $i  # 8 + i
+        $offset = $script:Config.SceneEffectParamOffset + $i  # 12 + i
+        $padId = if ($id -lt 10) { "$id" } else { "$id" }
+        $xml += "                            <Parameter Id=`"%AID%_UP-%TT%%CC%%PPP+$id%`" Offset=`"%MO+$offset%`" BitOffset=`"0`" Name=`"NEO%C%Scene%SN%Slot$i`" ParameterType=`"%AID%_PT-SceneSlotUint8`" Text=`"Parameter $($i+1) (Szene %SZ%)`" Value=`"0`"/>"
+    }
+
+    $nextId = $script:Config.SceneBaseParamId + $script:Config.SceneGenericSlotCount  # 8 + 10 = 18
+    Write-Host "    OK Generated $($script:Config.SceneGenericSlotCount) generic scene slot parameters (IDs $($script:Config.SceneBaseParamId)..$($nextId - 1))" -ForegroundColor Green
+
+    return @{
+        Xml = ($xml -join "`n")
+        NextId = $nextId
+    }
+}
+
+function Generate-SceneEffectParameterRefs {
+    param(
+        [array]$Effects,
+        [int]$StartId
+    )
+
+    Write-Host "    ▸ Generating Scene Effect ParameterRefs (Generic Slot Aliases)..." -ForegroundColor DarkGray
+
+    # Generic Slot Approach: Generate default refs for the 10 slots,
+    # plus aliased refs with per-effect labels (Text attribute overrides).
+    # Slot assignment: param[i] → Slot[i] sequentially, regardless of type.
+
+    $xml = @()
+    $xml += ''
+    $xml += '                            <!-- Generic Slot default refs -->'
+
+    $baseId = $script:Config.SceneBaseParamId  # 8
+    for ($i = 0; $i -lt $script:Config.SceneGenericSlotCount; $i++) {
+        $id = $baseId + $i
+        $xml += "                            <ParameterRef Id=`"%AID%_UP-%TT%%CC%%PPP+$id%_R-%TT%%CC%%PPP+${id}%01`" RefId=`"%AID%_UP-%TT%%CC%%PPP+$id%`" />"
+    }
+
+    # Generate aliased ParameterRefs per effect (Text overrides for per-effect labels)
+    $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+    if ($effectsWithParams.Count -gt 0) {
+        $xml += ''
+        $xml += '                            <!-- Aliased ParameterRefs: per-effect labels pointing to generic slots -->'
+
+        foreach ($effect in $effectsWithParams) {
+            $effectClean = $effect.NameDE -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
+            $xml += "                            <!-- $($effect.NameDE) (ID $($effect.EffectID)) -->"
+
+            for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
+                $param = $effect.Parameters[$i]
+                $slotId = $baseId + $i  # param[i] → Slot[i]
+                # Alias suffix: 2-digit ref suffix, unique per slot per effect
+                # Format: tcccnnn_R-tcccnnnrr where rr = effectID+2 (avoids 01=default ref)
+                $aliasSuffix = "{0:D2}" -f ($effect.EffectID + 2)
+                $aliasId = "%AID%_UP-%TT%%CC%%PPP+${slotId}%_R-%TT%%CC%%PPP+${slotId}%${aliasSuffix}"
+                $text = "$($param.Name)"
+                $xml += "                            <ParameterRef Id=`"$aliasId`" RefId=`"%AID%_UP-%TT%%CC%%PPP+$slotId%`" Text=`"$text`" Value=`"$($param.Default)`" />"
+            }
+        }
+    }
+
+    $totalAliased = ($effectsWithParams | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum
+    Write-Host "    OK Generated $($script:Config.SceneGenericSlotCount) default refs + $totalAliased aliased refs for $($effectsWithParams.Count) effect(s)" -ForegroundColor Green
+
+    return ($xml -join "`n")
+}
+
+function Generate-SceneEffectDynamicChoose {
+    param(
+        [array]$Effects,
+        [int]$StartId
+    )
+
+    Write-Host "    ▸ Generating Scene Effect Dynamic UI (choose/when)..." -ForegroundColor DarkGray
+
+    # Generic Slot Approach: Generate choose/when block that shows aliased ParameterRefs per effect.
+    # Each effect's when-block references the aliased refs with per-effect Text labels.
+
+    $xml = @()
+    $xml += ''
+
+    $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+    if ($effectsWithParams.Count -eq 0) {
+        $xml += '                                <!-- No scene effect parameters for dynamic UI -->'
+        return ($xml -join "`n")
+    }
+
+    $baseId = $script:Config.SceneBaseParamId  # 8
+
+    # choose on the scene's EffectType (%PPP+0% = scene effect type param)
+    $xml += '                                <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">'
+
+    foreach ($effect in $effectsWithParams) {
+        $xml += "                                  <when test=`"$($effect.EffectID)`">"
+        $xml += "                                    <!-- $($effect.NameDE) Effect -->"
+        $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
+
+        for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
+            $param = $effect.Parameters[$i]
+            $slotId = $baseId + $i
+            $aliasSuffix = "{0:D2}" -f ($effect.EffectID + 2)
+            $aliasId = "%AID%_UP-%TT%%CC%%PPP+${slotId}%_R-%TT%%CC%%PPP+${slotId}%${aliasSuffix}"
+            # Per-effect HelpContext matching baggage file NEO-{ParamName}-{EffectName}.md
+            $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
+            $helpContext = "NEO-$paramNameClean-$effectNameClean"
+            $xml += "                                    <ParameterRefRef RefId=`"$aliasId`" IndentLevel=`"3`" HelpContext=`"$helpContext`"/>"
+        }
+
+        $xml += '                                  </when>'
+    }
+
+    $xml += '                                </choose>'
+    $xml += ''
+
+    Write-Host "    OK Generated scene dynamic UI for $($effectsWithParams.Count) effect(s)" -ForegroundColor Green
+
+    return ($xml -join "`n")
+}
+
+function Generate-SceneEffectPCRParameters {
+    param([array]$Effects)
+
+    Write-Host "    ▸ Generating Scene Effect PC RParameters (aliased refs for UI refresh)..." -ForegroundColor DarkGray
+
+    $xml = @()
+    $baseId = $script:Config.SceneBaseParamId  # 8
+    $slotCount = $script:Config.SceneGenericSlotCount  # 10
+
+    # Aliased ParameterRefRefs for all effects — forces ETS to refresh their UI
+    # when the ParameterCalculation fires on effect type change.
+    $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+    $totalAliased = 0
+    foreach ($effect in $effectsWithParams) {
+        $xml += "                                    <!-- $($effect.NameDE) (ID $($effect.EffectID)) -->"
+        for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
+            $slotId = $baseId + $i
+            $aliasSuffix = "{0:D2}" -f ($effect.EffectID + 2)
+            $refId = "%AID%_UP-%TT%%CC%%PPP+${slotId}%_R-%TT%%CC%%PPP+${slotId}%${aliasSuffix}"
+            $aliasName = "E$($effect.EffectID)S$i"
+            $xml += "                                    <ParameterRefRef RefId=`"$refId`" AliasName=`"$aliasName`" />"
+            $totalAliased++
+        }
+    }
+
+    # Generic slot refs (these determine the EEPROM value)
+    $xml += "                                    <!-- Generic Slot refs -->"
+    for ($i = 0; $i -lt $slotCount; $i++) {
+        $id = $baseId + $i
+        $xml += "                                    <ParameterRefRef RefId=`"%AID%_UP-%TT%%CC%%PPP+$id%_R-%TT%%CC%%PPP+${id}%01`" AliasName=`"Slot$i`" />"
+    }
+
+    Write-Host "    OK Generated $totalAliased aliased + $slotCount generic PC RParameters" -ForegroundColor Green
+    return ($xml -join "`n")
+}
+
+function Generate-SceneEffectDefaultsFunction {
+    param([array]$Effects)
+
+    Write-Host "    ▸ Generating Scene Effect Defaults JS function..." -ForegroundColor DarkGray
+
+    $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+    $slotCount = $script:Config.SceneGenericSlotCount  # 10
+
+    $lines = @()
+    $lines += "// Set scene slot defaults when effect type changes"
+    $lines += "function NEO_SetSceneEffectDefaults(input, output, context) {"
+    $lines += "    var effectType = toInt(input.EffectType, 0);"
+    $lines += "    var defaults = NEO_SceneEffectDefaults[String(effectType)];"
+    $lines += "    var d0, d1, d2, d3, d4, d5, d6, d7, d8, d9;"
+    $lines += "    if (defaults) {"
+    for ($i = 0; $i -lt $slotCount; $i++) {
+        $lines += "        d$i = defaults[$i];"
+    }
+    $lines += "    } else {"
+    for ($i = 0; $i -lt $slotCount; $i++) {
+        $lines += "        d$i = 0;"
+    }
+    $lines += "    }"
+    $lines += ""
+    $lines += "    // Write to generic slots (determines EEPROM value)"
+    for ($i = 0; $i -lt $slotCount; $i++) {
+        $lines += "    output.Slot$i = d$i;"
+    }
+    $lines += ""
+    $lines += "    // Write to all aliased refs (forces ETS to refresh UI display)"
+    $lines += "    // All aliases for a slot share the same underlying Parameter."
+    $lines += "    // Writing to them triggers ETS to update the displayed value."
+    foreach ($effect in $effectsWithParams) {
+        $comment = "// $($effect.NameDE)"
+        $assignments = @()
+        for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
+            $assignments += "output.E$($effect.EffectID)S$i = d$i"
+        }
+        $assignLine = ($assignments -join "; ") + ";"
+        $lines += "    $assignLine  $comment"
+    }
+    $lines += "}"
+
+    Write-Host "    OK Generated JS function with $($effectsWithParams.Count) effect alias groups" -ForegroundColor Green
+    return ($lines -join "`n")
+}
+
+function Update-ScenePartXml {
+    param(
+        [string]$ScenePartPath,
+        [string]$EffectParamsContent,
+        [string]$EffectRefsContent,
+        [string]$EffectDynamicContent,
+        [string]$PCRParamsContent
+    )
+
+    Write-Host "    ▸ Updating Scene part.xml..." -ForegroundColor DarkGray
+
+    if (-not (Test-Path $ScenePartPath)) {
+        Write-Error "Scene part.xml not found: $ScenePartPath"
+        return $false
+    }
+
+    $content = Get-Content -Path $ScenePartPath -Raw -Encoding UTF8
+
+    $markers = $script:Config.Markers
+    $updateCount = 0
+
+    # Update Scene Effect Parameters
+    $pattern = "(?s)($([regex]::Escape($markers.SceneEffectParamsStart)))(.*?)($([regex]::Escape($markers.SceneEffectParamsEnd)))"
+    if ($content -match $pattern) {
+        $content = $content -replace $pattern, "`$1`n$EffectParamsContent`n                            `$3"
+        $updateCount++
+    }
+
+    # Update Scene Effect ParameterRefs
+    $pattern = "(?s)($([regex]::Escape($markers.SceneEffectRefsStart)))(.*?)($([regex]::Escape($markers.SceneEffectRefsEnd)))"
+    if ($content -match $pattern) {
+        $content = $content -replace $pattern, "`$1`n$EffectRefsContent`n                            `$3"
+        $updateCount++
+    }
+
+    # Update Scene Effect Dynamic UI
+    $pattern = "(?s)($([regex]::Escape($markers.SceneEffectDynamicStart)))(.*?)($([regex]::Escape($markers.SceneEffectDynamicEnd)))"
+    if ($content -match $pattern) {
+        $content = $content -replace $pattern, "`$1`n$EffectDynamicContent`n                                `$3"
+        $updateCount++
+    }
+
+    # Update Scene Effect PC RParameters
+    $pattern = "(?s)($([regex]::Escape($markers.SceneEffectPCParamsStart)))(.*?)($([regex]::Escape($markers.SceneEffectPCParamsEnd)))"
+    if ($content -match $pattern) {
+        $content = $content -replace $pattern, "`$1`n$PCRParamsContent`n                                    `$3"
+        $updateCount++
+    }
+
+    if ($updateCount -eq 4) {
+        Set-Content -Path $ScenePartPath -Value $content -Encoding UTF8 -NoNewline
+        Write-Host "    OK Scene part.xml updated ($updateCount blocks)" -ForegroundColor Green
+        return $true
+    } else {
+        Write-Warning "Only $updateCount of 4 scene blocks were updated in $ScenePartPath"
+        return $false
+    }
+}
+
+function Generate-SceneEffectDefaultsJS {
+    param([array]$Effects)
+
+    Write-Host "    ▸ Generating Scene Effect Defaults JS lookup table..." -ForegroundColor DarkGray
+
+    $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+    $slotCount = $script:Config.SceneGenericSlotCount  # 10
+
+    $lines = @()
+    $lines += "var NEO_SceneEffectDefaults = {"
+
+    $lastIdx = $effectsWithParams.Count - 1
+    for ($idx = 0; $idx -lt $effectsWithParams.Count; $idx++) {
+        $effect = $effectsWithParams[$idx]
+        $defaults = @()
+        for ($i = 0; $i -lt $slotCount; $i++) {
+            if ($i -lt $effect.Parameters.Count) {
+                $defaults += "$($effect.Parameters[$i].Default)"
+            } else {
+                $defaults += "0"
+            }
+        }
+        $defaultsStr = $defaults -join ", "
+        $comma = if ($idx -lt $lastIdx) { "," } else { "" }
+        $lines += "    `"$($effect.EffectID)`": [$defaultsStr]$comma  // $($effect.NameDE)"
+    }
+
+    $lines += "};"
+
+    Write-Host "    OK Generated JS defaults for $($effectsWithParams.Count) effect(s)" -ForegroundColor Green
+
+    return ($lines -join "`n")
+}
+
+function Update-ScriptJS {
+    param(
+        [string]$ScriptPath,
+        [string]$DefaultsContent
+    )
+
+    if (-not (Test-Path $ScriptPath)) {
+        Write-Warning "Script JS not found: $ScriptPath"
+        return $false
+    }
+
+    $content = Get-Content -Path $ScriptPath -Raw -Encoding UTF8
+
+    $startMarker = "// BEGIN AUTO-GENERATED: Scene Effect Defaults"
+    $endMarker = "// END AUTO-GENERATED: Scene Effect Defaults"
+
+    # Use (?m) multiline + \s*$ to avoid matching "Scene Effect Defaults Function" markers
+    $pattern = "(?sm)($([regex]::Escape($startMarker))\s*$)(.*?)($([regex]::Escape($endMarker))\s*$)"
+    if ($content -match $pattern) {
+        $replacement = "`$1`n$DefaultsContent`n`$3"
+        $content = $content -replace $pattern, $replacement
+        Set-Content -Path $ScriptPath -Value $content -Encoding UTF8 -NoNewline
+        return $true
+    }
+
+    Write-Warning "Scene Effect Defaults markers not found in $ScriptPath"
+    return $false
+}
+
+function Update-ScriptJSFunction {
+    param(
+        [string]$ScriptPath,
+        [string]$FunctionContent
+    )
+
+    if (-not (Test-Path $ScriptPath)) {
+        Write-Warning "Script JS not found: $ScriptPath"
+        return $false
+    }
+
+    $content = Get-Content -Path $ScriptPath -Raw -Encoding UTF8
+
+    $startMarker = "// BEGIN AUTO-GENERATED: Scene Effect Defaults Function"
+    $endMarker = "// END AUTO-GENERATED: Scene Effect Defaults Function"
+
+    $pattern = "(?s)($([regex]::Escape($startMarker)))(.*?)($([regex]::Escape($endMarker)))"
+    if ($content -match $pattern) {
+        $replacement = "`$1`n$FunctionContent`n`$3"
+        $content = $content -replace $pattern, $replacement
+        Set-Content -Path $ScriptPath -Value $content -Encoding UTF8 -NoNewline
+        return $true
+    }
+
+    Write-Warning "Scene Effect Defaults Function markers not found in $ScriptPath"
+    return $false
+}
+
+function Generate-SceneCppMapping {
+    param([array]$Effects)
+
+    # Generate loadSceneEffectParameters() C++ function
+    # This reads effect params from computed scene offsets (generic, no per-scene switch)
+
+    $currentYear = (Get-Date).Year
+    $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+    $cpp = @()
+    $cpp += ''
+    $cpp += '/**'
+    $cpp += ' * @brief Load effect-specific parameters from a scene slot in EEPROM'
+    $cpp += ' *'
+    $cpp += ' * Reads effect-specific parameters from a scene slot. Parameters are stored'
+    $cpp += " * at SCENE_DATA_START + sceneIndex * SCENE_SIZE + $($script:Config.SceneEffectParamOffset) within each segment's Union."
+    $cpp += ' *'
+    $cpp += ' * @param effect Effect instance to configure'
+    $cpp += ' * @param segment Segment instance (for setParameter context)'
+    $cpp += ' * @param effectID Effect type ID (0-28)'
+    $cpp += ' * @param channelIndex Channel/Segment index (0-15)'
+    $cpp += ' * @param sceneIndex Scene index (0-14)'
+    $cpp += " * @note Auto-generated: $currentDateTime"
+    $cpp += ' */'
+    $cpp += 'inline void loadSceneEffectParameters(Effect* effect, Segment* segment, uint8_t effectID, uint8_t channelIndex, uint8_t sceneIndex)'
+    $cpp += '{'
+    $cpp += '    if (!effect || !segment) return;'
+    $cpp += '    '
+    $cpp += '    uint8_t paramCount = effect->getParameterCount();'
+    $cpp += '    if (paramCount == 0) return;'
+    $cpp += '    '
+    $cpp += '    // Compute base address for this scene''s effect parameters'
+    $cpp += "    // Scene data layout: $($script:Config.SceneSize) bytes per scene, effect params at offset +$($script:Config.SceneEffectParamOffset)"
+    $cpp += "    static constexpr uint16_t SCENE_DATA_START = $($script:Config.SceneDataStart);"
+    $cpp += "    static constexpr uint8_t SCENE_SIZE = $($script:Config.SceneSize);"
+    $cpp += "    static constexpr uint8_t SCENE_EFFECT_PARAM_OFFSET = $($script:Config.SceneEffectParamOffset);"
+    $cpp += '    '
+    $cpp += '    uint16_t sceneEffectParamBase = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize'
+    $cpp += '                                  + SCENE_DATA_START + sceneIndex * SCENE_SIZE + SCENE_EFFECT_PARAM_OFFSET;'
+    $cpp += '    '
+    $cpp += '    switch (static_cast<PT_NEOEffectType>(effectID))'
+    $cpp += '    {'
+
+    foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
+        # Derive enum name from ClassName
+        $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
+        if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }
+        $cpp += "        case PT_NEOEffectType::${enumName}:  // $($effect.NameDE) Effect"
+
+        for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
+            $cpp += "            if (paramCount >= $($i + 1)) effect->setParameter(segment, $i, knx.paramByte(sceneEffectParamBase + $i));"
+        }
+
+        $cpp += '            break;'
+        $cpp += '            '
+    }
+
+    $cpp += '        default:'
+    $cpp += '            break;'
+    $cpp += '    }'
+    $cpp += '}'
 
     return $cpp -join "`n"
 }
@@ -2443,12 +3116,84 @@ Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "C++ mapping header" -ForegroundColor White
 Write-Host "       $cppMappingPath" -ForegroundColor DarkGray
 
+# 5b. Scene Effect Parameters (for NeoPixel.Scene.part.xml)
+Write-Host ""
+Write-Host "  Scene Effect Parameter Generation..." -ForegroundColor Cyan
+
+$sceneEffectResult = Generate-SceneEffectParameters -Effects $effects
+$sceneEffectParamsXml = $sceneEffectResult.Xml
+$sceneNextId = $sceneEffectResult.NextId
+
+$sceneEffectRefsXml = Generate-SceneEffectParameterRefs -Effects $effects -StartId $script:Config.SceneBaseParamId
+$sceneEffectDynamicXml = Generate-SceneEffectDynamicChoose -Effects $effects -StartId $script:Config.SceneBaseParamId
+$sceneEffectPCRParams = Generate-SceneEffectPCRParameters -Effects $effects
+
+# Update NeoPixel.Scene.part.xml with generated content
+$scenePartPath = Resolve-RepoPath $script:Config.ScenePartXml
+if (Test-Path $scenePartPath) {
+    $sceneUpdateSuccess = Update-ScenePartXml -ScenePartPath $scenePartPath `
+                                               -EffectParamsContent $sceneEffectParamsXml `
+                                               -EffectRefsContent $sceneEffectRefsXml `
+                                               -EffectDynamicContent $sceneEffectDynamicXml `
+                                               -PCRParamsContent $sceneEffectPCRParams
+    Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+    Write-Host "Scene part.xml updated" -ForegroundColor White
+    Write-Host "       $scenePartPath" -ForegroundColor DarkGray
+} else {
+    Write-Host "  [SKIP] " -NoNewline -ForegroundColor Yellow
+    Write-Host "Scene part.xml not found: $scenePartPath" -ForegroundColor White
+}
+
+# 5c. Append loadSceneEffectParameters() to C++ mapping header
+$sceneCppMapping = Generate-SceneCppMapping -Effects $effects
+$existingCpp = Get-Content -Path $cppMappingPath -Raw -Encoding UTF8
+# Insert before the final #endif
+$existingCpp = $existingCpp -replace '#endif // EFFECT_PARAMETER_MAPPING_H', "$sceneCppMapping`n`n#endif // EFFECT_PARAMETER_MAPPING_H"
+Set-Content -Path $cppMappingPath -Value $existingCpp -Encoding UTF8 -NoNewline
+Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+Write-Host "loadSceneEffectParameters() added to C++ mapping header" -ForegroundColor White
+
+# 5d. Scene Effect Defaults JS (for NeoPixel.script.js)
+$sceneDefaultsJS = Generate-SceneEffectDefaultsJS -Effects $effects
+$scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.js"
+if (Test-Path $scriptJsPath) {
+    $jsUpdateSuccess = Update-ScriptJS -ScriptPath $scriptJsPath -DefaultsContent $sceneDefaultsJS
+    if ($jsUpdateSuccess) {
+        Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+        Write-Host "Scene effect defaults injected into script.js" -ForegroundColor White
+        Write-Host "       $scriptJsPath" -ForegroundColor DarkGray
+    } else {
+        Write-Host "  [WARN] " -NoNewline -ForegroundColor Yellow
+        Write-Host "Failed to update Scene Effect Defaults in script.js" -ForegroundColor White
+    }
+
+    # 5e. Scene Effect Defaults Function JS (for NeoPixel.script.js)
+    $sceneDefaultsFunc = Generate-SceneEffectDefaultsFunction -Effects $effects
+    $jsFuncSuccess = Update-ScriptJSFunction -ScriptPath $scriptJsPath -FunctionContent $sceneDefaultsFunc
+    if ($jsFuncSuccess) {
+        Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+        Write-Host "Scene effect defaults function injected into script.js" -ForegroundColor White
+    } else {
+        Write-Host "  [WARN] " -NoNewline -ForegroundColor Yellow
+        Write-Host "Failed to update Scene Effect Defaults Function in script.js" -ForegroundColor White
+    }
+} else {
+    Write-Host "  [SKIP] " -NoNewline -ForegroundColor Yellow
+    Write-Host "NeoPixel.script.js not found: $scriptJsPath" -ForegroundColor White
+}
+
 # 6. Help Files (Markdown)
 Write-Host "  ▸ Generating help files..." -ForegroundColor Gray
 $helpFilesInfo = Generate-HelpFiles -Effects $effects
 $effectsWithoutDesc = $helpFilesInfo.EffectsWithoutDescription
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Help files generated" -ForegroundColor White
+
+# 6b. Scene Help Files (Markdown)
+Write-Host "  ▸ Generating scene help files..." -ForegroundColor Gray
+$sceneHelpInfo = Generate-SceneHelpFiles -Effects $effects
+Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+Write-Host "Scene help files generated ($($sceneHelpInfo.Count) new)" -ForegroundColor White
 
 # ====================================================================
 # Update Template
