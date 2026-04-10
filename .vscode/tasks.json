@@ -50,6 +50,18 @@
             "dependsOn": ["Pull"]
         },
         {
+            "label": "Build Release (-Beta)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/Build-Release.ps1",
+            "args": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
             "label": "Build Release (-Release)",
             "type": "shell",
             "command": "${workspaceFolder}/scripts/Build-Release.ps1",

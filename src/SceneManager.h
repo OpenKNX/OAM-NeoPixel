@@ -1,9 +1,9 @@
 #pragma once
 
 #include "OpenKNX.h"
-#include "knxprod.h"
 #include "Segment.h"
 #include "effects/Effect.h"
+#include "knxprod.h"
 #include <stdint.h>
 
 // Forward declarations
@@ -26,9 +26,9 @@ class SceneManager
 
     // Memory layout constants (must match NeoPixel.Segment.templ.xml and NeoPixel.Scene.part.xml)
     static constexpr uint16_t SCENE_DATA_START = 140;        // First scene at offset 140 within Union
-    static constexpr uint8_t SCENE_SIZE = 22;                 // Bytes per scene
-    static constexpr uint8_t SCENE_COUNT_OFFSET = 137;        // SceneCount param offset within Union
-    static constexpr uint8_t SCENE_EFFECT_PARAM_OFFSET = 12;  // Effect params at byte 12 within scene
+    static constexpr uint8_t SCENE_SIZE = 22;                // Bytes per scene
+    static constexpr uint8_t SCENE_COUNT_OFFSET = 137;       // SceneCount param offset within Union
+    static constexpr uint8_t SCENE_EFFECT_PARAM_OFFSET = 12; // Effect params at byte 12 within scene
 
     // Scene field offsets within the 22-byte scene slot
     static constexpr uint8_t FIELD_EFFECT_TYPE = 0;

@@ -463,6 +463,8 @@
               <ParameterType Id="%AID%_PT-SceneSlotUint8" Name="SceneSlotUint8">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
               </ParameterType>
+              <!-- BEGIN AUTO-GENERATED: Effect ParameterTypes -->
+              <!-- END AUTO-GENERATED: Effect ParameterTypes -->
             </ParameterTypes>
             <Parameters>
               <Parameter Id="%AID%_P-%TT%00000" Name="TriggerName" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />

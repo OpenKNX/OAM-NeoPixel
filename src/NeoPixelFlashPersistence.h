@@ -63,9 +63,9 @@ class NeoPixelFlashPersistence
      */
     struct RelayFlashState
     {
-        uint8_t count;        // Number of relays configured (0..kMax)
-        uint8_t statesMask;   // Bitmask: bit0=Relay1, bit1=Relay2, ...
-        uint8_t signature;    // 0xA5 when valid
+        uint8_t count;      // Number of relays configured (0..kMax)
+        uint8_t statesMask; // Bitmask: bit0=Relay1, bit1=Relay2, ...
+        uint8_t signature;  // 0xA5 when valid
     } __attribute__((packed));
 
     /**

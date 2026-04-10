@@ -3514,7 +3514,7 @@ $hardwareParamXml = ""
 
 if ($hardwareConfigs.Count -gt 1) {
   $defaultHwId = 255  # Dummy default: "--- Bitte wählen Sie eine Hardware aus ---"
-  $hardwareParamXml = "                <Parameter Id=`"%AID%_UP-4000018`" Offset=`"0`" BitOffset=`"0`" Name=`"NEO_NeoPixelHardwareSelect`" ParameterType=`"%AID%_PT-${FeatureName}HardwareSelect`" Text=`"Hardware Auswahl`" Value=`"$defaultHwId`"/>"
+  $hardwareParamXml = "                <Parameter Id=`"%AID%_UP-4000018`" Offset=`"0`" BitOffset=`"0`" Name=`"NeoPixelHardwareSelect`" ParameterType=`"%AID%_PT-${FeatureName}HardwareSelect`" Text=`"Hardware Auswahl`" Value=`"$defaultHwId`"/>"
   Write-Success "Generated Hardware Selection Parameter (4000018) with default: $defaultHwId (Dummy)"
 }
 

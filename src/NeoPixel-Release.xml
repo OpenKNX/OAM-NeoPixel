@@ -5,13 +5,13 @@
   <op:ETS
     OpenKnxId="0xAF"
     ApplicationNumber="1"
-    ApplicationVersion="0.3"
-    ReplacesVersions="0.3 0.2 0.1" 
+    ApplicationVersion="0.1"
+    ReplacesVersions="0.0" 
     ApplicationRevision="0"
     ProductName="NeoPixel KNX Adapter"
     BusCurrent="30"
-    BuildSuffix="-Dev"
-    BuildSuffixText=" (Dev)"
+    BuildSuffix=""
+    BuildSuffixText=""
     MediumTypes="MT-0 MT-5"
     OrderNumber="NeoPixel" />
 

@@ -186,8 +186,8 @@ void NeoPixelBusModule::loop(bool configured)
         { // Every 5 seconds
             _lastHwMismatchWarning = now;
 #ifdef DEVICE_HW_ID
-    #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-            uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
+    #ifdef ParamNEO_NeoPixelHardwareSelect
+            uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
 
             if (selectedHwIndex == 255)
             {
@@ -1859,8 +1859,8 @@ void NeoPixelBusModule::configureFromETS()
              hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
 
     // Check if ETS configuration matches compiled hardware
-    #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;      // Parameter contains index now
+    #ifdef ParamNEO_NeoPixelHardwareSelect
+    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;      // Parameter contains index now
     uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID); // Convert HW_ID to index
     if (selectedHwIndex != compiledHwIndex)
     {
@@ -1886,8 +1886,8 @@ void NeoPixelBusModule::configureFromETS()
     }
     #endif
 #else
-    #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect; // Parameter contains index now
+    #ifdef ParamNEO_NeoPixelHardwareSelect
+    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // Parameter contains index now
     const char* hwName = HardwareMapping::getHardwareName(selectedHwIndex);
     logInfoP("Hardware: %s (Index: %d) - ETS runtime selection",
              hwName ? hwName : "Unknown", selectedHwIndex);
@@ -3917,8 +3917,8 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("  Hardware Index:   %d", hwIndex);
     logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
     #else
-        #ifdef ParamNEO_NEO_NeoPixelHardwareSelect
-    uint16_t selectedHwId = (uint16_t)ParamNEO_NEO_NeoPixelHardwareSelect;
+        #ifdef ParamNEO_NeoPixelHardwareSelect
+    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
     uint8_t hwIndex = getCurrentHardwareIndex();
     const char* hwName = HardwareMapping::getHardwareName(hwIndex);
     logInfoP("  Mode:             ETS Runtime Selection");
