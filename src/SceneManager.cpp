@@ -22,8 +22,7 @@ SceneManager::SceneManager(NeoPixelBusModule* module)
 uint8_t SceneManager::getSceneCount(uint8_t channelIndex)
 {
     uint16_t addr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_COUNT_OFFSET;
-    // SceneCount is 4 bits at BitOffset 0
-    return knx.paramByte(addr) & 0x0F;
+    return (knx.paramByte(addr) & 0xF0) >> 4;
 }
 
 uint8_t SceneManager::readSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset)
@@ -43,6 +42,100 @@ void SceneManager::readSceneColorRGB(uint8_t channelIndex, uint8_t sceneIndex, u
     r = knx.paramByte(baseAddr);
     g = knx.paramByte(baseAddr + 1);
     b = knx.paramByte(baseAddr + 2);
+}
+
+void SceneManager::writeSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset, uint8_t value)
+{
+    uint16_t addr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + fieldOffset;
+    uint8_t* data = knx.paramData(addr);
+    if (data) *data = value;
+}
+
+void SceneManager::writeSceneColorRGB(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset,
+                                      uint8_t r, uint8_t g, uint8_t b)
+{
+    uint16_t baseAddr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + fieldOffset;
+    uint8_t* data = knx.paramData(baseAddr);
+    if (data)
+    {
+        data[0] = r;
+        data[1] = g;
+        data[2] = b;
+    }
+}
+
+bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment)
+{
+    if (!segment)
+    {
+        logErrorP("storeScene: segment is null for channel %d", channelIndex);
+        return false;
+    }
+
+    uint8_t sceneCount = getSceneCount(channelIndex);
+    if (sceneNumber < 1 || sceneNumber > sceneCount)
+    {
+        logInfoP("storeScene: Scene %d out of range for segment %d (configured: %d scenes)",
+                 sceneNumber, channelIndex, sceneCount);
+        return false;
+    }
+
+    uint8_t sceneIndex = sceneNumber - 1; // Convert to 0-based
+
+    // Capture current effect type
+    Effect* effect = segment->getEffect();
+    uint8_t effectType = getTypeFromEffect(effect);
+
+    // Capture current colors from segment config
+    const EffectConfig& config = segment->getConfig();
+    uint8_t primaryR = config.r();
+    uint8_t primaryG = config.g();
+    uint8_t primaryB = config.b();
+    uint8_t primaryWW = config.ww();
+    uint8_t primaryCW = config.cw();
+    uint8_t secondaryR = config.r2();
+    uint8_t secondaryG = config.g2();
+    uint8_t secondaryB = config.b2();
+    uint8_t secondaryWW = config.ww2();
+    uint8_t secondaryCW = config.cw2();
+    uint8_t brightness = segment->getBrightness();
+
+    logInfoP("storeScene %d for segment %d: Effect=%d, Primary=(%d,%d,%d,WW=%d,CW=%d), "
+             "Secondary=(%d,%d,%d,WW=%d,CW=%d), Brightness=%d",
+             sceneNumber, channelIndex, effectType,
+             primaryR, primaryG, primaryB, primaryWW, primaryCW,
+             secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW,
+             brightness);
+
+    // Write scene fields to parameter memory
+    writeSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TYPE, effectType);
+    writeSceneColorRGB(channelIndex, sceneIndex, FIELD_PRIMARY_R, primaryR, primaryG, primaryB);
+    writeSceneField(channelIndex, sceneIndex, FIELD_PRIMARY_WW, primaryWW);
+    writeSceneField(channelIndex, sceneIndex, FIELD_PRIMARY_CW, primaryCW);
+    writeSceneColorRGB(channelIndex, sceneIndex, FIELD_SECONDARY_R, secondaryR, secondaryG, secondaryB);
+    writeSceneField(channelIndex, sceneIndex, FIELD_SECONDARY_WW, secondaryWW);
+    writeSceneField(channelIndex, sceneIndex, FIELD_SECONDARY_CW, secondaryCW);
+    writeSceneField(channelIndex, sceneIndex, FIELD_BRIGHTNESS, brightness);
+
+    // Write effect-specific parameters (up to 10 bytes at offset 12)
+    if (effect)
+    {
+        uint8_t paramCount = effect->getParameterCount();
+        logInfoP("Storing effect '%s' with %d parameter(s):", effect->getName(), paramCount);
+        uint16_t effectParamBase = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + SCENE_EFFECT_PARAM_OFFSET;
+        for (uint8_t i = 0; i < paramCount && i < 10; i++)
+        {
+            uint32_t paramValue = effect->getParameter(segment, i);
+            logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i), (unsigned long)paramValue);
+            uint8_t* data = knx.paramData(effectParamBase + i);
+            if (data) *data = (uint8_t)(paramValue & 0xFF);
+        }
+    }
+
+    // Request flash save to persist the changed parameter table
+    knx.writeMemory();
+
+    return true;
 }
 
 bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment)
@@ -88,6 +181,23 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
              secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW,
              brightness);
 
+    // Reset config options/features to defaults before applying the new effect.
+    // Without this, leftover values from the previous effect bleed through
+    // (e.g. Cylon's EyeSize in option2 becomes Rainbow's saturation).
+    {
+        EffectConfig& cfg = segment->getConfig();
+        cfg.option1 = 0;
+        cfg.option2 = 0;
+        cfg.option3 = 0;
+        cfg.feature1 = false;
+        cfg.feature2 = false;
+        cfg.feature3 = false;
+        cfg.reverse = 0;
+        cfg.fade = 0;
+        cfg.count = 0;
+        cfg.mode = 0;
+    }
+
     // Apply effect type using existing infrastructure
     _module->applyEffectToSegment(segment, effectType);
 
@@ -109,8 +219,12 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
     if (effect && effect->getParameterCount() > 0)
     {
         loadSceneEffectParameters(effect, segment, effectType, channelIndex, sceneIndex);
-        logInfoP("Loaded %d scene effect parameter(s) for effect '%s'",
-                 effect->getParameterCount(), effect->getName());
+        uint8_t paramCount = effect->getParameterCount();
+        logInfoP("Effect '%s' configured with %d parameter(s):", effect->getName(), paramCount);
+        for (uint8_t i = 0; i < paramCount; i++)
+        {
+            logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i), (unsigned long)effect->getParameter(segment, i));
+        }
     }
 #endif
 

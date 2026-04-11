@@ -620,7 +620,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             koIndex != NEO_KoSegmentBrightnessState &&
             koIndex != NEO_KoCCTState &&
             koIndex != NEO_KoFxState &&
-            koIndex != NEO_KoPresetState &&
+            koIndex != NEO_KoSceneState &&
             koIndex != NEO_KoRGBState &&
             koIndex != NEO_KoHSVState &&
             koIndex != NEO_KoRGBWState &&
@@ -1256,69 +1256,89 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 break;
             }
 
-            case NEO_KoPreset:
+            case NEO_KoScene:
             {
-                uint8_t preset = ko.value(DPT_SceneNumber);
-                logInfoP("Segment %d Preset/Scene: %d", channel, preset);
+                // DPT 18.001 Scene Control: bit 7 = learn flag, bits 0-5 = scene number (0-63)
+                // Read raw byte directly — ko.value(DPT_SceneControl) only returns index 0 (learn bit)
+                uint8_t raw = ko.valueRef()[0];
+                bool learn = (raw & 0x80) != 0;
+                uint8_t sceneNumber = (raw & 0x3F) + 1; // Convert 0-based DPT to 1-based internal
+                logInfoP("Segment %d Scene Control: scene=%d, learn=%d", channel, sceneNumber, learn);
 
-                // Try ETS-configured scenes first (SceneManager)
-                bool sceneApplied = _sceneManager->recallScene(channel, preset, targetSegment);
-
-                if (sceneApplied)
+                if (learn)
                 {
-                    // Save scene number for flash persistence
-                    _segments[channel].savedSceneNumber = preset;
+                    // Store current segment state into the scene slot
+                    bool stored = _sceneManager->storeScene(channel, sceneNumber, targetSegment);
+                    if (stored)
+                    {
+                        logInfoP("Segment %d: Scene %d stored successfully", channel, sceneNumber);
+                    }
+                    else
+                    {
+                        logWarningP("Segment %d: storeScene FAILED for scene %d", channel, sceneNumber);
+                    }
                 }
                 else
                 {
-                    // Fallback: hardcoded presets for backward compatibility
-                    // (only used when scene number exceeds configured SceneCount)
-                    _segments[channel].savedSceneNumber = 0; // Clear scene number
-                    switch (preset)
+                    // Recall scene
+                    bool sceneApplied = _sceneManager->recallScene(channel, sceneNumber, targetSegment);
+
+                    if (sceneApplied)
                     {
-                        case 1: // Red
-                            targetSegment->setPrimaryColor(255, 0, 0, 0);
-                            targetSegment->setBrightness(255);
-                            break;
-                        case 2: // Green
-                            targetSegment->setPrimaryColor(0, 255, 0, 0);
-                            targetSegment->setBrightness(255);
-                            break;
-                        case 3: // Blue
-                            targetSegment->setPrimaryColor(0, 0, 255, 0);
-                            targetSegment->setBrightness(255);
-                            break;
-                        case 4: // White
-                            targetSegment->setPrimaryColor(255, 255, 255, 0);
-                            targetSegment->setBrightness(255);
-                            break;
-                        case 5: // Warm White (using color temperature)
+                        // Save scene number for flash persistence
+                        _segments[channel].savedSceneNumber = sceneNumber;
+                    }
+                    else
+                    {
+                        // Fallback: hardcoded presets for backward compatibility
+                        // (only used when scene number exceeds configured SceneCount)
+                        _segments[channel].savedSceneNumber = 0; // Clear scene number
+                        switch (sceneNumber)
                         {
-                            uint8_t r, g, b;
-                            ColorHelper::kelvinToRGB(2700, r, g, b); // Warm white ~2700K
-                            targetSegment->setPrimaryColor(r, g, b, 0);
-                            targetSegment->setBrightness(255);
+                            case 1: // Red
+                                targetSegment->setPrimaryColor(255, 0, 0, 0);
+                                targetSegment->setBrightness(255);
+                                break;
+                            case 2: // Green
+                                targetSegment->setPrimaryColor(0, 255, 0, 0);
+                                targetSegment->setBrightness(255);
+                                break;
+                            case 3: // Blue
+                                targetSegment->setPrimaryColor(0, 0, 255, 0);
+                                targetSegment->setBrightness(255);
+                                break;
+                            case 4: // White
+                                targetSegment->setPrimaryColor(255, 255, 255, 0);
+                                targetSegment->setBrightness(255);
+                                break;
+                            case 5: // Warm White (using color temperature)
+                            {
+                                uint8_t r, g, b;
+                                ColorHelper::kelvinToRGB(2700, r, g, b); // Warm white ~2700K
+                                targetSegment->setPrimaryColor(r, g, b, 0);
+                                targetSegment->setBrightness(255);
+                            }
+                            break;
+                            case 6: // Cool White
+                            {
+                                uint8_t r, g, b;
+                                ColorHelper::kelvinToRGB(6500, r, g, b); // Cool white ~6500K
+                                targetSegment->setPrimaryColor(r, g, b, 0);
+                                targetSegment->setBrightness(255);
+                            }
+                            break;
+                            case 7:                                     // Rainbow Effect
+                                applyEffectToSegment(targetSegment, 1); // Rainbow effect
+                                targetSegment->setBrightness(200);
+                                break;
+                            case 8: // Off
+                                targetSegment->setPrimaryColor(0, 0, 0, 0);
+                                targetSegment->setBrightness(0);
+                                break;
+                            default:
+                                logWarningP("Unknown preset %d for segment %d", sceneNumber, channel);
+                                break;
                         }
-                        break;
-                        case 6: // Cool White
-                        {
-                            uint8_t r, g, b;
-                            ColorHelper::kelvinToRGB(6500, r, g, b); // Cool white ~6500K
-                            targetSegment->setPrimaryColor(r, g, b, 0);
-                            targetSegment->setBrightness(255);
-                        }
-                        break;
-                        case 7:                                     // Rainbow Effect
-                            applyEffectToSegment(targetSegment, 1); // Rainbow effect
-                            targetSegment->setBrightness(200);
-                            break;
-                        case 8: // Off
-                            targetSegment->setPrimaryColor(0, 0, 0, 0);
-                            targetSegment->setBrightness(0);
-                            break;
-                        default:
-                            logWarningP("Unknown preset %d for segment %d", preset, channel);
-                            break;
                     }
                 }
                 break;
@@ -1714,7 +1734,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoSegmentBrightnessState:
             case NEO_KoCCTState:
             case NEO_KoFxState:
-            case NEO_KoPresetState:
+            case NEO_KoSceneState:
             case NEO_KoRGBState:
             case NEO_KoHSVState:
             case NEO_KoRGBWState:

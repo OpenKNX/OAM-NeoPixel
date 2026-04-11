@@ -420,7 +420,8 @@ function NEO_detectHardware(device, online, progress, context) {
 
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
 
-
+
+
 var NEO_SceneEffectDefaults = {};
 // END AUTO-GENERATED: Scene Effect Defaults
 

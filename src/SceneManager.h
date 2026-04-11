@@ -65,6 +65,20 @@ class SceneManager
      */
     uint8_t getSceneCount(uint8_t channelIndex);
 
+    /**
+     * @brief Store the current segment state into a scene slot (DPT 18.001 learn)
+     *
+     * Captures the segment's current effect type, primary/secondary colors (RGBWWCW),
+     * brightness, and effect-specific parameters, writing them into the scene's
+     * parameter memory. Changes are in RAM only until flash is persisted.
+     *
+     * @param channelIndex Segment index (0-15)
+     * @param sceneNumber Scene number (1-based, as received via DPT 18.001)
+     * @param segment Pointer to source segment
+     * @return true if scene was stored, false if invalid scene number
+     */
+    bool storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment);
+
   private:
     NeoPixelBusModule* _module;
 
@@ -83,6 +97,16 @@ class SceneManager
     uint8_t readSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset);
 
     /**
+     * @brief Write a single byte field to a scene slot
+     *
+     * @param channelIndex Segment index (0-15)
+     * @param sceneIndex Scene index (0-based)
+     * @param fieldOffset Field offset within the 22-byte scene slot
+     * @param value Value to write
+     */
+    void writeSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset, uint8_t value);
+
+    /**
      * @brief Read a 3-byte RGB color from a scene slot (for TypeColor RGB)
      *
      * @param channelIndex Segment index
@@ -94,4 +118,17 @@ class SceneManager
      */
     void readSceneColorRGB(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset,
                            uint8_t& r, uint8_t& g, uint8_t& b);
+
+    /**
+     * @brief Write a 3-byte RGB color to a scene slot
+     *
+     * @param channelIndex Segment index
+     * @param sceneIndex Scene index (0-based)
+     * @param fieldOffset Start offset of the 3-byte RGB field
+     * @param r Red
+     * @param g Green
+     * @param b Blue
+     */
+    void writeSceneColorRGB(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset,
+                            uint8_t r, uint8_t g, uint8_t b);
 };

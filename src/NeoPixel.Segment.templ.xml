@@ -54,7 +54,7 @@
         <!-- END AUTO-GENERATED: Effect Parameters Union -->
 
                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                     Scene/Preset Configuration (op:part based, 10 scenes × 22 bytes = 220 bytes)
+                     Scene Configuration (op:part based, 10 scenes × 22 bytes = 220 bytes)
                      Offset 137: SceneCount, Offset 140-359: Scene data
                      ═══════════════════════════════════════════════════════════════════════════════════ -->
                 <!-- Byte 137: SceneCount (4 bits: 0=disabled, 1-10 scenes) -->
@@ -203,10 +203,10 @@
               <ComObject Id="%AID%_O-%TT%%CC%016" Number="%K15%" Name="%C%Fx"         Text="Effekt"              FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"              ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Fx Status -->
               <ComObject Id="%AID%_O-%TT%%CC%017" Number="%K16%" Name="%C%FxState"    Text="Effekt Status"       FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10"       ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Preset -->
-              <ComObject Id="%AID%_O-%TT%%CC%018" Number="%K17%" Name="%C%Preset"     Text="Voreinstellung"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"      ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Preset Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%019" Number="%K18%" Name="%C%PresetState" Text="Voreinstellung Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10" ObjectSize="1 Byte" DatapointType="DPST-5-10"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Scene Control (DPT 18.001: bit 7 = learn/store, bits 0-5 = scene number) -->
+              <ComObject Id="%AID%_O-%TT%%CC%018" Number="%K17%" Name="%C%Scene"     Text="Szenensteuerung"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 18.001"      ObjectSize="1 Byte"  DatapointType="DPST-18-1"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Scene Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%019" Number="%K18%" Name="%C%SceneState" Text="Szenensteuerung Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 18.001" ObjectSize="1 Byte" DatapointType="DPST-18-1"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGB (3 bytes R,G,B) -->
               <ComObject Id="%AID%_O-%TT%%CC%020" Number="%K19%" Name="%C%RGB"        Text="RGB"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGB Status -->
@@ -285,10 +285,10 @@
               <ComObjectRef Id="%AID%_O-%TT%%CC%016_R-%TT%%CC%01601" RefId="%AID%_O-%TT%%CC%016" Text="{{0:%C%}}: Effekt" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- Fx Status -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%017_R-%TT%%CC%01701" RefId="%AID%_O-%TT%%CC%017" Text="{{0:%C%}}: Effekt Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Preset -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" RefId="%AID%_O-%TT%%CC%018" Text="{{0:%C%}}: Voreinstellung" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Preset Status -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" RefId="%AID%_O-%TT%%CC%019" Text="{{0:%C%}}: Voreinstellung Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Scene Control -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" RefId="%AID%_O-%TT%%CC%018" Text="{{0:%C%}}: Szenensteuerung" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Scene Status -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" RefId="%AID%_O-%TT%%CC%019" Text="{{0:%C%}}: Szenensteuerung Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGB -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%020_R-%TT%%CC%02001" RefId="%AID%_O-%TT%%CC%020" Text="{{0:%C%}}: RGB" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGB Status -->
@@ -399,10 +399,10 @@
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                         Szenen / Presets (ETS-konfigurierbar)
+                         Szenen (ETS-konfigurierbar)
                          ═══════════════════════════════════════════════════════════════════════════════════ -->
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Szenen / Presets" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Konfigurierbare Lichtszenen mit Effekt, Farben, Helligkeit und Effekt-spezifischen Parametern. Szenen werden über das Preset-KO per Szenennummer abgerufen." />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Szenen" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Konfigurierbare Lichtszenen mit Effekt, Farben, Helligkeit und Effekt-spezifischen Parametern. Szenen werden über das Szenensteuerungs-KO abgerufen (DPT 18.001). Bit 7 = Lernen: aktuellen Zustand als Szene speichern." />
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%212_R-%TT%%CC%21201" IndentLevel="1" HelpContext="%DOC%"/>
 
                     <!-- Scene blocks (injected via op:part, each scene self-gates visibility via SceneCount >= %SZ%) -->
@@ -500,10 +500,10 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%016_R-%TT%%CC%01601" />
                     <!-- Fx Status -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%017_R-%TT%%CC%01701" />
-                    <!-- Preset -->
-                    <!-- <ComObjectRefRef RefId="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" /> -->
-                    <!-- Preset Status -->
-                    <!-- <ComObjectRefRef RefId="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" /> -->
+                    <!-- Scene Control (DPT 18.001) -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" />
+                    <!-- Scene Status -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" />
                     <!-- RGB -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%020_R-%TT%%CC%02001" />
                     <!-- RGB Status -->
