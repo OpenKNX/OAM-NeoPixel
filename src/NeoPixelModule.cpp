@@ -1880,7 +1880,7 @@ void NeoPixelBusModule::configureFromETS()
 
     // Check if ETS configuration matches compiled hardware
     #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;      // Parameter contains index now
+    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;          // Parameter contains index now
     uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID); // Convert HW_ID to index
     if (selectedHwIndex != compiledHwIndex)
     {
@@ -1896,9 +1896,16 @@ void NeoPixelBusModule::configureFromETS()
         logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
 
-        // Set Prog LED to red + error code blinking (Prio 2 - overrides prog mode)
-        openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->color(OpenKNX::Led::Color::Red);
-        openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_PROG)->errorCode(1); // 1x blink = HW mismatch
+        if (selectedHwIndex == 255)
+        {
+            // No hardware configured in ETS (dummy value)
+            setErrorBlink(NEO_ERROR_NO_HW_CONFIGURED); // 2× blink
+        }
+        else
+        {
+            // True hardware mismatch
+            setErrorBlink(NEO_ERROR_HW_MISMATCH); // 1× blink
+        }
     }
     else
     {
@@ -4307,6 +4314,18 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
 
     PowerLimitMode mode = mgr->getPowerManager()->getPowerLimitMode();
 
+    // Check for ABL (Auto Brightness Limiting) active warning
+    // Uses global power stats to detect when brightness is being limited
+    {
+        uint32_t ablCheckCurrent, ablCheckLimit;
+        uint8_t ablCheckLoad;
+        mgr->getGlobalPowerStats(ablCheckCurrent, ablCheckLimit, ablCheckLoad);
+        if (ablCheckLoad >= 95 && _activeWarnCode == 0)
+        {
+            setWarningBlink(NEO_WARN_ABL_ACTIVE, OpenKNX::Led::Color::Orange); // 1× blink Orange
+        }
+    }
+
     if (mode == PowerLimitMode::GLOBAL)
     {
         // GLOBAL MODE: Send global + per-strip KOs
@@ -4614,5 +4633,40 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
 
             _channelIndex = savedChannelIndex;
         }
+    }
+}
+
+// =============================================================================
+// Blink Code Helpers
+// =============================================================================
+
+void NeoPixelBusModule::setErrorBlink(uint8_t code)
+{
+    // Only show the most severe (lowest code number) error
+    if (_activeErrorCode != 0 && _activeErrorCode <= code) return;
+    _activeErrorCode = code;
+    auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
+    if (led)
+    {
+        led->color(OpenKNX::Led::Color::Red);
+        led->errorCode(code); // Prio 2 — overrides any active pulsing (Prio 5)
+        logInfoP("Error blink code %d activated on STATUS LED (Red, %d× blink)", code, code);
+    }
+}
+
+void NeoPixelBusModule::setWarningBlink(uint8_t code, OpenKNX::Led::Color color)
+{
+    // Don't touch STATUS LED if an error is already showing (errorCode Prio 2 would win,
+    // but the color() call would wrongly change the error's color)
+    if (_activeErrorCode != 0) return;
+    // Only show the most severe (lowest code number) warning
+    if (_activeWarnCode != 0 && _activeWarnCode <= code) return;
+    _activeWarnCode = code;
+    auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
+    if (led)
+    {
+        led->color(color);
+        led->pulsing(); // Prio 5 — smooth breathing to indicate warning
+        logInfoP("Warning code %d activated on STATUS LED (pulsing)", code);
     }
 }

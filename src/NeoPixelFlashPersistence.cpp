@@ -158,6 +158,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         logWarningP("Ignoring flash data to prevent corruption");
         logWarningP("Segments will use default startup behavior");
         logWarningP("========================================");
+        _module->setWarningBlink(NEO_WARN_FLASH_DISCARDED, OpenKNX::Led::Color::Purple); // 2× blink Purple
         return;
     }
 

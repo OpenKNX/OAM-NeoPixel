@@ -16,6 +16,23 @@
 #define NEOPIXEL_FUNCTION_OBJECT_INDEX 158 // NeoPixel module appliance object
 #define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Hardware detection property
 
+// ─── NeoPixel Module Error/Warning Blink Codes ─────────────────────────────
+// All NeoPixel status codes use the STATUS LED (OPENKNX_LEDFUNC_BASE_STATE).
+// Errors:  Red + errorCode(N) → countable blink pattern (N× blink, pause, repeat)
+// Warnings: Orange/Yellow + pulsing() → smooth breathing (check serial log for details)
+
+// Error codes (Red, STATUS LED): lower value = higher severity
+static constexpr uint8_t NEO_ERROR_HW_MISMATCH = 1;      // 1× blink: Firmware/ETS hardware mismatch
+static constexpr uint8_t NEO_ERROR_NO_HW_CONFIGURED = 2; // 2× blink: No hardware selected in ETS (dummy 255)
+static constexpr uint8_t NEO_ERROR_GPIO_CONFLICT = 3;    // 3× blink: Duplicate GPIO pin assignment
+static constexpr uint8_t NEO_ERROR_STRIP_FAILED = 4;     // 4× blink: Physical strip creation failed (nullptr)
+static constexpr uint8_t NEO_ERROR_VSTRIP_FAILED = 5;    // 5× blink: Virtual strip creation failed
+
+// Warning codes (Orange/Yellow, STATUS LED): pulsing — not countable, use serial log
+static constexpr uint8_t NEO_WARN_ABL_ACTIVE = 1;      // Pulsing Orange: Auto-Brightness-Limiting active
+static constexpr uint8_t NEO_WARN_FLASH_DISCARDED = 2; // Pulsing Purple: Flash data discarded (config changed)
+static constexpr uint8_t NEO_WARN_UNKNOWN_EFFECT = 3;  // Pulsing Yellow: Unknown effect type in ETS
+
 // Forward declarations
 class EffectConfiguration;
 class ColorManagement;
@@ -290,26 +307,27 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Global Power Control
     bool _globalPowerOn = true; // Global power state (default ON)
 
-    // External Relays (max derived from knxprod.h)
-    #if defined(NEO_KoExternalRelay4) && defined(NEO_KoExternalRelay1)
+// External Relays (max derived from knxprod.h)
+#if defined(NEO_KoExternalRelay4) && defined(NEO_KoExternalRelay1)
     static constexpr uint8_t kMaxExternalRelays =
         (NEO_KoExternalRelay4 >= NEO_KoExternalRelay1)
             ? (uint8_t)(NEO_KoExternalRelay4 - NEO_KoExternalRelay1 + 1)
             : 0;
-    #elif defined(NEO_KoExternalRelay1)
+#elif defined(NEO_KoExternalRelay1)
     static constexpr uint8_t kMaxExternalRelays = 1;
-    #else
+#else
     static constexpr uint8_t kMaxExternalRelays = 0;
-    #endif
+#endif
     static constexpr uint8_t kRelayStorageSize = (kMaxExternalRelays > 0) ? kMaxExternalRelays : 1;
-    
-    struct RelayTimerState {
+
+    struct RelayTimerState
+    {
         bool targetState = false;      // Desired output state
         bool pendingChange = false;    // Timer active
         unsigned long triggerTime = 0; // When to execute change (millis)
         unsigned long lastOffTime = 0; // Last off timestamp (for min off-time protection)
     };
-    
+
     uint8_t _relayCount = 0;
     uint8_t _relayPins[kRelayStorageSize] = {255};
     bool _relayStates[kRelayStorageSize] = {false};
@@ -331,8 +349,12 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Performance & Rate Limiting
 
     // Hardware Configuration Mismatch Detection
-    bool _hwConfigMismatch = false;                           // True if ETS HW ID doesn't match compiled DEVICE_HW_ID
-    unsigned long _lastHwMismatchWarning = 0;                 // Timestamp of last warning
+    bool _hwConfigMismatch = false;           // True if ETS HW ID doesn't match compiled DEVICE_HW_ID
+    unsigned long _lastHwMismatchWarning = 0; // Timestamp of last warning
+
+    // Blink code tracking (only the most severe error is shown)
+    uint8_t _activeErrorCode = 0;                             // Currently active error blink code (0 = none)
+    uint8_t _activeWarnCode = 0;                              // Currently active warning blink code (0 = none)
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp
     static const unsigned long COLOR_UPDATE_INTERVAL_MS = 50; // Update color every 500ms to reduce logging overhead
 
@@ -378,6 +400,10 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Power Monitoring
     void sendPowerMonitoringKOs(); // Send current/load KOs periodically
+
+    // Blink code helpers
+    void setErrorBlink(uint8_t code);                              // Set error on STATUS LED (Red + errorCode) — lowest code wins
+    void setWarningBlink(uint8_t code, OpenKNX::Led::Color color); // Set warning on STATUS LED (color + pulsing)
 
     // Strip Configuration Helpers
     static uint8_t mapSwapMode(uint8_t paramValue); // Map ETS swap parameter

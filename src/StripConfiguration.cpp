@@ -147,6 +147,7 @@ void StripConfiguration::configureFromETS()
         {
             logErrorP("  - Strip %d (GPIO conflict)", stripIdx);
         }
+        _module->setErrorBlink(NEO_ERROR_GPIO_CONFLICT); // 3× blink
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -371,11 +372,13 @@ void StripConfiguration::configureFromETS()
                 else
                 {
                     logErrorP("SPI Strip %d: Failed to cast config to SpiStripConfig!", i);
+                _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
                 }
             }
             else
             {
                 logErrorP("SPI Strip %d: addSpiStrip returned nullptr!", i);
+                _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
             }
 
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
@@ -542,6 +545,7 @@ void StripConfiguration::configureFromETS()
         else
         {
             logErrorP("Failed to create strip %d", i);
+            _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
         }
     }
 
@@ -743,6 +747,7 @@ void StripConfiguration::createVirtualStripWithOrder()
     if (_module->_physicalStrips.empty() || _module->_totalLeds == 0 || _module->_virtualStripConfiguration.empty())
     {
         logErrorP("Cannot create virtual strip: insufficient configuration");
+        _module->setErrorBlink(NEO_ERROR_VSTRIP_FAILED); // 5× blink
         return;
     }
 
@@ -788,6 +793,7 @@ void StripConfiguration::createVirtualStripWithOrder()
     if (!_module->_virtualStrip)
     {
         logErrorP("Failed to create virtual strip");
+        _module->setErrorBlink(NEO_ERROR_VSTRIP_FAILED); // 5× blink
         return;
     }
 
@@ -804,6 +810,7 @@ void StripConfiguration::createVirtualStripWithOrder()
     if (!mgr)
     {
         logErrorP("NeoPixelManager not available for virtual strip creation");
+        _module->setErrorBlink(NEO_ERROR_VSTRIP_FAILED); // 5× blink
         return;
     }
 
