@@ -103,7 +103,7 @@ $script:Config = @{
     SegmentTemplate = "src/NeoPixel.Segment.templ.xml"
     StripTemplate = "src/NeoPixel.Strip.templ.xml"
     ShareXml = "src/NeoPixel.share.xml"
-    MainXml = "src/NeoPixel.xml"
+    MainXml = "src/NeoPixel-Dev.xml"
 
     # Generated XML files
     ParameterTypesXml = "src/NeoPixel.Effects.ParameterTypes.generated.xml"

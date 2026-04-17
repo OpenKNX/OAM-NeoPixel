@@ -129,6 +129,9 @@ void NeoPixelBusModule::setup(bool configured)
     }
     setup_test_environment(_neoPixel);
     _initialized = true;
+#ifdef NEOPIXEL_BLINK_CODE_TEST
+    test_blink_codes(*this);
+#endif
 #else
     if (configured)
     {
@@ -1760,6 +1763,10 @@ void NeoPixelBusModule::showHelp()
     // Print the 'neo' command group header via core module
     _neoPixel.showHelp();
 
+    openknx.console.printHelpLine("neo led status", "Show active NeoPixel blink codes");
+    openknx.console.printHelpLine("neo led error <1-5>", "Test error blink code on STATUS LED");
+    openknx.console.printHelpLine("neo led warn <1-3>", "Test warning pulsing on STATUS LED");
+    openknx.console.printHelpLine("neo led clear", "Clear all NeoPixel blink codes");
 #ifdef OPENKNX_DEBUG
     // Add NeoPixel-specific debug commands
     openknx.console.printHelpLine("neoa", "Show NeoPixel ETS configuration analysis");
@@ -1777,6 +1784,70 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
         return true;
     }
 #endif
+
+    // neo led <subcommand>
+    if (command.compare(0, 8, "neo led ") == 0)
+    {
+        std::string sub = command.substr(8);
+
+        if (sub == "status")
+        {
+            logInfoP("Active error code: %d (0=none)", _activeErrorCode);
+            logInfoP("Active warn  code: %d (0=none)", _activeWarnCode);
+            return true;
+        }
+        else if (sub == "clear")
+        {
+            _activeErrorCode = 0;
+            _activeWarnCode = 0;
+            auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
+            if (led)
+            {
+                led->errorCode(0); // Disable error mode
+                led->off();        // Turn off pulsing
+            }
+            logInfoP("Blink codes cleared");
+            return true;
+        }
+        else if (sub.compare(0, 6, "error ") == 0)
+        {
+            uint8_t code = (uint8_t)atoi(sub.c_str() + 6);
+            if (code < 1 || code > 5)
+            {
+                logInfoP("Usage: neo led error <1-5>");
+                return true;
+            }
+            // Reset tracking so test code always applies
+            _activeErrorCode = 0;
+            _activeWarnCode = 0;
+            setErrorBlink(code);
+            return true;
+        }
+        else if (sub.compare(0, 5, "warn ") == 0)
+        {
+            uint8_t code = (uint8_t)atoi(sub.c_str() + 5);
+            OpenKNX::Led::Color color;
+            switch (code)
+            {
+                case 1: color = OpenKNX::Led::Color::Orange; break;
+                case 2: color = OpenKNX::Led::Color::Purple; break;
+                case 3: color = OpenKNX::Led::Color::Yellow; break;
+                default:
+                    logInfoP("Usage: neo led warn <1-3> (1=Orange/ABL, 2=Purple/Flash, 3=Yellow/Effect)");
+                    return true;
+            }
+            // Reset tracking so test code always applies
+            _activeErrorCode = 0;
+            _activeWarnCode = 0;
+            setWarningBlink(code, color);
+            return true;
+        }
+        else
+        {
+            logInfoP("Usage: neo led status|clear|error <1-5>|warn <1-3>");
+            return true;
+        }
+    }
 
     // Forward to core module's console handler
     return _neoPixel.processCommand(command, diagnose);
@@ -4668,5 +4739,17 @@ void NeoPixelBusModule::setWarningBlink(uint8_t code, OpenKNX::Led::Color color)
         led->color(color);
         led->pulsing(); // Prio 5 — smooth breathing to indicate warning
         logInfoP("Warning code %d activated on STATUS LED (pulsing)", code);
+    }
+}
+
+void NeoPixelBusModule::clearBlinkCodes()
+{
+    _activeErrorCode = 0;
+    _activeWarnCode = 0;
+    auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
+    if (led)
+    {
+        led->errorCode(0); // Disable error blink pattern
+        led->off();        // Disable pulsing
     }
 }

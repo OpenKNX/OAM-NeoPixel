@@ -160,7 +160,8 @@ void StripConfiguration::configureFromETS()
     for (uint8_t r = 0; r < relayCount; ++r)
     {
         uint8_t portIndex;
-        switch (r) {
+        switch (r)
+        {
             case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
             case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
             case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
@@ -372,7 +373,7 @@ void StripConfiguration::configureFromETS()
                 else
                 {
                     logErrorP("SPI Strip %d: Failed to cast config to SpiStripConfig!", i);
-                _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
+                    _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
                 }
             }
             else

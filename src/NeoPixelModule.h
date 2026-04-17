@@ -404,6 +404,11 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Blink code helpers
     void setErrorBlink(uint8_t code);                              // Set error on STATUS LED (Red + errorCode) — lowest code wins
     void setWarningBlink(uint8_t code, OpenKNX::Led::Color color); // Set warning on STATUS LED (color + pulsing)
+    void clearBlinkCodes();                                        // Reset all blink codes and turn off STATUS LED
+
+    // Blink code state (for testing / diagnostics)
+    uint8_t getActiveErrorCode() const { return _activeErrorCode; }
+    uint8_t getActiveWarnCode() const { return _activeWarnCode; }
 
     // Strip Configuration Helpers
     static uint8_t mapSwapMode(uint8_t paramValue); // Map ETS swap parameter

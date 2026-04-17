@@ -7,7 +7,7 @@
   <op:config name="%BASE_VerifyVersion%" value="1.7" />
   <op:config name="%NET_VerifyVersion%" value="0.5" />
   <op:config name="%NEO_VerifyVersion%" value="0.0" />
-  <op:config name="%FCB_VerifyVersion%" value="0.9" />
+  <op:config name="%FCB_VerifyVersion%" value="0.10" />
 
   <op:config name="%LOG_NumChannelsDefault%" value="1" />
   <op:config name="%LOG_EnableSave%" value="0" />

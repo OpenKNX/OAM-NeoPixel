@@ -50,7 +50,7 @@
             "dependsOn": ["Pull"]
         },
         {
-            "label": "Build Release (-Beta)",
+            "label": "Build Release (-Dev)",
             "type": "shell",
             "command": "${workspaceFolder}/scripts/Build-Release.ps1",
             "args": [

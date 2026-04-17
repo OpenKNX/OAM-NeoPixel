@@ -57,7 +57,7 @@ function Show-Help {
     Write-Host "  .\Build-Release.ps1 [-Release] [-Full] [-SkipFirmware] [-Clean]"
     Write-Host ""
     Write-Host "OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -Release       Create release build (default: beta)"
+    Write-Host "  -Release       Create release build (default: dev)"
     Write-Host "  -Full          Build ALL hardware variants (default: tested only)"
     Write-Host "  -SkipFirmware  Generate configs only, skip firmware compilation"
     Write-Host "  -Clean         Remove generated files, prompt for rebuild"
@@ -65,7 +65,7 @@ function Show-Help {
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\Build-Release.ps1              " -NoNewline -ForegroundColor White
-    Write-Host "# Beta build (tested hardware)" -ForegroundColor DarkGray
+    Write-Host "# Dev build (tested hardware)" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release     " -NoNewline -ForegroundColor White
     Write-Host "# Release build" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
@@ -219,8 +219,8 @@ if (!$?) {
 }
 
 # Determine build parameter for OpenKNXproducer
-# Pass "Release" if it was Release, otherwise empty (Beta)
-$buildParam = if ($isRelease) { "Release" } else { "" }
+# Pass "Release" or "Dev" to select the matching XML file
+$buildParam = if ($isRelease) { "Release" } else { "Dev" }
 
 # Execute generic pre-build steps
 ../OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
