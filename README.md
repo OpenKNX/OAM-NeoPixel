@@ -1,167 +1,215 @@
 # OAM-NeoPixel: KNX-Controlled Addressable LED Adapter
 
-A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, color temperature, brightness control, and runtime state persistence.
+A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, scenes, color temperature, HCL (Human Centric Lighting), brightness control, and runtime state persistence.
 
 ## Features
 
 ### Core Functionality
 - **Multi-Strip Support**: Control up to 6 independent LED strips simultaneously
-- **Flexible Segmentation**: Divide each strip into segments for granular control
-- **Rich Effect Library**: Built-in effects including fade, rainbow, pulse, sparkle, and more
-- **Effect Auto-Update**: Automatic animation with configurable update speeds
-- **Color Profiles**: RGB, HSV, RGBW, warm/cool white (WW/CW) support
+- **Flexible Segmentation**: Up to 16 segments per strip for granular control
+- **Rich Effect Library**: 29 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more
+- **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, and brightness
+- **Color Profiles**: RGB, HSV, RGBW, RGBCCT (5-channel), warm/cool white (WW/CW) support
 
 ### Control Methods
 - **KNX Group Objects**: Full control via KNX telegrams
-- **Per-Segment KOs**: Independent control of each segment's color, brightness, effect, and power
-- **Global Controls**: Global brightness, power, and HCL (Hue-Color-Light) state
+- **Per-Segment KOs**: Independent control of each segment's color, brightness, effect, scene, and power
+- **Global Controls**: Global brightness, power, and HCL (Human Centric Lighting) state
 - **Relative Controls**: Dimming steps via DPT 3.007 (Control_Dimming) for incremental brightness/color changes
 
 ### Color & Lighting
 - **RGB Direct Control**: Set exact RGB values
 - **HSV Control**: Hue, Saturation, Value for intuitive color selection
-- **Color Temperature (CCT)**: Kelvin-based warm/cool white adjustment
+- **Color Temperature (CCT)**: Kelvin-based warm/cool white adjustment (DPT 7.600)
 - **RGBCCT (5-Channel)**: Full support for 5-channel LED strips with separate Warm White (WW) and Cool White (CW) channels for true color temperature control
 - **HCL (Human Centric Lighting)**: Automatic color temperature adjustment with sun-position curves or time-based scheduling for circadian rhythm support
   - For RGBCCT strips: Directly adjusts WW/CW ratio for pure white color temperature
   - For RGB/RGBW strips: Applies Kelvin-based RGB tinting
+  - Configurable globally and per segment
 - **White Channels**: Dedicated warm white (WW) and cool white (CW) control for RGBW and RGBCCT strips
-- **Brightness Scaling**: Per-segment brightness with DPT 5.001 (percentage 0–100%)
-- **Gamma Correction**: Configurable gamma curve for natural brightness perception
-- **White Balance Correction**: Fine-tune color channel intensity
+- **Brightness Scaling**: Per-segment brightness with DPT 5.001 (percentage 0-100%)
+- **Gamma Correction**: Configurable gamma curve (1.2-2.7, default 2.0)
+- **White Balance Correction**: Per-channel intensity adjustment (R/G/B, default 100% each)
 
 ### Advanced Features
-- **LED Protocol Support**: WS2812B, WS2811, SK6812, SK6805, APA102, SK9822, WS2801, LPD8806, and more
-- **Color Order Configuration**: Automatic and manual color order selection (RGB, GRB, BGR, RGBW, etc.)
-- **Timing Modes**: 11 adjustable timing presets (AUTO, FAST, SLOW) to optimize signal integrity for different cable lengths and LED types
-- **Power Limiting**: Global and per-channel current limiting to prevent brownouts
+- **LED Protocol Support**: 28+ protocols including WS2812B, WS2811, WS2813, SK6812, APA102, SK9822, WS2801, LPD8806, TM1814, WS2805 RGBCCT, WS2814 RGBCCT, and more
+- **Color Order Configuration**: 12 color orders including RGB, GRB, BGR, RGBW, GRBW, RGBCCT, GRBCCT, RGBCTW, GRBCTW
+- **Timing Modes**: 11 adjustable timing presets (AUTO, AUTO_LEGACY, SLOW_5PCT-SLOW_20PCT, FAST_5PCT-FAST_25PCT) to optimize signal integrity for different cable lengths and LED types
+- **Power Limiting**: Multiple modes (disabled, global, custom-fixed, custom-per-LED) with up to 65535 mA global limit
+- **External Relay Control**: Up to 4 relay outputs (hardware-dependent)
 - **Hardware Flexibility**: GPIO and SPI clock configuration for custom wiring
 - **Virtual Strip Architecture**: Internal virtual strip allows flexible physical strip ordering and rearrangement
-- **HCL (Human Centric Lighting)**: Automatic color temperature adjustment based on sun position or time-of-day curves for circadian rhythm support
+- **Power Monitoring**: Total current (mA), load (%), and power (W) status KOs
+
+## Effects
+
+| ID | Effect | ID | Effect |
+|----|--------|----|--------|
+| 0 | Solid | 15 | Twinkle |
+| 1 | Wipe | 16 | Sparkle |
+| 2 | Rainbow | 17 | Breathing |
+| 3 | Rainbow Cycle | 18 | Strobe |
+| 4 | Pride2015 | 19 | Pulse |
+| 5 | Confetti | 20 | Comet |
+| 6 | Juggle | 21 | Meteor |
+| 7 | BPM | 22 | Noise |
+| 8 | Cylon | 23 | Palette |
+| 9 | RGBWTest | 24 | Blitz |
+| 10 | GarageDoor | 25 | Gradient |
+| 11 | Fire | 26 | RGBCCTTest |
+| 12 | Theater Chase | 27 | Kerze |
+| 13 | Theater Chase Rainbow | 28 | Kerzen Multi |
+| 14 | Sinelon | | |
 
 ## Installation & Setup
 
+### Prerequisites
+Before building this project, your development environment must be set up according to the [OpenKNX Developer Setup](https://github.com/OpenKNX/OpenKNX/wiki/Information-for-Developers). This includes PlatformIO, required toolchains, and the OpenKNX build system.
+
 ### 1. Clone the Repository
 ```bash
-git clone --recursive https://github.com/OpenKNX/OAM-Neopixel.git
-cd OAM-Neopixel
+git clone --recursive https://github.com/OpenKNX/OAM-NeoPixel.git
+cd OAM-NeoPixel
 ```
 
 ### 2. Configure PlatformIO
-Edit `platformio.ini` to select your board:
-```ini
-[env:develop_OpenKNXiaoMiniRP2040_TP]
-board = seeed_xiao_rp2040
-```
+Select your target hardware environment in `platformio.custom.ini`. Available environments include:
+
+| Environment | Hardware |
+|-------------|----------|
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1` | KNeoPix RP2040 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1` | KNeoPix RP2350 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1` | KNeoPix ESP32-S3 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1` | KNeoPix ESP32-C3 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1` | KNeoPix ESP32-C6 |
+| `release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1` | Mini RP2040 |
+| `release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1` | Mini RP2350 |
+| `release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1` | Mini ESP32-S3 |
+| `release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1` | Mini ESP32-C3 |
+| `release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1` | Mini ESP32-C6 |
 
 ### 3. Build & Upload
 ```bash
-pio run -e develop_OpenKNXiaoMiniRP2040_TP -t upload
+pio run -e release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1 -t upload
 ```
 
 ### 4. Configure in ETS
 - **LED Type**: Select your LED protocol (WS2812B, APA102, etc.)
-- **LED Count**: Enter total number of addressable LEDs
+- **LED Count**: Enter total number of addressable LEDs (max 16384)
 - **Color Order**: Match your LED's byte order (GRB for WS2812B, BGR for APA102, etc.)
-- **Timing Mode**: Start with AUTO; switch to SLOW_5PCT–SLOW_20PCT if LEDs flicker or don't respond
+- **Timing Mode**: Start with AUTO; switch to SLOW_5PCT-SLOW_20PCT if LEDs flicker or don't respond
 - **GPIO Configuration**: Set data pin, clock pin (for SPI), MOSI pin
-- **Power Limiting**: Enable if drawing >1A; set appropriate mA limits per LED and globally
+- **Power Limiting**: Configure mode (global, per-LED) and mA limits
 - **Segments**: Define segment start/end positions for granular control
 - **Effects**: Assign effects to segments with speed and intensity parameters
+- **Scenes**: Configure up to 10 scenes per segment with colors, brightness, and effects
 
 ## Configuration Parameters
 
 ### Strip Level
 | Parameter | Type | Range | Default | Description |
 |-----------|------|-------|---------|-------------|
-| LED Type | Enum | 0–10 | 0 (WS2812B) | Addressable LED protocol |
-| Color Order | Enum | 0–7 | 0 (GRB) | Byte sequence for RGB channels |
-| LED Count | Int | 1–1000 | 30 | Total addressable LEDs |
-| Skip First LEDs | Int | 0–100 | 0 | Offset before segment 0 starts |
-| Timing Mode | Enum | 0–10 | 0 (AUTO) | Signal timing optimization |
-| Power Limit (mA) | Int | 100–5000 | 1000 | Global current limit |
-| Gamma Correction | Bool | — | On | Apply gamma curve (2.2) |
-| White Balance | Bool | — | Off | Adjust per-channel intensity |
+| LED Type | Enum | 0-31, 99 | 0 (WS2812B) | Addressable LED protocol |
+| Color Order | Enum | 0-11 | 0 (GRB) | Byte sequence for color channels |
+| LED Count | Int | 1-16384 | 30 | Total addressable LEDs |
+| Skip First LEDs | Int | 0-65535 | 0 | Offset before segment 0 starts |
+| Timing Mode | Enum | 0-10 | 0 (AUTO) | Signal timing optimization |
+| Power Limit Mode | Enum | 0-3 | 1 (Global) | Disabled / Global / Custom-Fixed / Custom-Per-LED |
+| Power Limit Global (mA) | Int | 0-65535 | 1000 | Global current limit |
+| Power Limit Per LED (mA) | Int | 0-70 | 60 | Per-LED current limit |
+| Gamma Correction | Enum | 1.2-2.7 | 2.0 | Gamma curve value |
+| White Balance R/G/B | Int | 0-100% | 100% each | Per-channel intensity correction |
 
 ### Segment Level
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | Segment Start | Int | LED index where segment begins |
 | Segment End | Int | LED index where segment ends (inclusive) |
-| Default Effect | Enum | Effect ID to start with (0=static) |
-| Effect Speed | Int | Animation frame rate (0–255) |
-| Effect Intensity | Int | Animation intensity/brightness (0–255) |
+| Default Effect | Enum | Effect ID to start with (0=Solid) |
+| Effect Speed | Int | Animation frame rate (0-255) |
+| Effect Intensity | Int | Animation intensity/brightness (0-255) |
 | Grouping | Int | LEDs per logical group (1=per-LED) |
 | Spacing | Int | Dark LEDs between groups |
+| Scenes | 1-10 | Configurable scenes with effect, colors, brightness |
+| Startup Behavior | Enum | Use Global / Off / Last State |
 
 ## Group Objects (KOs)
 
 ### Global KOs
-- **Power** (KO 400): DPT 1.001 — Turn all segments on/off
-- **Power Status** (KO 401): DPT 1.001 — Power state feedback
-- **Color Temperature** (KO 402): DPT 7.600 — Color temperature in Kelvin (2700K–6500K) for HCL functionality
-- **Brightness** (KO 403): DPT 5.001 — Global brightness 0–100%
-- **Brightness Status** (KO 404): DPT 5.001 — Brightness state feedback
+| KO | Name | DPT | Direction | Description |
+|----|------|-----|-----------|-------------|
+| 400 | Power | 1.001 | Input | Turn all segments on/off |
+| 401 | Power Status | 1.011 | Output | Power state feedback |
+| 402 | Brightness | 5.001 | Input | Global brightness 0-100% |
+| 403 | Brightness Status | 5.001 | Output | Brightness state feedback |
+| 404 | Current Total | 7.600 | Output | Total current consumption (mA) |
+| 405 | Load Total | 5.001 | Output | Total power load (%) |
+| 406 | Power Watts Total | 14.056 | Output | Total power consumption (W) |
+| 407 | HCL Global State | 7.600 | Output | HCL color temperature state (K) |
+| 408-411 | Relay 1-4 | 1.001 | Input | External relay control |
+| 412-415 | Relay 1-4 Status | 1.011 | Output | External relay state feedback |
 
-### Per-Segment KOs (Block Size 39)
-For segment N (0-indexed), KOs = 600 + N×39:
-- **KO+0**: Segment Power (DPT 1.001)
-- **KO+1**: Segment Power Status (DPT 1.001)
-- **KO+2**: Segment Brightness (DPT 5.001, 0–100%)
-- **KO+3**: Segment Brightness Status (DPT 5.001)
-- **KO+4**: R (Red channel, DPT 5.001)
-- **KO+5**: G (Green channel, DPT 5.001)
-- **KO+6**: B (Blue channel, DPT 5.001)
-- **KO+7**: W (White channel, DPT 5.001)
-- **KO+8**: CCT (Color Temperature, DPT 5.001)
-- **KO+9**: CCT Status (DPT 5.001)
-- **KO+10**: WW (Warm White, DPT 5.001)
-- **KO+11**: CW (Cool White, DPT 5.001)
-- **KO+12**: H (Hue, DPT 5.001)
-- **KO+13**: S (Saturation, DPT 5.001)
-- **KO+14**: V (Value, DPT 5.001)
-- **KO+15**: Effect (Effect ID, DPT 5.010)
-- **KO+16**: Effect Status (DPT 5.010)
-- **KO+17**: Preset (Preset ID, DPT 5.010)
-- **KO+18**: Preset Status (DPT 5.010)
-- **KO+19**: RGB (DPT_Colour_RGB)
-- **KO+20**: RGB Status (DPT_Colour_RGB)
-- **KO+21**: HSV (DPT_Colour_RGB, H/S/V packed)
-- **KO+22**: HSV Status (DPT_Colour_RGB)
-- **KO+23**: RGBW (DPT_Colour_RGBW)
-- **KO+24**: RGBW Status (DPT_Colour_RGBW)
-- **KO+25**: Brightness Relative (DPT 3.007, dimming steps)
-- **KO+26**: R Relative (DPT 3.007)
-- **KO+27**: G Relative (DPT 3.007)
-- **KO+28**: B Relative (DPT 3.007)
-- **KO+29**: W Relative (DPT 3.007)
-- **KO+30**: WW Relative (DPT 3.007)
-- **KO+31**: CW Relative (DPT 3.007)
-- **KO+32**: H Relative (DPT 3.007)
-- **KO+33**: S Relative (DPT 3.007)
-- **KO+34**: V Relative (DPT 3.007)
-- **KO+35**: Effect Relative (DPT 3.007)
-- **KO+36**: RGB Relative (DPT 3.007)
-- **KO+37**: HSV Relative (DPT 3.007)
-- **KO+38**: RGBW Relative (DPT 3.007)
+### Per-Segment KOs (Block Size 40)
+For segment N (1-indexed), base KO = 600 + (N-1) x 40:
 
-**Note**: KO indices are offsets within each segment's 39-KO block. Actual KO number = 600 + segment_index×39 + index.
+| Offset | Name | DPT | Direction | Description |
+|--------|------|-----|-----------|-------------|
+| +0 | Power | 1.001 | Input | Segment on/off |
+| +1 | Power Status | 1.011 | Output | Power state feedback |
+| +2 | Brightness | 5.001 | Input | Brightness 0-100% |
+| +3 | Brightness Status | 5.001 | Output | Brightness feedback |
+| +4 | R | 5.010 | Input | Red channel (0-255) |
+| +5 | G | 5.010 | Input | Green channel (0-255) |
+| +6 | B | 5.010 | Input | Blue channel (0-255) |
+| +7 | W | 5.010 | Input | White channel (0-255) |
+| +8 | CCT | 7.600 | Input | Color temperature (Kelvin) |
+| +9 | CCT Status | 7.600 | Output | Color temperature feedback |
+| +10 | WW | 5.010 | Input | Warm White (0-255) |
+| +11 | CW | 5.010 | Input | Cool White (0-255) |
+| +12 | H | 5.003 | Input | Hue (0-360) |
+| +13 | S | 5.001 | Input | Saturation (0-100%) |
+| +14 | V | 5.001 | Input | Value (0-100%) |
+| +15 | Effect | 5.010 | Input | Effect ID |
+| +16 | Effect Status | 5.010 | Output | Active effect feedback |
+| +17 | Scene | 18.001 | Input | Scene recall/learn |
+| +18 | Scene Status | 18.001 | Output | Active scene feedback |
+| +19 | RGB | 232.600 | Input | RGB combined (3 bytes) |
+| +20 | RGB Status | 232.600 | Output | RGB feedback |
+| +21 | HSV | 232.600 | Input | HSV combined (3 bytes) |
+| +22 | HSV Status | 232.600 | Output | HSV feedback |
+| +23 | RGBW | 251.600 | Input | RGBW combined (6 bytes) |
+| +24 | RGBW Status | 251.600 | Output | RGBW feedback |
+| +25 | Brightness Rel | 3.007 | Input | Relative dimming |
+| +26-28 | R/G/B Rel | 3.007 | Input | Relative R/G/B |
+| +29 | W Rel | 3.007 | Input | Relative White |
+| +30 | WW Rel | 3.007 | Input | Relative Warm White |
+| +31 | CW Rel | 3.007 | Input | Relative Cool White |
+| +32-34 | H/S/V Rel | 3.007 | Input | Relative H/S/V |
+| +35 | Effect Rel | 3.007 | Input | Relative effect switch |
+| +36 | RGB Rel | 232.600 | Input | Relative RGB |
+| +37 | HSV Rel | 232.600 | Input | Relative HSV |
+| +38 | RGBW Rel | 251.600 | Input | Relative RGBW |
+| +39 | HCL State | 7.600 | Output | Segment HCL temperature (K) |
 
-## State Persistence Behavior
+## State Persistence
 
 The firmware persists the following segment state to flash memory for seamless restoration after power cycles:
-- **Power state** (On/Off)
-- **Colors** (RGBWW/CW values)
+- **Power state** (on/off)
+- **Colors** (R, G, B, WW, CW values)
 - **Brightness** (0-100%)
+- **Effect** (if changed via KO at runtime)
+- **Active scene number**
 
-**Important:** The active effect and its parameters (speed, intensity) are **NOT** persisted in flash. After a restart, the effect configuration is always loaded from the ETS parameters. This design prevents conflicts when you reprogram the device via ETS with a new effect configuration.
+If the effect was not changed via KO during runtime, the ETS-configured default effect is used after restart.
 
-**Startup Modes** (configurable per segment or globally):
-- **OFF**: LEDs remain off after restart
-- **LAST**: Restore last power/color/brightness state (effect from ETS)
-- **DEFAULT**: Use predefined color/brightness from ETS parameters (effect from ETS)
+**Startup Behavior** (configurable per segment, with a global default):
 
-This architecture ensures that ETS is the authoritative source for effect configuration, while the flash stores only runtime state.
+| Mode | Global | Per-Segment | Description |
+|------|--------|-------------|-------------|
+| Off | Yes | Yes | LEDs remain off after restart |
+| Last State | Yes | Yes | Restore last persisted state |
+| ETS Parameter | Yes | No | Use ETS-configured default values |
+| Use Global | No | Yes (default) | Inherit global startup setting |
 
 ## Troubleshooting
 
@@ -170,17 +218,17 @@ This architecture ensures that ETS is the authoritative source for effect config
 2. Check power supply (5V stable, sufficient current)
 3. Try **Timing Mode = AUTO_LEGACY** in ETS
 4. Inspect data cable for shorts or poor contacts
-5. Reduce cable length or add a level shifter (3.3V→5V)
+5. Reduce cable length or add a level shifter (3.3V to 5V)
 
 ### LEDs Flicker or Show Wrong Colors
-1. Switch **Timing Mode** from AUTO to SLOW_5PCT–SLOW_20PCT
+1. Switch **Timing Mode** from AUTO to SLOW_5PCT-SLOW_20PCT
 2. Check **Color Order** matches LED type (GRB for WS2812B, BGR for APA102)
 3. Reduce **LED Count** to isolate the problem
 4. Verify ground connection is solid
 
 ### Brightness Control Has No Effect
 1. Confirm brightness KO is **linked in ETS** to a group address
-2. Check that the group address transmits **DPT 5.001** (0–100%), not DPT 5.010
+2. Check that the group address transmits **DPT 5.001** (0-100%), not DPT 5.010
 3. Verify segment power is **ON** (power KO = 1)
 
 ### Long Cables or Signal Issues
@@ -199,6 +247,22 @@ Part of the OpenKNX ecosystem. See individual library licenses.
 For issues, feature requests, or contributions:
 - **GitHub Issues**: Report bugs and request features
 - **Documentation**: Check the Help folder for parameter descriptions
-- **Community**: Join OpenKNX forum for discussions
+- **Community**: Join [OpenKNX forum](https://forum.openknx.de) for discussions
+- **KNX-User-Forum Thread**: [OAM-NeoPixel -- In Farben dein Zuhause erstrahlen soll](https://knx-user-forum.de/forum/projektforen/openknx/2088552-oam-neopixel-%E2%80%93-in-farben-dein-zuhause-erstrahlen-soll)
+
+## Supported Hardware
+
+| Device | Platform | HW ID |
+|--------|----------|-------|
+| OpenKNXiao KNeoPix RP2040 V1 | RP2040 | 0x1300 |
+| OpenKNXiao Mini RP2040 V1 | RP2040 | 0x1301 |
+| OpenKNXiao KNeoPix RP2350 V1.4 | RP2350 | 0x1310 |
+| OpenKNXiao KNeoPix ESP32S3 V1 | ESP32-S3 | 0x1320 |
+| OpenKNXiao Mini ESP32S3 V1 | ESP32-S3 | 0x1321 |
+| OpenKNXiao KNeoPix ESP32C6 V1 | ESP32-C6 | 0x1330 |
+| OpenKNXiao KNeoPix ESP32C3 V1 | ESP32-C3 | 0x1350 |
+| OpenKNXiao Mini ESP32C3 V1 | ESP32-C3 | 0x1351 |
+
+> **Hinweis:** Die GPIO-Pins für die LED-Datenleitung lassen sich in der ETS frei konfigurieren. Dadurch ist die Firmware prinzipiell mit vielen weiteren ESP32- und RP2040/RP2350-basierten Boards kompatibel -- nicht nur mit den oben gelisteten OpenKNXiao-Varianten.
 
 ## Changelog
