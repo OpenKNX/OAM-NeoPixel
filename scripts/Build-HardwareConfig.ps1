@@ -293,12 +293,12 @@ if ([string]::IsNullOrEmpty($OutputFile)) {
 #
 # ID Schema: %AID%_UP-%TT%0%C%XXX where XXX is the parameter ID
 # - Scene effect params occupy IDs ~300-959 (5 scenes × op:part with %PPP% base=300, increment=120)
-# - Data GPIO:  960-979 (20 slots for HW0-19)
-# - Clock GPIO: 980-999 (20 slots for HW0-19)
+# - Data GPIO:  950-974 (25 slots for HW0-24)
+# - Clock GPIO: 975-999 (25 slots for HW0-24)
 # ====================================================================
-$HW_DATA_GPIO_BASE_ID = 960   # Data GPIO base offset (960-979)
-$HW_CLOCK_GPIO_BASE_ID = 980  # Clock GPIO base offset (980-999)
-$MAX_HARDWARE_VARIANTS = 20   # Maximum supported hardware variants (0-19)
+$HW_DATA_GPIO_BASE_ID = 950   # Data GPIO base offset (950-974)
+$HW_CLOCK_GPIO_BASE_ID = 975  # Clock GPIO base offset (975-999)
+$MAX_HARDWARE_VARIANTS = 25   # Maximum supported hardware variants (0-24)
 
 $GPIO_MANUAL_VALUE = 10  # Value for "Manual" GPIO selection (Previous: 10) --> ToDo EC: Use 99, currently conflicts/Problmes
 $GPIO_DUMMY_VALUE = 15   # Value for dummy/placeholder option (Previous: 15) --> ToDo EC: Use 98, currently conflicts/Problems

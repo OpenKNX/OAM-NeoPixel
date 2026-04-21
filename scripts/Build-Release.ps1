@@ -174,6 +174,8 @@ $standardTargets = @(
     @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "uf2"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
     # OpenKNX UP1 Board
     @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "uf2"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
+    # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz
+    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "bin"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
 )
 
 # Full Build Targets (additional, not yet tested hardware)
@@ -189,8 +191,7 @@ $fullTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32S3-Mini_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32S3_MINI_V1" }
     # OpenKNX REG2 - ESP32S3 Pico V1
-    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" }
-)
+    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "bin"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" })
 
 # Generate dynamic GPIO templates before building
 # Collect exact hardware section names from all targets that will be built

@@ -8,5 +8,5 @@ a20e0b3 v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel.git
 2db83ce v1dev lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 55119fc v1dev lib/OFM-UsbExchange https://github.com/OpenKNX/OFM-UsbExchange.git
 ec66671 ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
-c2fbef3 v1dev lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig.git
+50ee2fc OGM-HardwareConfig-NeoPixel lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig.git
 419f08d main-ec lib/TPUart https://github.com/OpenKNX/tpuart.git
