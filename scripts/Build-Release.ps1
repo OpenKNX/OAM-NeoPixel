@@ -152,15 +152,21 @@ if ($isClean) {
 #   Ext       - Build-Step featureSet (historical field name; not a literal file extension)
 #               featureSet replaces the old binaryFormat setting in a compatible way.
 #               It is interpreted as an enum with some deprecated values for compatibility:
-#                 bin (deprecated)      - old SAMD processor
-#                 uf2 (deprecated)      - RP2040 without OTA
-#                 esp32 (deprecated)    - ESP32 with OTA
-#                 esp32-ip (new)        - ESP32 with OTA
-#                 esp32-tp (new)        - ESP32 with KNX
-#                 rp2040-ip (new)       - RP2040 with OTA
-#                 rp2040-tp (new)       - RP2040 with KNX
-#                 rp2350-ip (new)       - RP2350 with OTA
-#                 rp2350-tp (new)       - RP2350 with KNX
+#                       bin (deprecated)   - old SAMD processor (deprecated)
+#                       uf2 (deprecated)   - RP2040 without OTA
+#                       esp32 (deprecated) - ESP32 with OTA
+#                       esp32-ip (new)     - ESP32 with OTA
+#                       esp32-tp (new)     - ESP32 with KNX
+#                       esp32-tpip (new)   - ESP32 with KNX and OTA
+#                       esp32-iptp (new)   - ESP32 with KNX and OTA
+#                       rp2040-ip (new)    - RP2040 with OTA
+#                       rp2040-tp (new)    - RP2040 with KNX
+#                       rp2040-tpip (new)  - RP2040 with KNX and OTA
+#                       rp2040-iptp (new)  - RP2040 with KNX and OTA
+#                       rp2350-ip (new)    - RP2350 with OTA
+#                       rp2350-tp (new)    - RP2350 with KNX
+#                       rp2350-tpip (new)  - RP2350 with KNX and OTA
+#                       rp2350-iptp (new)  - RP2350 with KNX and OTA
 #               Inherent logic:
 #                 a device with OTA does not need a KNX upload script
 #                 ESP is always IP and OTA is always possible
@@ -168,27 +174,27 @@ if ($isClean) {
 #   HwSection - EXACT section name from platformio.hardware.ini (e.g., neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1)
 #               This section name is used by Build-HardwareConfig.ps1 to extract build_flags for the C preprocessor
 #
-# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
 # ============================================================================
 
 # Standard Build Targets (tested hardware)
 $standardTargets = @(
     # OpenKNXiao KNeoPiX
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
     # OpenKNXiao Mini
-    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
     # OpenKNX REG2 - PiPico Variants
-    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "uf2"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
     # OpenKNX PiPico BCU Connector
-    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "uf2"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
-    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "uf2"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
+    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
+    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
     # OpenKNX UP1 Board
-    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "uf2"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
+    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
     # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz
     @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
 )
