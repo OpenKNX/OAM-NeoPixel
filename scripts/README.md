@@ -5,7 +5,8 @@
 A sophisticated build-time code generation system that creates ETS XML templates with **hardware-specific GPIO configurations** for **multiple target boards simultaneously**. This system generates:
 
 - **Hardware-specific ParameterTypes** (8 variants with different GPIO enumerations)
-- **96 flat ParameterCalculations** for GPIO port mapping (8 hardware × 6 strips × 2 GPIO types)
+- **Hardware-specific ParameterTypes** (one per detected hardware variant with different GPIO enumerations)
+- **Flat ParameterCalculations** for GPIO port mapping (detected hardware variants × 8 strips × 2 GPIO types)
 - **JavaScript-based conflict detection** (4-way: Data-Data, Clock-Clock, Data-Clock, Clock-Data)
 - **Automatic hardware-change reset** to prevent invalid GPIO selections
 
@@ -994,14 +995,14 @@ Shared parameters receive the **actual port value** via ParameterCalculation:
            ParameterType="%AID%_PT-NeoPixelGPIOPortHW0" Value="15"/>
 ```
 
-### Flat ParameterCalculations (96 Total)
+### Flat ParameterCalculations (Generated per Hardware Variant)
 
 **OpenKNXproducer Limitation**: Does NOT process `<choose>` blocks in Static/ParameterCalculations section.
 
-**Workaround**: Generate 96 separate calculations (8 hardware × 6 strips × 2 GPIO types):
+**Workaround**: Generate separate calculations for each detected hardware variant, strip, and GPIO type:
 
 ```xml
-<!-- Strip.templ.xml: Copy Template → Share (6 strips × 8 hardware × 2 GPIOs = 96) -->
+<!-- Strip.templ.xml: Copy Template -> Share (8 strips x detected hardware variants x 2 GPIOs) -->
 
 <!-- Strip 1, Data GPIO, Hardware 0 -->
 <ParameterCalculation Id="%AID%_PC-%TT%9%C%0800" Name="Strip%C%_CopyGPIOPort_HW0"
@@ -1026,7 +1027,7 @@ Shared parameters receive the **actual port value** via ParameterCalculation:
 
 ### The Challenge
 
-With 6 LED strips and multiple hardware variants, **GPIO conflicts** are inevitable:
+With up to 8 LED strips and multiple hardware variants, **GPIO conflicts** are inevitable:
 
 ```
 Strip 1: WS2812B on D4 (GPIO 6)
@@ -1059,18 +1060,18 @@ function NEO_DetectGPIOConflicts() {
     clockDataConflicts: []
   };
   
-  // Read 12 ports (6 strips × 2 GPIOs)
+  // Read 16 ports (8 strips x 2 GPIOs)
   var dataPorts = [
     getLParameter("ShareDataPort1"),
     getLParameter("ShareDataPort2"),
-    // ... up to 6 ...
+    // ... up to 8 ...
   ];
   
   var clockPorts = [ /* same for clock */ ];
   
   // 4-way comparison (skip Manual=10, Dummy=15)
-  for (var i = 0; i < 6; i++) {
-    for (var j = i + 1; j < 6; j++) {
+  for (var i = 0; i < 8; i++) {
+    for (var j = i + 1; j < 8; j++) {
       var portA_data = dataPorts[i];
       var portB_data = dataPorts[j];
       
@@ -1084,9 +1085,9 @@ function NEO_DetectGPIOConflicts() {
     }
   }
   
-  // Write conflict flags (00091-00096 Data, 00117-00122 Clock)
+  // Write conflict flags (00091-00098 Data, 00163-00170 Clock)
   setRParameter("DataConflict1", conflicts.dataConflicts.includes(1) ? 1 : 0);
-  // ... up to 6 strips ...
+  // ... up to 8 strips ...
 }
 ```
 
@@ -1133,7 +1134,7 @@ Automatic reset of **all 12 ports** (6 Data + 6 Clock) to **Dummy (15)** when ha
     <!-- All 12 share ports -->
     <ParameterRefRef RefId="%AID%_UP-%TT%00101_R-%TT%0010101" AliasName="DataPort1"/>
     <ParameterRefRef RefId="%AID%_UP-%TT%00102_R-%TT%0010201" AliasName="DataPort2"/>
-    <!-- ... DataPort3-6, ClockPort1-6 ... -->
+    <!-- ... DataPort3-8, ClockPort1-8 ... -->
   </RParameters>
 </ParameterCalculation>
 ```
@@ -1281,7 +1282,7 @@ g++ -E -dM -DOKNXHW_MYBOARD_V1 -DNEOPIXEL_HW_PORT_1_GPIO=5 \
 
 **Cause**: Port value is 10 (Manual) or 15 (Dummy) - conflict detection skips these
 
-**Solution**: Check share parameter values (00101-00106, 00111-00116). Only **real ports (0-9)** trigger conflicts.
+**Solution**: Check share parameter values (00101-00108, 00111-00118). Only **real ports (0-9)** trigger conflicts.
 
 ### Hardware Switch Doesn't Reset Ports
 
@@ -1513,7 +1514,7 @@ See NeoPixel implementation as reference.
 
 **Impact**: Cannot use hardware-conditional ParameterCalculations
 
-**Workaround**: Generate 96 flat ParameterCalculations (8 hardware × 6 strips × 2 GPIOs)
+**Workaround**: Generate flat ParameterCalculations for each detected hardware variant, each strip, and both GPIO types.
 
 ### 2. ETS JavaScript Capabilities
 
@@ -1611,12 +1612,12 @@ All auto-generated sections use this pattern:
 |-------|-------|----------|
 | 073-080 | Template Data Port Selection (HW0-HW7) | Strip.templ.xml |
 | 081-088 | Template Clock Port Selection (HW0-HW7) | Strip.templ.xml |
-| 00101-00106 | Shared Data Port Storage (Strip 1-6) | share.xml |
-| 00111-00116 | Shared Clock Port Storage (Strip 1-6) | share.xml |
-| 00091-00096 | Data Conflict Flags (Strip 1-6) | share.xml |
-| 00117-00122 | Clock Conflict Flags (Strip 1-6) | share.xml |
-| 0800-0807 | Data Port Copy Calculations (HW0-HW7) | Strip.templ.xml × 6 strips |
-| 0890-0897 | Clock Port Copy Calculations (HW0-HW7) | Strip.templ.xml × 6 strips |
+| 00101-00108 | Shared Data Port Storage (Strip 1-8) | share.xml |
+| 00111-00118 | Shared Clock Port Storage (Strip 1-8) | share.xml |
+| 00091-00098 | Data Conflict Flags (Strip 1-8) | share.xml |
+| 00163-00170 | Clock Conflict Flags (Strip 1-8) | share.xml |
+| 0800+ | Data Port Copy Calculations (per detected hardware variant) | Strip.templ.xml x 8 strips |
+| 0890+ | Clock Port Copy Calculations (per detected hardware variant) | Strip.templ.xml x 8 strips |
 | 00060 | Conflict Detection ParameterCalculation | share.xml |
 | 00061 | Hardware Change Reset ParameterCalculation | share.xml |
 | 4000018 | Hardware Selection Dropdown | share.xml |

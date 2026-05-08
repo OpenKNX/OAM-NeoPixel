@@ -25,8 +25,8 @@ void StripConfiguration::configureFromETS()
         return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
     };
 
-    // 1) Determine number of strips from ETS (max 6 strips supported in virtual configuration)
-    const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(6, ParamNEO_NEONumberOfLEDStrips));
+    // 1) Determine number of strips from ETS (match the runtime strip limit)
+    const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
     _module->_totalLeds = 0;
 
     // CRITICAL: Delete old PhysicalStrip objects before clearing vector!
@@ -676,27 +676,33 @@ void StripConfiguration::configureVirtualStripOrder()
 
     logInfoP("Configuring virtual strip order from ETS parameters");
 
-    // Read the virtual strip position parameters (1-6 positions for 1-6 strips)
-    // Value 0 = not used, Values 1-6 = physical strip index (1-based)
-    uint8_t positions[6] = {
+    constexpr size_t kMaxVirtualStripPositions = NEOPIXEL_MAX_PHYSICAL_STRIPS;
+
+    // Read the virtual strip position parameters (1-8 positions for 1-8 strips)
+    // Value 0 = not used, Values 1-8 = physical strip index (1-based)
+    uint8_t positions[kMaxVirtualStripPositions] = {
         static_cast<uint8_t>(ParamNEO_VirtualStripPos1),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos2),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos3),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos4),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos5),
-        static_cast<uint8_t>(ParamNEO_VirtualStripPos6)};
+        static_cast<uint8_t>(ParamNEO_VirtualStripPos6),
+        static_cast<uint8_t>(ParamNEO_VirtualStripPos7),
+        static_cast<uint8_t>(ParamNEO_VirtualStripPos8)};
 
     // Read the start positions (calculated by ETS JavaScript)
-    uint16_t startPositions[6] = {
+    uint16_t startPositions[kMaxVirtualStripPositions] = {
         static_cast<uint16_t>(ParamNEO_VirtualStripStart1),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart2),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart3),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart4),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart5),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart6)};
+        static_cast<uint16_t>(ParamNEO_VirtualStripStart6),
+        static_cast<uint16_t>(ParamNEO_VirtualStripStart7),
+        static_cast<uint16_t>(ParamNEO_VirtualStripStart8)};
 
     // Build the virtual strip configuration based on positions
-    for (uint8_t pos = 0; pos < 6; pos++)
+    for (size_t pos = 0; pos < kMaxVirtualStripPositions; pos++)
     {
         uint8_t physStripIndex = positions[pos];
 
@@ -722,7 +728,7 @@ void StripConfiguration::configureVirtualStripOrder()
             _module->_virtualStripConfiguration.emplace_back(physStripIndex, virtualStartZeroBased, ledCount);
 
             logInfoP("Virtual position %d: Physical strip %d (%d LEDs) starts at virtual position %d (ETS: %d)",
-                     pos + 1, physStripIndex + 1, ledCount, virtualStartZeroBased, virtualStart);
+                     static_cast<int>(pos + 1), physStripIndex + 1, ledCount, virtualStartZeroBased, virtualStart);
         }
         else
         {

@@ -143,6 +143,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00114_R-%TT%0011401" AliasName="Strip4ClockPort"/>
                   <ParameterRefRef RefId="%AID%_UP-%TT%00115_R-%TT%0011501" AliasName="Strip5ClockPort"/>
                   <ParameterRefRef RefId="%AID%_UP-%TT%00116_R-%TT%0011601" AliasName="Strip6ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00117_R-%TT%0011701" AliasName="Strip7ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00118_R-%TT%0011801" AliasName="Strip8ClockPort"/>
                 </RParameters>
               </ParameterCalculation>
               

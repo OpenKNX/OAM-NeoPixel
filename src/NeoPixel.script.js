@@ -97,6 +97,8 @@ function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
     output.Strip4ClockPort = 15;
     output.Strip5ClockPort = 15;
     output.Strip6ClockPort = 15;
+    output.Strip7ClockPort = 15;
+    output.Strip8ClockPort = 15;
     
     info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (1-Wire) → Clock Ports reset to 15");
   } else {
@@ -108,16 +110,16 @@ function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
 function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   info("NEO_UpdateVirtualStripStartIndices called");
 
-  // Number of physical strips in use (1..6)
-  var numStrips = toInt(input.NumberOfLEDStrips, 6);
+  // Number of physical strips in use (1..8)
+  var numStrips = toInt(input.NumberOfLEDStrips, 8);
   if (numStrips < 1) numStrips = 1;
-  if (numStrips > 6) numStrips = 6;
+  if (numStrips > 8) numStrips = 8;
 
   // ------------------------------------------------------------------
   // Build effective order array pos[] depending on NumberOfLEDStrips
-  // pos[i] = physical strip index (1..6) at virtual position i+1
+  // pos[i] = physical strip index (1..8) at virtual position i+1
   // ------------------------------------------------------------------
-  var pos = [0, 0, 0, 0, 0, 0];
+  var pos = [0, 0, 0, 0, 0, 0, 0, 0];
 
   switch (numStrips) {
     case 1:
@@ -151,6 +153,25 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
       break;
 
     case 6:
+      pos[0] = toInt(input.Pos1_6);
+      pos[1] = toInt(input.Pos2_6);
+      pos[2] = toInt(input.Pos3_6);
+      pos[3] = toInt(input.Pos4_6);
+      pos[4] = toInt(input.Pos5_6);
+      pos[5] = toInt(input.Pos6_6);
+      break;
+
+    case 7:
+      pos[0] = toInt(input.Pos1_7);
+      pos[1] = toInt(input.Pos2_7);
+      pos[2] = toInt(input.Pos3_7);
+      pos[3] = toInt(input.Pos4_7);
+      pos[4] = toInt(input.Pos5_7);
+      pos[5] = toInt(input.Pos6_7);
+      pos[6] = toInt(input.Pos7_7);
+      break;
+
+    case 8:
     default:
       // Full range – UI uses canonical params directly
       pos[0] = toInt(input.Pos1);
@@ -159,10 +180,12 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
       pos[3] = toInt(input.Pos4);
       pos[4] = toInt(input.Pos5);
       pos[5] = toInt(input.Pos6);
+      pos[6] = toInt(input.Pos7);
+      pos[7] = toInt(input.Pos8);
       break;
   }
 
-  // Physical strip lengths (per physical index 1..6)
+  // Physical strip lengths (per physical index 1..8)
   // Always use canonical length params; they are independent of NumberOfLEDStrips.
   var len = [
     toInt(input.Len1),
@@ -170,7 +193,9 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
     toInt(input.Len3),
     toInt(input.Len4),
     toInt(input.Len5),
-    toInt(input.Len6)
+    toInt(input.Len6),
+    toInt(input.Len7),
+    toInt(input.Len8)
   ];
 
   // ------------------------------------------------------------------
@@ -179,7 +204,7 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   var seen = {};        // physStrip -> first position
   var hasDup = 0;
 
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 8; i++) {
     var p = pos[i];
     if (p < 1 || p > numStrips) continue; // ignore invalid / unused
 
@@ -209,11 +234,11 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   // ------------------------------------------------------------------
   // Compute Start-LED and End-LED indices
   // ------------------------------------------------------------------
-  var start = [0, 0, 0, 0, 0, 0];
-  var end = [0, 0, 0, 0, 0, 0];
+  var start = [0, 0, 0, 0, 0, 0, 0, 0];
+  var end = [0, 0, 0, 0, 0, 0, 0, 0];
   var current = 1; // 1-based LED index
 
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 8; i++) {
     var p2 = pos[i];
 
     if (p2 < 1 || p2 > numStrips) {
@@ -236,6 +261,8 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   output.Start4 = start[3];
   output.Start5 = start[4];
   output.Start6 = start[5];
+  output.Start7 = start[6];
+  output.Start8 = start[7];
 
   output.End1 = end[0];
   output.End2 = end[1];
@@ -243,6 +270,8 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   output.End4 = end[3];
   output.End5 = end[4];
   output.End6 = end[5];
+  output.End7 = end[6];
+  output.End8 = end[7];
 
   info(
     "NumberOfLEDStrips=" + numStrips +
@@ -419,8 +448,6 @@ function NEO_detectHardware(device, online, progress, context) {
 // END AUTO-GENERATED: Network Module Visibility
 
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
-
-
 
 var NEO_SceneEffectDefaults = {};
 // END AUTO-GENERATED: Scene Effect Defaults

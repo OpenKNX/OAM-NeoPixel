@@ -16,6 +16,10 @@
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
   <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
+  <!-- Suppress intended Union-Integrity overlaps for UI-limited selectors and hardware-specific GPIO unions -->
+  <op:nowarn id="10" regex="Parameter NEO_VirtualStripPos[1-7](_[1-7])?" />
+  <op:nowarn id="10" regex="Parameter NEO_(NEOExternalRelay[1-4]Port|NEORelay[1-4]GPIOPortHW(10|11|[0-9]))" />
+  <op:nowarn id="10" regex="Parameter NEOSTRIP_NEO[1-8](GPIO(Data|Clock)PortHW(10|11|[0-9])|SPICLK|SPICLKMode|GPIOManual|ClockGPIO)" />
 
   <ManufacturerData>
     <Manufacturer RefId="M-00FA">
@@ -367,7 +371,7 @@
               
               <!-- NumberOfLEDStrips -->
               <ParameterType Id="%AID%_PT-NumberOfLEDStrips" Name="NumberOfLEDStrips">
-                <TypeNumber SizeInBit="4" Type="unsignedInt" minInclusive="1" maxInclusive="6" />
+                <TypeNumber SizeInBit="4" Type="unsignedInt" minInclusive="1" maxInclusive="8" />
               </ParameterType>
               <!-- NumberOfSegments -->
               <ParameterType Id="%AID%_PT-NumberOfSegments" Name="NumberOfSegments">
@@ -441,6 +445,31 @@
                   <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
                   <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
                   <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- for 1..7 strips -->
+              <ParameterType Id="%AID%_PT-VirtualStripSelect7" Name="VirtualStripSelect7">
+                <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 7" Value="7" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- for 1..8 strips (full) -->
+              <ParameterType Id="%AID%_PT-VirtualStripSelect8" Name="VirtualStripSelect8">
+                <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 7" Value="7" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 8" Value="8" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Scene Count per Segment (4 bits: 0=disabled, 1-10 scenes) -->
@@ -529,7 +558,7 @@
               <Union SizeInBit="112">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="22" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
-                <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 6"/>
+                <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 8"/>
                 <!-- Byte 1: 0..4 (5b), 5 (1b) -->
                 <Parameter Id="%AID%_UP-%TT%00021" Offset="1" BitOffset="0" Name="NEONumberOfSegments" ParameterType="%AID%_PT-NumberOfSegments" Text="Anzahl der Segmente" Value="1" SuffixText=" von 16"/>
                 <Parameter Id="%AID%_UP-%TT%00023" Offset="1" BitOffset="5" Name="NEOTurnOffBeforeRestart" ParameterType="%AID%_PT-Boolean" Text="LEDs vor Upload/Neustart ausschalten" Value="1"/>
@@ -568,16 +597,17 @@
                 <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
               </Union>
               <!-- Virtual Strip Configuration -->
-              <!-- FIXED: Changed Offset from 32 to 43 (after Startup Union 36+7=43) -->
-              <Union SizeInBit="32" op:nowarn="true">
+              <Union SizeInBit="40" op:nowarn="true">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="43" BitOffset="0" />
-                <!-- Canonical (full 1..6) -->
-                <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
-                <Parameter Id="%AID%_UP-%TT%00032" Offset="1" BitOffset="0" Name="VirtualStripPos3" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 3" Value="3"/>
-                <Parameter Id="%AID%_UP-%TT%00033" Offset="1" BitOffset="4" Name="VirtualStripPos4" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 4" Value="4"/>
-                <Parameter Id="%AID%_UP-%TT%00034" Offset="2" BitOffset="0" Name="VirtualStripPos5" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 5" Value="5"/>
-                <Parameter Id="%AID%_UP-%TT%00035" Offset="2" BitOffset="4" Name="VirtualStripPos6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 6" Value="6"/>
+                <!-- Canonical (full 1..8) -->
+                <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 1" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 2" Value="2"/>
+                <Parameter Id="%AID%_UP-%TT%00032" Offset="1" BitOffset="0" Name="VirtualStripPos3" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 3" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%00033" Offset="1" BitOffset="4" Name="VirtualStripPos4" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 4" Value="4"/>
+                <Parameter Id="%AID%_UP-%TT%00034" Offset="2" BitOffset="0" Name="VirtualStripPos5" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 5" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%00035" Offset="2" BitOffset="4" Name="VirtualStripPos6" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 6" Value="6"/>
+                <Parameter Id="%AID%_UP-%TT%00082" Offset="3" BitOffset="0" Name="VirtualStripPos7" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 7" Value="7"/>
+                <Parameter Id="%AID%_UP-%TT%00083" Offset="3" BitOffset="4" Name="VirtualStripPos8" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 8" Value="8"/>
                 <!-- UI-limited variants (all overlap the same 4 bits) -->
                 <!-- Position 1 -->
                 <Parameter Id="%AID%_UP-%TT%00036" Offset="0" BitOffset="0" Name="VirtualStripPos1_1" ParameterType="%AID%_PT-VirtualStripSelect1" Text="Position 1" Value="1"/>
@@ -585,52 +615,69 @@
                 <Parameter Id="%AID%_UP-%TT%00038" Offset="0" BitOffset="0" Name="VirtualStripPos1_3" ParameterType="%AID%_PT-VirtualStripSelect3" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00039" Offset="0" BitOffset="0" Name="VirtualStripPos1_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00040" Offset="0" BitOffset="0" Name="VirtualStripPos1_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 1" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%00084" Offset="0" BitOffset="0" Name="VirtualStripPos1_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%00085" Offset="0" BitOffset="0" Name="VirtualStripPos1_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 1" Value="1"/>
                 <!-- Position 2 -->
                 <Parameter Id="%AID%_UP-%TT%00041" Offset="0" BitOffset="4" Name="VirtualStripPos2_2" ParameterType="%AID%_PT-VirtualStripSelect2" Text="Position 2" Value="2"/>
                 <Parameter Id="%AID%_UP-%TT%00042" Offset="0" BitOffset="4" Name="VirtualStripPos2_3" ParameterType="%AID%_PT-VirtualStripSelect3" Text="Position 2" Value="2"/>
                 <Parameter Id="%AID%_UP-%TT%00043" Offset="0" BitOffset="4" Name="VirtualStripPos2_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 2" Value="2"/>
                 <Parameter Id="%AID%_UP-%TT%00044" Offset="0" BitOffset="4" Name="VirtualStripPos2_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 2" Value="2"/>
+                <Parameter Id="%AID%_UP-%TT%00086" Offset="0" BitOffset="4" Name="VirtualStripPos2_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
+                <Parameter Id="%AID%_UP-%TT%00087" Offset="0" BitOffset="4" Name="VirtualStripPos2_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 2" Value="2"/>
                 <!-- Position 3 -->
                 <Parameter Id="%AID%_UP-%TT%00045" Offset="1" BitOffset="0" Name="VirtualStripPos3_3" ParameterType="%AID%_PT-VirtualStripSelect3" Text="Position 3" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%00046" Offset="1" BitOffset="0" Name="VirtualStripPos3_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 3" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%00047" Offset="1" BitOffset="0" Name="VirtualStripPos3_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 3" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%00088" Offset="1" BitOffset="0" Name="VirtualStripPos3_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 3" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%00089" Offset="1" BitOffset="0" Name="VirtualStripPos3_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 3" Value="3"/>
                 <!-- Position 4 -->
                 <Parameter Id="%AID%_UP-%TT%00048" Offset="1" BitOffset="4" Name="VirtualStripPos4_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 4" Value="4"/>
                 <Parameter Id="%AID%_UP-%TT%00049" Offset="1" BitOffset="4" Name="VirtualStripPos4_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 4" Value="4"/>
+                <Parameter Id="%AID%_UP-%TT%00171" Offset="1" BitOffset="4" Name="VirtualStripPos4_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 4" Value="4"/>
+                <Parameter Id="%AID%_UP-%TT%00172" Offset="1" BitOffset="4" Name="VirtualStripPos4_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 4" Value="4"/>
                 <!-- Position 5 -->
                 <Parameter Id="%AID%_UP-%TT%00050" Offset="2" BitOffset="0" Name="VirtualStripPos5_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 5" Value="5"/>
-                <!-- Position 6: no limited variant needed, only used if 6 strips -->
+                <Parameter Id="%AID%_UP-%TT%00173" Offset="2" BitOffset="0" Name="VirtualStripPos5_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 5" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%00174" Offset="2" BitOffset="0" Name="VirtualStripPos5_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 5" Value="5"/>
+                <!-- Position 6 -->
+                <Parameter Id="%AID%_UP-%TT%00175" Offset="2" BitOffset="4" Name="VirtualStripPos6_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 6" Value="6"/>
+                <Parameter Id="%AID%_UP-%TT%00176" Offset="2" BitOffset="4" Name="VirtualStripPos6_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 6" Value="6"/>
+                <!-- Position 7 -->
+                <Parameter Id="%AID%_UP-%TT%00177" Offset="3" BitOffset="0" Name="VirtualStripPos7_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 7" Value="7"/>
+                <!-- Position 8: no limited variant needed, only used if 8 strips -->
                 
                 <!-- Duplicate Status Display (informational parameter) -->
-                <Parameter Id="%AID%_UP-%TT%00079" Offset="3" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="None" />
+                <Parameter Id="%AID%_UP-%TT%00079" Offset="4" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="None" />
                 <!-- Segment Start/End range error flag -->
-                <Parameter Id="%AID%_UP-%TT%00080" Offset="3" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: " Value="0" Access="Read" />
+                <Parameter Id="%AID%_UP-%TT%00080" Offset="4" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: " Value="0" Access="Read" />
               </Union>
 
               <!-- Virtual Strip Start Indices (for UI only) -->
-              <!-- FIXED: Changed Offset from 35 to 46 (after Virtual Strip 43+3=46) -->
-              <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="46" BitOffset="0" />
-                <!-- 6 * 16 bit = 96 bit -->
+              <Union SizeInBit="128">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="48" BitOffset="0" />
+                <!-- 8 * 16 bit = 128 bit -->
                 <Parameter Id="%AID%_UP-%TT%00051" Offset="0" BitOffset="0"  Name="VirtualStripStart1" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 1" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00052" Offset="2" BitOffset="0"  Name="VirtualStripStart2" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 2" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00053" Offset="4" BitOffset="0"  Name="VirtualStripStart3" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 3" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00054" Offset="6" BitOffset="0"  Name="VirtualStripStart4" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 4" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00055" Offset="8" BitOffset="0"  Name="VirtualStripStart5" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 5" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00056" Offset="10" BitOffset="0" Name="VirtualStripStart6" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 6" Value="1" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00178" Offset="12" BitOffset="0" Name="VirtualStripStart7" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 7" Value="1" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00179" Offset="14" BitOffset="0" Name="VirtualStripStart8" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 8" Value="1" Access="Read"/>
               </Union>
 
               <!-- Virtual Strip End Indices (for UI only) -->
-              <!-- FIXED: Changed Offset from 47 to 58 (after Strip Start 46+12=58) -->
-              <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="58" BitOffset="0" />
-                <!-- 6 * 16 bit = 96 bit -->
+              <Union SizeInBit="128">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="64" BitOffset="0" />
+                <!-- 8 * 16 bit = 128 bit -->
                 <Parameter Id="%AID%_UP-%TT%00057" Offset="0" BitOffset="0"  Name="VirtualStripEnd1" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 1" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00058" Offset="2" BitOffset="0"  Name="VirtualStripEnd2" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 2" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00059" Offset="4" BitOffset="0"  Name="VirtualStripEnd3" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 3" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00076" Offset="6" BitOffset="0"  Name="VirtualStripEnd4" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 4" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00077" Offset="8" BitOffset="0"  Name="VirtualStripEnd5" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 5" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00078" Offset="10" BitOffset="0" Name="VirtualStripEnd6" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 6" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00180" Offset="12" BitOffset="0" Name="VirtualStripEnd7" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 7" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00181" Offset="14" BitOffset="0" Name="VirtualStripEnd8" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 8" Value="0" Access="Read"/>
               </Union>
               
               <!-- BEGIN AUTO-GENERATED: GPIO Port Parameters -->
@@ -730,26 +777,43 @@
               <ParameterRef Id="%AID%_UP-%TT%00033_R-%TT%0003301" RefId="%AID%_UP-%TT%00033" />
               <ParameterRef Id="%AID%_UP-%TT%00034_R-%TT%0003401" RefId="%AID%_UP-%TT%00034" />
               <ParameterRef Id="%AID%_UP-%TT%00035_R-%TT%0003501" RefId="%AID%_UP-%TT%00035" />
+              <ParameterRef Id="%AID%_UP-%TT%00082_R-%TT%0008201" RefId="%AID%_UP-%TT%00082" />
+              <ParameterRef Id="%AID%_UP-%TT%00083_R-%TT%0008301" RefId="%AID%_UP-%TT%00083" />
               <!-- Pos1 -->
               <ParameterRef Id="%AID%_UP-%TT%00036_R-%TT%0003601" RefId="%AID%_UP-%TT%00036" />
               <ParameterRef Id="%AID%_UP-%TT%00037_R-%TT%0003701" RefId="%AID%_UP-%TT%00037" />
               <ParameterRef Id="%AID%_UP-%TT%00038_R-%TT%0003801" RefId="%AID%_UP-%TT%00038" />
               <ParameterRef Id="%AID%_UP-%TT%00039_R-%TT%0003901" RefId="%AID%_UP-%TT%00039" />
               <ParameterRef Id="%AID%_UP-%TT%00040_R-%TT%0004001" RefId="%AID%_UP-%TT%00040" />
+              <ParameterRef Id="%AID%_UP-%TT%00084_R-%TT%0008401" RefId="%AID%_UP-%TT%00084" />
+              <ParameterRef Id="%AID%_UP-%TT%00085_R-%TT%0008501" RefId="%AID%_UP-%TT%00085" />
               <!-- Pos2 -->
               <ParameterRef Id="%AID%_UP-%TT%00041_R-%TT%0004101" RefId="%AID%_UP-%TT%00041" />
               <ParameterRef Id="%AID%_UP-%TT%00042_R-%TT%0004201" RefId="%AID%_UP-%TT%00042" />
               <ParameterRef Id="%AID%_UP-%TT%00043_R-%TT%0004301" RefId="%AID%_UP-%TT%00043" />
               <ParameterRef Id="%AID%_UP-%TT%00044_R-%TT%0004401" RefId="%AID%_UP-%TT%00044" />
+              <ParameterRef Id="%AID%_UP-%TT%00086_R-%TT%0008601" RefId="%AID%_UP-%TT%00086" />
+              <ParameterRef Id="%AID%_UP-%TT%00087_R-%TT%0008701" RefId="%AID%_UP-%TT%00087" />
               <!-- Pos3 -->
               <ParameterRef Id="%AID%_UP-%TT%00045_R-%TT%0004501" RefId="%AID%_UP-%TT%00045" />
               <ParameterRef Id="%AID%_UP-%TT%00046_R-%TT%0004601" RefId="%AID%_UP-%TT%00046" />
               <ParameterRef Id="%AID%_UP-%TT%00047_R-%TT%0004701" RefId="%AID%_UP-%TT%00047" />
+              <ParameterRef Id="%AID%_UP-%TT%00088_R-%TT%0008801" RefId="%AID%_UP-%TT%00088" />
+              <ParameterRef Id="%AID%_UP-%TT%00089_R-%TT%0008901" RefId="%AID%_UP-%TT%00089" />
               <!-- Pos4 -->
               <ParameterRef Id="%AID%_UP-%TT%00048_R-%TT%0004801" RefId="%AID%_UP-%TT%00048" />
               <ParameterRef Id="%AID%_UP-%TT%00049_R-%TT%0004901" RefId="%AID%_UP-%TT%00049" />
+              <ParameterRef Id="%AID%_UP-%TT%00171_R-%TT%0017101" RefId="%AID%_UP-%TT%00171" />
+              <ParameterRef Id="%AID%_UP-%TT%00172_R-%TT%0017201" RefId="%AID%_UP-%TT%00172" />
               <!-- Pos5 -->
               <ParameterRef Id="%AID%_UP-%TT%00050_R-%TT%0005001" RefId="%AID%_UP-%TT%00050" />
+              <ParameterRef Id="%AID%_UP-%TT%00173_R-%TT%0017301" RefId="%AID%_UP-%TT%00173" />
+              <ParameterRef Id="%AID%_UP-%TT%00174_R-%TT%0017401" RefId="%AID%_UP-%TT%00174" />
+              <!-- Pos6 -->
+              <ParameterRef Id="%AID%_UP-%TT%00175_R-%TT%0017501" RefId="%AID%_UP-%TT%00175" />
+              <ParameterRef Id="%AID%_UP-%TT%00176_R-%TT%0017601" RefId="%AID%_UP-%TT%00176" />
+              <!-- Pos7 -->
+              <ParameterRef Id="%AID%_UP-%TT%00177_R-%TT%0017701" RefId="%AID%_UP-%TT%00177" />
 
               <!-- BEGIN AUTO-GENERATED: GPIO Port ParameterRefs -->
               <!-- Cleaned - GPIO Port ParameterRefs now in Template -->
@@ -770,19 +834,23 @@
               <ParameterRef Id="%AID%_UP-%TT%00054_R-%TT%0005401" RefId="%AID%_UP-%TT%00054" />
               <ParameterRef Id="%AID%_UP-%TT%00055_R-%TT%0005501" RefId="%AID%_UP-%TT%00055" />
               <ParameterRef Id="%AID%_UP-%TT%00056_R-%TT%0005601" RefId="%AID%_UP-%TT%00056" />
+              <ParameterRef Id="%AID%_UP-%TT%00178_R-%TT%0017801" RefId="%AID%_UP-%TT%00178" />
+              <ParameterRef Id="%AID%_UP-%TT%00179_R-%TT%0017901" RefId="%AID%_UP-%TT%00179" />
               
               <!-- Virtual Strip End Index Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00057_R-%TT%0005701" RefId="%AID%_UP-%TT%00057" />
               <ParameterRef Id="%AID%_UP-%TT%00058_R-%TT%0005801" RefId="%AID%_UP-%TT%00058" />
               <ParameterRef Id="%AID%_UP-%TT%00059_R-%TT%0005901" RefId="%AID%_UP-%TT%00059" />
               <ParameterRef Id="%AID%_UP-%TT%00076_R-%TT%0007601" RefId="%AID%_UP-%TT%00076" />
+              <ParameterRef Id="%AID%_UP-%TT%00180_R-%TT%0018001" RefId="%AID%_UP-%TT%00180" />
+              <ParameterRef Id="%AID%_UP-%TT%00181_R-%TT%0018101" RefId="%AID%_UP-%TT%00181" />
               
               </ParameterRefs>
               <ParameterCalculations>
               <!-- Virtual Strip Start LED Calculation -->
               <ParameterCalculation Id="%AID%_PC-%TT%00037" Language="JavaScript" Name="VirtualStripStartOffsets" LRTransformationFunc="NEO_UpdateVirtualStripStartIndices" RLTransformationFunc="NEO_Empty">
                 <LParameters>
-                  <!-- Anzahl physikalischer LED-Streifen (1..6) -->
+                  <!-- Anzahl physikalischer LED-Streifen (1..8) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" AliasName="NumberOfLEDStrips" />
                   <!-- Kanonische virtuelle Reihenfolge (nach Auto-Swap) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" AliasName="Pos1" />
@@ -791,6 +859,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00033_R-%TT%0003301" AliasName="Pos4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00034_R-%TT%0003401" AliasName="Pos5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" AliasName="Pos6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" AliasName="Pos7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00083_R-%TT%0008301" AliasName="Pos8" />
                   <!-- UI-limitierte Varianten: nur zum Triggern der Berechnung -->
                   <!-- Position 1 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00036_R-%TT%0003601" AliasName="Pos1_1" />
@@ -798,27 +868,44 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00038_R-%TT%0003801" AliasName="Pos1_3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00039_R-%TT%0003901" AliasName="Pos1_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00040_R-%TT%0004001" AliasName="Pos1_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00084_R-%TT%0008401" AliasName="Pos1_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00085_R-%TT%0008501" AliasName="Pos1_7" />
                   <!-- Position 2 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00041_R-%TT%0004101" AliasName="Pos2_2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00042_R-%TT%0004201" AliasName="Pos2_3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00043_R-%TT%0004301" AliasName="Pos2_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00044_R-%TT%0004401" AliasName="Pos2_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00086_R-%TT%0008601" AliasName="Pos2_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00087_R-%TT%0008701" AliasName="Pos2_7" />
                   <!-- Position 3 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00045_R-%TT%0004501" AliasName="Pos3_3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00046_R-%TT%0004601" AliasName="Pos3_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00047_R-%TT%0004701" AliasName="Pos3_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00088_R-%TT%0008801" AliasName="Pos3_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00089_R-%TT%0008901" AliasName="Pos3_7" />
                   <!-- Position 4 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00048_R-%TT%0004801" AliasName="Pos4_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00049_R-%TT%0004901" AliasName="Pos4_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00171_R-%TT%0017101" AliasName="Pos4_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" AliasName="Pos4_7" />
                   <!-- Position 5 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00050_R-%TT%0005001" AliasName="Pos5_5" />
-                  <!-- Physikalische Streifenlängen (NEO%C%Length) -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00173_R-%TT%0017301" AliasName="Pos5_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00174_R-%TT%0017401" AliasName="Pos5_7" />
+                  <!-- Position 6 -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00175_R-%TT%0017501" AliasName="Pos6_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" AliasName="Pos6_7" />
+                  <!-- Position 7 -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" AliasName="Pos7_7" />
+                  <!-- Physikalische Streifenlängen (NEO%C%Length, 1..8) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%91037_R-%TT%9103701" AliasName="Len1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%92037_R-%TT%9203701" AliasName="Len2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%93037_R-%TT%9303701" AliasName="Len3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%94037_R-%TT%9403701" AliasName="Len4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%95037_R-%TT%9503701" AliasName="Len5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%96037_R-%TT%9603701" AliasName="Len6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%97037_R-%TT%9703701" AliasName="Len7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%98037_R-%TT%9803701" AliasName="Len8" />
                 </LParameters>
                 <RParameters>
                   <!-- Start-LED Outputs (read-only Parameter in der Tabelle) -->
@@ -828,6 +915,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" AliasName="Start4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" AliasName="Start5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" AliasName="Start6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00178_R-%TT%0017801" AliasName="Start7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00179_R-%TT%0017901" AliasName="Start8" />
                   <!-- End-LED Outputs (read-only Parameter in der Tabelle) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00057_R-%TT%0005701" AliasName="End1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" AliasName="End2" />
@@ -835,6 +924,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00076_R-%TT%0007601" AliasName="End4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" AliasName="End5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" AliasName="End6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00180_R-%TT%0018001" AliasName="End7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00181_R-%TT%0018101" AliasName="End8" />
                   <!-- Duplicate flag -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" AliasName="HasDuplicates" />
                 </RParameters>
@@ -1218,6 +1309,8 @@
                     <Row Id="%AID%_PB-nnn_R-5" Name="Pos4" />
                     <Row Id="%AID%_PB-nnn_R-6" Name="Pos5" />
                     <Row Id="%AID%_PB-nnn_R-7" Name="Pos6" />
+                    <Row Id="%AID%_PB-nnn_R-8" Name="Pos7" />
+                    <Row Id="%AID%_PB-nnn_R-9" Name="Pos8" />
                   </Rows>
                   <Columns>
                     <Column Id="%AID%_PB-nnn_C-1" Name="Pos" Width="12%" />
@@ -1256,6 +1349,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00040_R-%TT%0004001" Cell="2,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00084_R-%TT%0008401" Cell="2,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00085_R-%TT%0008501" Cell="2,2" />
+                        </when>
+                        <when test="=8">
                           <!-- full range -->
                           <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" Cell="2,2" />
                         </when>
@@ -1332,8 +1431,57 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00030 (dein Original) -->
+                        <!-- 6 Strips → Wert steckt in 00084 -->
                         <when test="=6">
+                          <choose ParamRefId="%AID%_UP-%TT%00084_R-%TT%0008401">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="2,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="2,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="2,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="2,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="2,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="2,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 7 Strips → Wert steckt in 00085 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00085_R-%TT%0008501">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="2,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="2,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="2,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="2,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="2,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="2,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="2,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00030 -->
+                        <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00030_R-%TT%0003001">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="2,3" />
@@ -1352,6 +1500,12 @@
                             </when>
                             <when test="=6"> 
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="2,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="2,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="2,3" />
                             </when>
                           </choose>
                         </when>
@@ -1378,6 +1532,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00044_R-%TT%0004401" Cell="3,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00086_R-%TT%0008601" Cell="3,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00087_R-%TT%0008701" Cell="3,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00031_R-%TT%0003101" Cell="3,2" />
                         </when>
                       </choose>
@@ -1445,8 +1605,57 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00031 -->
+                        <!-- 6 Strips → Wert steckt in 00086 -->
                         <when test="=6">
+                          <choose ParamRefId="%AID%_UP-%TT%00086_R-%TT%0008601">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="3,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="3,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="3,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="3,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="3,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="3,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 7 Strips → Wert steckt in 00087 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00087_R-%TT%0008701">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="3,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="3,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="3,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="3,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="3,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="3,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="3,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00031 -->
+                        <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00031_R-%TT%0003101">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="3,3" />
@@ -1465,6 +1674,12 @@
                             </when>
                             <when test="=6">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="3,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="3,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="3,3" />
                             </when>
                           </choose>
                         </when>
@@ -1488,6 +1703,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00047_R-%TT%0004701" Cell="4,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00088_R-%TT%0008801" Cell="4,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00089_R-%TT%0008901" Cell="4,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00032_R-%TT%0003201" Cell="4,2" />
                         </when>
                       </choose>
@@ -1544,9 +1765,9 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00032 -->
+                        <!-- 6 Strips → Wert steckt in 00088 -->
                         <when test="=6">
-                          <choose ParamRefId="%AID%_UP-%TT%00032_R-%TT%0003201">
+                          <choose ParamRefId="%AID%_UP-%TT%00088_R-%TT%0008801">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="4,3" />
                             </when>
@@ -1567,6 +1788,61 @@
                             </when>
                           </choose>
                         </when>
+                        <!-- 7 Strips → Wert steckt in 00089 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00089_R-%TT%0008901">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="4,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="4,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="4,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="4,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="4,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="4,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="4,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00032 -->
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00032_R-%TT%0003201">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="4,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="4,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="4,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="4,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="4,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="4,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="4,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="4,3" />
+                            </when>
+                          </choose>
+                        </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" Cell="4,4" />
@@ -1584,6 +1860,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00049_R-%TT%0004901" Cell="5,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00171_R-%TT%0017101" Cell="5,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" Cell="5,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00033_R-%TT%0003301" Cell="5,2" />
                         </when>
                       </choose>
@@ -1626,9 +1908,9 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00033 -->
+                        <!-- 6 Strips → Wert steckt in 00171 -->
                         <when test="=6">
-                          <choose ParamRefId="%AID%_UP-%TT%00033_R-%TT%0003301">
+                          <choose ParamRefId="%AID%_UP-%TT%00171_R-%TT%0017101">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="5,3" />
                             </when>
@@ -1649,6 +1931,61 @@
                             </when>
                           </choose>
                         </when>
+                        <!-- 7 Strips → Wert steckt in 00172 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00172_R-%TT%0017201">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="5,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="5,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="5,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="5,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="5,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="5,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="5,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00033 -->
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00033_R-%TT%0003301">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="5,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="5,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="5,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="5,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="5,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="5,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="5,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="5,3" />
+                            </when>
+                          </choose>
+                        </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" Cell="5,4" />
@@ -1663,6 +2000,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00050_R-%TT%0005001" Cell="6,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00173_R-%TT%0017301" Cell="6,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00174_R-%TT%0017401" Cell="6,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00034_R-%TT%0003401" Cell="6,2" />
                         </when>
                       </choose>
@@ -1688,9 +2031,9 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00034 -->
+                        <!-- 6 Strips → Wert steckt in 00173 -->
                         <when test="=6">
-                          <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
+                          <choose ParamRefId="%AID%_UP-%TT%00173_R-%TT%0017301">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="6,3" />
                             </when>
@@ -1711,6 +2054,61 @@
                             </when>
                           </choose>
                         </when>
+                        <!-- 7 Strips → Wert steckt in 00174 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00174_R-%TT%0017401">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="6,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="6,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="6,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="6,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="6,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="6,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="6,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00034 -->
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="6,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="6,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="6,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="6,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="6,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="6,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="6,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="6,3" />
+                            </when>
+                          </choose>
+                        </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" Cell="6,4" />
@@ -1720,32 +2118,207 @@
                     <when test=">=6">
                       <!-- Row 6: Position 6 -->
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="6" UIHint="Headline" Cell="7,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" Cell="7,2" />
-                      <!-- Name of selected physical strip used at Position 6 -->
-                      <choose ParamRefId="%AID%_UP-%TT%00035_R-%TT%0003501">
-                        <when test="=1">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
-                        </when>
-                        <when test="=2">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
-                        </when>
-                        <when test="=3">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
-                        </when>
-                        <when test="=4">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
-                        </when>
-                        <when test="=5">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
-                        </when>
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
                         <when test="=6">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00175_R-%TT%0017501" Cell="7,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" Cell="7,2" />
+                        </when>
+                        <when test="=8">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" Cell="7,2" />
+                        </when>
+                      </choose>
+                      <!-- Name of selected physical strip used at Position 6 -->
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <when test="=6">
+                          <choose ParamRefId="%AID%_UP-%TT%00175_R-%TT%0017501">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00176_R-%TT%0017601">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="7,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00035_R-%TT%0003501">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="7,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="7,3" />
+                            </when>
+                          </choose>
                         </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" Cell="7,4" />
                       <!-- Column 5: End LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" Cell="7,5" />
+                    </when>
+                    <when test=">=7">
+                      <!-- Row 7: Position 7 -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="7" UIHint="Headline" Cell="8,1" />
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" Cell="8,2" />
+                        </when>
+                        <when test="=8">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" Cell="8,2" />
+                        </when>
+                      </choose>
+                      <!-- Name of selected physical strip used at Position 7 -->
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00177_R-%TT%0017701">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="8,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="8,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="8,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="8,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="8,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="8,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="8,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00082_R-%TT%0008201">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="8,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="8,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="8,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="8,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="8,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="8,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="8,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="8,3" />
+                            </when>
+                          </choose>
+                        </when>
+                      </choose>
+                      <!-- Column 4: Start LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00178_R-%TT%0017801" Cell="8,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00180_R-%TT%0018001" Cell="8,5" />
+                    </when>
+                    <when test=">=8">
+                      <!-- Row 8: Position 8 -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="8" UIHint="Headline" Cell="9,1" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00083_R-%TT%0008301" Cell="9,2" />
+                      <!-- Name of selected physical strip used at Position 8 -->
+                      <choose ParamRefId="%AID%_UP-%TT%00083_R-%TT%0008301">
+                        <when test="=1">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="9,3" />
+                        </when>
+                        <when test="=2">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="9,3" />
+                        </when>
+                        <when test="=3">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="9,3" />
+                        </when>
+                        <when test="=4">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="9,3" />
+                        </when>
+                        <when test="=5">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="9,3" />
+                        </when>
+                        <when test="=6">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="9,3" />
+                        </when>
+                        <when test="=7">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="9,3" />
+                        </when>
+                        <when test="=8">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="9,3" />
+                        </when>
+                      </choose>
+                      <!-- Column 4: Start LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00179_R-%TT%0017901" Cell="9,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00181_R-%TT%0018101" Cell="9,5" />
                     </when>
                 </choose>
                 </ParameterBlock>

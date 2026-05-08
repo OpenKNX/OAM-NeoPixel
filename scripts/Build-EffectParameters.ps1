@@ -697,8 +697,8 @@ if ($Clean) {
             $startMarker = "// BEGIN AUTO-GENERATED: Scene Effect Defaults"
             $endMarker = "// END AUTO-GENERATED: Scene Effect Defaults"
 
-            # Use (?m) multiline + \s*$ to avoid matching "Scene Effect Defaults Function" markers
-            $pattern = "(?sm)($([regex]::Escape($startMarker))\s*$)(.*?)($([regex]::Escape($endMarker))\s*$)"
+            # Match the exact marker line so clean regenerations do not preserve stray blank lines.
+            $pattern = "(?s)($([regex]::Escape($startMarker))\r?\n)(.*?)($([regex]::Escape($endMarker)))"
             $replacement = ('$1' + [Environment]::NewLine + 'var NEO_SceneEffectDefaults = {};' + [Environment]::NewLine + '$3')
             $content = $content -replace $pattern, $replacement
 
@@ -2887,8 +2887,8 @@ function Update-ScriptJS {
     $startMarker = "// BEGIN AUTO-GENERATED: Scene Effect Defaults"
     $endMarker = "// END AUTO-GENERATED: Scene Effect Defaults"
 
-    # Use (?m) multiline + \s*$ to avoid matching "Scene Effect Defaults Function" markers
-    $pattern = "(?sm)($([regex]::Escape($startMarker))\s*$)(.*?)($([regex]::Escape($endMarker))\s*$)"
+    # Match the exact marker line so repeated runs normalize the block instead of preserving blank lines.
+    $pattern = "(?s)($([regex]::Escape($startMarker))\r?\n)(.*?)($([regex]::Escape($endMarker)))"
     if ($content -match $pattern) {
         $replacement = "`$1`n$DefaultsContent`n`$3"
         $content = $content -replace $pattern, $replacement

@@ -5,7 +5,7 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 ## Features
 
 ### Core Functionality
-- **Multi-Strip Support**: Control up to 6 independent LED strips simultaneously
+- **Multi-Strip Support**: Control up to 8 independent LED strips simultaneously
 - **Flexible Segmentation**: Up to 16 segments on the virtual strip for granular control
 - **Rich Effect Library**: 29 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more
 - **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, and brightness

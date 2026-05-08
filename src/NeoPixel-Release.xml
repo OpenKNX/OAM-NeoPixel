@@ -63,7 +63,7 @@
   <op:define prefix="NEOSTRIP" ModuleType="40"
     share="NeoPixel.Strip.share.xml"
     template="NeoPixel.Strip.templ.xml"
-    NumChannels="6"
+    NumChannels="8"
     prefixDoc="NEO"
     configTransferName="NeoPixel Strip"
     KoOffset="500">
