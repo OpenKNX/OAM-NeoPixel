@@ -11,7 +11,7 @@
 #include "effects/EffectPool.h" // Effect pool for singleton instances
 #include <vector>
 
-// ETS FunctionProperty Definitions (from NeoPixel.debug.xml)
+// ETS FunctionProperty Definitions (from the generated NeoPixel-*.debug.xml files)
 // These values are referenced in the ETS JavaScript for online functions
 #define NEOPIXEL_FUNCTION_OBJECT_INDEX 158 // NeoPixel module appliance object
 #define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Hardware detection property

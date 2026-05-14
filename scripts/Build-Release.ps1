@@ -60,7 +60,7 @@ function Show-Help {
     Write-Host "  -Release       Create release build (default: dev)"
     Write-Host "  -Full          Build ALL hardware variants (default: tested only)"
     Write-Host "  -SkipFirmware  Generate configs only, skip firmware compilation"
-    Write-Host "  -Clean         Remove generated files, prompt for rebuild"
+    Write-Host "  -Clean         Remove generated files and exit"
     Write-Host "  -Help, -h      Show this help"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
@@ -196,8 +196,19 @@ $standardTargets = @(
     # OpenKNX UP1 Board
     @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
     # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz
-    #@{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
-)
+    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
+    # QuinLED Variants
+    @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG2GO" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI";           Name = "QuinLED-Dig-Uno-V3-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_ETHERNET";       Name = "QuinLED-Dig-Uno-V3-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS";   Name = "QuinLED-Dig-Uno-V3-WiFi-AE-Plus";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI";          Name = "QuinLED-Dig-Quad-V3-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_ETHERNET";      Name = "QuinLED-Dig-Quad-V3-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS";  Name = "QuinLED-Dig-Quad-V3-WiFi-AE-Plus";  Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_WIFI" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_NEXT2" }
+    )
 
 # Full Build Targets (additional, not yet tested hardware)
 $fullTargets = @(

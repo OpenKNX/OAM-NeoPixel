@@ -356,7 +356,8 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
 
 // EventHandler: Hardware auto-detection from firmware
 // Called when user clicks "Hardware automatisch erkennen" button
-// Reads DEVICE_HW_ID from firmware and writes to Hardware Selection parameter
+// Reads DEVICE_HW_ID from firmware, maps it to the generated hardware index,
+// and writes that index to the Hardware Selection parameter.
 function NEO_detectHardware(device, online, progress, context) {
     progress.setText("NeoPixel: Lese Hardware-ID vom Gerät...");
     progress.setProgress(10);
@@ -394,23 +395,21 @@ function NEO_detectHardware(device, online, progress, context) {
         hwName = hardwareNameMap[hwId];  // Direkt Hardware-Name holen
         progress.setText("NeoPixel: Erkannte Hardware: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ")");
     } else {
-      // Unknown hardware - set to 0 (reserved: "no selection") and let user know
+      // Unknown hardware - fall back to the ETS "Bitte wählen..." entry.
       progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
-      hwId = 0;  // 0x0000 = reserved value for "no hardware selected"
+      hwIndex = 255;
     }
     
-    // Write hardware HW_ID directly to parameter (NOT index!)
-    // This makes the parameter stable across ETS versions when new hardware is added
+    // The current ETS parameter model stores the generated hardware index.
     try {
         // Method 1: ETS standard way using getParameterByName
         var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
         if (param) {
-            //param.value = hwId; // ToDo EC: Later: Write HW_ID directly when supported to prevent index shifts!!
             param.value = hwIndex;
             if (isKnownHardware && hwName) {
                 progress.setText("NeoPixel: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ") ausgewählt");
             } else {
-                progress.setText("NeoPixel: Hardware-Auswahl auf HW-ID 0x" + hwId.toString(16).toUpperCase() + " gesetzt");
+          progress.setText("NeoPixel: Hardware-Auswahl zurückgesetzt - bitte Hardware manuell wählen");
             }
         } else {
             throw new Error("Parameter 'NEO_NeoPixelHardwareSelect' nicht gefunden");

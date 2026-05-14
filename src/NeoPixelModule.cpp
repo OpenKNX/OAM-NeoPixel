@@ -2222,43 +2222,43 @@ void NeoPixelBusModule::configureFromETS()
             }
             else
             {
-                uint8_t dataPortIndex = getGpioDataPortForHw(i);
+                uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
 
-                if (isHardwarePortSelected(dataPortIndex))
+                if (isHardwarePortSelected(dataPortSelection))
                 {
-                    uint8_t dataGpio = mapPortIndexToGpio(dataPortIndex);
+                    uint8_t dataGpio = mapPortIndexToGpio(dataPortSelection);
 
                     if (dataGpio != 255) // Valid GPIO
                     {
                         if (!isPinUsed(dataGpio))
                         {
                             usedPins.push_back(dataGpio);
-                            logInfoP("Strip %d: Pre-marked hardware Data GPIO %d (port %d) as used", i, dataGpio, dataPortIndex);
+                            logInfoP("Strip %d: Pre-marked hardware Data GPIO %d (port %d) as used", i, dataGpio, dataPortSelection);
                         }
                         else
                         {
-                            logErrorP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortIndex);
+                            logErrorP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortSelection);
                         }
 
                         // For SPI protocols, also mark clock GPIO
                         if (isSpiProtocol(proto))
                         {
-                            uint8_t clockPortIndex = getGpioClockPortForHw(i);
+                            uint8_t clockPortSelection = getClockPortSelectionForHardwareIndex(i);
 
-                            if (isHardwarePortSelected(clockPortIndex))
+                            if (isHardwarePortSelected(clockPortSelection))
                             {
-                                uint8_t sckGpio = mapPortIndexToGpio(clockPortIndex);
+                                uint8_t sckGpio = mapPortIndexToGpio(clockPortSelection);
 
                                 if (sckGpio != 255) // Valid GPIO
                                 {
                                     if (!isPinUsed(sckGpio))
                                     {
                                         usedPins.push_back(sckGpio);
-                                        logInfoP("Strip %d: Pre-marked hardware SCK GPIO %d (port %d) as used", i, sckGpio, clockPortIndex);
+                                        logInfoP("Strip %d: Pre-marked hardware SCK GPIO %d (port %d) as used", i, sckGpio, clockPortSelection);
                                     }
                                     else
                                     {
-                                        logErrorP("Strip %d: Hardware SCK GPIO %d (port %d) already marked as used!", i, sckGpio, clockPortIndex);
+                                        logErrorP("Strip %d: Hardware SCK GPIO %d (port %d) already marked as used!", i, sckGpio, clockPortSelection);
                                     }
                                 }
                             }
@@ -2280,21 +2280,8 @@ void NeoPixelBusModule::configureFromETS()
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = StripConfiguration::mapProtocol(ledTypeParam);
 
-        // Get color order: use GRBW for RGBW protocols, or user-selected for others
-        ColorOrder order;
-        if (ledTypeParam == 8)
-        { // SK6812/WS2814 (RGBW) - special ETS value
-            // RGBW capable protocols: use GRBW by default (white channel on back)
-            // User can adjust white position with Swap parameter if needed
-            order = ColorOrder::GRBW;
-            logInfoP("Strip %d: RGBW protocol detected (ETS type 8), using GRBW color order", i);
-        }
-        else
-        {
-            // Regular RGB protocols: use user-selected color order
-            order = StripConfiguration::mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
-        }
-
+        // Get color order from ETS setting for all protocols
+        ColorOrder order = StripConfiguration::mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
@@ -2351,19 +2338,19 @@ void NeoPixelBusModule::configureFromETS()
                     continue; // Skip this strip completely
                 }
 
-                uint8_t dataPortIndex = getGpioDataPortForHw(i);
-                uint8_t clockPortIndex = getGpioClockPortForHw(i);
+                uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
+                uint8_t clockPortSelection = getClockPortSelectionForHardwareIndex(i);
 
-                if (isHardwarePortSelected(dataPortIndex) && isHardwarePortSelected(clockPortIndex))
+                if (isHardwarePortSelected(dataPortSelection) && isHardwarePortSelected(clockPortSelection))
                 {
                     // Map port indices to actual GPIO numbers
-                    mosiGpio = mapPortIndexToGpio(dataPortIndex);
-                    sckGpio = mapPortIndexToGpio(clockPortIndex);
+                    mosiGpio = mapPortIndexToGpio(dataPortSelection);
+                    sckGpio = mapPortIndexToGpio(clockPortSelection);
 
                     if (mosiGpio == 255 || sckGpio == 255)
                     {
                         logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d, clock:%d->%d)",
-                                  i, dataPortIndex, mosiGpio, clockPortIndex, sckGpio);
+                                  i, dataPortSelection, mosiGpio, clockPortSelection, sckGpio);
                         // Fallback to automatic allocation
                         mosiGpio = 19;
                         sckGpio = 18;
@@ -2506,17 +2493,17 @@ void NeoPixelBusModule::configureFromETS()
                     continue; // Skip this strip completely
                 }
 
-                uint8_t dataPortIndex = getGpioDataPortForHw(i);
+                uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
 
-                if (isHardwarePortSelected(dataPortIndex))
+                if (isHardwarePortSelected(dataPortSelection))
                 {
                     // Map port index to actual GPIO number
-                    dataGpioPin = mapPortIndexToGpio(dataPortIndex);
+                    dataGpioPin = mapPortIndexToGpio(dataPortSelection);
 
                     if (dataGpioPin == 255)
                     {
                         logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d)",
-                                  i, dataPortIndex, dataGpioPin);
+                                  i, dataPortSelection, dataGpioPin);
                         // Fallback to automatic allocation
                         dataGpioPin = dataGpio;
                     }
@@ -4022,11 +4009,11 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
     #else
         #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
+    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
     uint8_t hwIndex = getCurrentHardwareIndex();
     const char* hwName = HardwareMapping::getHardwareName(hwIndex);
     logInfoP("  Mode:             ETS Runtime Selection");
-    logInfoP("  Selected HW ID:   0x%04X (%d decimal)", selectedHwId, selectedHwId);
+    logInfoP("  Selected HW Index:%5d", selectedHwIndex);
     logInfoP("  Hardware Index:   %d", hwIndex);
     logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
         #else
@@ -4156,11 +4143,11 @@ void NeoPixelBusModule::debugShowConfiguration()
         {
             // Hardware-assisted mode: show port selection
             uint8_t hwIndex = getCurrentHardwareIndex();
-            uint8_t dataPortIndex = getGpioDataPortForHw(i, hwIndex);
+            uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i, hwIndex);
 
-            if (isHardwarePortSelected(dataPortIndex))
+            if (isHardwarePortSelected(dataPortSelection))
             {
-                logInfoP("  │      Data Port:      %d (ETS selection)", dataPortIndex);
+                logInfoP("  │      Data Port:      %d (ETS selection)", dataPortSelection);
             }
             else
             {
@@ -4169,10 +4156,10 @@ void NeoPixelBusModule::debugShowConfiguration()
 
             if (isSpiProtocol(strip->getProtocol()))
             {
-                uint8_t clockPortIndex = getGpioClockPortForHw(i, hwIndex);
-                if (isHardwarePortSelected(clockPortIndex))
+                uint8_t clockPortSelection = getClockPortSelectionForHardwareIndex(i, hwIndex);
+                if (isHardwarePortSelected(clockPortSelection))
                 {
-                    logInfoP("  │      Clock Port:     %d (ETS selection)", clockPortIndex);
+                    logInfoP("  │      Clock Port:     %d (ETS selection)", clockPortSelection);
                 }
                 else
                 {

@@ -285,20 +285,22 @@ if ([string]::IsNullOrEmpty($OutputFile)) {
 # ====================================================================
 # Hardware Parameter ID Configuration
 # ====================================================================
-# Hardware parameters use dedicated ID ranges in the 700-900 block to:
-# - Support up to 100 hardware variants (future-proof)
-# - Avoid conflicts with application logic parameters (000-699)
-# - Reserve space for future hardware features (900-999)
+# Hardware parameters use the reserved 900-999 block to:
+# - Keep application logic parameters below the hardware GPIO ranges
+# - Support up to 50 hardware variants without crossing into four-digit IDs
+# - Reserve one contiguous block for ETS hardware GPIO parameters
 # - Enable easy integration with other OpenKNX modules
 #
 # ID Schema: %AID%_UP-%TT%0%C%XXX where XXX is the parameter ID
-# - Scene effect params occupy IDs ~300-959 (5 scenes × op:part with %PPP% base=300, increment=120)
-# - Data GPIO:  950-974 (25 slots for HW0-24)
-# - Clock GPIO: 975-999 (25 slots for HW0-24)
+# - Data GPIO:  900-949 (50 slots for HW0-49)
+# - Clock GPIO: 950-999 (50 slots for HW0-49)
 # ====================================================================
-$HW_DATA_GPIO_BASE_ID = 950   # Data GPIO base offset (950-974)
-$HW_CLOCK_GPIO_BASE_ID = 975  # Clock GPIO base offset (975-999)
-$MAX_HARDWARE_VARIANTS = 25   # Maximum supported hardware variants (0-24)
+$MAX_HARDWARE_VARIANTS = 50   # Maximum supported hardware variants (0-49)
+$HW_DATA_GPIO_BASE_ID = 900   # Data GPIO base offset (900-949)
+$HW_CLOCK_GPIO_BASE_ID = $HW_DATA_GPIO_BASE_ID + $MAX_HARDWARE_VARIANTS  # Clock GPIO base offset (950-999)
+$RELAY_HW_PARAM_BASE_ID = 200
+$RELAY_HW_CALC_BASE_ID = 140
+$RELAY_HW_ID_STRIDE = $MAX_HARDWARE_VARIANTS
 
 $GPIO_MANUAL_VALUE = 10  # Value for "Manual" GPIO selection (Previous: 10) --> ToDo EC: Use 99, currently conflicts/Problmes
 $GPIO_DUMMY_VALUE = 15   # Value for dummy/placeholder option (Previous: 15) --> ToDo EC: Use 98, currently conflicts/Problems
@@ -807,7 +809,7 @@ function Generate-RelayConfigParametersInShare {
     [array]$HardwareConfigs
   )
 
-  # Generate External Relay configuration parameters (00130-00136 + HW-specific 00200-00270)
+  # Generate External Relay configuration parameters (00130-00136 + HW-specific relay blocks)
   $paramsXml = "              <!-- External Relay Configuration Union -->`n"
   $paramsXml += "              <Union SizeInBit=`"40`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"$SHARE_RELAY_CONFIG_OFFSET`" BitOffset=`"0`" />`n"
@@ -825,7 +827,7 @@ function Generate-RelayConfigParametersInShare {
   $paramsXml += "                <!-- Relay 1 GPIO Selection (hardware-specific) -->`n"
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $paramId = (200 + $hwIdx).ToString().PadLeft(5, '0')  # 00200, 00201, ...
+    $paramId = ($RELAY_HW_PARAM_BASE_ID + $hwIdx).ToString().PadLeft(5, '0')
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"0`" BitOffset=`"0`" Name=`"NEORelay1GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relais 1 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
   }
 
@@ -833,7 +835,7 @@ function Generate-RelayConfigParametersInShare {
   $paramsXml += "                <!-- Relay 2 GPIO Selection (hardware-specific) -->`n"
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $paramId = (220 + $hwIdx).ToString().PadLeft(5, '0')  # 00220, 00221, ...
+    $paramId = ($RELAY_HW_PARAM_BASE_ID + $RELAY_HW_ID_STRIDE + $hwIdx).ToString().PadLeft(5, '0')
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"1`" BitOffset=`"0`" Name=`"NEORelay2GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relais 2 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
   }
 
@@ -841,7 +843,7 @@ function Generate-RelayConfigParametersInShare {
   $paramsXml += "                <!-- Relay 3 GPIO Selection (hardware-specific) -->`n"
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $paramId = (240 + $hwIdx).ToString().PadLeft(5, '0')  # 00240, 00241, ...
+    $paramId = ($RELAY_HW_PARAM_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"3`" BitOffset=`"0`" Name=`"NEORelay3GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relais 3 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
   }
 
@@ -849,7 +851,7 @@ function Generate-RelayConfigParametersInShare {
   $paramsXml += "                <!-- Relay 4 GPIO Selection (hardware-specific) -->`n"
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $paramId = (260 + $hwIdx).ToString().PadLeft(5, '0')  # 00260, 00261, ...
+    $paramId = ($RELAY_HW_PARAM_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"4`" BitOffset=`"0`" Name=`"NEORelay4GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relais 4 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
   }
 
@@ -1178,25 +1180,25 @@ function Generate-RelayParameterRefsInShare {
   $refsXml += "              <!-- External Relay GPIO Selection Parameter References (HW-specific) -->`n"
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $relay1ParamId = (200 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay1ParamId = ($RELAY_HW_PARAM_BASE_ID + $hwIdx).ToString().PadLeft(5, '0')
     $relay1RefId = $relay1ParamId + "01"
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${relay1ParamId}_R-%TT%${relay1RefId}`" RefId=`"%AID%_UP-%TT%${relay1ParamId}`" />`n"
   }
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $relay2ParamId = (220 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay2ParamId = ($RELAY_HW_PARAM_BASE_ID + $RELAY_HW_ID_STRIDE + $hwIdx).ToString().PadLeft(5, '0')
     $relay2RefId = $relay2ParamId + "01"
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${relay2ParamId}_R-%TT%${relay2RefId}`" RefId=`"%AID%_UP-%TT%${relay2ParamId}`" />`n"
   }
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $relay3ParamId = (240 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay3ParamId = ($RELAY_HW_PARAM_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $relay3RefId = $relay3ParamId + "01"
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${relay3ParamId}_R-%TT%${relay3RefId}`" RefId=`"%AID%_UP-%TT%${relay3ParamId}`" />`n"
   }
 
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $relay4ParamId = (260 + $hwIdx).ToString().PadLeft(5, '0')
+    $relay4ParamId = ($RELAY_HW_PARAM_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $relay4RefId = $relay4ParamId + "01"
     $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${relay4ParamId}_R-%TT%${relay4RefId}`" RefId=`"%AID%_UP-%TT%${relay4ParamId}`" />`n"
   }
@@ -1287,7 +1289,7 @@ function Generate-ConflictCalculation {
   }
 
   for ($relayIdx = 1; $relayIdx -le $MAX_EXTERNAL_RELAYS; $relayIdx++) {
-    $relayParamBaseId = 200 + (($relayIdx - 1) * 20)
+    $relayParamBaseId = $RELAY_HW_PARAM_BASE_ID + (($relayIdx - 1) * $RELAY_HW_ID_STRIDE)
     for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
       $relayParamId = ($relayParamBaseId + $hwIdx).ToString().PadLeft(5, '0')
       $relayRefId = $relayParamId + "01"
@@ -1397,8 +1399,8 @@ function Generate-RelayCopyCalculationsInShare {
 
   $calcXml = "          <!-- Relay 1 -->`n"
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $calcId = (140 + $hwIdx).ToString().PadLeft(5, '0')
-    $relayParamId = (200 + $hwIdx).ToString().PadLeft(5, '0')
+    $calcId = ($RELAY_HW_CALC_BASE_ID + $hwIdx).ToString().PadLeft(5, '0')
+    $relayParamId = ($RELAY_HW_PARAM_BASE_ID + $hwIdx).ToString().PadLeft(5, '0')
     $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay1_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
@@ -1411,8 +1413,8 @@ function Generate-RelayCopyCalculationsInShare {
 
   $calcXml += "`n          <!-- Relay 2 -->`n"
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $calcId = (160 + $hwIdx).ToString().PadLeft(5, '0')
-    $relayParamId = (220 + $hwIdx).ToString().PadLeft(5, '0')
+    $calcId = ($RELAY_HW_CALC_BASE_ID + $RELAY_HW_ID_STRIDE + $hwIdx).ToString().PadLeft(5, '0')
+    $relayParamId = ($RELAY_HW_PARAM_BASE_ID + $RELAY_HW_ID_STRIDE + $hwIdx).ToString().PadLeft(5, '0')
     $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay2_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
@@ -1425,8 +1427,8 @@ function Generate-RelayCopyCalculationsInShare {
 
   $calcXml += "`n          <!-- Relay 3 -->`n"
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $calcId = (180 + $hwIdx).ToString().PadLeft(5, '0')
-    $relayParamId = (240 + $hwIdx).ToString().PadLeft(5, '0')
+    $calcId = ($RELAY_HW_CALC_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
+    $relayParamId = ($RELAY_HW_PARAM_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay3_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
@@ -1439,8 +1441,8 @@ function Generate-RelayCopyCalculationsInShare {
 
   $calcXml += "`n          <!-- Relay 4 -->`n"
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
-    $calcId = (200 + $hwIdx).ToString().PadLeft(5, '0')
-    $relayParamId = (260 + $hwIdx).ToString().PadLeft(5, '0')
+    $calcId = ($RELAY_HW_CALC_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
+    $relayParamId = ($RELAY_HW_PARAM_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay4_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
@@ -1471,8 +1473,8 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   $hardwareList = @()
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $hwConfig = $HardwareConfigs[$hwIdx]
-    $dataParamId = ($HW_DATA_GPIO_BASE_ID + $hwIdx).ToString().PadLeft(3, '0')  # 700, 701, 702, ...
-    $clockParamId = ($HW_CLOCK_GPIO_BASE_ID + $hwIdx).ToString().PadLeft(3, '0')  # 800, 801, 802, ...
+    $dataParamId = ($HW_DATA_GPIO_BASE_ID + $hwIdx).ToString().PadLeft(3, '0')
+    $clockParamId = ($HW_CLOCK_GPIO_BASE_ID + $hwIdx).ToString().PadLeft(3, '0')
 
     $hardwareList += @{
       Id = $hwIdx  # Use hardware INDEX for consistency with ParameterType
@@ -1640,10 +1642,10 @@ function Generate-RelayUIInShare {
     )
 
     $baseId = switch ($RelayIndex) {
-      1 { 200 }
-      2 { 220 }
-      3 { 240 }
-      4 { 260 }
+      1 { $RELAY_HW_PARAM_BASE_ID }
+      2 { $RELAY_HW_PARAM_BASE_ID + $RELAY_HW_ID_STRIDE }
+      3 { $RELAY_HW_PARAM_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) }
+      4 { $RELAY_HW_PARAM_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) }
     }
 
     if (-not $HasHardwareSelection) {
@@ -1679,10 +1681,10 @@ function Generate-RelayUIInShare {
     )
 
     $baseId = switch ($RelayIndex) {
-      1 { 200 }
-      2 { 220 }
-      3 { 240 }
-      4 { 260 }
+      1 { $RELAY_HW_PARAM_BASE_ID }
+      2 { $RELAY_HW_PARAM_BASE_ID + $RELAY_HW_ID_STRIDE }
+      3 { $RELAY_HW_PARAM_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) }
+      4 { $RELAY_HW_PARAM_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) }
     }
     
     $gpioParamId = (154 + $RelayIndex).ToString().PadLeft(5, '0')  # 00155, 00156, 00157, 00158
@@ -3238,7 +3240,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
       
       # Only match lines that are pure KEY=VALUE (start with capital letter, no spaces before =)
       # Use non-greedy match for key, greedy for value to handle parentheses in values
-      if ($line -match '^([A-Z_][A-Z_0-9]*)=(.*)$') {
+      if ($line -match '^([A-Z_][A-Z_0-9]*)\s*=\s*(.*)$') {
         $key = $matches[1]
         $value = $matches[2]
         $hwData[$key] = $value
@@ -3579,7 +3581,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
 "@
 }
 
-Write-Success "Generated $($hardwareConfigs.Count) GPIO Port Parameters (IDs: 700-798, namespace %TT%0%C%)"
+Write-Success "Generated $($hardwareConfigs.Count) GPIO Port Parameters (IDs: $($HW_DATA_GPIO_BASE_ID.ToString('D3'))-$((($HW_DATA_GPIO_BASE_ID + $hardwareConfigs.Count - 1)).ToString('D3')), namespace %TT%0%C%)"
 Write-Host "  Each parameter has unique ID and hardware-specific ParameterType" -ForegroundColor DarkGray
 
 # Step 4.9.1: Generate separate Clock GPIO Parameters (for SPI, IDs 051-068)
@@ -3601,7 +3603,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
 "@
 }
 
-Write-Success "Generated $($hardwareConfigs.Count) Clock GPIO Parameters (IDs: 800-898, namespace %TT%)"
+Write-Success "Generated $($hardwareConfigs.Count) Clock GPIO Parameters (IDs: $($HW_CLOCK_GPIO_BASE_ID.ToString('D3'))-$((($HW_CLOCK_GPIO_BASE_ID + $hardwareConfigs.Count - 1)).ToString('D3')), namespace %TT%0%C%)"
 Write-Host "  Each parameter uses same ParameterType as Data GPIO" -ForegroundColor DarkGray
 
 # Step 4.9.5: Generate separate ParameterRefs (one for each Parameter)
@@ -3619,7 +3621,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $gpioPortParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%0%C%${paramIdFormatted}_R-%TT%0%C%${refId}`" RefId=`"%AID%_UP-%TT%0%C%${paramIdFormatted}`" />"
 }
 
-Write-Success "Generated $($hardwareConfigs.Count) GPIO Port ParameterRefs (IDs: 700-798, namespace %TT%0%C%)"
+Write-Success "Generated $($hardwareConfigs.Count) GPIO Port ParameterRefs (IDs: $($HW_DATA_GPIO_BASE_ID.ToString('D3'))-$((($HW_DATA_GPIO_BASE_ID + $hardwareConfigs.Count - 1)).ToString('D3')), namespace %TT%0%C%)"
 Write-Host "  Each ParameterRef references its corresponding Parameter" -ForegroundColor DarkGray
 
 # Step 4.9.6: Generate separate Clock GPIO ParameterRefs
@@ -3637,7 +3639,7 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   $gpioClockParamRefsXml += "<ParameterRef Id=`"%AID%_UP-%TT%0%C%${paramIdFormatted}_R-%TT%0%C%${refId}`" RefId=`"%AID%_UP-%TT%0%C%${paramIdFormatted}`" />"
 }
 
-Write-Success "Generated $($hardwareConfigs.Count) Clock GPIO ParameterRefs (IDs: 051-068, namespace %TT%0%C%)"
+Write-Success "Generated $($hardwareConfigs.Count) Clock GPIO ParameterRefs (IDs: $($HW_CLOCK_GPIO_BASE_ID.ToString('D3'))-$((($HW_CLOCK_GPIO_BASE_ID + $hardwareConfigs.Count - 1)).ToString('D3')), namespace %TT%0%C%)"
 Write-Host "  Each ParameterRef references its corresponding Clock Parameter" -ForegroundColor DarkGray
 
 # Step 4.10: Generate ParameterRefs (for share.xml)
