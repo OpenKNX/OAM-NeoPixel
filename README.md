@@ -2,6 +2,11 @@
 
 A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, scenes, color temperature, HCL (Human Centric Lighting), brightness control, and runtime state persistence.
 
+## Documentation
+
+- [German application description](doc/Applikationsbeschreibung.md)
+- [LED behavior and diagnostic codes](doc/LED-Behaviour.md)
+
 ## Features
 
 ### Core Functionality
@@ -73,24 +78,45 @@ cd OAM-NeoPixel
 ```
 
 ### 2. Configure PlatformIO
-Select your target hardware environment in `platformio.custom.ini`. Available environments include:
+Select your target hardware environment in `platformio.custom.ini`. The release workflow currently covers the following standard targets:
 
 | Environment | Hardware |
 |-------------|----------|
-| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1` | KNeoPix RP2040 |
-| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1` | KNeoPix RP2350 |
-| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1` | KNeoPix ESP32-S3 |
-| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1` | KNeoPix ESP32-C3 |
-| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1` | KNeoPix ESP32-C6 |
-| `release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1` | Mini RP2040 |
-| `release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1` | Mini RP2350 |
-| `release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1` | Mini ESP32-S3 |
-| `release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1` | Mini ESP32-C3 |
-| `release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1` | Mini ESP32-C6 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1` | OpenKNXiao KNeoPiX RP2350 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1` | OpenKNXiao KNeoPiX RP2040 |
+| `release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1` | OpenKNXiao Mini RP2040 |
+| `release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1` | OpenKNXiao Mini RP2350 |
+| `release_OKNXHW_REG2_PIPICO_V1` | OpenKNX REG2 PiPico |
+| `release_OKNXHW_REG2_PIPICO_W_V1` | OpenKNX REG2 PiPico W |
+| `release_OKNXHW_REG2_PIPICO2_V1` | OpenKNX REG2 PiPico2 |
+| `release_OKNXHW_REG2_PIPICO2_W_V1` | OpenKNX REG2 PiPico2 W |
+| `release_DEVICE_PIPICO_BCU_CONNECTOR` | OpenKNX PiPico BCU Connector |
+| `release_DEVICE_PIPICO2_BCU_CONNECTOR` | OpenKNX PiPico2 BCU Connector |
+| `release_OKNXHW_UP1_GW_UART` | OpenKNX UP1 GW-UART |
+| `release_GLEDOPTO_ESP32_WLED_DIGITAL_UP` | Gledopto GL-C-309WL ESP32 |
+| `release_QUINLED_DIG2GO` | QuinLED Dig2Go |
+| `release_QUINLED_DIG_UNO_V3_WIFI` | QuinLED Dig-Uno V3 WiFi |
+| `release_QUINLED_DIG_UNO_V3_ETHERNET` | QuinLED Dig-Uno V3 Ethernet |
+| `release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS` | QuinLED Dig-Uno V3 WiFi AE Plus |
+| `release_QUINLED_DIG_QUAD_V3_WIFI` | QuinLED Dig-Quad V3 WiFi |
+| `release_QUINLED_DIG_QUAD_V3_ETHERNET` | QuinLED Dig-Quad V3 Ethernet |
+| `release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS` | QuinLED Dig-Quad V3 WiFi AE Plus |
+| `release_QUINLED_DIG_OCTA_32_8L_WIFI` | QuinLED Dig-Octa-32-8L WiFi |
+| `release_QUINLED_DIG_OCTA_32_8L_ETHERNET` | QuinLED Dig-Octa-32-8L Ethernet |
+| `release_QUINLED_DIG_NEXT2` | QuinLED Dig-Next-2 |
+
+Additional full-build targets are available through `pwsh scripts/Build-Release.ps1 -Full`, including ESP32C3, ESP32C5, ESP32C6 and ESP32S3 variants of the OpenKNXiao KNeoPiX and Mini families, plus the REG2 ESP32S3 Pico target.
 
 ### 3. Build & Upload
 ```bash
 pio run -e release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1 -t upload
+```
+
+To create packaged release artifacts instead of a single PlatformIO build, use:
+
+```bash
+pwsh scripts/Build-Release.ps1
+pwsh scripts/Build-Release.ps1 -Release
 ```
 
 ### 4. Configure in ETS
@@ -252,17 +278,36 @@ For issues, feature requests, or contributions:
 
 ## Supported Hardware
 
-| Device | Platform | HW ID |
-|--------|----------|-------|
-| OpenKNXiao KNeoPix RP2040 V1 | RP2040 | 0x1300 |
-| OpenKNXiao Mini RP2040 V1 | RP2040 | 0x1301 |
-| OpenKNXiao KNeoPix RP2350 V1.4 | RP2350 | 0x1310 |
-| OpenKNXiao KNeoPix ESP32S3 V1 | ESP32-S3 | 0x1320 |
-| OpenKNXiao Mini ESP32S3 V1 | ESP32-S3 | 0x1321 |
-| OpenKNXiao KNeoPix ESP32C6 V1 | ESP32-C6 | 0x1330 |
-| OpenKNXiao KNeoPix ESP32C3 V1 | ESP32-C3 | 0x1350 |
-| OpenKNXiao Mini ESP32C3 V1 | ESP32-C3 | 0x1351 |
+### Standard Release Targets
 
-> **Hinweis:** Die GPIO-Pins für die LED-Datenleitung lassen sich in der ETS frei konfigurieren. Dadurch ist die Firmware prinzipiell mit vielen weiteren ESP32- und RP2040/RP2350-basierten Boards kompatibel -- nicht nur mit den oben gelisteten OpenKNXiao-Varianten.
+- OpenKNXiao KNeoPiX RP2040 and RP2350
+- OpenKNXiao Mini RP2040 and RP2350
+- OpenKNX REG2 PiPico, PiPico W, PiPico2 and PiPico2 W
+- OpenKNX PiPico BCU Connector and PiPico2 BCU Connector
+- OpenKNX UP1 GW-UART
+- Gledopto GL-C-309WL ESP32
+- QuinLED Dig2Go
+- QuinLED Dig-Uno V3 in WiFi, Ethernet and WiFi AE Plus variants
+- QuinLED Dig-Quad V3 in WiFi, Ethernet and WiFi AE Plus variants
+- QuinLED Dig-Octa-32-8L in WiFi and Ethernet variants
+- QuinLED Dig-Next-2
+
+### Additional Full-Build Targets
+
+- OpenKNXiao KNeoPiX ESP32C3, ESP32C5, ESP32C6 and ESP32S3
+- OpenKNXiao Mini ESP32C3, ESP32C5, ESP32C6 and ESP32S3
+- OpenKNX REG2 ESP32S3 Pico
+
+> **Note:** The GPIO pins for LED data and clock lines can be configured in ETS for many hardware profiles. This makes the firmware adaptable to additional ESP32, RP2040 and RP2350 based boards beyond the release targets listed above, provided the selected firmware and ETS hardware profile match.
 
 ## Changelog
+
+### 0.2.0
+
+- expanded the standard release matrix with Gledopto and QuinLED hardware variants (UNTESTED!)
+- aligned the release flow and packaged artifacts with the current build targets
+- documented the application scope, diagnostics and commissioning in more detail
+
+### 0.1.0
+
+- first public development release of the OpenKNX NeoPixel application
