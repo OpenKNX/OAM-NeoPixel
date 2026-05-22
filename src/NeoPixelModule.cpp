@@ -33,9 +33,10 @@
     #endif
 #endif
 
+#include "HCL/LightManagerApi.h"
 #include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
-#include "PhysicalStripConfig.h" // For SpiStripConfig
+#include "PhysicalStripConfig.h"
 #include "colorhelper.h"
 #include "knxprod.h"
 #include <algorithm>
@@ -89,10 +90,20 @@ static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
     }
 }
 
+static uint8_t resolveHclMaster(uint8_t requestedMaster, uint8_t availableMasterCount)
+{
+    if (requestedMaster == 0 || requestedMaster > availableMasterCount)
+    {
+        return 0;
+    }
+
+    return requestedMaster;
+}
+
 NeoPixelBusModule openknxNeoPixelModule;
 
 NeoPixelBusModule::NeoPixelBusModule()
-    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr), _globalHclManager(nullptr)
+    : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr)
 {
     _flashPersistence = new NeoPixelFlashPersistence(this);
     _effectConfiguration = new EffectConfiguration(this);
@@ -103,14 +114,6 @@ NeoPixelBusModule::NeoPixelBusModule()
 
 NeoPixelBusModule::~NeoPixelBusModule()
 {
-    // Cleanup custom HCL managers (allocated in applySegmentHclConfiguration)
-    for (auto* mgr : _customHclManagers)
-    {
-        delete mgr;
-    }
-    _customHclManagers.clear();
-
-    delete _globalHclManager;
     delete _flashPersistence;
     delete _effectConfiguration;
     delete _colorManagement;
@@ -148,9 +151,7 @@ void NeoPixelBusModule::setup(bool configured)
         // which creates the PhysicalStrip objects, but BEFORE any show() calls
         _neoPixel.setup(configured);
 
-        // CRITICAL: Setup HCL pixel transformation context AFTER segment HCL managers are set!
-        // configureFromETS() calls applySegmentConfiguration() which calls setHclManager(),
-        // so the HclManager references must be set BEFORE building the transformation context.
+        // Setup HCL pixel transformation context after strips and segments are available.
         updateHclTransformContext(); // Setup HCL pixel transformation callback
 
         // Now that hardware is initialized, clear LEDs if requested during configuration
@@ -161,9 +162,8 @@ void NeoPixelBusModule::setup(bool configured)
             _clearLedsAfterSetup = false;
         }
 
-        // Global HCL manager was already setup in configureFromETS()
-        // Just initialize status KOs (make values immediately readable via bus)
-        loopHclManagers();        // Update HCL Status-KOs
+        // Initialize HCL status KOs from the current LightManager snapshot.
+        refreshHclMasterStateCache();
         sendPowerMonitoringKOs(); // Update Power monitoring KOs
     }
     else
@@ -216,8 +216,8 @@ void NeoPixelBusModule::loop(bool configured)
         }
     }
 
-    // Process all active HCL managers (global + segments)
-    loopHclManagers();
+    // Update LightManager-backed HCL snapshots and publish status KOs.
+    refreshHclMasterStateCache();
 
     // Process relay timers for delayed on/off switching
     processRelayTimers();
@@ -547,25 +547,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         // Send state feedback (send back percentage)
         bool changed = KoNEO_BrightnessState.valueNoSendCompare(brightnessPercent, DPT_Scaling);
         if (changed) KoNEO_BrightnessState.objectWritten();
-        return;
-    }
-
-    if (koNumber == NEO_KoHCLState)
-    {
-        uint16_t kelvinValue = ko.value(Dpt(7, 600)); // DPT 7.600 = Color Temperature (Kelvin)
-        logInfoP("HCL State KO received: %dK color temperature", kelvinValue);
-
-        // Special case: 0K = disable HCL mode
-        if (kelvinValue == 0)
-        {
-            logInfoP("HCL disable command received (0K)");
-            disableHclMode();
-        }
-        else
-        {
-            // Apply the color temperature globally if valid range
-            applyHclColorTemperature(kelvinValue);
-        }
         return;
     }
 
@@ -2919,8 +2900,7 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
              _totalLeds, static_cast<int>(_virtualStripConfiguration.size()));
     logInfoP("ColorOrder Design: VirtualStrip=RGB (internal), PhysicalStrips=hardware-specific");
 
-    // HCL pixel transformation callback will be registered later in updateHclTransformContext()
-    // after all segments and HCL managers are created
+    // HCL pixel transformation callback will be registered later in updateHclTransformContext().
 
     // Configure color correction parameters on VirtualStrip
     // (These are applied during rendering, NOT in-place!)
@@ -2942,10 +2922,6 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
     // Create segments after virtual strip is ready
     if (_numberOfSegments > 0)
     {
-        // Setup global HCL manager BEFORE creating segments
-        // so segments with HCLMode=1 can reference it
-        setupGlobalHclManager();
-
         createSegments();
         applySegmentConfiguration();
         logInfoP("Created %d segments on virtual strip", _numberOfSegments);
@@ -3218,20 +3194,6 @@ void NeoPixelBusModule::restoreOriginalBrightness()
 }
 
 // ============================================================================
-// HCL Color Temperature Control Implementation (delegated to ColorManagement)
-// ============================================================================
-
-void NeoPixelBusModule::applyHclColorTemperature(uint16_t kelvin)
-{
-    _colorManagement->applyHclColorTemperature(kelvin);
-}
-
-void NeoPixelBusModule::disableHclMode()
-{
-    _colorManagement->disableHclMode();
-}
-
-// ============================================================================
 // Color Correction Implementation (delegated to ColorManagement)
 // ============================================================================
 
@@ -3479,109 +3441,8 @@ void NeoPixelBusModule::applySegmentConfiguration()
             logInfoP("Segment %zu: Mirror effect enabled", i);
         }
 
-        // ══════════════════════════════════════════════════════════════════════════════
-        // HCL (Human Centric Lighting) Configuration per Segment
-        // ══════════════════════════════════════════════════════════════════════════════
-        applySegmentHclConfiguration(i, config);
-
         logDebugP("Applied configuration to segment %zu", i);
     }
-}
-
-// Apply HCL configuration to a segment
-void NeoPixelBusModule::applySegmentHclConfiguration(size_t segmentIndex, const SegmentConfig& config)
-{
-    Segment* segment = config.segment;
-    if (!segment) return;
-
-    // Set channel index to read segment parameters
-    uint8_t oldChannelIndex = _channelIndex;
-    _channelIndex = segmentIndex;
-
-    // Read HCL mode (0=Disabled, 1=Global, 2=Custom-Zeit, 3=Custom-Sonne)
-    uint8_t hclMode = (uint8_t)ParamNEO_NEOHCLMode;
-
-    if (hclMode == 0)
-    {
-        // HCL disabled for this segment
-        logInfoP("Segment %zu: HCL disabled", segmentIndex);
-        _channelIndex = oldChannelIndex;
-        return;
-    }
-
-    if (hclMode == 1)
-    {
-        // Mode 1 = Global HCL settings
-        // Attach the global HCL manager (shared across all segments with Mode=1)
-        if (_globalHclManager)
-        {
-            segment->setHclManager(_globalHclManager);
-            logInfoP("Segment %zu: Using global HCL (shared)", segmentIndex);
-        }
-        else
-        {
-            logWarningP("Segment %zu: Global HCL requested but not configured!", segmentIndex);
-        }
-        _channelIndex = oldChannelIndex;
-        return;
-    }
-
-    // Mode 2 or 3 = Custom HCL settings for this segment
-    HclConfig hclConfig;
-    hclConfig.mode = HclMode::Custom;
-
-    // Map mode to curve type: Mode 2 → FixedTime, Mode 3 → SunPosition
-    hclConfig.curveType = (hclMode == 3) ? HclCurveType::SunPosition : HclCurveType::FixedTime;
-
-    // Read time settings (for FixedTime mode)
-    hclConfig.startHour = (uint8_t)ParamNEO_NEOHCLStartHour;
-    hclConfig.startMinute = (uint8_t)ParamNEO_NEOHCLStartMinute;
-    hclConfig.endHour = (uint8_t)ParamNEO_NEOHCLEndHour;
-    hclConfig.endMinute = (uint8_t)ParamNEO_NEOHCLEndMinute;
-
-    // Read sun position offsets (for SunPosition mode)
-    hclConfig.sunriseOffsetMin = (int16_t)ParamNEO_NEOHCLoffsetSunrise;
-    hclConfig.sunsetOffsetMin = (int16_t)ParamNEO_NEOHCLoffsetSunset;
-
-    // Read color temperature range
-    hclConfig.minKelvin = (uint16_t)ParamNEO_NEOHCLminKelvin;
-    hclConfig.maxKelvin = (uint16_t)ParamNEO_NEOHCLmaxKelvin;
-
-    // Read application parameters
-    hclConfig.strength = (uint8_t)ParamNEO_NEOHCLStrength;
-    hclConfig.slewRate = (uint8_t)ParamNEO_NEOHCLSlewRate;
-    hclConfig.saturationThreshold = (uint8_t)ParamNEO_NEOHCLSatThreshold;
-    hclConfig.brightnessCompensation = (uint8_t)ParamNEO_NEOHCLBrightnessCompensation;
-    hclConfig.whiteMix = (uint8_t)ParamNEO_NEOHCLWhiteMix;
-    hclConfig.preserveCurve = (uint8_t)ParamNEO_NEOHCLPreserveCurve;
-
-    // Read apply mode and map ETS values to enum
-    // ETS: 0=Nur Weiß, 1=Alle Farben, 2=Hohe Sättigung
-    uint8_t applyMode = (uint8_t)ParamNEO_NEOHclApplyMode;
-    if (applyMode == 0) hclConfig.applyMode = HclApplyMode::WhiteOnly;
-    else if (applyMode == 1)
-        hclConfig.applyMode = HclApplyMode::AllColors;
-    else
-        hclConfig.applyMode = HclApplyMode::HighSaturation;
-
-    // Create HCL manager
-    HclManager* hclManager = new HclManager(hclConfig);
-    hclManager->begin(); // Initialize with default lat/long (TODO: get from system)
-
-    // Track for cleanup to prevent memory leak
-    _customHclManagers.push_back(hclManager);
-
-    // Attach to segment
-    config.segment->setHclManager(hclManager);
-
-    logInfoP("Segment %zu: Custom HCL configured - Type:%s, Min:%dK, Max:%dK, Strength:%d%%",
-             segmentIndex,
-             (hclConfig.curveType == HclCurveType::SunPosition) ? "SunPos" : "FixTime",
-             hclConfig.minKelvin,
-             hclConfig.maxKelvin,
-             hclConfig.strength);
-
-    _channelIndex = oldChannelIndex;
 }
 
 // Get segment by index
@@ -3598,213 +3459,98 @@ Segment* NeoPixelBusModule::getSegment(uint8_t index) const
 // HCL Management (Human Centric Lighting)
 // =============================================================================
 
-void NeoPixelBusModule::setupGlobalHclManager()
+void NeoPixelBusModule::refreshHclMasterStateCache()
 {
-    // Read global HCL settings from share.xml parameters
-    // These are used when segments have Mode=1 "Global"
+    const bool lightManagerEnabled = HCL::masterManager.isEnabled();
+    const uint8_t masterCount = lightManagerEnabled ? HCL::masterManager.getMasterCount() : 0;
+    const bool globalBlocked = lightManagerEnabled ? HCL::masterManager.isApplyBlocked() : true;
 
-    uint8_t hclType = (uint8_t)ParamNEO_HCLtype;
-    if (hclType == 0)
+    for (size_t index = 0; index < _hclTransformContext.masterStates.size(); ++index)
     {
-        logInfoP("Global HCL: Disabled");
-        return; // HCL disabled globally
-    }
+        NeoHclMasterState& state = _hclTransformContext.masterStates[index];
+        state.kelvin = 0;
+        state.brightness = 0;
+        state.blocked = true;
 
-    // Create global HCL configuration
-    HclConfig config;
-
-    // Curve type
-    config.curveType = (hclType == 1) ? HclCurveType::SunPosition : HclCurveType::FixedTime;
-
-    // Time settings
-    config.startHour = (uint8_t)ParamNEO_HCLStartHour;
-    config.startMinute = (uint8_t)ParamNEO_HCLStartMinute;
-    config.endHour = (uint8_t)ParamNEO_HCLEndHour;
-    config.endMinute = (uint8_t)ParamNEO_HCLEndMinute;
-
-    // Sun position offsets (10-bit signed)
-    config.sunriseOffsetMin = (int16_t)ParamNEO_HCLoffsetSunrise;
-    config.sunsetOffsetMin = (int16_t)ParamNEO_HCLoffsetSunset;
-
-    // Kelvin range (14-bit unsigned)
-    config.minKelvin = (uint16_t)ParamNEO_HCLminKelvin;
-    config.maxKelvin = (uint16_t)ParamNEO_HCLmaxKelvin;
-
-    // Strength and slew rate
-    config.strength = (uint8_t)ParamNEO_HCLStrength;
-    config.slewRate = (uint8_t)ParamNEO_HCLSlewRate;
-
-    // Advanced settings
-    config.saturationThreshold = (uint8_t)ParamNEO_HCLSatThreshold;
-    config.brightnessCompensation = (uint8_t)ParamNEO_HCLBrightnessCompensation;
-    config.whiteMix = (uint8_t)ParamNEO_HCLWhiteMix;
-    config.preserveCurve = (uint8_t)ParamNEO_HCLPreserveCurve;
-
-    // Apply mode - ETS Parameter Definition:
-    // 0 = Nur Weiß (WhiteOnly)
-    // 1 = Alle Farben (AllColors)
-    // 2 = Hohe Sättigung (HighSaturation)
-    uint8_t applyMode = (uint8_t)ParamNEO_HclApplyMode;
-    if (applyMode == 0) config.applyMode = HclApplyMode::WhiteOnly;
-    else if (applyMode == 1)
-        config.applyMode = HclApplyMode::AllColors;
-    else
-        config.applyMode = HclApplyMode::HighSaturation;
-
-    // Create global HCL manager
-    _globalHclManager = new HclManager(config);
-    _globalHclManager->begin();
-
-    // Register with Library layer so Console can access it
-    _neoPixel.setGlobalHclManager(_globalHclManager);
-
-    logInfoP("Global HCL: %s, Kelvin %u..%u K, Strength %u%%, Slew %u K/min, Ptr=0x%p",
-             (hclType == 1) ? "Sun" : "Time",
-             config.minKelvin, config.maxKelvin,
-             config.strength, config.slewRate,
-             _globalHclManager);
-}
-
-void NeoPixelBusModule::loopHclManagers()
-{
-    unsigned long now = millis();
-
-    // Get current time from OpenKNX time module
-    OpenKNX::DateTime localTime = openknx.time.getLocalTime();
-    uint8_t currentHour = localTime.hour;
-    uint8_t currentMinute = localTime.minute;
-    uint8_t currentDay = localTime.day;
-
-    // Update sunrise/sunset times from Timer module (once per day, or retry if invalid)
-    // This provides HCL with accurate astronomical calculations
-    static uint8_t lastUpdateDay = 255; // Force first update
-    static bool sunTimesValid = false;  // Track if we got valid times
-
-    // Try update on day change OR if we never got valid times yet
-    if (currentDay != lastUpdateDay || !sunTimesValid)
-    {
-#ifdef OPENKNX_TIMER_MODULE
-        // Get calculated sunrise/sunset from Timer module using public API
-        Timer& timer = Timer::instance();
-        sTime* sunrise = timer.getSunInfo(SUN_SUNRISE);
-        sTime* sunset = timer.getSunInfo(SUN_SUNSET);
-
-        if (sunrise && sunset)
+        const uint8_t masterNum = static_cast<uint8_t>(index + 1);
+        if (masterNum <= masterCount)
         {
-            // Validate sun times: Both 0:00 means Timer hasn't calculated yet
-            // (e.g., GPS position not set, calculation not triggered)
-            if (sunrise->hour == 0 && sunrise->minute == 0 &&
-                sunset->hour == 0 && sunset->minute == 0)
-            {
-                // Don't update lastUpdateDay - retry later
-                static uint32_t lastRetryLog = 0;
-                if (millis() - lastRetryLog > 60000) // Log max once per minute
-                {
-                    logDebugP("HCL: Sun times not yet calculated by Timer module (waiting for GPS position)");
-                    lastRetryLog = millis();
-                }
-            }
-            else
-            {
-                uint16_t sunriseMin = sunrise->hour * 60 + sunrise->minute;
-                uint16_t sunsetMin = sunset->hour * 60 + sunset->minute;
-
-                logInfoP("HCL: Updated sun times from Timer - Sunrise: %02d:%02d, Sunset: %02d:%02d",
-                         sunrise->hour, sunrise->minute,
-                         sunset->hour, sunset->minute);
-
-                // Update global HCL manager
-                if (_globalHclManager)
-                {
-                    _globalHclManager->setSunTimes(sunriseMin, sunsetMin);
-                }
-
-                // Update all segment HCL managers (including those using Global HCL)
-                for (size_t i = 0; i < _segments.size(); i++)
-                {
-                    Segment* segment = _segments[i].segment;
-                    if (segment && segment->hasHcl())
-                    {
-                        HclManager* hclManager = segment->getHclManager();
-                        if (hclManager)
-                        {
-                            hclManager->setSunTimes(sunriseMin, sunsetMin);
-                        }
-                    }
-                }
-
-                // Mark as successful - now only update on day change
-                sunTimesValid = true;
-                lastUpdateDay = currentDay;
-            }
+            const auto value = HCL::masterManager.getCurrentValue(masterNum);
+            state.kelvin = value.kelvin;
+            state.brightness = value.brightness;
+            state.blocked = globalBlocked || HCL::masterManager.isMasterApplyBlocked(masterNum);
         }
-        else
+
+        if (state.kelvin == 0)
         {
-            logWarningP("HCL: Unable to get sunrise/sunset from Timer module (null pointer)");
-        }
-#else
-        logDebugP("HCL: Timer module not enabled - using fallback sun times (6:30/18:30)");
-        lastUpdateDay = currentDay; // Don't retry in this case
-#endif
-    }
-
-    // Update global HCL manager if it exists
-    if (_globalHclManager)
-    {
-        _globalHclManager->setCurrentTime(currentHour, currentMinute);
-        _globalHclManager->loop(now);
-
-        // Update global HCL Status-KO with current applied Kelvin value
-        uint16_t appliedKelvin = _globalHclManager->getAppliedKelvin();
-
-        // Only send if value changed (avoid flooding KNX bus)
-        static uint16_t lastGlobalKelvin = 0;
-        if (appliedKelvin != lastGlobalKelvin)
-        {
-            KoNEO_HCLGlobalState.value(appliedKelvin, Dpt(7, 600));
-            KoNEO_HCLGlobalState.objectWritten();
-            lastGlobalKelvin = appliedKelvin;
+            state.cachedKelvin = 0;
         }
     }
 
-    // Update all segment HCL managers
-    for (size_t i = 0; i < _segments.size(); i++)
+    _hclTransformContext.globalHclConfig.resolvedMaster =
+        resolveHclMaster(_hclTransformContext.globalHclConfig.lightManagerMaster, masterCount);
+
+    for (NeoHclSegmentConfig& segCfg : _hclTransformContext.segmentConfigs)
     {
-        Segment* segment = _segments[i].segment;
-        if (segment && segment->hasHcl())
+        if (segCfg.hclMode == NeoHclMode::Custom)
         {
-            HclManager* hclManager = segment->getHclManager();
-            if (hclManager)
-            {
-                // Only update Custom HCL managers (not Global)
-                // Global HCL segments reference _globalHclManager, so skip them here
-                if (hclManager != _globalHclManager)
-                {
-                    hclManager->setCurrentTime(currentHour, currentMinute);
-                    hclManager->loop(now);
-
-                    // Update segment HCL Status-KO with current applied Kelvin value (Custom HCL only)
-                    uint16_t appliedKelvin = hclManager->getAppliedKelvin();
-
-                    // Only send if value changed (avoid flooding KNX bus)
-                    static uint16_t lastSegmentKelvin[16] = {0}; // Max 16 segments
-                    if (i < 16 && appliedKelvin != lastSegmentKelvin[i])
-                    {
-                        // Set channel index for segment KO access
-                        uint8_t savedChannelIndex = _channelIndex;
-                        _channelIndex = i;
-
-                        // Write to segment-specific HCL KO
-                        KoNEO_HCLState.value(appliedKelvin, Dpt(7, 600));
-                        KoNEO_HCLState.objectWritten();
-
-                        _channelIndex = savedChannelIndex;
-                        lastSegmentKelvin[i] = appliedKelvin;
-                    }
-                }
-            }
+            segCfg.customHclConfig.resolvedMaster =
+                resolveHclMaster(segCfg.customHclConfig.lightManagerMaster, masterCount);
         }
     }
+
+    static uint16_t lastGlobalKelvin = 0;
+    uint16_t globalKelvin = 0;
+    if (_hclTransformContext.globalHclConfig.resolvedMaster > 0)
+    {
+        globalKelvin = _hclTransformContext.masterStates[_hclTransformContext.globalHclConfig.resolvedMaster - 1].kelvin;
+    }
+
+    if (globalKelvin != lastGlobalKelvin)
+    {
+        KoNEO_HCLState.value(globalKelvin, Dpt(7, 600));
+        KoNEO_HCLState.objectWritten();
+        lastGlobalKelvin = globalKelvin;
+    }
+
+    static uint16_t lastSegmentKelvin[16] = {0};
+    bool anyHclActive = globalKelvin > 0;
+
+    for (size_t index = 0; index < _hclTransformContext.segmentConfigs.size() && index < _segments.size(); ++index)
+    {
+        const NeoHclSegmentConfig& segCfg = _hclTransformContext.segmentConfigs[index];
+        uint8_t resolvedMaster = 0;
+
+        if (segCfg.hclMode == NeoHclMode::Global)
+        {
+            resolvedMaster = _hclTransformContext.globalHclConfig.resolvedMaster;
+        }
+        else if (segCfg.hclMode == NeoHclMode::Custom)
+        {
+            resolvedMaster = segCfg.customHclConfig.resolvedMaster;
+        }
+
+        uint16_t segmentKelvin = 0;
+        if (resolvedMaster > 0)
+        {
+            segmentKelvin = _hclTransformContext.masterStates[resolvedMaster - 1].kelvin;
+            anyHclActive = anyHclActive || (segmentKelvin > 0);
+        }
+
+        if (index < 16 && segmentKelvin != lastSegmentKelvin[index])
+        {
+            const uint8_t savedChannelIndex = _channelIndex;
+            _channelIndex = static_cast<uint8_t>(index);
+            KoNEO_HCLState.value(segmentKelvin, Dpt(7, 600));
+            KoNEO_HCLState.objectWritten();
+            _channelIndex = savedChannelIndex;
+            lastSegmentKelvin[index] = segmentKelvin;
+        }
+    }
+
+    _hclModeEnabled = anyHclActive;
+    _hclTargetKelvin = globalKelvin;
+    _hclAppliedKelvin = globalKelvin;
 }
 
 // =============================================================================
@@ -3814,7 +3560,7 @@ void NeoPixelBusModule::loopHclManagers()
 /**
  * @brief Update HCL pixel transformation context and register callback
  *
- * This method builds the HclTransformContext from current segment configurations
+ * This method builds the LightManager-backed HclTransformContext from current segment configurations
  * and ETS parameters, then registers the Library's pixel transformation callback
  * with VirtualStrip. This allows HCL to be applied to pixels without the Library
  * directly accessing ETS parameters.
@@ -3839,51 +3585,23 @@ void NeoPixelBusModule::updateHclTransformContext()
         uint8_t savedChannelIndex = _channelIndex;
         _channelIndex = i;
 
-        HclSegmentConfig segCfg;
+        NeoHclSegmentConfig segCfg;
 
-        // Read HCL Mode (0=Disabled, 1=UseGlobal, 2=Custom-Zeit, 3=Custom-Sonne)
+        // Read HCL source mode (0=Disabled, 1=Global LightManager, 2=Segment LightManager)
         uint8_t hclMode = ParamNEO_NEOHCLMode;
 
         if (hclMode == 0)
         {
-            segCfg.hclMode = HclMode::Disabled;
+            segCfg.hclMode = NeoHclMode::Disabled;
         }
         else if (hclMode == 1)
         {
-            segCfg.hclMode = HclMode::Global;
+            segCfg.hclMode = NeoHclMode::Global;
         }
-        else // 2 or 3 (Zeit or Sonne)
+        else
         {
-            segCfg.hclMode = HclMode::Custom;
-
-            // Build custom HCL configuration from ETS parameters
-            segCfg.customHclConfig.mode = HclMode::Custom;
-            segCfg.customHclConfig.curveType = (hclMode == 2) ? HclCurveType::FixedTime : HclCurveType::SunPosition;
-
-            // Read Apply Mode - ETS Parameter Definition:
-            // 0 = Nur Weiß (WhiteOnly)
-            // 1 = Alle Farben (AllColors)
-            // 2 = Hohe Sättigung (HighSaturation)
-            uint8_t applyMode = ParamNEO_NEOHclApplyMode;
-            logInfoP("DEBUG Seg %u: Read applyMode=%u from ETS", (unsigned)i, applyMode);
-            if (applyMode == 0)
-                segCfg.customHclConfig.applyMode = HclApplyMode::WhiteOnly;
-            else if (applyMode == 1)
-                segCfg.customHclConfig.applyMode = HclApplyMode::AllColors;
-            else if (applyMode == 2)
-                segCfg.customHclConfig.applyMode = HclApplyMode::HighSaturation;
-            else // Unknown value → default to WhiteOnly (safest for colorful effects)
-                segCfg.customHclConfig.applyMode = HclApplyMode::WhiteOnly;
-
-            // Read other parameters
-            segCfg.customHclConfig.minKelvin = ParamNEO_NEOHCLminKelvin;
-            segCfg.customHclConfig.maxKelvin = ParamNEO_NEOHCLmaxKelvin;
-            segCfg.customHclConfig.strength = ParamNEO_NEOHCLStrength;
-            segCfg.customHclConfig.saturationThreshold = ParamNEO_NEOHCLSatThreshold;
-            logInfoP("DEBUG Seg %u: Read saturationThreshold=%u from ETS", (unsigned)i, segCfg.customHclConfig.saturationThreshold);
-            segCfg.customHclConfig.preserveCurve = ParamNEO_NEOHCLPreserveCurve;
-            segCfg.customHclConfig.brightnessCompensation = ParamNEO_NEOHCLBrightnessCompensation;
-            segCfg.customHclConfig.whiteMix = ParamNEO_NEOHCLWhiteMix;
+            segCfg.hclMode = NeoHclMode::Custom;
+            segCfg.customHclConfig.lightManagerMaster = ParamNEO_NEOHCLMaster;
         }
 
         _hclTransformContext.segmentConfigs.push_back(segCfg);
@@ -3917,52 +3635,28 @@ void NeoPixelBusModule::updateHclTransformContext()
     logInfoP("Built pixel→segment lookup table: %u LEDs, %u segments",
              totalLEDs, _hclTransformContext.segments.size());
 
-    // Set global HCL manager and configuration
-    _hclTransformContext.globalHclManager = _globalHclManager;
-
-    if (_globalHclManager)
+    // Build global LightManager-backed HCL configuration from ETS parameters.
     {
-        // Build global HCL configuration from ETS parameters
         uint8_t savedChannelIndex = _channelIndex;
         _channelIndex = 0xFF; // Use global context
-
-        // Read Apply Mode - ETS Parameter Definition:
-        // 0 = Nur Weiß (WhiteOnly)
-        // 1 = Alle Farben (AllColors)
-        // 2 = Hohe Sättigung (HighSaturation)
-        uint8_t applyMode = ParamNEO_HclApplyMode;
-        if (applyMode == 0)
-            _hclTransformContext.globalHclConfig.applyMode = HclApplyMode::WhiteOnly;
-        else if (applyMode == 1)
-            _hclTransformContext.globalHclConfig.applyMode = HclApplyMode::AllColors;
-        else
-            _hclTransformContext.globalHclConfig.applyMode = HclApplyMode::HighSaturation;
-
-        // Read other global parameters
-        _hclTransformContext.globalHclConfig.minKelvin = ParamNEO_HCLminKelvin;
-        _hclTransformContext.globalHclConfig.maxKelvin = ParamNEO_HCLmaxKelvin;
-        _hclTransformContext.globalHclConfig.strength = ParamNEO_HCLStrength;
-        _hclTransformContext.globalHclConfig.saturationThreshold = ParamNEO_HCLSatThreshold;
-        _hclTransformContext.globalHclConfig.preserveCurve = ParamNEO_HCLPreserveCurve;
-        _hclTransformContext.globalHclConfig.brightnessCompensation = ParamNEO_HCLBrightnessCompensation;
-        _hclTransformContext.globalHclConfig.whiteMix = ParamNEO_HCLWhiteMix;
+        _hclTransformContext.globalHclConfig.lightManagerMaster = ParamNEO_HCLMaster;
 
         _channelIndex = savedChannelIndex;
     }
 
-    // Register HCL pixel transformation callback ONLY if HCL is actually used
-    // Check if any segment has HCL enabled (Global or Custom mode)
+    refreshHclMasterStateCache();
+
+    // Register HCL pixel transformation callback only if at least one source is configured.
     bool hclActive = false;
-    if (_globalHclManager)
+    if (_hclTransformContext.globalHclConfig.lightManagerMaster > 0)
     {
-        hclActive = true; // Global HCL is configured
+        hclActive = true;
     }
     else
     {
-        // Check if any segment uses Custom HCL
         for (const auto& segCfg : _hclTransformContext.segmentConfigs)
         {
-            if (segCfg.hclMode != HclMode::Disabled)
+            if (segCfg.hclMode == NeoHclMode::Custom && segCfg.customHclConfig.lightManagerMaster > 0)
             {
                 hclActive = true;
                 break;
@@ -3973,12 +3667,12 @@ void NeoPixelBusModule::updateHclTransformContext()
     if (hclActive)
     {
         _virtualStrip->setPixelTransformCallback(HclPixelTransform::Callback, &_hclTransformContext);
-        logInfoP("HCL pixel transformation callback registered (active on %d segments)", _hclTransformContext.segments.size());
+        logInfoP("HCL pixel transformation callback registered (LightManager-backed, %d segments)", _hclTransformContext.segments.size());
     }
     else
     {
         _virtualStrip->setPixelTransformCallback(nullptr, nullptr);
-        logInfoP("HCL pixel transformation callback NOT registered (all segments disabled)");
+        logInfoP("HCL pixel transformation callback NOT registered (no LightManager source configured)");
     }
 }
 
@@ -4268,26 +3962,42 @@ void NeoPixelBusModule::debugShowConfiguration()
 
         // HCL Configuration
         uint8_t hclMode = (uint8_t)ParamNEO_NEOHCLMode;
-        const char* hclModeNames[] = {"Disabled", "Global", "Custom-Zeit", "Custom-Sonne"};
-        const char* hclModeName = (hclMode < 4) ? hclModeNames[hclMode] : "Unknown";
+        const char* hclModeNames[] = {"Disabled", "Global LightManager", "Segment LightManager"};
+        const char* hclModeName = (hclMode < 3) ? hclModeNames[hclMode] : "Unknown";
         logInfoP("  │  HCL Mode:      %d (%s)", hclMode, hclModeName);
 
-        if (seg.segment && seg.segment->hasHcl())
+        if (i < _hclTransformContext.segmentConfigs.size())
         {
-            HclManager* hcl = seg.segment->getHclManager();
-            bool isGlobal = (hcl == _globalHclManager) && (_globalHclManager != nullptr);
+            const NeoHclSegmentConfig& segCfg = _hclTransformContext.segmentConfigs[i];
+            const NeoHclConfig* effectiveConfig = nullptr;
 
-            if (isGlobal)
+            if (segCfg.hclMode == NeoHclMode::Global)
             {
-                logInfoP("  │    Type:         GLOBAL (Ptr=0x%p)", hcl);
-                logInfoP("  │    Applied:      %u K", hcl->getAppliedKelvin());
+                effectiveConfig = &_hclTransformContext.globalHclConfig;
+                logInfoP("  │    Source:       Global LightManager");
             }
-            else
+            else if (segCfg.hclMode == NeoHclMode::Custom)
             {
-                logInfoP("  │    Type:         CUSTOM (Ptr=0x%p)", hcl);
-                const HclConfig& cfg = hcl->getConfig();
-                logInfoP("  │    Kelvin:       %u - %u K", cfg.minKelvin, cfg.maxKelvin);
-                logInfoP("  │    Applied:      %u K", hcl->getAppliedKelvin());
+                effectiveConfig = &segCfg.customHclConfig;
+                logInfoP("  │    Source:       Segment LightManager");
+            }
+
+            if (effectiveConfig)
+            {
+                logInfoP("  │    Master:       %u (resolved %u)",
+                         effectiveConfig->lightManagerMaster,
+                         effectiveConfig->resolvedMaster);
+                logInfoP("  │    Kelvin:       %u - %u K",
+                         effectiveConfig->minKelvin,
+                         effectiveConfig->maxKelvin);
+
+                if (effectiveConfig->resolvedMaster > 0)
+                {
+                    const NeoHclMasterState& state =
+                        _hclTransformContext.masterStates[effectiveConfig->resolvedMaster - 1];
+                    logInfoP("  │    Current:      %u K", state.kelvin);
+                    logInfoP("  │    Blocked:      %s", state.blocked ? "Yes" : "No");
+                }
             }
         }
 

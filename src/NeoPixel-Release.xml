@@ -46,6 +46,15 @@
     <op:verify File="../lib/OFM-FunctionBlocks/library.json" ModuleVersion="%FCB_VerifyVersion%" />
   </op:define>
 
+  <op:define prefix="LMG" ModuleType="41"
+    share="../lib/OFM-LightManager/src/LightManagerModule.share.xml"
+    template="../lib/OFM-LightManager/src/LightManagerModule.templ.xml"
+    NumChannels="16"
+    KoSingleOffset="1250"
+    KoOffset="1260">
+    <op:verify File="../lib/OFM-LightManager/library.json" ModuleVersion="%LMG_VerifyVersion%" />
+  </op:define>
+
   <!-- BEGIN AUTO-GENERATED: NEOEFF Module -->
   <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
   <!-- END AUTO-GENERATED: NEOEFF Module -->
@@ -75,6 +84,7 @@
             <op:include href="../lib/OFM-ConfigTransfer/src/ConfigTransfer.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="UCT" />
             <op:include href="../lib/OFM-LogicModule/src/Logikmodul.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="LOG" />
             <op:include href="../lib/OFM-FunctionBlocks/src/FunctionBlocks.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="FCB" />
+            <op:include href="../lib/OFM-LightManager/src/LightManagerModule.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="LMG" />
             <op:include href="NeoPixel.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="NEO" />
           </Dynamic>
 </generate>

@@ -3,6 +3,7 @@
 #include "OpenKNX.h"
 // #include "VirtualButtonModule.h"
 #include "FunctionBlocksModule.h"
+#include "LightManagerModule.h"
 #include "NeoPixelModule.h"
 // #include <async_http_client.h>
 
@@ -42,6 +43,7 @@ void setup()
 {
     const uint8_t firmwareRevision = 0;
     openknx.init(firmwareRevision);
+    openknx.addModule(2, openknxLightManagerModule);
 #ifdef NEOPIXEL_MODULE
     openknx.addModule(1, openknxNeoPixelModule);
 #endif

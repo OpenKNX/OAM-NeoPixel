@@ -8,6 +8,7 @@
   <op:config name="%NET_VerifyVersion%" value="0.6" />
   <op:config name="%NEO_VerifyVersion%" value="0.0" />
   <op:config name="%FCB_VerifyVersion%" value="0.10" />
+  <op:config name="%LMG_VerifyVersion%" value="0.1" />
 
   <op:config name="%LOG_NumChannelsDefault%" value="1" />
   <op:config name="%LOG_EnableSave%" value="0" />

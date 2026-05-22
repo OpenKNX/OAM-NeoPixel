@@ -3,7 +3,6 @@
 #include "OpenKNX.h"
 #include "knxprod.h"
 
-#include "HclManager.h"         // HCL (Human Centric Lighting) manager
 #include "HclPixelTransform.h"  // HCL pixel transformation callback
 #include "NeoPixel.h"           // from https://github.com/OpenKNX/OFM-NeoPixel
 #include "Segment.h"            // Segment support from OFM-NeoPixel
@@ -218,9 +217,6 @@ class NeoPixelBusModule : public OpenKNX::Module
     void forceColorCorrectionUpdate();
     void applyGlobalBrightness(uint8_t brightness);
     void restoreOriginalBrightness();
-    void applyHclColorTemperature(uint16_t kelvin);
-    void disableHclMode();
-    void applyHclPostProcess();
     void updateHclTransformContext(); // Update HCL pixel transformation context and register callback
 
     // Effects status
@@ -291,12 +287,6 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Sub-module: Scene Manager (ETS-configurable scenes/presets)
     class SceneManager* _sceneManager;
-
-    // Global HCL Manager (for segments with Mode=1 "Global")
-    HclManager* _globalHclManager;
-
-    // Custom HCL Managers (for segments with Mode=2/3 "Custom") - tracked for cleanup
-    std::vector<HclManager*> _customHclManagers;
 
     // HCL Pixel Transformation Context (passed to Library callback)
     HclTransformContext _hclTransformContext;
@@ -384,9 +374,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void createSegments();            // Create segments on virtual strip
     void applySegmentConfiguration(); // Apply segment-specific settings (grouping, spacing, reverse, mirror)
     void applySegmentConfiguration(size_t segmentIndex, const SegmentConfig& config);
-    void applySegmentHclConfiguration(size_t segmentIndex, const SegmentConfig& config);
-    void setupGlobalHclManager();                            // Setup global HCL manager for Mode=1 segments
-    void loopHclManagers();                                  // Update all HCL managers (global + segments)
+    void refreshHclMasterStateCache();                       // Update cached LightManager values + status KOs
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
     // Effect Implementation (delegated to EffectConfiguration)

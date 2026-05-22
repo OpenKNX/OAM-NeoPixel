@@ -63,56 +63,13 @@
                 <!-- Scene parameters (injected via op:part, offsets 140-469) -->
                 <op:usePart name="Scene" xpath="//Parameters/*" />
 
-                <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                     HCL (Human Centric Lighting) Parameters per Segment
-                     Offset 360-379 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
-                     ═══════════════════════════════════════════════════════════════════════════════════ -->
-                <!-- Byte 360: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
-                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="360" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
-                <!-- Byte 360: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
-
-                <!-- Byte 361..362: Start time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="361" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="362" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
-
-                <!-- Byte 363..364: End time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="363" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
-                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="364" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
-
-                <!-- Byte 365..366: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="365" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
-
-                <!-- Byte 367: HclApplyMode (3 bits) + frei -->
-                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="367" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
-
-                <!-- Byte 368..369: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="368" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
-
-                <!-- Byte 369: HCLPreserveCurve (3 bits at offset 4-6) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="369" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
-
-                <!-- Byte 370: Saturation Threshold -->
-                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="370" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
-
-                <!-- Byte 371..372: Min Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="371" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
-
-                <!-- Byte 373..374: Max Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="373" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
-
-                <!-- Byte 375: HCL Strength (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="375" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
-
-                <!-- Byte 376: Slew Rate -->
-                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="376" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
-
-                <!-- Byte 377: Brightness Compensation (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="377" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
-
-                <!-- Byte 378: White Mix (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="378" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
-
-                <!-- Byte 379: Reserved for future HCL parameters -->
+                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                   HCL / LightManager selection per Segment
+                   Offset 360-361
+                   ═══════════════════════════════════════════════════════════════════════════════════ -->
+                 <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="360" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Quelle" Value="1"/>
+                 <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="361" BitOffset="0" Name="NEO%C%HCLMaster" ParameterType="%AID%_PT-LMGMasterSelect" Text="Segment-Lichtmanager" Value="0" />
+                 <!-- Remaining bytes reserved for future HCL-related layout changes -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -151,22 +108,7 @@
               
               <!-- HCL Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" RefId="%AID%_UP-%TT%%CC%195" />
-              <!-- Parameter 178 (HCLtype) removed - Type is derived from Mode (2→FixedTime, 3→SunPosition) -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" RefId="%AID%_UP-%TT%%CC%196" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" RefId="%AID%_UP-%TT%%CC%197" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%198_R-%TT%%CC%19801" RefId="%AID%_UP-%TT%%CC%198" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%199_R-%TT%%CC%19901" RefId="%AID%_UP-%TT%%CC%199" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%200_R-%TT%%CC%20001" RefId="%AID%_UP-%TT%%CC%200" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" RefId="%AID%_UP-%TT%%CC%201" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%202_R-%TT%%CC%20201" RefId="%AID%_UP-%TT%%CC%202" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" RefId="%AID%_UP-%TT%%CC%203" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" RefId="%AID%_UP-%TT%%CC%204" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" RefId="%AID%_UP-%TT%%CC%205" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" RefId="%AID%_UP-%TT%%CC%206" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" RefId="%AID%_UP-%TT%%CC%207" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" RefId="%AID%_UP-%TT%%CC%208" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" RefId="%AID%_UP-%TT%%CC%209" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" RefId="%AID%_UP-%TT%%CC%210" />
             </ParameterRefs>
             <ComObjectTable>
                <!-- Segment Power -->
@@ -343,12 +285,7 @@
             <!-- ========================================================================================================= -->
             <HCLSegmentKOsBlock>
               <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
-                <when test="2"> <!-- Benutzerdefiniert (Zeit) -->
-                  <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
-                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
-                  </ParameterBlock>
-                </when>
-                <when test="3"> <!-- Benutzerdefiniert (Sonne) -->
+                <when test="2"> <!-- Segment-Lichtmanager -->
                   <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
                   </ParameterBlock>
@@ -410,53 +347,14 @@
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                         HCL (Human Centric Lighting) - Segment-basiert
+                         Lichtmanager - Segment-basiert
                          ═══════════════════════════════════════════════════════════════════════════════════ -->
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL (Human Centric Lighting)" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Human Centric Lighting (HCL) passt die Lichtfarbe global und automatisch an die Tageszeit an (von warmweiß morgens/abends bis kaltweiß mittags). Wirkt auf alle Modi (Solid, Effekte) und alle Farben oder nur Weiß. Simuliert natürlichen Tagesverlauf." />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" IndentLevel="1" HelpContext="%DOC%"/> <!-- HCL Mode Dropdown -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Lichtmanager" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Farbtemperatur wird aus dem globalen oder segmentbezogenen Lichtmanager übernommen. Die folgenden Parameter steuern nur die Anwendung auf dieses Segment." />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" IndentLevel="1" HelpContext="%DOC%"/>
                     <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
-                      <when test="2"> <!-- Benutzerdefiniert (Feste Zeiten) -->
-                        <!-- Zeitbasierte HCL-Kurve -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Zeitbasierte Kurve:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Start Stunde -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" IndentLevel="2" HelpContext="%DOC%"/> <!-- Start Minute -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%198_R-%TT%%CC%19801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Ende Stunde -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%199_R-%TT%%CC%19901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Ende Minute -->
-                        
-                        <!-- Gemeinsame HCL-Einstellungen -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbtemperatur &amp; Stärke:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" IndentLevel="2" HelpContext="%DOC%"/> <!-- Min Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Max Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" IndentLevel="2" HelpContext="%DOC%"/> <!-- HCL Strength -->
-                        
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweiterte Einstellungen:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" IndentLevel="2" HelpContext="%DOC%"/> <!-- Apply Mode -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" IndentLevel="2" HelpContext="%DOC%"/> <!-- Preserve Curve -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" IndentLevel="2" HelpContext="%DOC%"/> <!-- Sat Threshold -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Slew Rate -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Brightness Comp -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" IndentLevel="2" HelpContext="%DOC%"/> <!-- White Mix -->
-                      </when>
-                      <when test="3"> <!-- Benutzerdefiniert (Sonnenstand) -->
-                        <!-- Sonnenstand-basierte HCL-Kurve -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenstand-basierte Kurve:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%200_R-%TT%%CC%20001" IndentLevel="2" HelpContext="%DOC%"/> <!-- Offset Sonnenaufgang -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%202_R-%TT%%CC%20201" IndentLevel="2" HelpContext="%DOC%"/> <!-- Offset Sonnenuntergang -->
-                        
-                        <!-- Gemeinsame HCL-Einstellungen -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbtemperatur &amp; Stärke:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" IndentLevel="2" HelpContext="%DOC%"/> <!-- Min Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Max Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" IndentLevel="2" HelpContext="%DOC%"/> <!-- HCL Strength -->
-                        
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweiterte Einstellungen:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" IndentLevel="2" HelpContext="%DOC%"/> <!-- Apply Mode -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" IndentLevel="2" HelpContext="%DOC%"/> <!-- Preserve Curve -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" IndentLevel="2" HelpContext="%DOC%"/> <!-- Sat Threshold -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Slew Rate -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Brightness Comp -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" IndentLevel="2" HelpContext="%DOC%"/> <!-- White Mix -->
+                      <when test="2">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" IndentLevel="2" HelpContext="NEO-Lichtmanager"/>
                       </when>
                     </choose>
 
@@ -544,12 +442,9 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" />
                     <!-- RGBWRel -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" />
-                    <!-- HCL State (nur angezeigt wenn HCL Mode = 2 oder 3) -->
+                    <!-- HCL State (nur angezeigt bei Segment-Lichtmanager) -->
                     <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
-                      <when test="2"> <!-- Benutzerdefiniert (Zeit) -->
-                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
-                      </when>
-                      <when test="3"> <!-- Benutzerdefiniert (Sonne) -->
+                      <when test="2"> <!-- Segment-Lichtmanager -->
                         <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
                       </when>
                     </choose>
