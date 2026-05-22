@@ -3464,6 +3464,9 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
     const bool lightManagerEnabled = HCL::masterManager.isEnabled();
     const uint8_t masterCount = lightManagerEnabled ? HCL::masterManager.getMasterCount() : 0;
     const bool globalBlocked = lightManagerEnabled ? HCL::masterManager.isApplyBlocked() : true;
+    static uint16_t lastLoggedKelvin[16] = {0};
+    static uint8_t lastLoggedBrightness[16] = {0};
+    static bool lastLoggedBlocked[16] = {true};
 
     for (size_t index = 0; index < _hclTransformContext.masterStates.size(); ++index)
     {
@@ -3489,6 +3492,37 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
 
     _hclTransformContext.globalHclConfig.resolvedMaster =
         resolveHclMaster(_hclTransformContext.globalHclConfig.lightManagerMaster, masterCount);
+
+    for (size_t index = 0; index < _hclTransformContext.masterStates.size(); ++index)
+    {
+        const NeoHclMasterState& state = _hclTransformContext.masterStates[index];
+        if (state.kelvin == lastLoggedKelvin[index] && state.brightness == lastLoggedBrightness[index] &&
+            state.blocked == lastLoggedBlocked[index])
+        {
+            continue;
+        }
+
+        uint8_t kelvinR = 0;
+        uint8_t kelvinG = 0;
+        uint8_t kelvinB = 0;
+        if (state.kelvin > 0)
+        {
+            HclPixelTransform::kelvinToRGB(state.kelvin, kelvinR, kelvinG, kelvinB);
+        }
+
+        logInfoP("HCL master %u: kelvin=%u brightness=%u blocked=%d kelvinRgb=(%u,%u,%u)",
+                 static_cast<unsigned>(index + 1),
+                 state.kelvin,
+                 state.brightness,
+                 state.blocked,
+                 kelvinR,
+                 kelvinG,
+                 kelvinB);
+
+        lastLoggedKelvin[index] = state.kelvin;
+        lastLoggedBrightness[index] = state.brightness;
+        lastLoggedBlocked[index] = state.blocked;
+    }
 
     for (NeoHclSegmentConfig& segCfg : _hclTransformContext.segmentConfigs)
     {
@@ -3569,6 +3603,15 @@ void NeoPixelBusModule::updateHclTransformContext()
 {
     if (!_virtualStrip) return;
 
+    auto decodeHclApplyMode = [](uint8_t value) {
+        switch (value)
+        {
+            case 1: return NeoHclApplyMode::AllColors;
+            case 2: return NeoHclApplyMode::HighSaturation;
+            default: return NeoHclApplyMode::WhiteOnly;
+        }
+    };
+
     // Clear and rebuild context
     _hclTransformContext.segments.clear();
     _hclTransformContext.segmentConfigs.clear();
@@ -3602,6 +3645,7 @@ void NeoPixelBusModule::updateHclTransformContext()
         {
             segCfg.hclMode = NeoHclMode::Custom;
             segCfg.customHclConfig.lightManagerMaster = ParamNEO_NEOHCLMaster;
+            segCfg.customHclConfig.applyMode = decodeHclApplyMode(ParamNEO_NEOHCLApplyMode);
         }
 
         _hclTransformContext.segmentConfigs.push_back(segCfg);
@@ -3640,6 +3684,7 @@ void NeoPixelBusModule::updateHclTransformContext()
         uint8_t savedChannelIndex = _channelIndex;
         _channelIndex = 0xFF; // Use global context
         _hclTransformContext.globalHclConfig.lightManagerMaster = ParamNEO_HCLMaster;
+        _hclTransformContext.globalHclConfig.applyMode = decodeHclApplyMode(ParamNEO_HCLApplyMode);
 
         _channelIndex = savedChannelIndex;
     }

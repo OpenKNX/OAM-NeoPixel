@@ -500,6 +500,8 @@
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: LightManager source selection -->
                 <Parameter Id="%AID%_UP-%TT%00001" Offset="0" BitOffset="0" Name="HCLMaster" ParameterType="%AID%_PT-LMGMasterSelect" Text="Lichtmanager" Value="0" />
+                <!-- Byte 1: HCL application mode -->
+                <Parameter Id="%AID%_UP-%TT%00002" Offset="1" BitOffset="0" Name="HCLApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="Anwendung" Value="0" />
                 <!-- Remaining bytes reserved for future HCL-related layout changes -->
               </Union>
 
@@ -690,6 +692,7 @@
               <ParameterRef Id="%AID%_P-%TT%00000_R-%TT%0000001" RefId="%AID%_P-%TT%00000" />
               <!-- LightManager Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00001_R-%TT%0000101" RefId="%AID%_UP-%TT%00001" />
+              <ParameterRef Id="%AID%_UP-%TT%00002_R-%TT%0000201" RefId="%AID%_UP-%TT%00002" />
               <ParameterRef Id="%AID%_UP-%TT%00077_R-%TT%0007701" RefId="%AID%_UP-%TT%00077" />
               <ParameterRef Id="%AID%_UP-%TT%00078_R-%TT%0007801" RefId="%AID%_UP-%TT%00078" />
               <ParameterRef Id="%AID%_UP-%TT%00079_R-%TT%0007901" RefId="%AID%_UP-%TT%00079" />
@@ -1094,6 +1097,7 @@
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL / Lichtmanager" UIHint="Headline" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" HelpContext="%DOC%"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" IndentLevel="2" HelpContext="NEO-Anwendung"/>
                 </ParameterBlock>
               <!-- ========================================================================================================= -->
               <!-- KO-Tree: HCL Hauptkategorie (nur für KOs) -->

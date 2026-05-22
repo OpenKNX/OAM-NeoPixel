@@ -65,10 +65,11 @@
 
                  <!-- ═══════════════════════════════════════════════════════════════════════════════════
                    HCL / LightManager selection per Segment
-                   Offset 360-361
+                   Offset 360-362
                    ═══════════════════════════════════════════════════════════════════════════════════ -->
                  <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="360" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Quelle" Value="1"/>
                  <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="361" BitOffset="0" Name="NEO%C%HCLMaster" ParameterType="%AID%_PT-LMGMasterSelect" Text="Segment-Lichtmanager" Value="0" />
+                 <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="362" BitOffset="0" Name="NEO%C%HCLApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="Anwendung" Value="0" />
                  <!-- Remaining bytes reserved for future HCL-related layout changes -->
               </Union>
             </Parameters>
@@ -109,6 +110,7 @@
               <!-- HCL Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" RefId="%AID%_UP-%TT%%CC%195" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" RefId="%AID%_UP-%TT%%CC%196" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" RefId="%AID%_UP-%TT%%CC%197" />
             </ParameterRefs>
             <ComObjectTable>
                <!-- Segment Power -->
@@ -355,6 +357,7 @@
                     <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
                       <when test="2">
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" IndentLevel="2" HelpContext="NEO-Lichtmanager"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                     </choose>
 

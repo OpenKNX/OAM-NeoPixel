@@ -6,7 +6,7 @@
     OpenKnxId="0xAD"
     ApplicationNumber="1"
     ApplicationVersion="0.3"
-    ReplacesVersions="0.2 0.1 0.0" 
+    ReplacesVersions="0.3 0.2 0.1 0.0" 
     ApplicationRevision="0"
     ProductName="NeoPixel KNX Adapter"
     BusCurrent="30"
