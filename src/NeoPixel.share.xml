@@ -720,6 +720,13 @@
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: External Relay Invert Parameters -->
 
+              <Union SizeInBit="24">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="134" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%00194" Offset="0" BitOffset="0" Name="PendingLedTypeResetStrip" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Pending LED Type Reset Strip" Value="0" Access="None"/>
+                <Parameter Id="%AID%_UP-%TT%00195" Offset="1" BitOffset="0" Name="PendingLedTypeResetLedType" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Pending LED Type Reset LED Type" Value="255" Access="None"/>
+                <Parameter Id="%AID%_UP-%TT%00196" Offset="2" BitOffset="0" Name="PendingLedTypeResetTick" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Pending LED Type Reset Tick" Value="255" Access="None"/>
+              </Union>
+
             </Parameters>
 
             <ParameterRefs>
@@ -844,6 +851,9 @@
               <ParameterRef Id="%AID%_UP-%TT%00076_R-%TT%0007601" RefId="%AID%_UP-%TT%00076" />
               <ParameterRef Id="%AID%_UP-%TT%00180_R-%TT%0018001" RefId="%AID%_UP-%TT%00180" />
               <ParameterRef Id="%AID%_UP-%TT%00181_R-%TT%0018101" RefId="%AID%_UP-%TT%00181" />
+              <ParameterRef Id="%AID%_UP-%TT%00194_R-%TT%0019401" RefId="%AID%_UP-%TT%00194" Access="None" Value="0"/>
+              <ParameterRef Id="%AID%_UP-%TT%00195_R-%TT%0019501" RefId="%AID%_UP-%TT%00195" Access="None" Value="255"/>
+              <ParameterRef Id="%AID%_UP-%TT%00196_R-%TT%0019601" RefId="%AID%_UP-%TT%00196" Access="None" Value="255"/>
               
               </ParameterRefs>
               <ParameterCalculations>

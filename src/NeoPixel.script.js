@@ -18,8 +18,17 @@ function NEO_Empty(input, output, context) {
 }
 
 // Map LedType -> ColourOrder (full order including RGBW/RGBCCT)
-function NEO_LedTypeToRGB(input, output, context) {
+function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
+  var numericStripKey = toInt(stripKey, -1);
+  var pendingLedTypeResetStrip = toInt(input.PendingLedTypeResetStrip, 0);
+  var pendingLedTypeResetLedType = toInt(input.PendingLedTypeResetLedType, 255);
+  var hasAnyPendingLedTypeReset = pendingLedTypeResetStrip > 0 &&
+    pendingLedTypeResetLedType !== 255;
+  var hasPendingLedTypeReset = numericStripKey > 0 &&
+    hasAnyPendingLedTypeReset &&
+    pendingLedTypeResetStrip === numericStripKey &&
+    pendingLedTypeResetLedType === ledType;
 
   // Default fallback if a type has no explicit mapping
   var defaultOrder = CO_GRB; // most common default
@@ -69,7 +78,7 @@ function NEO_LedTypeToRGB(input, output, context) {
 
   // 99 = CUSTOM -> leave as user-defined; do not override
   if (ledType === 99) {
-    info("NEO_LedTypeToRGB: CUSTOM type, leaving ColourOrder unchanged");
+    info("NEO_LedTypeToRGB: Strip " + stripKey + " CUSTOM type -> keep current ColourOrder");
     return;
   }
 
@@ -77,17 +86,39 @@ function NEO_LedTypeToRGB(input, output, context) {
   // Clamp to valid 0..11 just in case
   if (ord < 0 || ord > 11 || isNaN(ord)) ord = defaultOrder;
 
+  if (hasPendingLedTypeReset) {
+    output.RGBColourOrder = ord;
+    info("NEO_LedTypeToRGB: Strip " + stripKey + " pending LEDType reset marker matched for LedType " + ledType + " -> reset ColourOrder to " + ord);
+    return;
+  }
+
+  if (hasAnyPendingLedTypeReset) {
+    info("NEO_LedTypeToRGB: Strip " + stripKey + " pending LEDType reset marker belongs to Strip " + pendingLedTypeResetStrip + " with LedType " + pendingLedTypeResetLedType + " -> keep current ColourOrder");
+    return;
+  }
+
   output.RGBColourOrder = ord;
-  info("NEO_LedTypeToRGB: LedType " + ledType + " -> ColourOrder " + ord);
+  info("NEO_LedTypeToRGB: Strip " + stripKey + " no pending LEDType reset marker active for LedType " + ledType + " -> reset ColourOrder to " + ord);
 }
+function NEO_LedTypeToRGB_1(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 1); }
+function NEO_LedTypeToRGB_2(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 2); }
+function NEO_LedTypeToRGB_3(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 3); }
+function NEO_LedTypeToRGB_4(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 4); }
+function NEO_LedTypeToRGB_5(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 5); }
+function NEO_LedTypeToRGB_6(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 6); }
+function NEO_LedTypeToRGB_7(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 7); }
+function NEO_LedTypeToRGB_8(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 8); }
 
 // Reset Clock GPIO when switching between SPI and 1-Wire LED types
-function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
+function NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
   
   // Check if this is a SPI LED type
   var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 || 
                ledType === 22 || ledType === 23 || ledType === 24 || ledType === 25);
+
+  output.PendingLedTypeResetStrip = stripKey;
+  output.PendingLedTypeResetLedType = ledType;
   
   if (!isSPI) {
     // LED type changed to 1-Wire → Reset all Clock Ports to Dummy (15)
@@ -100,11 +131,19 @@ function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
     output.Strip7ClockPort = 15;
     output.Strip8ClockPort = 15;
     
-    info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (1-Wire) → Clock Ports reset to 15");
+    info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (1-Wire) -> Clock Ports reset to 15, pending colour-order reset marker updated");
   } else {
-    info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (SPI) → Clock Ports unchanged");
+    info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (SPI) -> Clock Ports unchanged, pending colour-order reset marker updated");
   }
 }
+function NEO_ResetClockGPIOOnLedTypeChange_1(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 1); }
+function NEO_ResetClockGPIOOnLedTypeChange_2(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 2); }
+function NEO_ResetClockGPIOOnLedTypeChange_3(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 3); }
+function NEO_ResetClockGPIOOnLedTypeChange_4(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 4); }
+function NEO_ResetClockGPIOOnLedTypeChange_5(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 5); }
+function NEO_ResetClockGPIOOnLedTypeChange_6(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 6); }
+function NEO_ResetClockGPIOOnLedTypeChange_7(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 7); }
+function NEO_ResetClockGPIOOnLedTypeChange_8(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 8); }
 
 // Calculate Start-LED indices for the virtual strip
 function NEO_UpdateVirtualStripStartIndices(input, output, context) {
