@@ -39,6 +39,7 @@
 #include "PhysicalStripConfig.h"
 #include "colorhelper.h"
 #include "knxprod.h"
+#include "versions.h"
 #include <algorithm>
 #include <vector>
 // #define NEOPIXEL_MODULE_TEST_ENV
@@ -101,6 +102,16 @@ static uint8_t resolveHclMaster(uint8_t requestedMaster, uint8_t availableMaster
 }
 
 NeoPixelBusModule openknxNeoPixelModule;
+
+const std::string NeoPixelBusModule::name()
+{
+    return "NeoPixelBus";
+}
+
+const std::string NeoPixelBusModule::version()
+{
+    return MODULE_NeoPixel_Version;
+}
 
 NeoPixelBusModule::NeoPixelBusModule()
     : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr)
@@ -175,6 +186,10 @@ void NeoPixelBusModule::setup(bool configured)
         initializeGpioPins();
     }
 #endif
+
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    registerWebUiRoutes();
+#endif
 }
 
 void NeoPixelBusModule::loop(bool configured)
@@ -221,6 +236,22 @@ void NeoPixelBusModule::loop(bool configured)
 
     // Process relay timers for delayed on/off switching
     processRelayTimers();
+
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (_webUiPersistSaveRequested && !_webUiPersistSaveInProgress && millis() >= _webUiPersistSaveReadyAt)
+    {
+        _webUiPersistSaveRequested = false;
+        _webUiPersistSaveInProgress = true;
+        processPendingWebUiPersistSave();
+        _webUiPersistSaveInProgress = false;
+    }
+#endif
+
+    if (_deferredModuleFlashSaveRequested && millis() >= _deferredModuleFlashSaveReadyAt)
+    {
+        _deferredModuleFlashSaveRequested = false;
+        openknx.flash.save();
+    }
 
     // If global power is OFF, skip all effect processing and pixel updates
     if (!_globalPowerOn) return;
@@ -286,7 +317,12 @@ void NeoPixelBusModule::processBeforeRestart()
 
 void NeoPixelBusModule::processBeforeTablesUnload()
 {
-    // Let's do for now the same as processBeforeRestart
+    if (_flashPersistence)
+    {
+        _flashPersistence->invalidateForEtsDownload();
+    }
+
+    // Keep the current safe shutdown behavior during ETS parameterization.
     processBeforeRestart();
 }
 
@@ -1256,6 +1292,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     if (stored)
                     {
                         logInfoP("Segment %d: Scene %d stored successfully", channel, sceneNumber);
+                        _deferredModuleFlashSaveRequested = true;
+                        _deferredModuleFlashSaveReadyAt = millis() + 500;
                     }
                     else
                     {
@@ -1834,18 +1872,158 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
     return _neoPixel.processCommand(command, diagnose);
 }
 
-// FunctionProperty: Handle ETS online functions (hardware detection)
+// FunctionProperty: Handle ETS online functions
 bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength)
 {
     // ALWAYS log when called - even if wrong object/property
     logDebugP("==> processFunctionProperty CALLED: ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
-    logDebugP("    Expected: ObjectIndex=%d, PropertyId=%d", NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID);
+    logDebugP("    Expected: ObjectIndex=%d, PropertyId=%d, %d or %d",
+              NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID,
+              NEOPIXEL_SCENE_SYNC_PROPERTY_ID, NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID);
 
-    // Check if this is our hardware detection function property
-    if (objectIndex != NEOPIXEL_FUNCTION_OBJECT_INDEX || propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
+    if (objectIndex != NEOPIXEL_FUNCTION_OBJECT_INDEX)
     {
-        logErrorP("Hardware detection triggered from ETS with unexpected object/property (ObjectIndex: %d, PropertyId: %d). Expected %d/%d",
-                  objectIndex, propertyId, NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID);
+        logErrorP("NeoPixel ETS function triggered with unexpected object index %d. Expected %d",
+                  objectIndex, NEOPIXEL_FUNCTION_OBJECT_INDEX);
+        return false;
+    }
+
+    if (propertyId == NEOPIXEL_SCENE_SYNC_PROPERTY_ID)
+    {
+        if (length < 1 || data == nullptr)
+        {
+            resultData[0] = 1; // invalid request payload
+            resultLength = 1;
+            return true;
+        }
+
+        const uint8_t apiSegmentId = data[0];
+        if (apiSegmentId < 1 || apiSegmentId > _segments.size())
+        {
+            logErrorP("Scene sync requested invalid segment id %d", apiSegmentId);
+            resultData[0] = 2; // unknown segment
+            resultLength = 1;
+            return true;
+        }
+
+        if (_sceneManager == nullptr)
+        {
+            logErrorP("Scene sync requested but SceneManager is unavailable");
+            resultData[0] = 3; // scene manager unavailable
+            resultLength = 1;
+            return true;
+        }
+
+        uint8_t payloadLength = 0;
+        const uint8_t channelIndex = static_cast<uint8_t>(apiSegmentId - 1);
+        if (!_sceneManager->exportScenes(channelIndex, resultData + 1, payloadLength))
+        {
+            logErrorP("Scene sync export failed for segment %d", apiSegmentId);
+            resultData[0] = 4; // export failed
+            resultLength = 1;
+            return true;
+        }
+
+        resultData[0] = 0;
+        resultLength = static_cast<uint8_t>(payloadLength + 1);
+        logDebugP("==> Scene sync SUCCESS: Segment=%d, payloadLength=%d", apiSegmentId, resultLength);
+        return true;
+    }
+
+    if (propertyId == NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID)
+    {
+        static constexpr uint8_t kSegmentSyncPayloadVersion = 1;
+        static constexpr uint8_t kSegmentSyncParameterSlotCount = 10;
+
+        if (length < 1 || data == nullptr)
+        {
+            resultData[0] = 1; // invalid request payload
+            resultLength = 1;
+            return true;
+        }
+
+        const uint8_t apiSegmentId = data[0];
+        if (apiSegmentId < 1 || apiSegmentId > _segments.size())
+        {
+            logErrorP("Segment sync requested invalid segment id %d", apiSegmentId);
+            resultData[0] = 2; // unknown segment
+            resultLength = 1;
+            return true;
+        }
+
+        if (_sceneManager == nullptr)
+        {
+            logErrorP("Segment sync requested but SceneManager is unavailable");
+            resultData[0] = 3; // segment/scenes unavailable
+            resultLength = 1;
+            return true;
+        }
+
+        const uint8_t channelIndex = static_cast<uint8_t>(apiSegmentId - 1);
+        Segment* segment = _segments[channelIndex].segment;
+        if (segment == nullptr)
+        {
+            logErrorP("Segment sync requested unavailable segment %d", apiSegmentId);
+            resultData[0] = 4; // export failed
+            resultLength = 1;
+            return true;
+        }
+
+        uint8_t cursor = 0;
+        const EffectConfig& config = segment->getConfig();
+        resultData[1 + cursor++] = kSegmentSyncPayloadVersion;
+        resultData[1 + cursor++] = config.effectType;
+        resultData[1 + cursor++] = segment->getBrightness();
+        resultData[1 + cursor++] = config.r();
+        resultData[1 + cursor++] = config.g();
+        resultData[1 + cursor++] = config.b();
+        resultData[1 + cursor++] = config.ww();
+
+        Effect* effect = segment->getEffect();
+        if (effect == nullptr)
+        {
+            effect = getEffectFromType(config.effectType);
+        }
+
+        uint8_t parameterCount = 0;
+        if (effect != nullptr)
+        {
+            parameterCount = std::min<uint8_t>(effect->getParameterCount(), kSegmentSyncParameterSlotCount);
+        }
+
+        resultData[1 + cursor++] = parameterCount;
+        for (uint8_t parameterIndex = 0; parameterIndex < kSegmentSyncParameterSlotCount; ++parameterIndex)
+        {
+            uint8_t parameterValue = 0;
+            if (effect != nullptr && parameterIndex < parameterCount)
+            {
+                parameterValue = static_cast<uint8_t>(std::min<uint32_t>(effect->getParameter(segment, parameterIndex), 0xFFu));
+            }
+
+            resultData[1 + cursor++] = parameterValue;
+        }
+
+        uint8_t scenePayloadLength = 0;
+        if (!_sceneManager->exportScenes(channelIndex, resultData + 1 + cursor, scenePayloadLength))
+        {
+            logErrorP("Segment sync export failed for segment %d", apiSegmentId);
+            resultData[0] = 4; // export failed
+            resultLength = 1;
+            return true;
+        }
+
+        cursor = static_cast<uint8_t>(cursor + scenePayloadLength);
+        resultData[0] = 0;
+        resultLength = static_cast<uint8_t>(cursor + 1);
+        logDebugP("==> Segment sync SUCCESS: Segment=%d, payloadLength=%d", apiSegmentId, resultLength);
+        return true;
+    }
+
+    if (propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
+    {
+        logErrorP("NeoPixel ETS function triggered with unexpected property id %d. Expected %d, %d or %d",
+                  propertyId, NEOPIXEL_FUNCTION_PROPERTY_ID,
+                  NEOPIXEL_SCENE_SYNC_PROPERTY_ID, NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID);
         return false;
     }
 

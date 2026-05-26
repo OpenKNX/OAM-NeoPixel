@@ -4,9 +4,22 @@
 #include "Segment.h"
 #include <algorithm>
 
+namespace
+{
+    constexpr uint8_t kFlashStateVersion = 0x02;
+    constexpr uint8_t kSceneFlashVersion = 0x01;
+    constexpr uint8_t kSceneFlashSignature[4] = {'N', 'S', 'C', 'N'};
+} // namespace
+
 NeoPixelFlashPersistence::NeoPixelFlashPersistence(NeoPixelBusModule* module)
     : _module(module)
 {
+}
+
+void NeoPixelFlashPersistence::invalidateForEtsDownload()
+{
+    _invalidateForEtsDownload = true;
+    logInfoP("ETS parameter download detected - persisted runtime and scene snapshots will be cleared");
 }
 
 // ============================================================================
@@ -26,6 +39,7 @@ uint16_t NeoPixelFlashPersistence::calculateFlashSize() const
     {
         size += sizeof(RelayFlashState);
     }
+    size += sizeof(SceneFlashHeader) + sizeof(SceneSegmentFlashState) * numSegments;
 
     logInfoP("Flash size calculated: %d bytes for %d segments", size, numSegments);
     return size;
@@ -50,18 +64,37 @@ void NeoPixelFlashPersistence::writeToFlash()
         return;
     }
 
+    const bool invalidateForEtsDownload = _invalidateForEtsDownload;
+
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
-    logInfoP("FLASH WRITE: Saving LED states to flash");
+    logInfoP(invalidateForEtsDownload ? "FLASH WRITE: Clearing persisted LED states for ETS download" : "FLASH WRITE: Saving LED states to flash");
     logInfoP("Segments to save: %d", segments.size());
     logInfoP("========================================");
 #else
-    logInfoP("Writing LED states to flash (%d segments)", segments.size());
+    if (invalidateForEtsDownload)
+    {
+        logInfoP("Clearing persisted LED states for ETS download (%d segments)", segments.size());
+    }
+    else
+    {
+        logInfoP("Writing LED states to flash (%d segments)", segments.size());
+    }
 #endif
 
     // Use OGM-Common flash write helpers
     for (size_t i = 0; i < segments.size(); i++)
     {
+        if (invalidateForEtsDownload)
+        {
+            SegmentFlashState emptyState = {};
+            openknx.flash.write((uint8_t*)&emptyState, sizeof(SegmentFlashState));
+#ifdef OPENKNX_DEBUG
+            logInfoP("[Segment %d] SAVED: Cleared persisted runtime state for ETS download", i);
+#endif
+            continue;
+        }
+
         SegmentFlashState state;
         if (saveSegmentState(i, state))
         {
@@ -71,7 +104,9 @@ void NeoPixelFlashPersistence::writeToFlash()
 #ifdef OPENKNX_DEBUG
             logInfoP("[Segment %d] SAVED (v%d, flags=0x%02X):", i, state.version, state.validFlags);
             if (state.validFlags & 0x01) logInfoP("  Power:      %s", state.power ? "ON" : "OFF");
-            if (state.validFlags & 0x02) logInfoP("  Color:      R=%3d G=%3d B=%3d WW=%3d CW=%3d", state.r, state.g, state.b, state.ww, state.cw);
+            if (state.validFlags & 0x02) logInfoP("  Colors:     P=(%3d,%3d,%3d,WW=%3d,CW=%3d) S=(%3d,%3d,%3d,WW=%3d,CW=%3d)",
+                                                  state.r, state.g, state.b, state.ww, state.cw,
+                                                  state.secondaryR, state.secondaryG, state.secondaryB, state.secondaryWW, state.secondaryCW);
             if (state.validFlags & 0x04) logInfoP("  Brightness: %d", state.brightness);
             if (state.validFlags & 0x08) logInfoP("  Effect:     Type=%d (valid=%d, lastWasEffect=%d)", state.effectType,
                                                   (state.effectFlags & 0x01) ? 1 : 0, (state.effectFlags & 0x02) ? 1 : 0);
@@ -91,21 +126,26 @@ void NeoPixelFlashPersistence::writeToFlash()
     if (NeoPixelBusModule::kMaxExternalRelays > 0)
     {
         RelayFlashState relayState = {};
-        relayState.count = _module->_relayCount;
-        relayState.statesMask = 0;
-        relayState.signature = 0xA5;
-
-        uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
-        for (uint8_t i = 0; i < maxRelays; ++i)
+        if (!invalidateForEtsDownload)
         {
-            if (_module->_relayStates[i])
+            relayState.count = _module->_relayCount;
+            relayState.statesMask = 0;
+            relayState.signature = 0xA5;
+
+            uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
+            for (uint8_t i = 0; i < maxRelays; ++i)
             {
-                relayState.statesMask |= static_cast<uint8_t>(1u << i);
+                if (_module->_relayStates[i])
+                {
+                    relayState.statesMask |= static_cast<uint8_t>(1u << i);
+                }
             }
         }
 
         openknx.flash.write((uint8_t*)&relayState, sizeof(RelayFlashState));
     }
+
+    writeSceneStatesToFlash(invalidateForEtsDownload);
 
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
@@ -144,12 +184,14 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     // CRITICAL: Validate flash data size matches current segment configuration
     // This prevents corruption when ETS changes segment count
     uint16_t expectedSegmentSize = sizeof(SegmentFlashState) * segments.size();
-    uint16_t expectedTotalSize = expectedSegmentSize;
+    uint16_t expectedLegacyTotalSize = expectedSegmentSize;
     if (NeoPixelBusModule::kMaxExternalRelays > 0)
     {
-        expectedTotalSize += sizeof(RelayFlashState);
+        expectedLegacyTotalSize += sizeof(RelayFlashState);
     }
-    if (size != expectedSegmentSize && size != expectedTotalSize)
+    const uint16_t expectedSceneSize = sizeof(SceneFlashHeader) + sizeof(SceneSegmentFlashState) * segments.size();
+    const uint16_t expectedTotalSize = expectedLegacyTotalSize + expectedSceneSize;
+    if (size != expectedSegmentSize && size != expectedLegacyTotalSize && size != expectedTotalSize)
     {
         logWarningP("========================================");
         logWarningP("FLASH SIZE MISMATCH - Configuration changed!");
@@ -191,7 +233,9 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
 #ifdef OPENKNX_DEBUG
         logInfoP("[Segment %d] LOADED from flash (v%d, flags=0x%02X):", i, state.version, state.validFlags);
         if (state.validFlags & 0x01) logInfoP("  Power:      %s", state.power ? "ON" : "OFF");
-        if (state.validFlags & 0x02) logInfoP("  Color:      R=%3d G=%3d B=%3d WW=%3d CW=%3d", state.r, state.g, state.b, state.ww, state.cw);
+        if (state.validFlags & 0x02) logInfoP("  Colors:     P=(%3d,%3d,%3d,WW=%3d,CW=%3d) S=(%3d,%3d,%3d,WW=%3d,CW=%3d)",
+                                              state.r, state.g, state.b, state.ww, state.cw,
+                                              state.secondaryR, state.secondaryG, state.secondaryB, state.secondaryWW, state.secondaryCW);
         if (state.validFlags & 0x04) logInfoP("  Brightness: %d", state.brightness);
         if (state.validFlags & 0x08) logInfoP("  Effect:     Type=%d (valid=%d, lastWasEffect=%d)", state.effectType,
                                               (state.effectFlags & 0x01) ? 1 : 0, (state.effectFlags & 0x02) ? 1 : 0);
@@ -210,6 +254,11 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
             cfg.savedB = state.b;
             cfg.savedWW = state.ww;
             cfg.savedCW = state.cw;
+            cfg.savedSecondaryR = state.secondaryR;
+            cfg.savedSecondaryG = state.secondaryG;
+            cfg.savedSecondaryB = state.secondaryB;
+            cfg.savedSecondaryWW = state.secondaryWW;
+            cfg.savedSecondaryCW = state.secondaryCW;
         }
         if (state.validFlags & 0x04) cfg.savedBrightness = state.brightness;
 
@@ -233,7 +282,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     }
 
 #ifdef OPENKNX_DEBUG
-    if (size == expectedTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
+    if (size >= expectedLegacyTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
     {
         RelayFlashState relayState;
         memcpy(&relayState, data + expectedSegmentSize, sizeof(RelayFlashState));
@@ -247,7 +296,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         _relayFlashValid = false;
     }
 #else
-    if (size == expectedTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
+    if (size >= expectedLegacyTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
     {
         RelayFlashState relayState;
         memcpy(&relayState, data + expectedSegmentSize, sizeof(RelayFlashState));
@@ -259,6 +308,11 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         _relayFlashValid = false;
     }
 #endif
+
+    if (size == expectedTotalSize)
+    {
+        readSceneStatesFromFlash(data, size, expectedLegacyTotalSize, segments.size());
+    }
 
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
@@ -396,7 +450,18 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // If effect from ETS: already loaded in configureEffects(), skip re-apply
 
             // Restore color from flash
-            seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
+            VirtualStrip* virtualStrip = _module->getVirtualStrip();
+            const uint8_t bytesPerLed = virtualStrip ? virtualStrip->getBytesPerLed() : 3;
+            if (bytesPerLed == 5)
+            {
+                seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
+                seg->setSecondaryColor(cfg.savedSecondaryR, cfg.savedSecondaryG, cfg.savedSecondaryB, cfg.savedSecondaryWW, cfg.savedSecondaryCW);
+            }
+            else
+            {
+                seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+                seg->setSecondaryColor(cfg.savedSecondaryR, cfg.savedSecondaryG, cfg.savedSecondaryB, cfg.savedSecondaryWW);
+            }
 
             // Restore brightness/power state
             if (cfg.savedPower == 0)
@@ -411,9 +476,11 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             {
                 seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
-                logInfoP("[Segment %d] RESTORED from Flash: ON (Effect=%d from %s, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
+                logInfoP("[Segment %d] RESTORED from Flash: ON (Effect=%d from %s, Primary=R:%d,G:%d,B:%d,WW:%d,CW:%d, Secondary=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
                          i, effectType, effectFromFlash ? "Flash" : "ETS",
-                         cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, cfg.savedBrightness);
+                         cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW,
+                         cfg.savedSecondaryR, cfg.savedSecondaryG, cfg.savedSecondaryB, cfg.savedSecondaryWW, cfg.savedSecondaryCW,
+                         cfg.savedBrightness);
 #endif
             }
 #ifdef OPENKNX_DEBUG
@@ -493,14 +560,14 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     }
 
     // Initialize structure version and flags
-    state.version = 0x01;
+    state.version = kFlashStateVersion;
     state.validFlags = 0;
 
     // Save power state (always valid)
     state.power = (seg->getBrightness() > 0) ? 1 : 0;
     state.validFlags |= 0x01;
 
-    // Save color (use savedR/G/B/WW/CW if valid, otherwise read from segment)
+    // Save color (use saved values if available, otherwise read from the segment config)
     if (cfg.savedValid)
     {
         state.r = cfg.savedR;
@@ -508,38 +575,26 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
         state.b = cfg.savedB;
         state.ww = cfg.savedWW;
         state.cw = cfg.savedCW;
+        state.secondaryR = cfg.savedSecondaryR;
+        state.secondaryG = cfg.savedSecondaryG;
+        state.secondaryB = cfg.savedSecondaryB;
+        state.secondaryWW = cfg.savedSecondaryWW;
+        state.secondaryCW = cfg.savedSecondaryCW;
         state.validFlags |= 0x02;
     }
     else
     {
-        uint8_t r, g, b;
-        VirtualStrip* vstrip = _module->getVirtualStrip();
-        if (vstrip && vstrip->getBytesPerLed() == 5)
-        {
-            // RGBCCT (5 bytes per LED)
-            uint8_t ww, cw;
-            seg->getPixel(0, r, g, b, ww, cw);
-            state.ww = ww;
-            state.cw = cw;
-        }
-        else if (vstrip && vstrip->getBytesPerLed() == 4)
-        {
-            // RGBW (4 bytes per LED)
-            uint8_t w;
-            seg->getPixel(0, r, g, b, w);
-            state.ww = w;
-            state.cw = 0;
-        }
-        else
-        {
-            // RGB (3 bytes per LED)
-            seg->getPixel(0, r, g, b);
-            state.ww = 0;
-            state.cw = 0;
-        }
-        state.r = r;
-        state.g = g;
-        state.b = b;
+        const EffectConfig& config = seg->getConfig();
+        state.r = config.r();
+        state.g = config.g();
+        state.b = config.b();
+        state.ww = config.ww();
+        state.cw = config.cw();
+        state.secondaryR = config.r2();
+        state.secondaryG = config.g2();
+        state.secondaryB = config.b2();
+        state.secondaryWW = config.ww2();
+        state.secondaryCW = config.cw2();
         state.validFlags |= 0x02;
     }
 
@@ -565,6 +620,97 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     state.reserved[1] = 0;
     state.reserved[2] = 0;
 
+    return true;
+}
+
+void NeoPixelFlashPersistence::writeSceneStatesToFlash(bool invalidateSnapshot)
+{
+    if (_module == nullptr)
+    {
+        return;
+    }
+
+    const auto& segments = _module->getSegments();
+
+    SceneFlashHeader header = {};
+    if (!invalidateSnapshot)
+    {
+        memcpy(header.signature, kSceneFlashSignature, sizeof(header.signature));
+        header.version = kSceneFlashVersion;
+        header.segmentCount = static_cast<uint8_t>(segments.size());
+        header.maxScenes = SceneManager::MAX_SCENES;
+        header.sceneSize = SceneManager::SCENE_SIZE;
+    }
+    openknx.flash.write((uint8_t*)&header, sizeof(header));
+
+    SceneSegmentFlashState segmentState = {};
+    for (size_t segmentIndex = 0; segmentIndex < segments.size(); ++segmentIndex)
+    {
+        memset(&segmentState, 0, sizeof(segmentState));
+        if (!invalidateSnapshot)
+        {
+            uint8_t length = 0;
+            if (_module->_sceneManager != nullptr && _module->_sceneManager->exportScenes(static_cast<uint8_t>(segmentIndex), segmentState.payload, length))
+            {
+                openknx.flash.write((uint8_t*)&segmentState, sizeof(segmentState));
+                continue;
+            }
+
+            segmentState.payload[0] = 0;
+        }
+
+        openknx.flash.write((uint8_t*)&segmentState, sizeof(segmentState));
+    }
+}
+
+bool NeoPixelFlashPersistence::readSceneStatesFromFlash(const uint8_t* data, uint16_t size, uint16_t offset, uint16_t segmentCount)
+{
+    if (_module == nullptr || _module->_sceneManager == nullptr)
+    {
+        return false;
+    }
+
+    const uint16_t requiredSize = static_cast<uint16_t>(offset + sizeof(SceneFlashHeader) + sizeof(SceneSegmentFlashState) * segmentCount);
+    if (data == nullptr || size < requiredSize)
+    {
+        return false;
+    }
+
+    SceneFlashHeader header = {};
+    memcpy(&header, data + offset, sizeof(header));
+    offset += sizeof(header);
+
+    const SceneFlashHeader emptyHeader = {};
+    if (memcmp(&header, &emptyHeader, sizeof(header)) == 0)
+    {
+        logInfoP("Scene flash snapshot is empty after ETS download; using ETS scene configuration");
+        return false;
+    }
+
+    if (memcmp(header.signature, kSceneFlashSignature, sizeof(header.signature)) != 0 ||
+        header.version != kSceneFlashVersion ||
+        header.segmentCount != segmentCount ||
+        header.maxScenes != SceneManager::MAX_SCENES ||
+        header.sceneSize != SceneManager::SCENE_SIZE)
+    {
+        logWarningP("Scene flash snapshot ignored: incompatible header");
+        return false;
+    }
+
+    for (uint8_t segmentIndex = 0; segmentIndex < segmentCount; ++segmentIndex)
+    {
+        const SceneSegmentFlashState* segmentState = reinterpret_cast<const SceneSegmentFlashState*>(data + offset);
+        offset += sizeof(SceneSegmentFlashState);
+
+        const uint8_t sceneCount = segmentState->payload[0];
+        const uint16_t payloadLength = static_cast<uint16_t>(1 + std::min<uint8_t>(sceneCount, SceneManager::MAX_SCENES) * SceneManager::SCENE_SIZE);
+        if (!_module->_sceneManager->importScenes(segmentIndex, segmentState->payload, static_cast<uint8_t>(payloadLength)))
+        {
+            logWarningP("Scene flash snapshot for segment %d could not be restored", segmentIndex);
+        }
+    }
+
+    logInfoP("Scene flash snapshot restored for %d segment(s)", segmentCount);
     return true;
 }
 

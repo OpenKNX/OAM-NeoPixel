@@ -461,6 +461,237 @@ function NEO_detectHardware(device, online, progress, context) {
     progress.setProgress(100);
 }
 
+  var NEO_sceneLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+
+  function NEO_hexByte(value) {
+    var normalized = Math.max(0, Math.min(255, toInt(value, 0)));
+    var text = normalized.toString(16).toUpperCase();
+    return text.length < 2 ? "0" + text : text;
+  }
+
+  function NEO_segmentSyncErrorMessage(code, segmentId) {
+    if (code === 1) {
+      return "NeoPixel: Ungültige Segmentanforderung für Segment " + segmentId + ".";
+    }
+    if (code === 2) {
+      return "NeoPixel: Segment " + segmentId + " ist im Gerät nicht vorhanden.";
+    }
+    if (code === 3) {
+      return "NeoPixel: Segmentdaten sind im Gerät derzeit nicht verfügbar.";
+    }
+    if (code === 4) {
+      return "NeoPixel: Segmentdaten konnten vom Gerät nicht exportiert werden.";
+    }
+    return "NeoPixel: Unbekannter Segmentfehler (Code " + code + ").";
+  }
+
+  function NEO_sceneSyncErrorMessage(code, segmentId) {
+    return NEO_segmentSyncErrorMessage(code, segmentId);
+  }
+
+  function NEO_getSceneSegmentPrefix(context) {
+    if (context && context.segmentPrefix) {
+      var prefix = String(context.segmentPrefix);
+      if (/^NEO_NEO\d+$/.test(prefix)) {
+        return prefix;
+      }
+      if (/^NEO\d+$/.test(prefix)) {
+        return "NEO_" + prefix;
+      }
+      if (/^\d+$/.test(prefix)) {
+        return "NEO_NEO" + prefix;
+      }
+      return prefix;
+    }
+
+    if (context && context.segment) {
+      return "NEO_NEO" + toInt(context.segment, 0);
+    }
+
+    return "";
+  }
+
+  function NEO_getSceneSegmentId(context) {
+    if (context && context.segment) {
+      return toInt(context.segment, 0);
+    }
+
+    var prefix = NEO_getSceneSegmentPrefix(context);
+    var match = prefix.match(/(\d+)$/);
+    return match ? toInt(match[1], 0) : 0;
+  }
+
+  function NEO_requireParameter(device, parameterName) {
+    var parameter = device.getParameterByName(parameterName);
+    if (!parameter) {
+      throw new Error("Parameter '" + parameterName + "' nicht gefunden");
+    }
+    return parameter;
+  }
+
+  function NEO_tryParameterRef(device, parameterName, refSuffix) {
+    var parameter = device.getParameterByName(parameterName);
+    if (!parameter || !parameter.parameterRefId || refSuffix === undefined || refSuffix === null) {
+      return null;
+    }
+
+    var suffixText = String(toInt(refSuffix, 0));
+    if (suffixText.length < 2) {
+      suffixText = "0" + suffixText;
+    }
+
+    try {
+      return device.getParameterById(parameter.parameterRefId.slice(0, -2) + suffixText);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function NEO_sceneEffectRefSuffix(effectType) {
+    var normalizedEffectType = toInt(effectType, 0);
+    return normalizedEffectType > 0 ? normalizedEffectType + 2 : 1;
+  }
+
+  function NEO_updateSceneSlotAliases(device, slotParameterName, slotValue) {
+    // ETS stores a separate cached ParameterRef value for each effect-specific
+    // scene-slot alias. Refresh all aliases from the imported slot byte so the
+    // currently visible effect parameters do not fall back to their XML defaults.
+    var maxEffectType = 0;
+    for (var effectTypeKey in NEO_SceneEffectDefaults) {
+      var numericEffectType = toInt(effectTypeKey, 0);
+      if (numericEffectType > maxEffectType) {
+        maxEffectType = numericEffectType;
+      }
+    }
+
+    for (var refSuffix = 3; refSuffix <= NEO_sceneEffectRefSuffix(maxEffectType); refSuffix++) {
+      var aliasedSlotParameter = NEO_tryParameterRef(device, slotParameterName, refSuffix);
+      if (aliasedSlotParameter) {
+        aliasedSlotParameter.value = slotValue;
+      }
+    }
+  }
+
+  function NEO_writeSceneSlotToEts(device, segmentPrefix, sceneIndex, sceneBytes) {
+    var sceneLetter = NEO_sceneLetters[sceneIndex];
+    if (!sceneLetter) {
+      throw new Error("Szenenindex " + (sceneIndex + 1) + " wird nicht unterstützt");
+    }
+
+    var scenePrefix = segmentPrefix + "Scene" + sceneLetter;
+    var effectType = toInt(sceneBytes[0], 0);
+    NEO_requireParameter(device, scenePrefix + "EffectType").value = effectType;
+    NEO_requireParameter(device, scenePrefix + "PrimaryColor").value = "#" + NEO_hexByte(sceneBytes[1]) + NEO_hexByte(sceneBytes[2]) + NEO_hexByte(sceneBytes[3]);
+    NEO_requireParameter(device, scenePrefix + "PrimaryWW").value = toInt(sceneBytes[4], 0);
+    NEO_requireParameter(device, scenePrefix + "PrimaryCW").value = toInt(sceneBytes[5], 0);
+    NEO_requireParameter(device, scenePrefix + "SecondaryColor").value = "#" + NEO_hexByte(sceneBytes[6]) + NEO_hexByte(sceneBytes[7]) + NEO_hexByte(sceneBytes[8]);
+    NEO_requireParameter(device, scenePrefix + "SecondaryWW").value = toInt(sceneBytes[9], 0);
+    NEO_requireParameter(device, scenePrefix + "SecondaryCW").value = toInt(sceneBytes[10], 0);
+    NEO_requireParameter(device, scenePrefix + "Brightness").value = toInt(sceneBytes[11], 0);
+
+    var activeSlotRefSuffix = NEO_sceneEffectRefSuffix(effectType);
+
+    for (var slotIndex = 0; slotIndex < 10; slotIndex++) {
+      var slotValue = toInt(sceneBytes[12 + slotIndex], 0);
+      var slotParameterName = scenePrefix + "Slot" + slotIndex;
+      NEO_requireParameter(device, slotParameterName).value = slotValue;
+
+      NEO_updateSceneSlotAliases(device, slotParameterName, slotValue);
+
+      // The scene UI shows aliased ParameterRefs per effect. Update the active
+      // alias explicitly so ETS refreshes the currently visible controls.
+      var aliasedSlotParameter = NEO_tryParameterRef(device, slotParameterName, activeSlotRefSuffix);
+      if (aliasedSlotParameter) {
+        aliasedSlotParameter.value = slotValue;
+      }
+    }
+  }
+
+  function NEO_writeSegmentRuntimeToEts(device, segmentPrefix, effectType, brightness, segmentBytes, parameterCount, parameterBytes) {
+    NEO_requireParameter(device, segmentPrefix + "SegmentStartupColor").value =
+      "#" + NEO_hexByte(segmentBytes[0]) + NEO_hexByte(segmentBytes[1]) + NEO_hexByte(segmentBytes[2]);
+    NEO_requireParameter(device, segmentPrefix + "SegmentStartupW").value = toInt(segmentBytes[3], 0);
+    NEO_requireParameter(device, segmentPrefix + "SegmentStartupBrightness").value = toInt(brightness, 0);
+    NEO_requireParameter(device, segmentPrefix + "NEOEffectType").value = effectType;
+
+    var startupEffectParameter = device.getParameterByName(segmentPrefix + "SegmentStartupEffect");
+    if (startupEffectParameter) {
+      startupEffectParameter.value = effectType;
+    }
+
+    var parameterNames = NEO_SegmentEffectParameterNames[String(effectType)] || [];
+    var parameterLimit = Math.min(Math.min(parameterNames.length, toInt(parameterCount, 0)), parameterBytes.length);
+
+    for (var parameterIndex = 0; parameterIndex < parameterLimit; parameterIndex++) {
+      NEO_requireParameter(device, segmentPrefix + parameterNames[parameterIndex]).value = toInt(parameterBytes[parameterIndex], 0);
+    }
+  }
+
+  function NEO_syncSegmentFromDevice(device, online, progress, context) {
+    var segmentPrefix = NEO_getSceneSegmentPrefix(context);
+    var segmentId = NEO_getSceneSegmentId(context);
+
+    if (!segmentPrefix || segmentId < 1) {
+      throw new Error("NeoPixel: Segmentkontext für Segment-Synchronisation fehlt.");
+    }
+
+    progress.setText("NeoPixel: Lese Segmentdaten von Segment " + segmentId + "...");
+    progress.setProgress(10);
+    online.connect();
+
+    var response;
+    try {
+      response = BASE_invokeFunctionPropertyWrapper(158, 12, [segmentId], device, online, progress, 20, 76);
+    } finally {
+      online.disconnect();
+    }
+
+    if (!response || response.length < 20) {
+      throw new Error("NeoPixel: Ungültige Segmentantwort vom Gerät.");
+    }
+
+    if (response[0] !== 0) {
+      throw new Error(NEO_segmentSyncErrorMessage(response[0], segmentId));
+    }
+
+    var payloadVersion = toInt(response[1], 0);
+    if (payloadVersion !== 1) {
+      throw new Error("NeoPixel: Nicht unterstütztes Segment-Sync-Format (" + payloadVersion + ").");
+    }
+
+    var effectType = toInt(response[2], 0);
+    var brightness = toInt(response[3], 0);
+    var currentSegmentBytes = response.slice(4, 8);
+    var parameterCount = Math.min(10, toInt(response[8], 0));
+    var currentParameterBytes = response.slice(9, 19);
+    var sceneCount = toInt(response[19], 0);
+    var expectedLength = 20 + sceneCount * 22;
+    if (response.length < expectedLength) {
+      throw new Error("NeoPixel: Unvollständige Segmentdaten vom Gerät empfangen.");
+    }
+
+    NEO_writeSegmentRuntimeToEts(device, segmentPrefix, effectType, brightness, currentSegmentBytes, parameterCount, currentParameterBytes);
+    progress.setText("NeoPixel: Übernehme aktuelle Segmentparameter...");
+    progress.setProgress(84);
+
+    NEO_requireParameter(device, segmentPrefix + "SceneCount").value = sceneCount;
+    progress.setProgress(88);
+
+    for (var sceneIndex = 0; sceneIndex < sceneCount; sceneIndex++) {
+      var offset = 20 + sceneIndex * 22;
+      NEO_writeSceneSlotToEts(device, segmentPrefix, sceneIndex, response.slice(offset, offset + 22));
+      progress.setText("NeoPixel: Übernehme Szene " + (sceneIndex + 1) + " von " + sceneCount + "...");
+      progress.setProgress(88 + Math.floor(((sceneIndex + 1) * 12) / Math.max(sceneCount, 1)));
+    }
+
+    progress.setText("NeoPixel: Segment " + segmentId + " wurde in ETS übernommen.");
+    progress.setProgress(100);
+  }
+
+  function NEO_syncScenesFromDevice(device, online, progress, context) {
+    NEO_syncSegmentFromDevice(device, online, progress, context);
+  }
+
 // ====================================================================
 // GPIO Port Allocation and Conflict Detection
 // ====================================================================
@@ -484,6 +715,37 @@ function NEO_detectHardware(device, online, progress, context) {
 // BEGIN AUTO-GENERATED: Network Module Visibility
 // Cleaned - Ready for regeneration
 // END AUTO-GENERATED: Network Module Visibility
+
+var NEO_SegmentEffectParameterNames = {
+  "1": ["WipeSpeed", "WipeDirection"],
+  "2": ["RainbowSpeed", "RainbowDelta"],
+  "3": ["RainbowCycleSpeed", "RainbowCycleSaturation", "RainbowCycleDensity", "RainbowCycleReverse"],
+  "4": ["Pride2015Speed"],
+  "5": ["ConfettiFadeSpeed", "ConfettiSaturation"],
+  "6": ["JuggleSpeed", "JuggleNumDots", "JuggleFadeSpeed", "JuggleHueOffset"],
+  "7": ["BPMBPM", "BPMHue"],
+  "8": ["CylonSpeed", "CylonHue", "CylonEyeSize", "CylonFadeAmount"],
+  "9": ["RGBWTestPhaseDuration"],
+  "10": ["GarageDoorPhase", "GarageDoorArrowSize", "GarageDoorArrowSpeed", "GarageDoorRunwayGroupSize", "GarageDoorRunwaySpeed", "GarageDoorBreathingSpeed", "GarageDoorOpeningDuration", "GarageDoorRunwayDuration"],
+  "11": ["FireSpeed", "FireCooling", "FireSparking", "FireReverseDirection", "FireBlueFireMode"],
+  "12": ["TheaterChaseSpeed", "TheaterChaseSpacing", "TheaterChaseDotSize", "TheaterChaseTrailMode"],
+  "13": ["TheaterChaseRainbowSpeed", "TheaterChaseRainbowSpacing", "TheaterChaseRainbowDotSize", "TheaterChaseRainbowColorSpeed", "TheaterChaseRainbowTrailMode"],
+  "14": ["SinelonSpeed", "SinelonFadeRate", "SinelonDotSize", "SinelonRainbowMode", "SinelonBounceMode"],
+  "15": ["TwinkleSpeed", "TwinkleFadeRate", "TwinkleDensity", "TwinkleRainbowMode", "TwinkleVariableBrightness"],
+  "16": ["SparkleSpeed", "SparkleFadeRate", "SparkleSparkleCount", "SparkleProbability", "SparkleWhiteOnly", "SparkleBurstMode"],
+  "17": ["BreathingSpeed", "BreathingMinBrightness", "BreathingCurve", "BreathingHoldAtPeak", "BreathingRainbowBreathing"],
+  "18": ["StrobeSpeed", "StrobeOnRatio", "StrobeMinBrightness", "StrobeRandomTiming", "StrobeRainbowStrobe"],
+  "19": ["PulseSpeed", "PulsePulseWidth", "PulseGamma", "PulseSharpPulse", "PulseRainbowPulse"],
+  "20": ["CometSpeed", "CometFadeRate", "CometTailLength", "CometBounceMode", "CometRainbowMode"],
+  "21": ["MeteorSpeed", "MeteorMeteorSize", "MeteorFrequency", "MeteorRandomColors", "MeteorMultiMeteor"],
+  "22": ["NoiseSpeed", "NoiseScale", "NoiseSaturation", "NoiseHueOffset"],
+  "23": ["PaletteSpeed", "PalettePalette", "PaletteBlend", "PaletteSpacing"],
+  "24": ["BlitzSpeed", "BlitzWidth", "BlitzDecay", "BlitzHue", "BlitzIntensity"],
+  "25": ["GradientSpeed", "GradientStartHue", "GradientEndHue", "GradientSaturation"],
+  "26": ["RGBCCTTestPhaseDuration"],
+  "27": ["Kerzespeed", "Kerzeintensity"],
+  "28": ["KerzenMultiSpeed", "KerzenMultiIntensity"]
+};
 
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
 

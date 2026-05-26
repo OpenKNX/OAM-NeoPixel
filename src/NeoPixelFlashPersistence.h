@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OpenKNX.h"
+#include "SceneManager.h"
 #include <stdint.h>
 
 // Forward declarations
@@ -13,7 +14,7 @@ class Segment;
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
  *
- * Storage: 14 bytes per segment × 16 segments = 224 bytes max (+ relay state)
+ * Storage: 19 bytes per segment × 16 segments = 304 bytes max (+ relay state)
  */
 class NeoPixelFlashPersistence
 {
@@ -22,16 +23,16 @@ class NeoPixelFlashPersistence
     const std::string logPrefix() const { return "NeoPixelFlashPersistence"; }
 
     /**
-     * @brief Flash state structure for segment persistence (14 bytes)
+     * @brief Flash state structure for segment persistence (19 bytes)
      *
      * Stores KO-changed values to restore runtime state after power cycle:
      *   - ETS provides BASE configuration (defaults)
-     *   - KOs provide RUNTIME overrides (R/G/B, Brightness, Effect, etc.)
+     *   - KOs provide RUNTIME overrides (primary/secondary colour, brightness, effect, etc.)
      *   - Flash stores KO-CHANGED values for restoration
      *
      * validFlags bitfield indicates which values were changed via KO:
      *   0x01 = power      (KoNEO_SegmentPower)
-     *   0x02 = rgb        (KoNEO_R/G/B)
+     *   0x02 = colors     (primary/secondary colour state)
      *   0x04 = brightness (KoNEO_SegmentBrightness)
      *   0x08 = effectType (KoNEO_Fx)
      *   0x10 = effectFlags (effect state tracking)
@@ -39,13 +40,15 @@ class NeoPixelFlashPersistence
      */
     struct SegmentFlashState
     {
-        uint8_t version;    // Structure version (0x01)
+        uint8_t version;    // Structure version (0x02)
         uint8_t validFlags; // Bitfield: which values are valid/changed via KO
 
         // KO-changed values (restored if corresponding validFlags bit set):
-        uint8_t power;       // 0 = off, 1 = on (KoNEO_SegmentPower)
-        uint8_t r, g, b;     // RGB color (KoNEO_R/G/B)
-        uint8_t ww, cw;      // Warm/Cool white (reserved for future KOs)
+        uint8_t power;   // 0 = off, 1 = on (KoNEO_SegmentPower)
+        uint8_t r, g, b; // RGB color (KoNEO_R/G/B)
+        uint8_t ww, cw;  // Warm/Cool white (reserved for future KOs)
+        uint8_t secondaryR, secondaryG, secondaryB;
+        uint8_t secondaryWW, secondaryCW;
         uint8_t brightness;  // Master brightness (KoNEO_SegmentBrightness)
         uint8_t effectType;  // Effect ID (KoNEO_Fx) - 0 = no effect
         uint8_t effectFlags; // bit0=effectValid, bit1=lastWasEffect
@@ -54,7 +57,7 @@ class NeoPixelFlashPersistence
         uint8_t reserved[3]; // reserved[0] = last active scene number (0 = no scene)
                              // reserved[1..2] = Phase 2: HSV/CCT values
 
-        // Total: 14 bytes per segment × 16 segments = 224 bytes max
+        // Total: 19 bytes per segment × 16 segments = 304 bytes max
     } __attribute__((packed));
 
     /**
@@ -68,6 +71,20 @@ class NeoPixelFlashPersistence
         uint8_t signature;  // 0xA5 when valid
     } __attribute__((packed));
 
+    struct SceneFlashHeader
+    {
+        uint8_t signature[4];
+        uint8_t version;
+        uint8_t segmentCount;
+        uint8_t maxScenes;
+        uint8_t sceneSize;
+    } __attribute__((packed));
+
+    struct SceneSegmentFlashState
+    {
+        uint8_t payload[1 + SceneManager::MAX_SCENES * SceneManager::SCENE_SIZE];
+    } __attribute__((packed));
+
     /**
      * @brief Constructor
      * @param module Pointer to NeoPixelBusModule parent
@@ -76,7 +93,7 @@ class NeoPixelFlashPersistence
 
     /**
      * @brief Calculate flash size needed for storing segment states
-     * @return Number of bytes required (14 bytes × configured segments)
+     * @return Number of bytes required (19 bytes × configured segments)
      */
     uint16_t calculateFlashSize() const;
 
@@ -100,11 +117,20 @@ class NeoPixelFlashPersistence
      */
     void restoreStatesAfterStartup();
 
+    /**
+     * @brief Clear persisted runtime and scene snapshots for an ETS download.
+     *
+     * The next flash save writes an empty runtime snapshot and an invalid scene
+     * snapshot header so the next boot uses the freshly programmed ETS state.
+     */
+    void invalidateForEtsDownload();
+
   private:
     NeoPixelBusModule* _module; // Parent module reference
     uint8_t _channelIndex = 0;  // Current channel index for ParamNEO_NEO* macros
     RelayFlashState _relayFlashState = {0, 0, 0};
     bool _relayFlashValid = false;
+    bool _invalidateForEtsDownload = false;
 
     /**
      * @brief Save current segment state to flash structure
@@ -113,6 +139,9 @@ class NeoPixelFlashPersistence
      * @return true if state was saved successfully
      */
     bool saveSegmentState(uint8_t segmentIndex, SegmentFlashState& state);
+
+    void writeSceneStatesToFlash(bool invalidateSnapshot);
+    bool readSceneStatesFromFlash(const uint8_t* data, uint16_t size, uint16_t offset, uint16_t segmentCount);
 
     /**
      * @brief Restore segment state after startup

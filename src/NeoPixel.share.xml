@@ -4,18 +4,18 @@
  
   <!-- Enable IPTool of ETS. This hide ip settings in network tab -->
   <op:config name="%NET_IPConfigTool%" value="0" />
-  <op:config name="%NET_WifiTool%" value="0" />
+  <op:config name="%NET_WifiTool%" value="1" />
   <op:config name="%NET_LanMode%" value="0" />
   <op:config name="%NET_ServiceNTP%" value="1" />
   <op:config name="%NET_ServiceOTA%" value="1" />
   <op:config name="%NET_ShowMediumInfo%" value="0" />
-
-  <!-- Prepare: Not ready to use -->
-  <op:config name="%NET_ServiceHTTP%" value="0" />
+  <op:config name="%NET_ServiceHTTP%" value="1" />
 
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
   <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
+  <op:nowarn id="3" regex="NEO_LedTypeToRGB_Impl" />
+  <op:nowarn id="3" regex="NEO_ResetClockGPIOOnLedTypeChange_Impl" />
   <!-- Suppress intended Union-Integrity overlaps for UI-limited selectors and hardware-specific GPIO unions -->
   <op:nowarn id="10" regex="Parameter NEO_VirtualStripPos[1-7](_[1-7])?" />
   <op:nowarn id="10" regex="Parameter NEO_(NEOExternalRelay[1-4]Port|NEORelay[1-4]GPIOPortHW(10|11|[0-9]))" />
@@ -1060,6 +1060,13 @@
                       <Button Id="%AID%_B-%TT%00003" Text="Automatische Erkennung Starten" Name="DetectHardware" EventHandler="NEO_detectHardware" EventHandlerOnline="ConnectionOriented" Cell="1,2" />
                     </ParameterBlock>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Automatische Erkennung ist nach programmierung der Physikalischen KNX Adresse verfügbar.&#10;WICHTIG: Seite danach verlassen/neu betreten, um Erkennungs-Button zu aktivieren." UIHint="Information" />
+                  </when>
+                </choose>
+                <choose ParamRefId="%AID%_UP-0099811_R-009981101">
+                  <when test="1">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Webserver" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-1100032_R-110003201" IndentLevel="1" HelpContext="NET-HTTP" />
                   </when>
                 </choose>
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">

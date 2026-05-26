@@ -8,12 +8,15 @@
 #include "Segment.h"            // Segment support from OFM-NeoPixel
 #include "effects/Effect.h"     // Effect system
 #include "effects/EffectPool.h" // Effect pool for singleton instances
+#include <string>
 #include <vector>
 
 // ETS FunctionProperty Definitions (from the generated NeoPixel-*.debug.xml files)
 // These values are referenced in the ETS JavaScript for online functions
-#define NEOPIXEL_FUNCTION_OBJECT_INDEX 158 // NeoPixel module appliance object
-#define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Hardware detection property
+#define NEOPIXEL_FUNCTION_OBJECT_INDEX 158   // NeoPixel module appliance object
+#define NEOPIXEL_FUNCTION_PROPERTY_ID 10     // Hardware detection property
+#define NEOPIXEL_SCENE_SYNC_PROPERTY_ID 11   // Scene sync/export property
+#define NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID 12 // Segment sync/export property
 
 // ─── NeoPixel Module Error/Warning Blink Codes ─────────────────────────────
 // All NeoPixel status codes use the STATUS LED (OPENKNX_LEDFUNC_BASE_STATE).
@@ -38,6 +41,25 @@ class ColorManagement;
 class StripConfiguration;
 class SegmentController;
 class SceneManager;
+
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+namespace OpenKNX
+{
+    namespace Format
+    {
+        namespace JSON
+        {
+            class Reader;
+        } // namespace JSON
+    } // namespace Format
+
+    namespace Network
+    {
+        class WebRequest;
+        class WebResponse;
+    } // namespace Network
+} // namespace OpenKNX
+#endif
 
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
@@ -93,6 +115,11 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t savedB = 0;
         uint8_t savedWW = 0; // Warm White (or single white for RGBW)
         uint8_t savedCW = 0; // Cool White (RGBCCT only)
+        uint8_t savedSecondaryR = 0;
+        uint8_t savedSecondaryG = 0;
+        uint8_t savedSecondaryB = 0;
+        uint8_t savedSecondaryWW = 0; // Warm White (or single white for RGBW)
+        uint8_t savedSecondaryCW = 0; // Cool White (RGBCCT only)
         uint8_t savedBrightness = 0;
 
         // Saved effect information
@@ -163,8 +190,8 @@ class NeoPixelBusModule : public OpenKNX::Module
     NeoPixelBusModule();
     ~NeoPixelBusModule();
 
-    const std::string name() override { return "NeoPixelBus (OAM)"; }
-    const std::string version() override { return "OAM-NeoPixel-adapter 0.1"; }
+    const std::string name() override;
+    const std::string version() override;
 
     void setup(bool configured) override;
     void loop(bool configured) override;
@@ -240,6 +267,11 @@ class NeoPixelBusModule : public OpenKNX::Module
     static bool isSpiProtocol(LedProtocol protocol);
     static const char* getColorOrderName(ColorOrder order);
     static const char* getProtocolName(LedProtocol protocol);
+
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    // Web UI integration
+    void registerWebUiRoutes();
+#endif
 
 // Debug: Show complete configuration analysis (OPENKNX_DEBUG only)
 #ifdef OPENKNX_DEBUG
@@ -389,6 +421,20 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Power Monitoring
     void sendPowerMonitoringKOs(); // Send current/load KOs periodically
 
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    // Web UI implementation
+    void handleWebUiIndexRequest(OpenKNX::Network::WebRequest& req, OpenKNX::Network::WebResponse& res);
+    void handleWebUiMetaRequest(OpenKNX::Network::WebRequest& req, OpenKNX::Network::WebResponse& res);
+    void handleWebUiStateRequest(OpenKNX::Network::WebRequest& req, OpenKNX::Network::WebResponse& res);
+    void handleWebUiStatePatchRequest(OpenKNX::Network::WebRequest& req, OpenKNX::Network::WebResponse& res);
+    bool applyWebUiStatePatch(const OpenKNX::Format::JSON::Reader& patchDoc, bool persist, uint16_t& errorStatus, std::string& errorMessage);
+    void processPendingWebUiPersistSave();
+    std::string buildWebUiMetaJson(const char* language) const;
+    std::string buildWebUiStateJson(bool runtimeAndPersisted, uint8_t requestedSegmentId, bool includeScenes) const;
+    void captureWebUiSegmentState(uint8_t channelIndex, Segment* segment);
+    void powerWebUiSegmentOff(uint8_t channelIndex, Segment* segment, bool flushToHardware = true);
+#endif
+
     // Blink code helpers
     void setErrorBlink(uint8_t code);                              // Set error on STATUS LED (Red + errorCode) — lowest code wins
     void setWarningBlink(uint8_t code, OpenKNX::Led::Color color); // Set warning on STATUS LED (color + pulsing)
@@ -406,6 +452,20 @@ class NeoPixelBusModule : public OpenKNX::Module
     void setRelayOutput(uint8_t relayIndex, bool state);
     void scheduleRelayChange(uint8_t relayIndex, bool targetState);
     void processRelayTimers();
+
+    volatile bool _deferredModuleFlashSaveRequested = false;
+    volatile uint32_t _deferredModuleFlashSaveReadyAt = 0;
+
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    bool _webUiRoutesRegistered = false;
+    volatile bool _webUiPersistSaveRequested = false;
+    volatile bool _webUiPersistSaveInProgress = false;
+    volatile bool _webUiPersistKnxWriteRequested = false;
+    volatile bool _webUiPersistModuleFlashRequested = false;
+    volatile bool _webUiPersistRestoreAutoUpdateRequested = false;
+    volatile uint32_t _webUiPersistSaveReadyAt = 0;
+    std::string _webUiPersistPatchBody;
+#endif
 };
 
 extern NeoPixelBusModule openknxNeoPixelModule;

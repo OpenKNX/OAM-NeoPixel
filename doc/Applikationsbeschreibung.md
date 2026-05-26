@@ -22,6 +22,8 @@ Je nach eingesetzter Hardware stehen zusätzlich Netzwerkfunktionen, OTA-Update,
 * Farbsteuerung über RGB, HSV, RGBW und RGBCCT
 * Farbtemperatursteuerung für geeignete LED-Typen
 * Human Centric Lighting (HCL) global und segmentbezogen
+* Browserbasierte Weboberfläche auf IP-fähigen Varianten zur Laufzeitbedienung und geräteseitigen Speicherung
+* Übernahme des aktuellen Segmentzustands aus dem Gerät zurück in die ETS-Parametrierung
 * Leistungsbegrenzung und Rückmeldung von Strom, Last und Leistung
 * Hardwareabhängige Relaisausgänge
 * Wiederherstellung von Zuständen nach Neustart, soweit parametriert
@@ -114,6 +116,14 @@ Pro Segment können bis zu 10 Szenen gespeichert werden. Eine Szene umfasst den 
 * effektbezogene Zusatzparameter
 
 Damit lassen sich wiederkehrende Lichtstimmungen direkt aus ETS oder über Gruppenadressen abrufen. Je nach Anwendungsfall kann eine Szene auch neu eingelernt werden.
+
+## Weboberfläche und ETS-Abgleich
+
+Auf IP-fähigen Hardwarevarianten kann zusätzlich eine Weboberfläche genutzt werden, sofern der HTTP-Dienst aktiviert ist. Über diese Oberfläche lassen sich Segmentzustände zur Laufzeit prüfen, anpassen und auf dem Gerät speichern. Beim Öffnen der Seite werden die aktuellen Segmentdaten einschließlich der Szenen geladen, sodass die Szenenansicht ohne zusätzlichen Nachlade-Schritt verfügbar ist.
+
+Die Speicherfunktion der Weboberfläche sichert den aktuellen Laufzeitstand geräteseitig. Die ETS-Projektdatei wird dadurch nicht automatisch angepasst.
+
+Ergänzend steht in der ETS die Funktion „Segment mit Gerät abgleichen“ zur Verfügung. Damit kann der aktuelle Zustand eines Segments einschließlich Effekt, Helligkeit, Farbwerten, Effektparametern und Szenen aus dem Gerät in die ETS-Parameter übernommen werden. Diese Übernahme aktualisiert die Projektierung in ETS, ersetzt jedoch keinen anschließenden Applikationsdownload, wenn die eingelesenen Werte wieder in das Gerät geschrieben werden sollen.
 
 ## HCL und Farbtemperatur
 

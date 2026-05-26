@@ -13,8 +13,4 @@
   <op:config name="%LOG_NumChannelsDefault%" value="1" />
   <op:config name="%LOG_EnableSave%" value="0" />
 
-  <op:config name="%NET_ServiceNTP%" value="1" />
-  <op:config name="%NET_WifiTool%" value="1" /> 
-
-
 </KNX>

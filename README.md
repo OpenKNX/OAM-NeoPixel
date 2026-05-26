@@ -6,6 +6,8 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 
 - [German application description](doc/Applikationsbeschreibung.md)
 - [LED behavior and diagnostic codes](doc/LED-Behaviour.md)
+- [Webserver and Web UI architecture](Webserver.md)
+- [Developer note: Web UI persistence and ETS readback](doc/Developer-WebUi-Ets-Sync.md)
 
 ## Features
 
@@ -13,14 +15,16 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 - **Multi-Strip Support**: Control up to 8 independent LED strips simultaneously
 - **Flexible Segmentation**: Up to 16 segments on the virtual strip for granular control
 - **Rich Effect Library**: 29 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more
-- **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, and brightness
+- **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, brightness, and effect parameters
 - **Color Profiles**: RGB, HSV, RGBW, RGBCCT (5-channel), warm/cool white (WW/CW) support
 
 ### Control Methods
 - **KNX Group Objects**: Full control via KNX telegrams
+- **Browser Web UI**: NeoPixel Studio for live editing, scene management, payload preview, and device-side persistence on IP-capable targets
 - **Per-Segment KOs**: Independent control of each segment's color, brightness, effect, scene, and power
 - **Global Controls**: Global brightness, power, and HCL (Human Centric Lighting) state
 - **Relative Controls**: Dimming steps via DPT 3.007 (Control_Dimming) for incremental brightness/color changes
+- **ETS Readback**: Per-segment sync imports the current runtime state and scenes from the device back into ETS parameters
 
 ### Color & Lighting
 - **RGB Direct Control**: Set exact RGB values
@@ -227,6 +231,8 @@ The firmware persists the following segment state to flash memory for seamless r
 - **Active scene number**
 
 If the effect was not changed via KO during runtime, the ETS-configured default effect is used after restart.
+
+The NeoPixel Studio web UI uses the same device-side persistence path when you choose **Save to device**. This updates the device's stored runtime snapshot, but it does not automatically modify the ETS project. To copy the current runtime state and scenes back into ETS, use the per-segment sync function in ETS.
 
 **Startup Behavior** (configurable per segment, with a global default):
 

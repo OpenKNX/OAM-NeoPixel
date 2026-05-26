@@ -318,6 +318,21 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%056_R-%TT%%CC%05601" IndentLevel="1" HelpContext="%DOC%"/>
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                    
+                    <!-- Segment-Gerät Abgleich -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Synchronisierung" UIHint="Headline" />
+                    <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid">
+                      <Rows>
+                        <Row Id="%AID%_PB-nnn_R-1" />
+                      </Rows>
+                      <Columns>
+                        <Column Id="%AID%_PB-nnn_C-1" Width="50%" />
+                        <Column Id="%AID%_PB-nnn_C-2" Width="50%" />
+                      </Columns>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Segment-Parameter und Szenen aus dem Gerät in die ETS übernehmen:" Cell="1,1" />
+                      <Button Id="%AID%_B-%TT%%CC%920" Text="Segment mit Gerät abgleichen" Name="SyncSegmentFromDevice" EventHandler="NEO_syncSegmentFromDevice" EventHandlerParameters="{ &quot;segmentPrefix&quot;:&quot;NEO%C%&quot; }" EventHandlerOnline="ConnectionOriented" Cell="1,2" />
+                    </ParameterBlock>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->
                     <!-- ETS-Konfiguration beim Start (immer sichtbar) -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Start-Konfiguration" UIHint="Headline" />
