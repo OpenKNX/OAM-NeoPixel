@@ -11,12 +11,14 @@
 #include <string>
 #include <vector>
 
-// ETS FunctionProperty Definitions (from the generated NeoPixel-*.debug.xml files)
-// These values are referenced in the ETS JavaScript for online functions
-#define NEOPIXEL_FUNCTION_OBJECT_INDEX 158   // NeoPixel module appliance object
-#define NEOPIXEL_FUNCTION_PROPERTY_ID 10     // Hardware detection property
-#define NEOPIXEL_SCENE_SYNC_PROPERTY_ID 11   // Scene sync/export property
-#define NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID 12 // Segment sync/export property
+// ETS FunctionProperties for ObjectIndex 160 (0xA0)
+// The first payload byte selects the command:
+// 0 = hardware detection, 1 = scene sync/export, 2 = segment sync/export.
+#define NEOPIXEL_FUNCTION_OBJECT_INDEX 160 // NeoPixel module appliance object
+#define NEOPIXEL_FUNCTION_PROPERTY_ID 11   // FP 160/11: NeoPixel online functions
+#define NEOPIXEL_FUNCTION_CMD_HARDWARE_DETECT 0
+#define NEOPIXEL_FUNCTION_CMD_SCENE_SYNC 1
+#define NEOPIXEL_FUNCTION_CMD_SEGMENT_SYNC 2
 
 // ─── NeoPixel Module Error/Warning Blink Codes ─────────────────────────────
 // All NeoPixel status codes use the STATUS LED (OPENKNX_LEDFUNC_BASE_STATE).

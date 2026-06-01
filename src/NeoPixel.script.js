@@ -407,7 +407,7 @@ function NEO_detectHardware(device, online, progress, context) {
     // Function Property ID for hardware detection (to be implemented in firmware)
     // Returns: [0, hwId_high, hwId_low] where hwId = (high << 8) | low
     var data = [0]; // no input data
-    var resp = online.invokeFunctionProperty(158, 10, data); // FP 158/10 = NeoPixel hardware detect
+    var resp = online.invokeFunctionProperty(160, 11, data); // FP 160/11 = NeoPixel online functions
     
     online.disconnect();
     progress.setProgress(70);
@@ -641,7 +641,7 @@ function NEO_detectHardware(device, online, progress, context) {
 
     var response;
     try {
-      response = BASE_invokeFunctionPropertyWrapper(158, 12, [segmentId], device, online, progress, 20, 76);
+      response = BASE_invokeFunctionPropertyWrapper(160, 11, [2, segmentId], device, online, progress, 20, 76);
     } finally {
       online.disconnect();
     }

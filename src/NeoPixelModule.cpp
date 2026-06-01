@@ -1877,9 +1877,11 @@ bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t pro
 {
     // ALWAYS log when called - even if wrong object/property
     logDebugP("==> processFunctionProperty CALLED: ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
-    logDebugP("    Expected: ObjectIndex=%d, PropertyId=%d, %d or %d",
+    logDebugP("    Expected: ObjectIndex=%d, PropertyId=%d, Command=%d/%d/%d",
               NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID,
-              NEOPIXEL_SCENE_SYNC_PROPERTY_ID, NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID);
+              NEOPIXEL_FUNCTION_CMD_HARDWARE_DETECT,
+              NEOPIXEL_FUNCTION_CMD_SCENE_SYNC,
+              NEOPIXEL_FUNCTION_CMD_SEGMENT_SYNC);
 
     if (objectIndex != NEOPIXEL_FUNCTION_OBJECT_INDEX)
     {
@@ -1888,16 +1890,54 @@ bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t pro
         return false;
     }
 
-    if (propertyId == NEOPIXEL_SCENE_SYNC_PROPERTY_ID)
+    if (propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
     {
-        if (length < 1 || data == nullptr)
+        logErrorP("NeoPixel ETS function triggered with unexpected property id %d. Expected %d",
+                  propertyId, NEOPIXEL_FUNCTION_PROPERTY_ID);
+        return false;
+    }
+
+    if (length < 1 || data == nullptr)
+    {
+        resultData[0] = 1; // invalid request payload
+        resultLength = 1;
+        return true;
+    }
+
+    const uint8_t command = data[0];
+
+    if (command == NEOPIXEL_FUNCTION_CMD_HARDWARE_DETECT)
+    {
+#ifdef DEVICE_HW_ID
+        uint16_t hwId = DEVICE_HW_ID;
+
+        // Return format: [0, hwId_high, hwId_low]
+        resultData[0] = 0;             // Success
+        resultData[1] = (hwId >> 8);   // High byte
+        resultData[2] = (hwId & 0xFF); // Low byte
+        resultLength = 3;
+
+        logDebugP("==> Hardware detection SUCCESS: DEVICE_HW_ID = 0x%04X (resultLength=%d)", hwId, resultLength);
+        return true;
+#else
+        // Hardware ID not defined in build
+        resultData[0] = 2; // Error: hardware ID not available
+        resultLength = 1;
+        logErrorP("Hardware detection failed: DEVICE_HW_ID not defined");
+        return false;
+#endif
+    }
+
+    if (command == NEOPIXEL_FUNCTION_CMD_SCENE_SYNC)
+    {
+        if (length < 2)
         {
             resultData[0] = 1; // invalid request payload
             resultLength = 1;
             return true;
         }
 
-        const uint8_t apiSegmentId = data[0];
+        const uint8_t apiSegmentId = data[1];
         if (apiSegmentId < 1 || apiSegmentId > _segments.size())
         {
             logErrorP("Scene sync requested invalid segment id %d", apiSegmentId);
@@ -1930,19 +1970,19 @@ bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t pro
         return true;
     }
 
-    if (propertyId == NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID)
+    if (command == NEOPIXEL_FUNCTION_CMD_SEGMENT_SYNC)
     {
         static constexpr uint8_t kSegmentSyncPayloadVersion = 1;
         static constexpr uint8_t kSegmentSyncParameterSlotCount = 10;
 
-        if (length < 1 || data == nullptr)
+        if (length < 2)
         {
             resultData[0] = 1; // invalid request payload
             resultLength = 1;
             return true;
         }
 
-        const uint8_t apiSegmentId = data[0];
+        const uint8_t apiSegmentId = data[1];
         if (apiSegmentId < 1 || apiSegmentId > _segments.size())
         {
             logErrorP("Segment sync requested invalid segment id %d", apiSegmentId);
@@ -2019,33 +2059,14 @@ bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t pro
         return true;
     }
 
-    if (propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
-    {
-        logErrorP("NeoPixel ETS function triggered with unexpected property id %d. Expected %d, %d or %d",
-                  propertyId, NEOPIXEL_FUNCTION_PROPERTY_ID,
-                  NEOPIXEL_SCENE_SYNC_PROPERTY_ID, NEOPIXEL_SEGMENT_SYNC_PROPERTY_ID);
-        return false;
-    }
-
-// Read hardware ID from compile-time define
-#ifdef DEVICE_HW_ID
-    uint16_t hwId = DEVICE_HW_ID;
-
-    // Return format: [0, hwId_high, hwId_low]
-    resultData[0] = 0;             // Success
-    resultData[1] = (hwId >> 8);   // High byte
-    resultData[2] = (hwId & 0xFF); // Low byte
-    resultLength = 3;
-
-    logDebugP("==> Hardware detection SUCCESS: DEVICE_HW_ID = 0x%04X (resultLength=%d)", hwId, resultLength);
-    return true;
-#else
-    // Hardware ID not defined in build
-    resultData[0] = 2; // Error: hardware ID not available
+    logErrorP("NeoPixel ETS function triggered with unexpected command %d. Expected %d, %d or %d",
+              command,
+              NEOPIXEL_FUNCTION_CMD_HARDWARE_DETECT,
+              NEOPIXEL_FUNCTION_CMD_SCENE_SYNC,
+              NEOPIXEL_FUNCTION_CMD_SEGMENT_SYNC);
+    resultData[0] = 5; // unknown command
     resultLength = 1;
-    logErrorP("Hardware detection failed: DEVICE_HW_ID not defined");
-    return false;
-#endif
+    return true;
 }
 
 // =============================================================================
