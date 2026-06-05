@@ -12,7 +12,7 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 ### Core Functionality
 - **Multi-Strip Support**: Control up to 8 independent LED strips simultaneously
 - **Flexible Segmentation**: Up to 16 segments on the virtual strip for granular control
-- **Rich Effect Library**: 29 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more
+- **Rich Effect Library**: 34 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more — including **2D effects** for LED matrices (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock)
 - **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, and brightness
 - **Color Profiles**: RGB, HSV, RGBW, RGBCCT (5-channel), warm/cool white (WW/CW) support
 
@@ -45,6 +45,8 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 - **Hardware Flexibility**: GPIO and SPI clock configuration for custom wiring
 - **Virtual Strip Architecture**: Internal virtual strip allows flexible physical strip ordering and rearrangement
 - **Power Monitoring**: Total current (mA), load (%), and power (W) status KOs
+- **2D / 3D Matrix Support**: Configure any segment as a 2D or 3D LED matrix — set width, height, wiring topology (serpentine/linear rows or columns) and use 2D-native effects. Multiple panels can share a single segment or use separate segments.
+- **Effektkette** (Distributed rendering): Link segments across multiple KNX devices so one effect runs seamlessly over the combined strip. One device is Master (sends), others are Slaves (render their section). Watchdog timeout and local override policy configurable per segment.
 
 ## Effects
 
@@ -65,6 +67,16 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 | 12 | Theater Chase | 27 | Kerze |
 | 13 | Theater Chase Rainbow | 28 | Kerzen Multi |
 | 14 | Sinelon | | |
+
+### 2D / 3D Effects (require segment with matrix geometry configured)
+
+| ID | Effect | Beschreibung |
+|----|--------|-------------|
+| 29 | Fire 2D | Column-based fire simulation — each column burns independently |
+| 30 | Noise 2D | Smooth XY noise field (bilinear interpolation) |
+| 31 | Cylon 2D | Sweeping row or column across the matrix |
+| 32 | Scroll Text | Horizontal scrolling text (5×7 font), text settable via KO |
+| 33 | Clock | Digital clock HH:MM or HH:MM:SS (requires KNX time KO) |
 
 ## Installation & Setup
 

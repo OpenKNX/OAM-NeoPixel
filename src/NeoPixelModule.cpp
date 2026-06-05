@@ -222,6 +222,9 @@ void NeoPixelBusModule::loop(bool configured)
     // Process relay timers for delayed on/off switching
     processRelayTimers();
 
+    // Effektkette: check slave watchdog timeouts
+    loopSyncWatchdog();
+
     // If global power is OFF, skip all effect processing and pixel updates
     if (!_globalPowerOn) return;
 
@@ -1232,6 +1235,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedEffectValid = (effect > 0);
                 // Note: Effect-specific parameters are now stored in ETS, no need to snapshot
 
+                // Effektkette: Master sends sync telegram to all slaves
+                if (cfg.syncMode == 1) sendSyncTelegram((size_t)channel);
+
                 // Send status feedback
                 _channelIndex = channel;
                 bool changed = KoNEO_FxState.valueNoSendCompare(effect, DPT_SceneNumber);
@@ -1726,6 +1732,21 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // These are status/output-only KOs, ignore incoming writes
                 break;
 
+#ifdef NEO_KoSyncChain
+            case NEO_KoSyncChain:
+            {
+                // Effektkette: slave receives sync telegram from master
+                if ((size_t)channel < _segments.size() && _segments[channel].syncMode == 2)
+                {
+                    uint8_t raw[6] = {};
+                    const uint8_t* dpt = ko.valueRef();
+                    for (uint8_t b = 0; b < 6 && b < ko.valueSize(); b++) raw[b] = dpt[b];
+                    receiveSyncTelegram((size_t)channel, raw, 6);
+                }
+                break;
+            }
+#endif
+
             default:
                 logInfoP("Segment %d Unhandled KO Index: %d", channel, koIndex);
                 break;
@@ -1735,6 +1756,122 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         _channelIndex = oldChannelIndex;
 
         // Auto-update cycle will render changes
+    }
+}
+
+// ============================================================================
+// Effektkette — Sync functions
+// ============================================================================
+
+/**
+ * @brief Compose and send a 6-byte sync telegram on this segment's SyncChain KO.
+ *
+ * Payload layout:
+ *   Byte 0: Flags  (bit0 = power on/off)
+ *   Byte 1: EffectType
+ *   Byte 2: Speed
+ *   Byte 3: R (primary colour)
+ *   Byte 4: G
+ *   Byte 5: B
+ */
+void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
+{
+#ifdef NEO_KoSyncChain
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (cfg.syncMode != 1 || !cfg.segment) return; // only masters send
+
+    uint8_t oldCh = _channelIndex;
+    _channelIndex = (uint8_t)segmentIndex;
+
+    auto& seg = *cfg.segment;
+    const auto& ecfg = seg.getConfig();
+
+    uint8_t payload[6];
+    payload[0] = seg.getLedState() != LedState::IDLE ? 0x01 : 0x00; // power
+    payload[1] = ecfg.effectType;
+    payload[2] = ecfg.speed;
+    payload[3] = ecfg.r();
+    payload[4] = ecfg.g();
+    payload[5] = ecfg.b();
+
+    auto& ko = KoNEO_SyncChain;
+    ko.valueRef()[0] = payload[0];
+    ko.valueRef()[1] = payload[1];
+    ko.valueRef()[2] = payload[2];
+    ko.valueRef()[3] = payload[3];
+    ko.valueRef()[4] = payload[4];
+    ko.valueRef()[5] = payload[5];
+    ko.objectWritten();
+
+    logInfoP("Effektkette [%zu]: sent sync effect=%d speed=%d r=%d g=%d b=%d",
+             segmentIndex, payload[1], payload[2], payload[3], payload[4], payload[5]);
+
+    _channelIndex = oldCh;
+#endif
+}
+
+/**
+ * @brief Apply an incoming 6-byte sync telegram to a slave segment.
+ */
+void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
+                                             const uint8_t* payload, uint8_t len)
+{
+    if (segmentIndex >= _segments.size() || len < 6) return;
+    auto& cfg = _segments[segmentIndex];
+    if (cfg.syncMode != 2 || !cfg.segment) return; // only slaves receive
+
+    // Check override policy: if local override is active and policy = lokal hat Vorrang → ignore
+    if (cfg.syncOverridePolicy == 1 && cfg.localOverride) return;
+
+    cfg.lastSyncMs = millis();
+
+    bool  powerOn  = (payload[0] & 0x01) != 0;
+    uint8_t effectId = payload[1];
+    uint8_t speed    = payload[2];
+    uint8_t r = payload[3], g = payload[4], b = payload[5];
+
+    if (!powerOn)
+    {
+        cfg.segment->clearAll();
+        logInfoP("Effektkette [%zu]: sync power off", segmentIndex);
+        return;
+    }
+
+    // Apply colour + speed to segment config
+    auto& ecfg = cfg.segment->getConfig();
+    ecfg.speed = speed;
+    ecfg.primaryRGBW = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8);
+
+    // Apply effect
+    uint8_t oldCh = _channelIndex;
+    _channelIndex = (uint8_t)segmentIndex;
+    applyEffectToSegment(cfg.segment, effectId);
+    _channelIndex = oldCh;
+
+    logInfoP("Effektkette [%zu]: received sync effect=%d speed=%d", segmentIndex, effectId, speed);
+}
+
+/**
+ * @brief Called every loop() iteration — checks if any slave has timed out waiting for sync.
+ */
+void NeoPixelBusModule::loopSyncWatchdog()
+{
+    uint32_t now = millis();
+    for (auto& cfg : _segments)
+    {
+        if (cfg.syncMode != 2) continue;           // only slaves
+        if (cfg.syncTimeoutSteps == 0) continue;   // no timeout configured
+        if (cfg.lastSyncMs == 0) continue;         // never received any sync yet
+
+        uint32_t timeoutMs = (uint32_t)cfg.syncTimeoutSteps * 10000u;
+        if (now - cfg.lastSyncMs > timeoutMs)
+        {
+            // Timeout: turn off segment
+            if (cfg.segment) cfg.segment->clearAll();
+            cfg.lastSyncMs = 0; // reset so we don't keep clearing every frame
+            logInfoP("Effektkette slave timeout — segment turned off");
+        }
     }
 }
 
@@ -3315,6 +3452,35 @@ NeoPixelBusModule::SegmentConfig NeoPixelBusModule::createSegmentConfig(uint8_t 
     config.reverseDirection = ParamNEO_NEOSegmentReverseDirection;
     config.mirrorEffect = ParamNEO_NEOSegmentMirrorEffect;
 
+    // 2D/3D matrix geometry — read from reserved bytes (0 = 1D, no matrix)
+    // ParamNEO_NEOMatrixWidth/Height/Topology are defined once the ETS XML is updated.
+#ifdef ParamNEO_NEOMatrixWidth
+    config.matrixWidth  = (uint8_t)ParamNEO_NEOMatrixWidth;
+    config.matrixHeight = (uint8_t)ParamNEO_NEOMatrixHeight;
+    config.matrixDepth  = (uint8_t)ParamNEO_NEOMatrixDepth;
+    config.topology     = (LedTopology)ParamNEO_NEOSegmentTopology;
+#else
+    config.matrixWidth  = 0;
+    config.matrixHeight = 0;
+    config.matrixDepth  = 0;
+    config.topology     = LedTopology::LINEAR_1D;
+#endif
+
+    // ── Effektkette (virtual band) params ────────────────────────────────
+#ifdef ParamNEO_NEOSyncMode
+    config.syncMode           = (uint8_t)ParamNEO_NEOSyncMode;
+    config.syncOverridePolicy = (uint8_t)ParamNEO_NEOSyncOverridePolicy;
+    config.syncTimeoutSteps   = (uint8_t)ParamNEO_NEOSyncTimeout;
+    config.virtualTotalLength = (uint16_t)ParamNEO_NEOVirtualTotalLength;
+    config.virtualOffset      = (uint16_t)ParamNEO_NEOVirtualOffset;
+#else
+    config.syncMode           = 0;
+    config.syncOverridePolicy = 0;
+    config.syncTimeoutSteps   = 0;
+    config.virtualTotalLength = 0;
+    config.virtualOffset      = 0;
+#endif
+
     logDebugP("Segment %d: Read ETS params - Start=%d, End=%d, Offset=%d, Group=%d, Spacing=%d (ETS Start=%d, End=%d)",
               segmentIndex, config.startLed, config.endLed, config.offset, config.grouping, config.spacing,
               etsStartLed, etsEndLed);
@@ -3439,6 +3605,29 @@ void NeoPixelBusModule::applySegmentConfiguration()
         {
             config.segment->setMirror(true);
             logInfoP("Segment %zu: Mirror effect enabled", i);
+        }
+
+        // Apply 2D/3D matrix geometry
+        if (config.matrixWidth > 1 && config.matrixHeight > 1)
+        {
+            if (config.matrixDepth > 1)
+                config.segment->setGeometry(config.matrixWidth, config.matrixHeight,
+                                            config.matrixDepth, config.topology);
+            else
+                config.segment->setGeometry(config.matrixWidth, config.matrixHeight,
+                                            config.topology);
+            logInfoP("Segment %zu: Matrix %dx%dx%d topology=%d",
+                     i, config.matrixWidth, config.matrixHeight,
+                     config.matrixDepth > 1 ? config.matrixDepth : 1,
+                     (int)config.topology);
+        }
+
+        // Apply Effektkette (virtual band)
+        if (config.syncMode != 0 && config.virtualTotalLength > 0)
+        {
+            config.segment->setVirtualBand(config.virtualTotalLength, config.virtualOffset);
+            logInfoP("Segment %zu: Effektkette mode=%d totalLen=%d offset=%d",
+                     i, config.syncMode, config.virtualTotalLength, config.virtualOffset);
         }
 
         logDebugP("Applied configuration to segment %zu", i);

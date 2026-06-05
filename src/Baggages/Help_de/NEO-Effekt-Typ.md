@@ -1,44 +1,59 @@
 # Effekt-Typ
 
-Wählt den Animationseffekt für die LED-Streifen aus.
+Wählt den Animationseffekt für das Segment aus.
 
-**Aktuell verfügbare Effekte in OFM-NeoPixel:**
+## Verfügbare Effekte
 
-## **Implementierte Effekte (ID 0-21)**
+### Standard-Effekte (immer verfügbar)
 
-- **No Effect (0):** Keine Animation
-- **Solid (1):** Statische Farbe ohne Animation
-- **Wipe (2):** Progressive Farbfüllung über den Streifen
-- **Rainbow (3):** Regenbogen-Farbverlauf basierend auf FastLED
-- **Pride2015 (4):** Pride-Effekt mit Farbwellen (FastLED-Port von Mark Kriegsman)
-- **Confetti (5):** Zufällige farbige Pixel mit Ausblendung (FastLED-Port)
-- **Juggle (6):** Bewegende Sinuswellen-Punkte (FastLED-Port)
-- **BPM (7):** Beat-synchrone Animation mit Farbpalette (FastLED-Port)
-- **Cylon (8):** Springender Punkt mit Fade-Spur (Knight Rider-Stil)
-- **RGBWTest (9):** Testeffekt für SK6812 RGBW-LEDs
-- **GarageDoor (10):** Garagentor-Animationseffekt
-- **Fire (11):** Realistische Feuer-Simulation mit flackernden Flammen (FastLED Fire2012-Port)
-- **Theater Chase (12):** Klassischer Theater-Marquee-Effekt mit konfigurierbaren Punkten
-- **Theater Chase Rainbow (13):** Theater-Chase mit zyklischen Regenbogenfarben
-- **Sinelon (14):** Bewegter Punkt mit Sinuswellen-Bewegung und Schweif (FastLED-Port)
-- **Twinkle (15):** Zufällige Pixel funkeln und verblassen wie Sterne
-- **Sparkle (16):** Party-Funkel-Effekt mit zufälligen hellen Blitzen
-- **Breathing (17):** Sanfter Atmen-Effekt mit konfigurierbarer Kurve
-- **Strobe (18):** Stroboskop-Effekt mit einstellbarem Timing
-- **Pulse (19):** Puls-Effekt mit konfigurierbarer Breite und Gamma-Korrektur
-- **Comet (20):** Bewegender Komet mit verblassendem Schweif
-- **Meteor (21):** Meteor-Schauer mit zufälligen Größen und Farben
+| ID | Name | Beschreibung |
+|----|------|-------------|
+| 0 | Solid | Statische Farbe ohne Animation |
+| 1 | Wipe | Progressive Farbfüllung über den Streifen |
+| 2 | Rainbow | Regenbogen-Farbverlauf |
+| 3 | Rainbow Cycle | Regenbogen mit einstellbarer Dichte und Richtung |
+| 4 | Pride2015 | Pride-Effekt mit Farbwellen |
+| 5 | Confetti | Zufällige farbige Pixel mit Ausblendung |
+| 6 | Juggle | Bewegende Sinuswellen-Punkte |
+| 7 | BPM | Beat-synchrone Animation mit Farbpalette |
+| 8 | Cylon | Springendes Lichtauge mit Fade-Spur (Knight Rider-Stil) |
+| 9 | RGBWTest | Testeffekt für SK6812 RGBW-LEDs |
+| 10 | GarageDoor | Garagentor-Animationseffekt |
 
-## **Standard-Effekte (0-8)**
-Diese Effekte sind immer verfügbar.
+### Erweiterte Effekte (deaktivierbar mit `NEOPIXEL_MINIMAL_EFFECTS`)
 
-## **Erweiterte Effekte (9-21)**
-Diese Effekte sind nur verfügbar, wenn das Projekt ohne `NEOPIXEL_MINIMAL_EFFECTS` Flag kompiliert wird.
+| ID | Name | Beschreibung |
+|----|------|-------------|
+| 11 | Feuer | Realistische Feuer-Simulation (FastLED Fire2012-Port) |
+| 12 | Theater Chase | Klassischer Theater-Marquee-Effekt |
+| 13 | Theater Chase Rainbow | Theater-Chase mit Regenbogenfarben |
+| 14 | Sinelon | Bewegter Punkt mit Sinuswellen-Bewegung und Schweif |
+| 15 | Twinkle | Zufällige Pixel funkeln wie Sterne |
+| 16 | Sparkle | Party-Funkel-Effekt mit zufälligen Blitzen |
+| 17 | Breathing | Sanfter Atem-Effekt mit konfigurierbarer Kurve |
+| 18 | Strobe | Stroboskop-Effekt mit einstellbarem Timing |
+| 19 | Pulse | Puls-Effekt mit konfigurierbarer Breite |
+| 20 | Comet | Bewegender Komet mit verblassendem Schweif |
+| 21 | Meteor | Meteor-Schauer mit zufälligen Größen und Farben |
+| 22 | Noise | Sanfter Rausch-Effekt entlang des Streifens |
+| 23 | Palette | Farbpaletten-Animation |
+| 24 | Blitz | Blitz/Lightning-Effekt |
+| 25 | Gradient | Farbverlauf-Effekt |
+| 26 | RGBCCTTest | Testeffekt für 5-Kanal RGBCCT-LEDs |
+| 27 | Kerze | Einzelne flackernde Kerze |
+| 28 | Kerzen Multi | Mehrere unabhängig flackernde Kerzen |
 
-## **Parameter-Integration**
-Alle Effekte sind vollständig mit OAM-Parametern integriert:
-- **Speed & Intensity:** Universelle Geschwindigkeits- und Helligkeitssteuerung
-- **Option1-3:** Effekt-spezifische Parameter (Fade-Raten, Größen, Häufigkeiten)
-- **Feature1-2:** Boolean-Schalter (Bounce-Modi, Farbmodi, Richtungsumkehr)
+### 2D-Effekte (erfordern Segment mit Matrix-Geometrie)
 
-**Status:** Alle 22 Effekte (0-21) sind vollständig implementiert und einsatzbereit!
+| ID | Name | Beschreibung |
+|----|------|-------------|
+| 29 | Feuer 2D | Spaltenweise Feuer-Simulation auf LED-Matrix |
+| 30 | Rauschen 2D | Sanftes XY-Rauschfeld mit bilinearer Interpolation |
+| 31 | Cylon 2D | Cylon-Auge als Zeile oder Spalte über die Matrix |
+| 32 | Laufschrift | Horizontale Laufschrift mit 5×7 Font (Text per KO setzbar) |
+| 33 | Uhr 2D | Digitale Uhr HH:MM oder HH:MM:SS (erfordert gültige KNX-Uhrzeit) |
+
+## Hinweis
+2D-Effekte werden auf 1D-Segmenten ignoriert. Die Matrix-Geometrie (Breite, Höhe, Topologie) muss im Abschnitt „Topologie" konfiguriert sein.
+
+**Gesamt: 34 Effekte (ID 0–33)**

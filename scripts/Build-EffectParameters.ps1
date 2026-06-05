@@ -120,11 +120,11 @@ $script:Config = @{
 
     # Scene Configuration
     ScenePartXml = "src/NeoPixel.Scene.part.xml"
-    SceneDataStart = 140         # First scene at offset 140 within Union
+    SceneDataStart = 160         # First scene at offset 160 within Union
     SceneSize = 22               # Bytes per scene
     SceneEffectParamOffset = 12  # Effect params start at byte 12 within each scene
     SceneEffectParamSize = 10    # 10 bytes for effect-specific params per scene
-    SceneCountOffset = 137       # SceneCount param offset within Union
+    SceneCountOffset = 157       # SceneCount param offset within Union
     SceneBaseParamId = 8         # First free ID within scene part (after 0-7 for fixed params)
     SceneGenericSlotCount = 10   # Number of generic slots (8 uint8 + 2 bool)
     SceneInstances = 10          # Number of scene instances (must match instances= in Segment.templ.xml)
@@ -1512,7 +1512,7 @@ function Generate-ParameterTypes {
             $ptId = "%AID%_PT-$($effectNameClean)$($paramNameClean)"
             $paramNameWithEffect = "$($param.Name) ($($effect.NameDE))"
 
-            $xml += "<ParameterType Id=`"$ptId`" Name=`"$paramNameWithEffect`">"
+            $xml += "              <ParameterType Id=`"$ptId`" Name=`"$paramNameWithEffect`">"
 
             # Map ParameterType enum to XML type
             $paramTypeEnum = if ($param.Type) { $param.Type } else { "PARAM_UINT8" }
@@ -3261,9 +3261,10 @@ try {
         # FINAL VALIDATION: Test with OpenKNXproducer (optional)
         # ============================================================
         if (-not $SkipOpenKNXproducer) {
+            # Validate against Dev XML (primary) — same template used by Release
             $testResult = Test-OpenKNXproducer -WorkingDir "." `
                                                 -HeaderFile "include/knxprod.h" `
-                                                -SourceDir "src/NeoPixel"
+                                                -SourceDir "src/NeoPixel-Dev"
         } else {
             Write-Host ""
             Write-Host "  Skipping OpenKNXproducer validation (as requested)" -ForegroundColor Yellow

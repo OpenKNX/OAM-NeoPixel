@@ -5,8 +5,8 @@
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="0"
-    ApplicationVersion="0.1"
-    ReplacesVersions="0.0" 
+    ApplicationVersion="0.2"
+    ReplacesVersions="0.1 0.0" 
     ApplicationRevision="0"
     ProductName="NeoPixel KNX Adapter"
     BusCurrent="30"

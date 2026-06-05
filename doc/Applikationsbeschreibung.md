@@ -132,6 +132,71 @@ Um Netzteile und LED-Streifen zu schützen, kann die Leistungsaufnahme begrenzt 
 
 Bei aktiver Leistungsbegrenzung kann die Helligkeit dynamisch reduziert werden, um die konfigurierte Obergrenze einzuhalten.
 
+## Diagnose über serielle Konsole
+
+Die Firmware stellt über die serielle Konsole (OpenKNX-Konsole) umfangreiche Diagnosebefehle bereit. Diese ermöglichen eine detaillierte Analyse und Konfiguration der physischen LED-Streifen zur Laufzeit, ohne dass ein Firmware-Update oder eine neue ETS-Parametrierung erforderlich ist.
+
+### Timing-Konfiguration (`neo phys timing`)
+
+Für 1-Wire-Streifen (WS2812B, SK6812 und Klone) kann das Signaltiming direkt angepasst werden:
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| `neo phys timing <id> auto` | Automatisches Standardtiming (800 kHz) |
+| `neo phys timing <id> slow10pct` | Bitrate um 10 % reduziert (für problematische Klone) |
+| `neo phys timing <id> custom <t0h> <t0l> <t1h> <t1l>` | Vollständig benutzerdefiniertes Timing in Nanosekunden |
+| `neo phys timing <id> reset` | Zurücksetzen auf AUTO-Timing |
+| `neo phys timing <id> scan` | Automatischer Clone-Scan: durchläuft alle Profile, LEDs zeigen Reaktion optisch an |
+| `neo phys timing <id> profile <N>` | Clone-Profil N dauerhaft anwenden und in Flash speichern |
+
+Der Clone-Scan (`scan`) testet nacheinander 6 vordefinierte Timing-Profile durch. Jedes Profil leuchtet die ersten LEDs für 3 Sekunden in einer profilspezifischen Farbe auf. Reagieren die LEDs, kann das zugehörige Profil über `profile <N>` dauerhaft gespeichert werden.
+
+### Level-Shifter-Konfiguration (`neo phys config levelshifter`)
+
+Die Firmware unterstützt drei typische Level-Shifter-Chips, die auf gängiger LED-Hardware verbaut sind:
+
+```
+neo phys config <id> levelshifter <none|txs0108|hct125|ahct125>
+```
+
+#### Was passiert bei der Auswahl?
+
+| Wert | Chip | Typische Hardware | Firmware-Aktion | Was verbessert sich |
+|------|------|-------------------|-----------------|---------------------|
+| `none` | — | REG2, UP1, direkte Verbindung | Keine GPIO-Änderung | — |
+| `txs0108` | TI TXS0108E | **KNeoPiX** (alle Varianten) | Siehe Tabelle unten | Zuverlässige Richtungserkennung, saubere Flanken |
+| `hct125` | TI 74HCT125 | QuinLED Dig-Uno V3, Dig-Quad V3, Dig-Octa | Keine GPIO-Änderung (transparenter Buffer) | Dokumentation; keine aktive Optimierung nötig |
+| `ahct125` | TI 74AHCT125 | **QuinLED Dig-Next-2** | Keine GPIO-Änderung | Dokumentation; keine aktive Optimierung nötig |
+
+#### Detaillierte Maßnahmen für TXS0108E
+
+Der TXS0108E erkennt die Übertragungsrichtung automatisch über eine interne RC-Schaltung. Damit diese korrekt funktioniert und die B-Seite (LED-Seite) saubere Flanken liefert:
+
+| Plattform | Maßnahme | Warum notwendig |
+|-----------|----------|-----------------|
+| **RP2040 / RP2350** | Interne Pull-up/Pull-down am Datenpin deaktiviert | Ohmsche Last am A-Pin würde den Strom der RC-Schaltung verfälschen und die Richtungserkennung stören |
+| **ESP32** | Treiberleistung auf 40 mA erhöht (`GPIO_DRIVE_CAP_3`, Standard: 20 mA) + Pull-Modus auf FLOATING | Höhere Treiberleistung liefert schärfere Flanken auf der A-Seite → schnellere Richtungserkennung → sauberere Ausgangsflanken auf der B-Seite (LED-Leitung) |
+
+#### Warum HCT/AHCT keine Optimierung braucht
+
+74HCT125 und 74AHCT125 sind **unidirektionale** Puffer: der MCU-Ausgang treibt direkt den Logikeingang des Chips, der Ausgang (LED-Seite) wird vollständig vom Chip getrieben. Die Eingangsschwelle (V_IH ≥ 2,0 V) wird von 3,3-V-MCU-Ausgängen zuverlässig erreicht. Die Standard-Treiberleistung (4 mA bei RP2040, 20 mA bei ESP32) ist für einen Logikeingang mehr als ausreichend — eine GPIO-Änderung würde nichts verbessern.
+
+Die Einstellung `hct125`/`ahct125` dient damit primär der **Dokumentation** und der korrekten Anzeige unter `neo phys config <id> info`.
+
+> **Hinweis zur KNeoPiX-Hardware:** Ab Firmware-Version 0.3.0 wird `txs0108` für alle KNeoPiX-Boards **automatisch beim Start** gesetzt (Build-Flag `NEOPIXEL_HW_LEVELSHIFTER=1` in der Hardware-Konfiguration). Eine manuelle Konsolenkonfiguration ist nicht mehr erforderlich. Der Befehl steht weiterhin zur Verfügung, um die Einstellung bei Bedarf zu überschreiben.
+
+> **Hinweis zum OE-Pin:** Auf der KNeoPiX-Hardware ist der OE-Pin des TXS0108E fest mit VCCA (3,3 V) verbunden und dauerhaft aktiv. Eine Firmware-gesteuerte Aktivierung/Deaktivierung ist nicht möglich und auch nicht nötig.
+
+Der aktuelle Wert wird unter `neo phys config <id> info` angezeigt.
+
+### Weitere Config-Befehle (`neo phys config`)
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| `neo phys config <id> info` | Vollständige Konfigurationsübersicht für den Streifen |
+| `neo phys timings` | Alle Timing-Modi und Clone-Profile tabellarisch anzeigen |
+| `neo phys timing <id> scan` | Automatischen Clone-Scan starten |
+
 ## Diagnose und Sicherheit
 
 Die Applikation prüft zur Laufzeit unter anderem folgende Situationen:
@@ -153,6 +218,16 @@ Nach Änderungen an Hardwareprofilen, Effektparametern oder der ETS-Struktur sol
 * die Applikation nach einem Versionswechsel erneut geladen wird.
 
 ## Änderungshistorie
+
+### Version 0.3.0 (in Entwicklung)
+
+* Neues Timing-System für 1-Wire-Streifen: individuelle Timing-Modi (AUTO, SLOW/FAST ±5–25 %), vollständig benutzerdefiniertes Custom-Timing in Nanosekunden
+* Clone-Timing-Scan: automatischer, nicht-blockierender Durchlauf von 6 vordefinierten Clone-Profilen mit optischer LED-Rückmeldung (3 s pro Profil)
+* Clone-Profile dauerhaft in Flash speicherbar via `neo phys timing <id> profile <N>`
+* Level-Shifter-Konfiguration: Unterstützung für TXS0108E, 74HCT125 und 74AHCT125; automatische Aktivierung per Board-Build-Flag (`NEOPIXEL_HW_LEVELSHIFTER`) — kein manuelles Konsolenkommando mehr nötig für bekannte Hardware (KNeoPiX, QuinLED)
+* TXS0108E-Optimierungen: RP2040 deaktiviert interne Pull-Widerstände; ESP32 erhöht Treiberleistung auf 40 mA + FLOATING (sauberere Flanken, zuverlässigere Richtungserkennung)
+* HCT/AHCT-Unterstützung: Typen dokumentierend eintragbar, keine GPIO-Eingriffe nötig (transparenter Buffer, Standard-Treiberleistung ausreichend)
+* Konsolenbefehl `neo phys config <id> info` zeigt Timing und Level-Shifter-Status vollständig an
 
 ### Version 0.2.0
 

@@ -83,7 +83,23 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint16_t spacing;           // Spacing between groups
         bool reverseDirection;      // Reverse direction flag
         bool mirrorEffect;          // Mirror effect flag
+        // 2D/3D matrix geometry (from ETS Byte 12=width, 13=height, Byte10 Bit5-7=topology)
+        uint8_t matrixWidth  = 0;         // 0 = no matrix (1D)
+        uint8_t matrixHeight = 0;         // 0 = no matrix (1D)
+        uint8_t matrixDepth  = 0;         // 0/1 = 2D, >1 = 3D
+        LedTopology topology = LedTopology::LINEAR_1D;
         Segment* segment = nullptr; // Pointer to actual segment
+
+        // ── Effektkette (virtual band) config ────────────────────────────
+        uint8_t  syncMode           = 0;  ///< 0=Aus, 1=Master, 2=Slave
+        uint8_t  syncOverridePolicy = 0;  ///< 0=Sync immer, 1=Lokal hat Vorrang
+        uint8_t  syncTimeoutSteps   = 0;  ///< 0=Aus; N×10s timeout for slaves
+        uint16_t virtualTotalLength = 0;  ///< total band length (0=standalone)
+        uint16_t virtualOffset      = 0;  ///< this segment's start in band
+
+        // ── Effektkette runtime state (not persisted) ─────────────────────
+        uint32_t lastSyncMs       = 0;    ///< millis() when last sync was received
+        bool     localOverride    = false; ///< local KO has overridden sync state
 
         // Saved state for power toggle and flash persistence
         bool savedValid = false;
@@ -374,6 +390,12 @@ class NeoPixelBusModule : public OpenKNX::Module
     void createSegments();            // Create segments on virtual strip
     void applySegmentConfiguration(); // Apply segment-specific settings (grouping, spacing, reverse, mirror)
     void applySegmentConfiguration(size_t segmentIndex, const SegmentConfig& config);
+
+    // ── Effektkette ──────────────────────────────────────────────────────
+    void sendSyncTelegram(size_t segmentIndex);          ///< Master: send sync state to bus
+    void receiveSyncTelegram(size_t segmentIndex,        ///< Slave: apply incoming sync payload
+                             const uint8_t* payload, uint8_t len);
+    void loopSyncWatchdog();                             ///< loop(): check slave timeouts
     void refreshHclMasterStateCache();                       // Update cached LightManager values + status KOs
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
