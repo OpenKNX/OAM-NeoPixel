@@ -82,9 +82,22 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
 
     uint8_t sceneIndex = sceneNumber - 1; // Convert to 0-based
 
-    // Capture current effect type
+    // Capture current effect type — or, if an Effektmanager is running, store it as EM action
     Effect* effect = segment->getEffect();
     uint8_t effectType = getTypeFromEffect(effect);
+    bool emRunning = false;
+    {
+        auto& segments = _module->getSegments();
+        if (channelIndex < segments.size() && segments[channelIndex].emController.isRunning())
+        {
+            uint8_t emId = segments[channelIndex].emController.activeEmId();
+            if (emId >= 1 && emId <= EM_COUNT)
+            {
+                effectType = EM_ACTION_BASE + emId - 1;
+                emRunning = true;
+            }
+        }
+    }
 
     // Capture current colors from segment config
     const EffectConfig& config = segment->getConfig();
@@ -117,8 +130,8 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
     writeSceneField(channelIndex, sceneIndex, FIELD_SECONDARY_CW, secondaryCW);
     writeSceneField(channelIndex, sceneIndex, FIELD_BRIGHTNESS, brightness);
 
-    // Write effect-specific parameters (up to 10 bytes at offset 12)
-    if (effect)
+    // Write effect-specific parameters (up to 10 bytes at offset 12) — not for EM actions
+    if (effect && !emRunning)
     {
         uint8_t paramCount = effect->getParameterCount();
         logInfoP("Storing effect '%s' with %d parameter(s):", effect->getName(), paramCount);
@@ -159,6 +172,15 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
     // Read scene data from EEPROM using computed byte offsets
     uint8_t effectType = readSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TYPE);
 
+    // EM action: scene starts an Effektmanager instead of applying a static effect
+    if (effectType >= EM_ACTION_BASE && effectType < EM_ACTION_BASE + EM_COUNT)
+    {
+        uint8_t emId = effectType - EM_ACTION_BASE + 1;
+        logInfoP("Scene %d for segment %d: starting Effektmanager %d", sceneNumber, channelIndex, emId);
+        _module->startEffektManager(channelIndex, emId);
+        return true;
+    }
+
     // Read primary color (RGB + WW + CW)
     uint8_t primaryR, primaryG, primaryB;
     readSceneColorRGB(channelIndex, sceneIndex, FIELD_PRIMARY_R, primaryR, primaryG, primaryB);
@@ -180,6 +202,12 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
              primaryR, primaryG, primaryB, primaryWW, primaryCW,
              secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW,
              brightness);
+
+    // A scene is an authoritative "set this state NOW" command. Stop any running
+    // Effektmanager on this segment first, otherwise its per-frame tick() would
+    // overwrite the static scene we are about to apply on the next loop.
+    // (The EM-action scene path above returns earlier and starts its own EM.)
+    _module->stopEffektManager(channelIndex);
 
     // Reset config options/features to defaults before applying the new effect.
     // Without this, leftover values from the previous effect bleed through

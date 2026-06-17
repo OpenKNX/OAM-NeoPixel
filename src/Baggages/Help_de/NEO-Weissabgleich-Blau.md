@@ -7,6 +7,7 @@ Dieser Parameter ermöglicht die Anpassung des Blauanteils für den Weißabgleic
 **Standardwert:** 100%
 
 **Beschreibung:**
+
 - Reduzierung des Wertes verringert den Blauanteil im Weiß
 - Erhöhung des Wertes verstärkt den Blauanteil im Weiß
 - Wird nur angewendet, wenn der Weißabgleich aktiviert ist

@@ -11,6 +11,7 @@ Definiert den ersten LED-Index für das Segment.
 ## Verwendung mit Ende-LED
 
 Zusammen mit der Ende-LED definiert der Start-Wert den physischen LED-Bereich für das Segment:
+
 - **Start = 0, Ende = 313** → LEDs 0..312 (313 LEDs insgesamt)
 - Die Anzeige "313 LEDs" zeigt die Anzahl = Ende − Start
 

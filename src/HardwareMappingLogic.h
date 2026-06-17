@@ -17,8 +17,8 @@ constexpr uint8_t DUMMY_GPIO_PORT_SELECTION = 15;
 /**
  * @brief Get the currently selected hardware index from ETS parameters
  *
- * In runtime mode, reads the NEO_NeoPixelHardwareSelect parameter, which already
- * stores the generated hardware index.
+ * In runtime mode, reads the NEO_NeoPixelHardwareSelect parameter (which stores the
+ * selected DEVICE_HW_ID) and maps that stable ID to the build-local hardware index.
  * In compile-time mode (DEVICE_HW_ID defined), converts DEVICE_HW_ID to the
  * generated hardware index.
  *
@@ -30,9 +30,10 @@ inline uint8_t getCurrentHardwareIndex()
     // Compile-time mode: Use DEVICE_HW_ID from hardware config
     return HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
 #else
-    // Runtime mode: Read hardware index from ETS parameter (requires knxprod.h)
+    // Runtime mode: the ETS parameter stores the selected DEVICE_HW_ID (16-bit, build-stable).
+    // Map it to the build-local hardware index that addresses the per-hardware GPIO blocks.
     #ifdef ParamNEO_NeoPixelHardwareSelect
-    return (uint8_t)ParamNEO_NeoPixelHardwareSelect;
+    return HardwareMapping::mapDeviceHwIdToIndex((uint16_t)ParamNEO_NeoPixelHardwareSelect);
     #else
     return 0; // Fallback to HW0
     #endif

@@ -1,3 +1,3 @@
-# Effektkette: Gesamtlaenge
+# Effektkette: Gesamtlänge
 
-Gesamtanzahl der LEDs ueber alle beteiligten Geraete. Alle Segmente der Effektkette muessen denselben Wert konfiguriert haben.
+Gesamtanzahl der LEDs über alle beteiligten Geräte. Alle Segmente der Effektkette müssen denselben Wert konfiguriert haben.

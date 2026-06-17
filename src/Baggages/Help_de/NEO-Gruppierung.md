@@ -5,6 +5,7 @@ Behandelt N aufeinanderfolgende LEDs als einen virtuellen Pixel (alle erhalten d
 **Wert:** Anzahl der LEDs pro Gruppe (Standard: 1)
 
 **Funktionsweise:**
+
 - Mehrere physische LEDs werden zu einem logischen Pixel zusammengefasst
 - Alle LEDs in einer Gruppe erhalten dieselbe Farbe
 - Reduziert die scheinbare Auflösung des Segments

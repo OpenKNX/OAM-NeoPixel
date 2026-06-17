@@ -17,7 +17,10 @@ Je nach eingesetzter Hardware stehen zusätzlich Netzwerkfunktionen, OTA-Update,
 * Steuerung von bis zu 8 physischen LED-Streifen
 * Bildung eines virtuellen LED-Streifens zur freien Anordnung der physischen Streifen
 * Bis zu 16 unabhängige Segmente
-* Umfangreiche Effektbibliothek für statische und dynamische Lichtbilder
+* Über 40 Effekte für statische und dynamische Lichtbilder, inklusive echter **2D-Matrix-Effekte** (Lauftext, Uhr, Matrix-Regen, Feuer 2D, Plasma u. v. m.)
+* Konfiguration von Segmenten als 2D-Matrix (Breite × Höhe, Topologie) für matrixfähige Effekte
+* **Effektmanager**: Cue-basierte Lichtsequenzen mit Überblendung, Loop und Verkettung mehrerer Effektmanager
+* **Effektkette**: ein Effekt nahtlos über mehrere KNX-Geräte (ein Master, mehrere Slaves)
 * Szenenspeicher mit bis zu 10 Szenen je Segment
 * Farbsteuerung über RGB, HSV, RGBW und RGBCCT
 * Farbtemperatursteuerung für geeignete LED-Typen
@@ -28,13 +31,20 @@ Je nach eingesetzter Hardware stehen zusätzlich Netzwerkfunktionen, OTA-Update,
 
 ## Geeignete Hardware
 
-Die Applikation wird für mehrere Hardwarefamilien bereitgestellt. Dazu gehören insbesondere:
+Die Applikation wird für mehrere Hardwarefamilien bereitgestellt.
 
-* OpenKNXiao KNeoPiX und OpenKNXiao Mini auf RP2040- und RP2350-Basis
+**Von OpenKNX unterstützte Hardware** (hier wird entwickelt und getestet):
+
+* OpenKNXiao KNeoPiX und OpenKNXiao Mini auf RP2040- und RP2350-Basis — Referenzplattform, hier läuft es am rundesten
 * OpenKNX REG2 mit PiPico- und PiPico2-Varianten
 * OpenKNX UP1 GW-UART
+
+**Weitere Hardware ohne Support** (Drittanbieter):
+
 * Gledopto GL-C-309WL auf ESP32-Basis
 * QuinLED Dig2Go, Dig-Uno V3, Dig-Quad V3, Dig-Octa-32-8L und Dig-Next-2
+
+Diese Drittanbieter-Hardware wird zwar mitgebaut, ist aber **weder getestet noch wird sie aktiv durch OpenKNX unterstützt**. Nutzung auf eigenes Risiko: wenn es läuft, gut — wenn nicht, gibt es dafür keinen Support. Für ein zuverlässiges Ergebnis empfehlen wir OpenKNX-Hardware.
 
 Die konkret verfügbaren Funktionen hängen von der ausgewählten Hardware ab. Insbesondere Netzwerkkonfiguration, OTA-Update, Relaisfunktionen und die Anzahl nutzbarer Ports können hardwarebedingt unterschiedlich sein.
 
@@ -50,6 +60,18 @@ Nach dem Laden der physikalischen Adresse und der Applikation sollten zuerst die
 * Prüfung der Spannungsversorgung und der Leistungsgrenzen
 
 Wenn Firmware und ETS-Hardwareauswahl nicht zusammenpassen, wird die Hardwarekonfiguration aus Sicherheitsgründen nicht wie vorgesehen übernommen. In diesem Fall muss entweder die passende Firmware geflasht oder die ETS-Parametrierung korrigiert werden.
+
+#### Stabile Hardware-Identität über die eindeutige Geräte-ID
+
+Jede unterstützte Hardware besitzt eine **eindeutige Geräte-ID (DEVICE_HW_ID)**. Genau diese ID wird als Hardwareauswahl in der ETS gespeichert und von der Firmware direkt mit ihrer eigenen, einkompilierten Geräte-ID verglichen — nicht etwa ein Listenplatz oder eine laufende Nummer.
+
+Das macht die Zuordnung **build- und update-unabhängig**:
+
+* Es ist unerheblich, mit wie vielen Hardwarevarianten eine Firmware oder das ETS-Produkt erzeugt wurde — dieselbe physische Hardware wird immer korrekt erkannt.
+* Das Hinzufügen oder Entfernen *anderer* Hardwarevarianten verschiebt eine bereits im Gerät gespeicherte Auswahl nicht; sie bleibt gültig.
+* Bei einem Firmware- oder ETS-Update bleibt die hardwarebezogene Gerätekonfiguration erhalten.
+
+Die automatische Hardware-Erkennung in der ETS liest dieselbe Geräte-ID direkt aus dem angeschlossenen Gerät aus und setzt die passende Auswahl, sodass keine manuelle Zuordnung nötig ist.
 
 ## Allgemeine Parameter
 
@@ -103,6 +125,22 @@ Durch die Segmentierung lassen sich auf einem gemeinsamen LED-Aufbau unterschied
 Für jedes Segment kann ein statischer oder dynamischer Effekt gewählt werden. Neben Vollfarbe stehen unterschiedliche Lauf-, Farbwechsel-, Funken-, Feuer-, Regenbogen- und weitere Effektarten zur Verfügung. Die zugehörigen Parameter werden automatisch in die ETS-Applikation eingebunden und sind abhängig vom jeweils gewählten Effekt sichtbar.
 
 Bei einem Firmware-Update sollte geprüft werden, ob sich Effektumfang oder Effektparameter zwischen zwei Versionen geändert haben. In diesem Fall kann eine neue Parametrierung oder ein erneuter Download der Applikation erforderlich sein.
+
+## 2D-Matrix-Effekte und Topologie
+
+Ein Segment kann als zweidimensionale Matrix konfiguriert werden — über Breite × Höhe sowie die Verdrahtungs-Topologie (zeilen- oder spaltenweise, linear oder als Schlange/Serpentine). Auf einer so konfigurierten Matrix laufen die 2D-Effekte (z. B. Lauftext, Uhr, Matrix-Regen, Feuer 2D, Plasma, Starfield) in echtem 2D-Raum.
+
+1D-Effekte funktionieren weiterhin auf einer Matrix. Ein 2D-Effekt benötigt jedoch eine Matrix — auf einem reinen 1D-Streifen (ohne Breite × Höhe > 1) kommt er nicht zur Geltung.
+
+## Effektmanager und Cues
+
+Der Effektmanager spielt vordefinierte Lichtsequenzen ab. Jeder Effektmanager besteht aus mehreren **Cues** — Momentaufnahmen aus Effekt, Farben, Helligkeit und effekt-spezifischen Parametern. Cues werden mit einstellbarer Dauer und Überblendzeit nacheinander abgespielt, können in einer Schleife laufen (Loop) und auf einen weiteren Effektmanager verketten.
+
+Einem Segment kann ein Effektmanager zugewiesen werden; dieser übernimmt dann die Ausgabe des Segments. Start, Stop und Cue-Wechsel erfolgen über die KOs des Effektmanagers. Solange ein Effektmanager zugewiesen ist, treten der direkt am Segment gewählte Effekt und die Start-Konfiguration zurück.
+
+## Effektkette
+
+Mit der Effektkette lassen sich mehrere Geräte als **ein zusammenhängendes LED-Band** steuern: ein Segment ist Master und sendet den Effektzustand, weitere Segmente auf anderen Geräten sind Slaves und stellen jeweils ihren Abschnitt des Gesamtbandes dar. Der Master sitzt am Bandanfang (Offset 0); jeder Slave kennt die Gesamtlänge und seinen eigenen Offset im Band. So läuft ein Effekt nahtlos über Gerätegrenzen hinweg. Ein Watchdog schaltet ein Slave-Segment bei ausbleibender Synchronisation ab.
 
 ## Szenen
 
@@ -219,7 +257,20 @@ Nach Änderungen an Hardwareprofilen, Effektparametern oder der ETS-Struktur sol
 
 ## Änderungshistorie
 
-### Version 0.3.0 (in Entwicklung)
+### Version 0.3.0 (Beta-Release)
+
+Erster Beta-Release. Die Entwicklungsfassung (Dev-Produkt) läuft versionsmäßig voraus (aktuell 0.4); beide können parallel im ETS-Katalog liegen.
+
+Wesentliche Neuerungen:
+
+* **Effektmanager**: Cue-basierte Lichtsequenzen mit Dauer, Überblendung, Loop und Verkettung mehrerer Effektmanager
+* **Effektkette**: ein Effekt nahtlos über mehrere KNX-Geräte (Master/Slave, Offset und Gesamtlänge je Slave, Watchdog)
+* **2D-Matrix-Effekte**: Segmente als Matrix (Breite × Höhe, Topologie) mit echten 2D-Effekten (Lauftext, Uhr, Matrix-Regen, Feuer 2D, Plasma, Starfield, TRON, UFO Swarm, Snake, Tetris …) — über 40 Effekte gesamt
+* Effekt-Parameter mit sinnvollen **Vorgabewerten** in ETS (Segment, Szene und Cue)
+* Überarbeitete ETS-Oberfläche: Segment in *Aufbau / Effektkette / Effekt / Szenen* unterteilt, Topologie-Vorschaubilder, kontextabhängige Ein-/Ausblendungen (z. B. entfallen die Effekt-Parameter bei zugewiesenem Effektmanager)
+* Szenen je Segment (bis zu 10) über Szenensteuerungs-KO (DPT 18.001)
+
+Hardware und Signal:
 
 * Neues Timing-System für 1-Wire-Streifen: individuelle Timing-Modi (AUTO, SLOW/FAST ±5–25 %), vollständig benutzerdefiniertes Custom-Timing in Nanosekunden
 * Clone-Timing-Scan: automatischer, nicht-blockierender Durchlauf von 6 vordefinierten Clone-Profilen mit optischer LED-Rückmeldung (3 s pro Profil)

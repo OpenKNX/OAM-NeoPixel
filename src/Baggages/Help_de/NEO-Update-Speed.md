@@ -1,26 +1,17 @@
-# Update Speed
+# Aktualisierungsrate
 
-Bestimmt die Aktualisierungsgeschwindigkeit für Animationseffekte in diesem Segment.
+Wie oft die Animation pro Sekunde neu berechnet und an die LEDs gesendet wird (Frames pro Sekunde, FPS). Gilt **global für den gesamten Streifen** — nicht pro Segment.
 
-## Verfügbare Optionen:
+Höher = flüssiger, aber mehr Rechenlast.
 
-- **Slow (10 FPS)**: Langsame Animationen für subtile Effekte
-- **Normal (20 FPS)**: Standard-Geschwindigkeit, guter Kompromiss zwischen Leistung und Flüssigkeit
-- **Fast (30 FPS)**: Flüssige Animationen für dynamische Effekte  
-- **Max (50 FPS)**: Sehr responsive Animationen
-- **Extreme (80 FPS)**: Extrem flüssige Animationen
-- **Ludicrous (120 FPS)**: Maximale Flüssigkeit für anspruchsvolle Effekte
-- **FTL (240 FPS)**: Höchste Aktualisierungsrate für perfekte Flüssigkeit
+**Slow (10 FPS):** Ruhige, langsame Animationen.
 
-## Hinweise:
+**Normal (20 FPS):** Standard — guter Kompromiss aus Leistung und Flüssigkeit (Voreinstellung).
 
-- Höhere FPS-Werte benötigen mehr Rechenleistung
-- Bei vielen Segmenten sollten niedrigere Werte gewählt werden
-- Statische Farben benötigen keine hohe Aktualisierungsrate
-- Die Standardeinstellung "Normal (20 FPS)" ist für die meisten Anwendungen ausreichend
+**Fast (30 FPS):** Flüssige, dynamische Effekte.
 
-## Empfehlungen:
+**Max (50 FPS):** Sehr responsiv.
 
-- **10-20 FPS**: Für einfache Farbverläufe und langsame Effekte
-- **30-50 FPS**: Für dynamische Lichteffekte und schnelle Animationen
-- **80+ FPS**: Nur für spezielle Anwendungen mit sehr schnellen Bewegungen
+**Extreme (80 FPS):** Maximale Flüssigkeit, v.a. für kurze Streifen und schnelle Bewegungen.
+
+**Hinweis:** Bei langen Streifen begrenzt die LED-Datenrate die real erreichbare Bildrate — sehr hohe Werte bringen dann keinen sichtbaren Vorteil mehr. Für die meisten Anwendungen ist „Normal (20 FPS)" ideal.

@@ -5,10 +5,12 @@ Wählt die Art der HCL-Kurve (Human Centric Lighting) für die **automatische Fa
 ## Optionen:
 
 ### Keine (Deaktiviert)
+
 - HCL-Kurve ist ausgeschaltet
 - Farbtemperatur wird nur manuell über KNX-Objekte gesteuert
 
 ### Sonne (Sonnenstand)
+
 - Passt die Farbtemperatur automatisch basierend auf Sonnenaufgang/-untergang an
 - **Morgens/Abends**: Warmes Licht (Minimum Kelvin, z.B. 2700K)
 - **Mittags**: Kühles Tageslicht (Maximum Kelvin, z.B. 6500K)
@@ -16,6 +18,7 @@ Wählt die Art der HCL-Kurve (Human Centric Lighting) für die **automatische Fa
 - Benötigt GPS-Koordinaten oder NTP-Zeitabgleich
 
 ### Zeit (Zeitbasiert)
+
 - Passt die Farbtemperatur nach einem festen Zeitplan an (z.B. 06:00-22:00)
 - **Am Anfang/Ende des Zeitfensters**: Warmes Licht (Minimum Kelvin)
 - **In der Mitte des Zeitfensters**: Kühles Tageslicht (Maximum Kelvin)
@@ -28,11 +31,13 @@ Die HCL-Kurve berechnet **einmal pro Minute** den optimalen Kelvin-Wert basieren
 ## Unterschied nach LED-Typ:
 
 ### RGBCCT (5-Kanal) – Empfohlen!
+
 - **Direkte WW/CW-Steuerung**: Das System stellt das Verhältnis zwischen Warm-Weiss (WW) und Kalt-Weiss (CW) ein
 - **Beispiel bei 4000K**: WW=50%, CW=50%
 - **Vorteil**: Reine, effiziente Farbtemperaturwiedergabe
 
 ### RGB/RGBW (3/4-Kanal)
+
 - **RGB-Tönung**: Das System färbt die RGB-Kanäle entsprechend der Kelvin-Temperatur ein
 - Weiße/pastellfarbene Pixel werden stärker beeinflusst als gesättigte Farben
 

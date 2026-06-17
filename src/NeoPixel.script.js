@@ -439,12 +439,15 @@ function NEO_detectHardware(device, online, progress, context) {
       hwIndex = 255;
     }
     
-    // The current ETS parameter model stores the generated hardware index.
+    // The ETS hardware selection stores the unique DEVICE_HW_ID (not a list index), so the
+    // selection stays valid regardless of which other hardware exists or how the firmware
+    // was built. Write the detected HW-ID directly; reset to 255 ("please select") if unknown.
+    var hwSelectValue = isKnownHardware ? hwId : 255;
     try {
         // Method 1: ETS standard way using getParameterByName
         var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
         if (param) {
-            param.value = hwIndex;
+            param.value = hwSelectValue;
             if (isKnownHardware && hwName) {
                 progress.setText("NeoPixel: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ") ausgewählt");
             } else {

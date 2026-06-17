@@ -3,6 +3,7 @@
 Bestimmt die Art des Offsets für den Sonnenaufgang bei der HCL-Kurve.
 
 ## Optionen:
+
 - **Plus (+)**: Verschiebt den Sonnenaufgang um die angegebene Zeit nach hinten (später)
 - **Minus (-)**: Verschiebt den Sonnenaufgang um die angegebene Zeit nach vorne (früher)
 

@@ -7,6 +7,7 @@ Dieser Parameter ermöglicht die Anpassung des Grünanteils für den Weißabglei
 **Standardwert:** 100%
 
 **Beschreibung:**
+
 - Reduzierung des Wertes verringert den Grünanteil im Weiß
 - Erhöhung des Wertes verstärkt den Grünanteil im Weiß
 - Wird nur angewendet, wenn der Weißabgleich aktiviert ist

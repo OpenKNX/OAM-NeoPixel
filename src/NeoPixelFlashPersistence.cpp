@@ -79,8 +79,10 @@ void NeoPixelFlashPersistence::writeToFlash()
         }
         else
         {
-            // Write empty state if segment invalid
+            // Write empty state if segment invalid (still stamp the format version
+            // so the read-side version check never false-trips on an invalid seg 0)
             SegmentFlashState emptyState = {};
+            emptyState.version = FLASH_FORMAT_VERSION;
             openknx.flash.write((uint8_t*)&emptyState, sizeof(SegmentFlashState));
 #ifdef OPENKNX_DEBUG
             logInfoP("[Segment %d] SAVED: Empty state (segment invalid)", i);
@@ -158,7 +160,22 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         logWarningP("Ignoring flash data to prevent corruption");
         logWarningP("Segments will use default startup behavior");
         logWarningP("========================================");
-        _module->setWarningBlink(NEO_WARN_FLASH_DISCARDED, OpenKNX::Led::Color::Purple); // 2× blink Purple
+        _module->setWarningBlink(NEO_WARN_FLASH_DISCARDED); // pulsing Purple (color from warnColorForCode)
+        return;
+    }
+
+    // Validate FORMAT VERSION: a firmware update may keep the same size but change
+    // the meaning of the bytes. The version byte is the first byte of every record
+    // (also stamped on empty/invalid segments), so data[0] is reliable here.
+    if (data[0] != FLASH_FORMAT_VERSION)
+    {
+        logWarningP("========================================");
+        logWarningP("FLASH FORMAT VERSION MISMATCH - firmware updated!");
+        logWarningP("Flash format v%d, firmware expects v%d", data[0], FLASH_FORMAT_VERSION);
+        logWarningP("Ignoring flash data to prevent corruption");
+        logWarningP("Segments will use default startup behavior");
+        logWarningP("========================================");
+        _module->setWarningBlink(NEO_WARN_FLASH_DISCARDED); // pulsing Purple
         return;
     }
 
@@ -198,7 +215,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
 #endif
 
         // Store in segment config for later restoration (after startup delay)
-        auto& segments = const_cast<std::vector<NeoPixelBusModule::SegmentConfig>&>(_module->getSegments());
+        auto& segments = _module->getSegments();
         auto& cfg = segments[i];
 
         // Only restore values that were changed via KO (validFlags set)
@@ -223,6 +240,8 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
 
         // Restore last active scene number from reserved[0]
         cfg.savedSceneNumber = state.reserved[0];
+        // Restore last active Effektmanager ID from reserved[1]
+        cfg.emController.setLastEmId(state.reserved[1]);
 
         // Mark data as valid if ANY flag is set
         cfg.savedValid = (state.validFlags != 0);
@@ -282,7 +301,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         return;
     }
 
-    const auto& segments = _module->getSegments();
+    auto& segments = _module->getSegments();
     if (segments.empty())
     {
         logWarningP("restoreStatesAfterStartup: No segments");
@@ -305,7 +324,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 
     for (size_t i = 0; i < segments.size(); i++)
     {
-        const auto& cfg = segments[i];
+        auto& cfg = segments[i];
         Segment* seg = cfg.segment;
 
         if (!seg)
@@ -352,19 +371,25 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 bool sceneRecalled = _module->_sceneManager->recallScene(i, cfg.savedSceneNumber, seg);
                 if (sceneRecalled)
                 {
-                    // Restore power state on top of scene
-                    if (cfg.savedPower == 0)
-                    {
-                        seg->setBrightness(0);
-                    }
+                    if (cfg.savedPower == 0) seg->setBrightness(0);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] RESTORED Scene %d from Flash (power=%s)",
                              i, cfg.savedSceneNumber, cfg.savedPower ? "ON" : "OFF");
                     restoredCount++;
 #endif
-                    continue; // Scene recall handled everything, skip individual restore
+                    continue;
                 }
-                // If scene recall failed (e.g. scene count changed), fall through to individual restore
+            }
+
+            // Restore Effektmanager if one was active
+            if (cfg.emController.lastEmId() != EM_NONE)
+            {
+                cfg.emController.restoreState(seg, _module->_emData);
+#ifdef OPENKNX_DEBUG
+                logInfoP("[Segment %d] RESTORED EffektManager %d from Flash", i, cfg.emController.lastEmId());
+                restoredCount++;
+#endif
+                continue; // EM handles the segment, skip normal restore
             }
 
             // Determine effect source: Flash (if KO-changed) or ETS (base config)
@@ -479,10 +504,10 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
 {
     if (!_module) return false;
 
-    const auto& segments = _module->getSegments();
+    auto& segments = _module->getSegments();
     if (segmentIndex >= segments.size()) return false;
 
-    const auto& cfg = segments[segmentIndex];
+    auto& cfg = segments[segmentIndex];
     Segment* seg = cfg.segment;
 
     if (!seg)
@@ -493,7 +518,7 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     }
 
     // Initialize structure version and flags
-    state.version = 0x01;
+    state.version = FLASH_FORMAT_VERSION;
     state.validFlags = 0;
 
     // Save power state (always valid)
@@ -562,7 +587,9 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
 
     // reserved[0] = last active scene number (0 = no scene)
     state.reserved[0] = cfg.savedSceneNumber;
-    state.reserved[1] = 0;
+    // reserved[1] = last active Effektmanager ID (0 = none)
+    cfg.emController.saveState();
+    state.reserved[1] = cfg.emController.lastEmId();
     state.reserved[2] = 0;
 
     return true;

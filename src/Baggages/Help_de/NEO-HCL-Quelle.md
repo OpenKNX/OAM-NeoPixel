@@ -14,6 +14,7 @@ Das Segment verwendet den in den allgemeinen NeoPixel-HCL-Einstellungen ausgewä
 Das Segment verwendet einen eigenen Lichtmanager, der direkt in diesem Segment ausgewählt wird.
 
 ## Hinweise
+
 - Die eigentliche HCL-Kurve wird durch OFM-LightManager erzeugt.
 - Die NeoPixel-Parameter in diesem Bereich steuern nur, wie stark und auf welche Pixel die übernommene Farbtemperatur angewendet wird.
 - Ohne gültige Lichtmanager-Zuordnung bleibt die HCL-Anwendung für das Segment wirkungslos.

@@ -28,6 +28,7 @@ Bestimmt den Timing-Modus für die Datenübertragung auf den LED-Streifen. Dies 
 ## Fehlerbehandlung:
 
 Falls LEDs flackern oder nicht ansprechen:
+
 1. Mit **AUTO** starten (Standard)
 2. Bei Problemen zu **AUTO_LEGACY** wechseln
 3. Falls weiterhin Probleme: Zu **SLOW_5PCT** bis **SLOW_20PCT** reduzieren

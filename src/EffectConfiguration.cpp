@@ -166,7 +166,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
     else
     {
         logWarningP("Unknown effect type: %d", effectType);
-        _module->setWarningBlink(NEO_WARN_UNKNOWN_EFFECT, OpenKNX::Led::Color::Yellow); // 3× blink Yellow
+        _module->setWarningBlink(NEO_WARN_UNKNOWN_EFFECT); // pulsing Yellow (color from warnColorForCode)
     }
 }
 

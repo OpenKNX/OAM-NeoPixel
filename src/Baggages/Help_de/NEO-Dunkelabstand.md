@@ -5,6 +5,7 @@ Fügt dunkle Lücken von M LEDs zwischen den Gruppen ein.
 **Wert:** Anzahl der dunklen LEDs zwischen Gruppen (Standard: 0)
 
 **Funktionsweise:**
+
 - Erstellt Abstände zwischen den Gruppen
 - Die LEDs im Spacing-Bereich bleiben dunkel (ausgeschaltet)
 - Eine wiederholende Einheit besteht aus: **(Gruppierung + Spacing) LEDs**
@@ -29,6 +30,7 @@ Fügt dunkle Lücken von M LEDs zwischen den Gruppen ein.
 ```
 ●●●○○●●●○○●●●○○...
 ```
+
 - ●●● = 3 LEDs mit gleicher Farbe (Gruppe)
 - ○○ = 2 dunkle LEDs (Spacing)
 - Wiederholende Einheit = 5 LEDs total

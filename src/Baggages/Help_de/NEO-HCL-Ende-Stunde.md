@@ -3,9 +3,11 @@
 Stunde der **Endzeit** für den **zeitbasierten HCL‑Modus**.
 
 ## Gültig wenn
+
 - **HCL-Kurvetyp = Zeit**
 
 ## Werte
+
 - **0…23**
 
 ## Bedeutung

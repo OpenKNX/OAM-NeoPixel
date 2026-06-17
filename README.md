@@ -1,18 +1,62 @@
-# OAM-NeoPixel: KNX-Controlled Addressable LED Adapter
+# OpenKNX NeoPixel
 
-A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, scenes, color temperature, HCL (Human Centric Lighting), brightness control, and runtime state persistence.
+> **Turn your home into light.** Thousands of addressable LEDs, orchestrated by your KNX bus — from a single warm-white accent to living, breathing light scenes that span entire rooms.
+
+**OpenKNX NeoPixel** is the firmware that makes addressable LED strips first-class citizens on the KNX bus. No gateways, no cloud, no smartphone detours — just pixels that answer directly to your installation. Switch them, dim them, paint them in any colour, run cinematic effects, tune the white point to the rhythm of the day, and have every state survive a power cut. All configured in ETS, all running on a tiny, rock-solid OpenKNX controller.
+
+Whether you want a discreet indirect-lighting glow behind the TV, a circadian white-light ceiling that follows the sun, or a full 2D LED matrix playing animated effects across the wall — this firmware drives it, and it does so with a level of polish you normally only find in dedicated lighting consoles.
+
+---
+
+## Why you'll love it
+
+- **It just speaks KNX.** Every colour, every effect, every brightness step is a Group Object. Drop it into your ETS project, link your group addresses, done. Visualisations, push-buttons, logic, time schedules — if it talks KNX, it can drive your light.
+- **Colour, the way you think about it.** RGB, HSV, white channels, or true colour temperature in Kelvin — pick whatever fits the moment. 5-channel RGBCCT strips get real warm/cool white mixing, not a faked tint.
+- **Light that follows the day.** Built-in **Human Centric Lighting** shifts the white point from energising cool daylight to cosy warm evening light, driven by the sun's position or a simple schedule. Set it once and forget it.
+- **Effects that actually look good.** A library of **40+ effects** — from elegant (Rainbow, Breathing, Comet, Fire) to playful — including a whole suite of **2D matrix effects** for LED panels.
+- **Scenes at your fingertips.** Store complete looks per segment and recall them with a single KNX scene telegram (DPT 18.001).
+- **It remembers.** Colours, brightness, the active effect and scene are persisted to flash, so your light comes back exactly the way you left it after any power cycle.
+- **One controller, many zones.** Carve a single strip into up to 16 independently controlled segments — hallway, shelf and cove, each doing its own thing.
+
+## What it can do
+
+### Light & colour
+Direct RGB control, intuitive HSV selection, dedicated warm-white and cool-white channels, and Kelvin-based colour temperature for RGBW and 5-channel RGBCCT strips. Per-segment brightness in clean 0–100% percentages, configurable gamma correction and per-channel white-balance trimming for pixel-perfect colour reproduction.
+
+### Human Centric Lighting
+Automatic, circadian-friendly white-light tuning — globally or per segment. On RGBCCT strips it mixes WW/CW directly for pure, flicker-free white; on RGB/RGBW strips it applies a Kelvin-accurate tint. Choose sun-position curves or time-based scheduling.
+
+### A serious effect engine
+40+ built-in effects, assignable per segment with adjustable speed and intensity, plus **2D/3D matrix support**: declare a segment as a width × height (× depth) matrix, pick a wiring topology, and run native 2D effects like Fire 2D, Plasma Nebula, TRON, Starfield Warp, Matrix rain, UFO Swarm, animated scrolling text and a digital clock.
+
+### Effektmanager & Effektkette
+Sequence effects into automated, timed light shows with the **Effektmanager** (cue-based playback with fades, looping and chaining) — and stretch a single effect seamlessly across **multiple KNX devices** with the **Effektkette** (distributed rendering): one master, many slaves, each painting its own section of one continuous virtual strip.
+
+### Built for real installations
+Support for **28+ LED protocols** (WS2812B, SK6812, APA102, WS2805/WS2814 RGBCCT and many more), 12 colour orders, 11 fine-grained timing presets for clean signals over long cables, intelligent power limiting (up to 65 A budgeting with per-LED modelling), live power monitoring in mA / % / W, and up to 4 external relay outputs for switching strip power supplies.
+
+> **Looking under the hood?** The heavy lifting — hardware-accelerated, stateless effect rendering, geometry mapping and power management — lives in the reusable **[OFM-NeoPixel](lib/OFM-NeoPixel/README.md)** library. Dive in if you want the deep technical story, the C++ API, or to build your own effects.
+
+## Runs great everywhere. Runs *best* on KNeoPiX.
+
+OpenKNX NeoPixel is part of the OpenKNX ecosystem and runs on a broad range of OpenKNX-compatible controllers (RP2040, RP2350 and ESP32 based) — see [Supported Hardware](#supported-hardware) below. Pick the board you already have and you're good to go.
+
+That said, the firmware is **developed and tuned on the OpenKNXiao KNeoPiX** — the LED-control board this project was born on. Signal timing, GPIO drive strength and the whole hardware path are validated there first, so on a KNeoPiX you get the smoothest, best-behaved experience out of the box, with no guesswork about pins or levels. If you're building a new addressable-LED node for KNX, it's the path of least resistance.
 
 ## Documentation
 
 - [German application description](doc/Applikationsbeschreibung.md)
 - [LED behavior and diagnostic codes](doc/LED-Behaviour.md)
+- [Hardware abstraction concept (defines & generator)](doc/Konzept-Hardware-Defines.md)
+- [Multi-hardware GPIO template generator (technical deep-dive)](doc/Hardware-Config-Generator.md)
+- [OFM-NeoPixel library (technical deep-dive & C++ API)](lib/OFM-NeoPixel/README.md)
 
-## Features
+## Features at a glance
 
 ### Core Functionality
 - **Multi-Strip Support**: Control up to 8 independent LED strips simultaneously
 - **Flexible Segmentation**: Up to 16 segments on the virtual strip for granular control
-- **Rich Effect Library**: 34 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more — including **2D effects** for LED matrices (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock)
+- **Rich Effect Library**: 40 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more — including **2D effects** for LED matrices (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock, Matrix 2D, TRON, Starfield Warp, Plasma Nebula, UFO Swarm)
 - **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, and brightness
 - **Color Profiles**: RGB, HSV, RGBW, RGBCCT (5-channel), warm/cool white (WW/CW) support
 
@@ -46,37 +90,29 @@ A powerful OpenKNX firmware module for controlling addressable LED strips (WS281
 - **Virtual Strip Architecture**: Internal virtual strip allows flexible physical strip ordering and rearrangement
 - **Power Monitoring**: Total current (mA), load (%), and power (W) status KOs
 - **2D / 3D Matrix Support**: Configure any segment as a 2D or 3D LED matrix — set width, height, wiring topology (serpentine/linear rows or columns) and use 2D-native effects. Multiple panels can share a single segment or use separate segments.
+- **Effektmanager** (Cue sequencer): Per-segment, cue-based light sequences. Each cue is a snapshot (effect, colours, brightness, effect parameters) played with its own duration and fade; cues can loop and chain into another Effektmanager. Assign an Effektmanager to a segment and it drives the output via its KOs.
 - **Effektkette** (Distributed rendering): Link segments across multiple KNX devices so one effect runs seamlessly over the combined strip. One device is Master (sends), others are Slaves (render their section). Watchdog timeout and local override policy configurable per segment.
 
 ## Effects
 
-| ID | Effect | ID | Effect |
-|----|--------|----|--------|
-| 0 | Solid | 15 | Twinkle |
-| 1 | Wipe | 16 | Sparkle |
-| 2 | Rainbow | 17 | Breathing |
-| 3 | Rainbow Cycle | 18 | Strobe |
-| 4 | Pride2015 | 19 | Pulse |
-| 5 | Confetti | 20 | Comet |
-| 6 | Juggle | 21 | Meteor |
-| 7 | BPM | 22 | Noise |
-| 8 | Cylon | 23 | Palette |
-| 9 | RGBWTest | 24 | Blitz |
-| 10 | GarageDoor | 25 | Gradient |
-| 11 | Fire | 26 | RGBCCTTest |
-| 12 | Theater Chase | 27 | Kerze |
-| 13 | Theater Chase Rainbow | 28 | Kerzen Multi |
-| 14 | Sinelon | | |
+The firmware ships with a continuously growing library of **40+ effects**, and new ones are added regularly. Rather than memorising IDs, just browse the live, always-up-to-date list directly in **ETS** (the effect dropdown per segment) or on the device console with `neo effects` — the firmware is the single source of truth, so the catalogue you see there is never out of date.
 
-### 2D / 3D Effects (require segment with matrix geometry configured)
+To give you a feel for what's on board, the effects fall into a few families:
 
-| ID | Effect | Beschreibung |
-|----|--------|-------------|
-| 29 | Fire 2D | Column-based fire simulation — each column burns independently |
-| 30 | Noise 2D | Smooth XY noise field (bilinear interpolation) |
-| 31 | Cylon 2D | Sweeping row or column across the matrix |
-| 32 | Scroll Text | Horizontal scrolling text (5×7 font), text settable via KO |
-| 33 | Clock | Digital clock HH:MM or HH:MM:SS (requires KNX time KO) |
+- **Solid & static** — clean single-colour fills and smooth gradients.
+- **Classic animations** — Rainbow, Rainbow Cycle, Pride, Comet, Meteor, Theater Chase, Sinelon and friends.
+- **Sparkle & motion** — Confetti, Twinkle, Sparkle, Juggle, BPM, Cylon, Blitz and more.
+- **Atmosphere** — Fire, candle simulations (single and multi), Breathing, Pulse, Noise and Palette looks.
+- **Utility & test** — Strobe, Wipe, RGBW/RGBCCT test patterns and the special GarageDoor effect.
+- **2D matrix effects** — for segments configured with matrix geometry (see below).
+
+Every effect exposes its own adjustable parameters (speed, intensity, colours, …) — these are **self-describing**, so they appear automatically in ETS and on the console without any extra configuration.
+
+### 2D / 3D matrix effects
+
+A whole class of effects is designed for LED **matrices**: declare a segment's width, height and wiring topology, and these effects render in real 2D space. The current line-up includes column-based **Fire 2D**, smooth **Noise 2D** fields, sweeping **Cylon 2D**, scrolling **text** (5×7 font, settable via KO), a digital **clock**, plus a SciFi pack — **Matrix rain, TRON light-cycles, Starfield Warp, Plasma Nebula, UFO Swarm, Snake** and **Tetris**. As with everything else, the authoritative list lives in ETS and the console.
+
+> **Tip:** the exact set of effects (and their IDs, if you need them for KO automation) is always visible in ETS and via `neo effects` on the console — no need to chase this README when the library grows.
 
 ## Installation & Setup
 
@@ -90,7 +126,7 @@ cd OAM-NeoPixel
 ```
 
 ### 2. Configure PlatformIO
-Select your target hardware environment in `platformio.custom.ini`. The release workflow currently covers the following standard targets:
+Select your target hardware environment in `platformio.custom.ini`. The release workflow currently covers the following standard targets — the **OpenKNXiao KNeoPiX** environments lead the list because they are the firmware's reference platform and the smoothest place to start:
 
 | Environment | Hardware |
 |-------------|----------|
@@ -117,11 +153,13 @@ Select your target hardware environment in `platformio.custom.ini`. The release 
 | `release_QUINLED_DIG_OCTA_32_8L_ETHERNET` | QuinLED Dig-Octa-32-8L Ethernet |
 | `release_QUINLED_DIG_NEXT2` | QuinLED Dig-Next-2 |
 
+> **Hardware support:** Only the **OpenKNX** targets (KNeoPiX, Mini, REG2, UP1, BCU Connector) are developed, tested and supported — the **KNeoPiX** is the reference platform. The **Gledopto** and **QuinLED** targets are built for convenience but are **untested and not officially supported by OpenKNX**: use them at your own risk — if they work, great; if not, there is no support. For a reliable result, use OpenKNX hardware.
+
 Additional full-build targets are available through `pwsh scripts/Build-Release.ps1 -Full`, including ESP32C3, ESP32C5, ESP32C6 and ESP32S3 variants of the OpenKNXiao KNeoPiX and Mini families, plus the REG2 ESP32S3 Pico target.
 
 ### 3. Build & Upload
 ```bash
-pio run -e release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1 -t upload
+pio run -e release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 -t upload
 ```
 
 To create packaged release artifacts instead of a single PlatformIO build, use:
@@ -290,6 +328,8 @@ For issues, feature requests, or contributions:
 
 ## Supported Hardware
 
+OpenKNX NeoPixel runs on a wide range of OpenKNX-compatible controllers. The **OpenKNXiao KNeoPiX** is the reference board this firmware is developed and validated on — it's the most thoroughly tested choice and the one we recommend for a new build.
+
 ### Standard Release Targets
 
 - OpenKNXiao KNeoPiX RP2040 and RP2350
@@ -313,6 +353,15 @@ For issues, feature requests, or contributions:
 > **Note:** The GPIO pins for LED data and clock lines can be configured in ETS for many hardware profiles. This makes the firmware adaptable to additional ESP32, RP2040 and RP2350 based boards beyond the release targets listed above, provided the selected firmware and ETS hardware profile match.
 
 ## Changelog
+
+### 0.3.0 (Beta)
+
+- added the **Effektmanager**: cue-based, timed effect sequences per segment with fades, looping and chaining
+- added the **Effektkette** (distributed rendering): run one effect seamlessly across multiple KNX devices (master/slave)
+- added **2D/3D matrix** support with topology-aware geometry and a suite of native 2D effects (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock, Matrix, TRON, Starfield Warp, Plasma Nebula, UFO Swarm, Snake, Tetris)
+- per-effect default values now populate in ETS (segment, scene and cue)
+- reworked the documentation (overview, feature highlights and the OFM-NeoPixel technical deep-dive)
+- released as the **0.3 Beta** product; the development build (Dev product) runs ahead at 0.4 — both can coexist in the ETS catalogue
 
 ### 0.2.0
 

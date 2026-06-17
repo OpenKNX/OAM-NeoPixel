@@ -40,6 +40,11 @@
 #include "colorhelper.h"
 #include "knxprod.h"
 #include <algorithm>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <new>
+#include <string>
 #include <vector>
 // #define NEOPIXEL_MODULE_TEST_ENV
 #ifdef NEOPIXEL_MODULE_TEST_ENV
@@ -102,6 +107,36 @@ static uint8_t resolveHclMaster(uint8_t requestedMaster, uint8_t availableMaster
 
 NeoPixelBusModule openknxNeoPixelModule;
 
+// ============================================================================
+// Console bridge (NeoPixelEmConsole.h): the OFM renders all neo em/cue/chain
+// output; the OAM only provides raw data and executes mutating actions.
+// ============================================================================
+
+int openknxNeoPixelEmSegmentCount()
+{
+    return openknxNeoPixelModule.emConsoleSegmentCount();
+}
+
+bool openknxNeoPixelGetEmStatus(uint8_t seg, NeoEmSegStatus& out)
+{
+    return openknxNeoPixelModule.emConsoleGetEmStatus(seg, out);
+}
+
+const EffektManagerData* openknxNeoPixelGetEmData(uint8_t emId)
+{
+    return openknxNeoPixelModule.emConsoleGetEmData(emId);
+}
+
+bool openknxNeoPixelGetChainStatus(uint8_t seg, NeoChainSegStatus& out)
+{
+    return openknxNeoPixelModule.emConsoleGetChainStatus(seg, out);
+}
+
+bool openknxNeoPixelHandleEmChainAction(uint8_t action, int arg1, int arg2)
+{
+    return openknxNeoPixelModule.executeEmChainAction(action, arg1, arg2);
+}
+
 NeoPixelBusModule::NeoPixelBusModule()
     : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr)
 {
@@ -119,10 +154,23 @@ NeoPixelBusModule::~NeoPixelBusModule()
     delete _colorManagement;
     delete _segmentController;
     delete _sceneManager;
+    delete[] _emData;
 }
 
 void NeoPixelBusModule::setup(bool configured)
 {
+    // Allocate the Effektmanager data table here (heap ready), NOT as a global static
+    // initializer: a ~76 KB new[] at C++ static-init time aborts the boot on low-DRAM ESP32
+    // (e.g. ESP32-WROOM without PSRAM). new(std::nothrow) degrades gracefully on tight memory:
+    // the device still boots and runs, only the Effektmanager is unavailable.
+    if (!_emData)
+    {
+        _emData = new (std::nothrow) EffektManagerData[EM_COUNT]();
+        if (!_emData)
+            logErrorP("Effektmanager disabled: out of memory for EM table (%u bytes)",
+                      (unsigned)(EM_COUNT * sizeof(EffektManagerData)));
+    }
+
 #ifdef NEOPIXEL_MODULE_TEST_ENV
     // Test mode: Initialize core module first, then setup test environment
     if (!_neoPixel.isInitialized())
@@ -190,26 +238,23 @@ void NeoPixelBusModule::loop(bool configured)
             _lastHwMismatchWarning = now;
 #ifdef DEVICE_HW_ID
     #ifdef ParamNEO_NeoPixelHardwareSelect
-            uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
+            uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
 
-            if (selectedHwIndex == 255)
+            if (selectedHwId == 255)
             {
                 // ETS has dummy value - user hasn't configured hardware yet
-                uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
-                const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
+                const char* compiledHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID));
                 logErrorP("*** No hardware configured! Use 'Hardware auto-detect' button in ETS or manually select: %s (ID: 0x%04X)",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
             }
             else
             {
-                // Hardware configured but mismatched - compare indices directly
-                uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
-                uint8_t etsHwIndex = selectedHwIndex; // Parameter contains index directly now
-                const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
-                const char* etsHwName = HardwareMapping::getHardwareName(etsHwIndex);
-                logErrorP("!!! HW MISMATCH: Firmware=%s (Index %d) vs ETS=%s (Index %d) - Update ETS config!",
-                          compiledHwName ? compiledHwName : "Unknown", compiledHwIndex,
-                          etsHwName ? etsHwName : "Unknown", etsHwIndex);
+                // Hardware configured but mismatched - compare the stable DEVICE_HW_IDs directly
+                const char* compiledHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID));
+                const char* etsHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(selectedHwId));
+                logErrorP("!!! HW MISMATCH: Firmware=%s (ID 0x%04X) vs ETS=%s (ID 0x%04X) - Update ETS config!",
+                          compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID,
+                          etsHwName ? etsHwName : "Unknown", selectedHwId);
             }
     #endif
 #endif
@@ -222,8 +267,12 @@ void NeoPixelBusModule::loop(bool configured)
     // Process relay timers for delayed on/off switching
     processRelayTimers();
 
-    // Effektkette: check slave watchdog timeouts
+    // Effektkette: check slave watchdog timeouts + master change detection
     loopSyncWatchdog();
+    loopSyncMaster();
+
+    // Effektmanager: tick all active sequencers
+    loopEffektManager();
 
     // If global power is OFF, skip all effect processing and pixel updates
     if (!_globalPowerOn) return;
@@ -320,9 +369,41 @@ void NeoPixelBusModule::readFlash(const uint8_t* data, const uint16_t size)
 
 void NeoPixelBusModule::processAfterStartupDelay()
 {
-    // ETS configuration already applied in configureEffects()
-    // No restore needed - effects are already set according to ETS parameters
-    // Flash restore would override fresh ETS settings with stale data
+    // ETS base effect configuration is already applied in configureEffects().
+    // StartupEM (per segment) must now be evaluated and started afterwards,
+    // so it can intentionally override the static ETS base effect.
+    if (_segments.empty())
+    {
+        logInfoP("Startup complete - ETS configuration active");
+        return;
+    }
+
+    uint8_t previousChannel = _channelIndex;
+    for (size_t i = 0; i < _segments.size(); ++i)
+    {
+        auto& cfg = _segments[i];
+        if (!cfg.segment) continue;
+
+        _channelIndex = static_cast<uint8_t>(i);
+        uint8_t startupEmId = static_cast<uint8_t>(ParamNEO_NEOStartupEM);
+
+        if (startupEmId == EM_NONE) continue;
+
+        startEffektManager(i, startupEmId);
+
+        if (cfg.emController.activeEmId() == startupEmId)
+        {
+            logInfoP("Segment %d: Startup-EM %d gestartet (ueberschreibt Basis-Effekt)",
+                     static_cast<int>(i) + 1, static_cast<int>(startupEmId));
+        }
+        else
+        {
+            logWarningP("Segment %d: Startup-EM %d konnte nicht gestartet werden (EM aktiv/konfiguriert?)",
+                        static_cast<int>(i) + 1, static_cast<int>(startupEmId));
+        }
+    }
+    _channelIndex = previousChannel;
+
     logInfoP("Startup complete - ETS configuration active");
 }
 
@@ -503,6 +584,105 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 {
     // Get the KO number for routing to correct channel/segment
     uint16_t koNumber = ko.asap();
+
+    // ── Effektmanager KOs (NEOEM module, KoOffset=1240, BlockSize=4) ─────
+#ifdef NEOEM_KoCalcChannel
+    {
+        int emChannel = NEOEM_KoCalcChannel(koNumber);
+        if (emChannel >= 0)
+        {
+            int emKoIndex = NEOEM_KoCalcIndex(koNumber);
+            switch (emKoIndex)
+            {
+                case NEOEM_KoEmStart:
+                {
+                    uint8_t emId = ko.value(DPT_Value_1_Ucount);
+                    logInfoP("Segment %d: EffektManager Start = %d", emChannel, emId);
+                    startEffektManager((size_t)emChannel, emId);
+                    break;
+                }
+                case NEOEM_KoEmStop:
+                {
+                    logInfoP("Segment %d: EffektManager Stop", emChannel);
+                    stopEffektManager((size_t)emChannel);
+                    break;
+                }
+    #ifdef NEOEM_KoEmCueSet
+                case NEOEM_KoEmCueSet:
+                {
+                    // Jump to a specific cue of the RUNNING EM (input for StateEngine/Logic).
+                    // No-op if no EM is running / cue invalid (executeEmChainAction handles bounds).
+                    uint8_t cueNum = ko.value(DPT_Value_1_Ucount);
+                    logInfoP("Segment %d: Cue setzen = %d", emChannel, cueNum);
+                    executeEmChainAction(NEO_EM_CUE, (int)emChannel, (int)cueNum);
+                    break;
+                }
+    #endif
+    #ifdef NEOEM_KoEffectText
+                case NEOEM_KoEffectText:
+        #ifdef NEOEM_KoEffectTextAppend
+                case NEOEM_KoEffectTextAppend:
+        #endif
+                {
+                    // Set/append text of the running effect (any source: ETS, Cue, Scene started it).
+                    // EffectText replaces (empty = clear), EffectTextAppend appends 14-char chunks
+                    // (long texts up to 240 chars, e.g. assembled via Logikmodul). No-op if the
+                    // active effect has no STRING parameter.
+                    if ((size_t)emChannel >= _segments.size()) break;
+                    Segment* seg = _segments[emChannel].segment;
+                    Effect* effect = seg ? seg->getEffect() : nullptr;
+                    if (!effect) break;
+                    const char* text = ko.value(DPT_String_8859_1);
+                    char buf[sizeof(EffectConfig::effectText)];
+        #ifdef NEOEM_KoEffectTextAppend
+                    if (emKoIndex == NEOEM_KoEffectTextAppend)
+                    {
+                        const char* current = seg->getConfig().effectText;
+                        size_t len = strlen(current);
+                        if (len >= sizeof(buf) - 1) break; // buffer full, ignore append
+                        memcpy(buf, current, len);
+                        buf[len] = '\0';
+                        if (text) strncpy(buf + len, text, sizeof(buf) - 1 - len);
+                        buf[sizeof(buf) - 1] = '\0';
+                        text = buf;
+                    }
+        #endif
+                    uint8_t pc = effect->getParameterCount();
+                    for (uint8_t i = 0; i < pc; i++)
+                    {
+                        if (effect->getParameterType(i) == ParameterType::PARAM_STRING)
+                        {
+                            effect->setParameter(seg, i, (uint32_t)(uintptr_t)text);
+                            logInfoP("Segment %d: Effekt-Text = '%s'", emChannel, text ? text : "");
+                            sendEffectTextStatusKO((size_t)emChannel);
+                            break;
+                        }
+                    }
+                    break;
+                }
+    #endif
+    #ifdef NEOEM_KoSyncChain
+                case NEOEM_KoSyncChain:
+                {
+                    // Effektkette: slave receives sync telegram from master
+                    if ((size_t)emChannel < _segments.size() && _segments[emChannel].syncMode == 2)
+                    {
+                        uint8_t raw[9] = {};
+                        const uint8_t* dpt = ko.valueRef();
+                        for (uint8_t b = 0; b < 9 && b < ko.valueSize(); b++)
+                            raw[b] = dpt[b];
+                        receiveSyncTelegram((size_t)emChannel, raw, 9);
+                    }
+                    break;
+                }
+    #endif
+                default:
+                    break;
+            }
+            return; // handled
+        }
+    }
+#endif
     // Global NeoPixel KOs
     if (koNumber == NEO_KoPower)
     {
@@ -1732,21 +1912,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // These are status/output-only KOs, ignore incoming writes
                 break;
 
-#ifdef NEO_KoSyncChain
-            case NEO_KoSyncChain:
-            {
-                // Effektkette: slave receives sync telegram from master
-                if ((size_t)channel < _segments.size() && _segments[channel].syncMode == 2)
-                {
-                    uint8_t raw[6] = {};
-                    const uint8_t* dpt = ko.valueRef();
-                    for (uint8_t b = 0; b < 6 && b < ko.valueSize(); b++) raw[b] = dpt[b];
-                    receiveSyncTelegram((size_t)channel, raw, 6);
-                }
-                break;
-            }
-#endif
-
             default:
                 logInfoP("Segment %d Unhandled KO Index: %d", channel, koIndex);
                 break;
@@ -1773,10 +1938,30 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
  *   Byte 3: R (primary colour)
  *   Byte 4: G
  *   Byte 5: B
+ *   Byte 6: W  (warm white / single white)
+ *   Byte 7: Brightness
+ *   Byte 8: CW (cool white, RGBCCT)
  */
+void NeoPixelBusModule::composeSyncPayload(size_t segmentIndex, uint8_t* payload)
+{
+    auto& cfg = _segments[segmentIndex];
+    auto& seg = *cfg.segment;
+    const auto& ecfg = seg.getConfig();
+
+    payload[0] = seg.getLedState() != LedState::IDLE ? 0x01 : 0x00; // power
+    payload[1] = ecfg.effectType;
+    payload[2] = ecfg.speed;
+    payload[3] = ecfg.r();
+    payload[4] = ecfg.g();
+    payload[5] = ecfg.b();
+    payload[6] = ecfg.ww();
+    payload[7] = seg.getBrightness();
+    payload[8] = ecfg.cw();
+}
+
 void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
 {
-#ifdef NEO_KoSyncChain
+#ifdef NEOEM_KoSyncChain
     if (segmentIndex >= _segments.size()) return;
     auto& cfg = _segments[segmentIndex];
     if (cfg.syncMode != 1 || !cfg.segment) return; // only masters send
@@ -1784,40 +1969,37 @@ void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
     uint8_t oldCh = _channelIndex;
     _channelIndex = (uint8_t)segmentIndex;
 
-    auto& seg = *cfg.segment;
-    const auto& ecfg = seg.getConfig();
+    uint8_t payload[9];
+    composeSyncPayload(segmentIndex, payload);
 
-    uint8_t payload[6];
-    payload[0] = seg.getLedState() != LedState::IDLE ? 0x01 : 0x00; // power
-    payload[1] = ecfg.effectType;
-    payload[2] = ecfg.speed;
-    payload[3] = ecfg.r();
-    payload[4] = ecfg.g();
-    payload[5] = ecfg.b();
-
-    auto& ko = KoNEO_SyncChain;
-    ko.valueRef()[0] = payload[0];
-    ko.valueRef()[1] = payload[1];
-    ko.valueRef()[2] = payload[2];
-    ko.valueRef()[3] = payload[3];
-    ko.valueRef()[4] = payload[4];
-    ko.valueRef()[5] = payload[5];
+    auto& ko = KoNEOEM_SyncChain;
+    uint8_t* ref = ko.valueRef();
+    for (uint8_t b = 0; b < 9; b++)
+        ref[b] = payload[b];
+    for (uint8_t b = 9; b < ko.valueSize(); b++)
+        ref[b] = 0;
     ko.objectWritten();
 
-    logInfoP("Effektkette [%zu]: sent sync effect=%d speed=%d r=%d g=%d b=%d",
-             segmentIndex, payload[1], payload[2], payload[3], payload[4], payload[5]);
+    // Remember what we sent for change detection in loopSyncMaster()
+    memcpy(cfg.lastSyncPayload, payload, sizeof(cfg.lastSyncPayload));
+    cfg.syncPayloadValid = true;
+    cfg.lastSyncSentMs = millis();
+
+    logInfoP("Effektkette [%zu]: sent sync power=%d effect=%d speed=%d rgb=(%d,%d,%d) w=%d bri=%d cw=%d",
+             segmentIndex, payload[0], payload[1], payload[2], payload[3], payload[4], payload[5],
+             payload[6], payload[7], payload[8]);
 
     _channelIndex = oldCh;
 #endif
 }
 
 /**
- * @brief Apply an incoming 6-byte sync telegram to a slave segment.
+ * @brief Apply an incoming 9-byte sync telegram to a slave segment.
  */
 void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
-                                             const uint8_t* payload, uint8_t len)
+                                            const uint8_t* payload, uint8_t len)
 {
-    if (segmentIndex >= _segments.size() || len < 6) return;
+    if (segmentIndex >= _segments.size() || len < 9) return;
     auto& cfg = _segments[segmentIndex];
     if (cfg.syncMode != 2 || !cfg.segment) return; // only slaves receive
 
@@ -1826,10 +2008,11 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
 
     cfg.lastSyncMs = millis();
 
-    bool  powerOn  = (payload[0] & 0x01) != 0;
+    bool powerOn = (payload[0] & 0x01) != 0;
     uint8_t effectId = payload[1];
-    uint8_t speed    = payload[2];
+    uint8_t speed = payload[2];
     uint8_t r = payload[3], g = payload[4], b = payload[5];
+    uint8_t w = payload[6], brightness = payload[7], cw = payload[8];
 
     if (!powerOn)
     {
@@ -1838,18 +2021,57 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
         return;
     }
 
-    // Apply colour + speed to segment config
+    // Apply colour + speed + brightness to segment config
     auto& ecfg = cfg.segment->getConfig();
     ecfg.speed = speed;
-    ecfg.primaryRGBW = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8);
+    cfg.segment->setPrimaryColor(r, g, b, w, cw);
+    cfg.segment->setBrightness(brightness);
 
-    // Apply effect
-    uint8_t oldCh = _channelIndex;
-    _channelIndex = (uint8_t)segmentIndex;
-    applyEffectToSegment(cfg.segment, effectId);
-    _channelIndex = oldCh;
+    // Apply effect only when it actually changed (re-applying resets the effect each telegram)
+    bool effectChanged = (cfg.segment->getLedState() == LedState::IDLE) ||
+                         (getTypeFromEffect(cfg.segment->getEffect()) != effectId);
+    if (effectChanged)
+    {
+        uint8_t oldCh = _channelIndex;
+        _channelIndex = (uint8_t)segmentIndex;
+        applyEffectToSegment(cfg.segment, effectId);
+        // Colour was set before the effect clear — re-apply it
+        cfg.segment->setPrimaryColor(r, g, b, w, cw);
+        cfg.segment->setBrightness(brightness);
+        _channelIndex = oldCh;
+    }
 
-    logInfoP("Effektkette [%zu]: received sync effect=%d speed=%d", segmentIndex, effectId, speed);
+    logInfoP("Effektkette [%zu]: received sync effect=%d speed=%d bri=%d%s",
+             segmentIndex, effectId, speed, brightness, effectChanged ? " (effect applied)" : "");
+}
+
+/**
+ * @brief Called every loop() iteration — master segments detect local state changes
+ *        (power, effect, speed, colour, brightness) and broadcast a sync telegram.
+ *        Rate-limited to one telegram per 300 ms per segment to keep bus load low
+ *        during dimming ramps.
+ */
+void NeoPixelBusModule::loopSyncMaster()
+{
+#ifdef NEOEM_KoSyncChain
+    uint32_t now = millis();
+    for (size_t i = 0; i < _segments.size(); i++)
+    {
+        auto& cfg = _segments[i];
+        if (cfg.syncMode != 1 || !cfg.segment) continue; // only masters
+
+        uint8_t payload[9];
+        composeSyncPayload(i, payload);
+
+        if (cfg.syncPayloadValid && memcmp(payload, cfg.lastSyncPayload, sizeof(payload)) == 0)
+            continue; // nothing changed
+
+        if (cfg.syncPayloadValid && (now - cfg.lastSyncSentMs) < 300u)
+            continue; // rate limit — retry next loop
+
+        sendSyncTelegram(i);
+    }
+#endif
 }
 
 /**
@@ -1860,9 +2082,9 @@ void NeoPixelBusModule::loopSyncWatchdog()
     uint32_t now = millis();
     for (auto& cfg : _segments)
     {
-        if (cfg.syncMode != 2) continue;           // only slaves
-        if (cfg.syncTimeoutSteps == 0) continue;   // no timeout configured
-        if (cfg.lastSyncMs == 0) continue;         // never received any sync yet
+        if (cfg.syncMode != 2) continue;         // only slaves
+        if (cfg.syncTimeoutSteps == 0) continue; // no timeout configured
+        if (cfg.lastSyncMs == 0) continue;       // never received any sync yet
 
         uint32_t timeoutMs = (uint32_t)cfg.syncTimeoutSteps * 10000u;
         if (now - cfg.lastSyncMs > timeoutMs)
@@ -1880,11 +2102,11 @@ void NeoPixelBusModule::showHelp()
 {
     // Print the 'neo' command group header via core module
     _neoPixel.showHelp();
-
     openknx.console.printHelpLine("neo led status", "Show active NeoPixel blink codes");
     openknx.console.printHelpLine("neo led error <1-5>", "Test error blink code on STATUS LED");
     openknx.console.printHelpLine("neo led warn <1-3>", "Test warning pulsing on STATUS LED");
     openknx.console.printHelpLine("neo led clear", "Clear all NeoPixel blink codes");
+    openknx.console.printHelpLine("neo flash [seg]", "Show persisted flash contents (scene/EM/color/effect per segment)");
 #ifdef OPENKNX_DEBUG
     // Add NeoPixel-specific debug commands
     openknx.console.printHelpLine("neoa", "Show NeoPixel ETS configuration analysis");
@@ -1944,20 +2166,15 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
         else if (sub.compare(0, 5, "warn ") == 0)
         {
             uint8_t code = (uint8_t)atoi(sub.c_str() + 5);
-            OpenKNX::Led::Color color;
-            switch (code)
+            if (code < 1 || code > 3)
             {
-                case 1: color = OpenKNX::Led::Color::Orange; break;
-                case 2: color = OpenKNX::Led::Color::Purple; break;
-                case 3: color = OpenKNX::Led::Color::Yellow; break;
-                default:
-                    logInfoP("Usage: neo led warn <1-3> (1=Orange/ABL, 2=Purple/Flash, 3=Yellow/Effect)");
-                    return true;
+                logInfoP("Usage: neo led warn <1-3> (1=Orange/ABL, 2=Purple/Flash, 3=Yellow/Effect)");
+                return true;
             }
             // Reset tracking so test code always applies
             _activeErrorCode = 0;
             _activeWarnCode = 0;
-            setWarningBlink(code, color);
+            setWarningBlink(code); // color derived from code (single source: warnColorForCode)
             return true;
         }
         else
@@ -1967,8 +2184,204 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
         }
     }
 
-    // Forward to core module's console handler
+    // neo flash [seg] — dump persisted flash contents (OAM-owned: flash
+    // persistence is an OAM concern, so both parsing and rendering live here)
+    if (command == "neo flash" || command.compare(0, 10, "neo flash ") == 0)
+    {
+        std::string sub = (command.length() > 10) ? command.substr(10) : "";
+        if (sub == "?")
+        {
+            logInfoP("Usage: neo flash [seg]  — show persisted flash contents (all segments or one, seg=0-based)");
+            return true;
+        }
+        int onlySeg = sub.empty() ? -1 : atoi(sub.c_str());
+        if (onlySeg < -1) onlySeg = -1;
+        printFlashStateTable(onlySeg);
+        return true;
+    }
+
     return _neoPixel.processCommand(command, diagnose);
+}
+
+// ============================================================================
+// Console data providers — rendering happens in OFM (NeoPixelConsole.cpp),
+// the OAM only delivers raw data snapshots (see NeoPixelEmConsole.h).
+// ============================================================================
+
+int NeoPixelBusModule::emConsoleSegmentCount() const
+{
+    return (int)_segments.size();
+}
+
+bool NeoPixelBusModule::emConsoleGetEmStatus(uint8_t seg, NeoEmSegStatus& out)
+{
+    if (seg >= _segments.size()) return false;
+
+    const auto& cfg = _segments[seg];
+    out.hasSegment = (cfg.segment != nullptr);
+    out.activeEmId = cfg.emController.activeEmId();
+    out.activeCueNum = cfg.emController.activeCueNum();
+    out.running = cfg.emController.isRunning();
+    out.lastEmId = cfg.emController.lastEmId();
+
+    // Read startup EM from ETS parameters (channel-indexed access)
+    uint8_t oldCh = _channelIndex;
+    _channelIndex = seg;
+    out.startupEm = (uint8_t)ParamNEO_NEOStartupEM;
+    _channelIndex = oldCh;
+
+    return true;
+}
+
+const EffektManagerData* NeoPixelBusModule::emConsoleGetEmData(uint8_t emId) const
+{
+    if (emId == 0 || emId > EM_COUNT || !_emData) return nullptr;
+    return &_emData[emId - 1];
+}
+
+bool NeoPixelBusModule::emConsoleGetChainStatus(uint8_t seg, NeoChainSegStatus& out) const
+{
+    if (seg >= _segments.size()) return false;
+
+    const auto& cfg = _segments[seg];
+    out.syncMode = cfg.syncMode;
+    out.overridePolicy = cfg.syncOverridePolicy;
+    out.timeoutSteps = cfg.syncTimeoutSteps;
+    out.localOverride = cfg.localOverride;
+    out.lastSyncMs = cfg.lastSyncMs;
+    out.virtualTotalLength = cfg.virtualTotalLength;
+    out.virtualOffset = cfg.virtualOffset;
+    return true;
+}
+
+void NeoPixelBusModule::printFlashStateTable(int onlySeg)
+{
+    // The saved* fields are the decoded SegmentFlashState as restored at boot
+    // (see NeoPixelFlashPersistence::readFromFlash). The repurposed flash bytes
+    // map as: Scene = reserved[0] (savedSceneNumber), EM = reserved[1]
+    // (emController.lastEmId()). Output uses the shared console logger (no module
+    // prefix) to stay visually consistent with neo phys / neo seg / neo em.
+    const char* SEP = "═════════════════════════════════════════════════════════════════════════════";
+
+    openknx.logger.log("");
+    openknx.logger.color(CONSOLE_HEADLINE_COLOR);
+    openknx.logger.log(SEP);
+    openknx.logger.log("  Flash Persistence Contents (restored at boot)");
+    openknx.logger.log(SEP);
+    openknx.logger.color(0);
+
+    if (_segments.empty())
+    {
+        openknx.logger.log("No segments created.");
+    }
+    else
+    {
+        openknx.logger.log("Seg │ Valid │ Pwr │  R  │  G  │  B  │ WW  │ CW  │ Bri │ Fx │ LastFx │ Scene │ EM");
+        openknx.logger.log("────┼───────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼────┼────────┼───────┼────");
+
+        for (size_t i = 0; i < _segments.size(); i++)
+        {
+            if (onlySeg >= 0 && (int)i != onlySeg) continue;
+
+            const auto& cfg = _segments[i];
+            if (cfg.segment == nullptr)
+            {
+                openknx.logger.logWithValues("%3d │ %-5s │ <no segment>", (int)i, "-");
+                continue;
+            }
+
+            openknx.logger.logWithValues("%3d │ %-5s │ %-3s │ %3d │ %3d │ %3d │ %3d │ %3d │ %3d │ %2d │ %-6s │ %5d │ %3d",
+                                         (int)i,
+                                         cfg.savedValid ? "yes" : "no",
+                                         cfg.savedPower ? "on" : "off",
+                                         (int)cfg.savedR, (int)cfg.savedG, (int)cfg.savedB,
+                                         (int)cfg.savedWW, (int)cfg.savedCW,
+                                         (int)cfg.savedBrightness,
+                                         (int)cfg.savedEffectType,
+                                         cfg.savedEffectValid ? (cfg.savedLastWasEffect ? "effect" : "color") : "-",
+                                         (int)cfg.savedSceneNumber,
+                                         (int)cfg.emController.lastEmId());
+        }
+    }
+
+    openknx.logger.color(CONSOLE_HEADLINE_COLOR);
+    openknx.logger.log(SEP);
+    openknx.logger.color(0);
+    openknx.logger.log("Legend: Scene=reserved[0] (0=none), EM=reserved[1] (0=none), Fx=effect ID (0=none),");
+    openknx.logger.log("        LastFx=last output kind, Valid=flash held data for this segment.");
+    openknx.logger.log("");
+}
+
+// ============================================================================
+// Console actions — mutating neo em/cue/chain commands (parsed and rendered
+// in OFM, executed here)
+// ============================================================================
+
+bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
+{
+    if (!_emData) return false; // EM table not allocated (out of memory) -> EM disabled
+    if (arg1 < 0 || arg1 >= (int)_segments.size()) return false;
+    const size_t seg = (size_t)arg1;
+
+    switch (action)
+    {
+        case NEO_EM_START:
+        {
+            if (arg2 < 0 || arg2 > EM_COUNT) return false;
+            startEffektManager(seg, (uint8_t)arg2);
+            return true;
+        }
+        case NEO_EM_STOP:
+        {
+            stopEffektManager(seg);
+            return true;
+        }
+        case NEO_EM_CUE:
+        {
+            if (arg2 < 1 || arg2 > EM_CUE_COUNT) return false;
+
+            auto& cfg = _segments[seg];
+            if (!cfg.segment)
+            {
+                openknxNeoPixelConsolePrintf("Segment %d has no segment instance", (int)seg);
+                return false;
+            }
+            if (!cfg.emController.triggerCue((uint8_t)arg2, cfg.segment, _emData))
+            {
+                openknxNeoPixelConsolePrintf("Segment %d: cue trigger failed (active EM required, cue must be within configured range)", (int)seg);
+                return false;
+            }
+            sendEmStatusKOs(seg);
+            return true;
+        }
+        case NEO_CHAIN_SET:
+        {
+            if (arg2 < 0 || arg2 > 2) return false;
+            auto& cfg = _segments[seg];
+            cfg.syncMode = (uint8_t)arg2;
+            cfg.localOverride = false;
+            if (arg2 != 2) cfg.lastSyncMs = 0;
+            return true;
+        }
+        case NEO_CHAIN_OVERRIDE:
+        {
+            if (arg2 != 0 && arg2 != 1) return false;
+            _segments[seg].localOverride = (arg2 == 1);
+            return true;
+        }
+        case NEO_CHAIN_TRIGGER:
+        {
+            if (_segments[seg].syncMode != 1)
+            {
+                openknxNeoPixelConsolePrintf("Segment %d is not in master mode", (int)seg);
+                return false;
+            }
+            sendSyncTelegram(seg);
+            return true;
+        }
+        default:
+            return false;
+    }
 }
 
 // FunctionProperty: Handle ETS online functions (hardware detection)
@@ -2067,25 +2480,28 @@ void NeoPixelBusModule::configureFromETS()
     logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - Compile-time mode",
              hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
 
-    // Check if ETS configuration matches compiled hardware
+    // Check if ETS configuration matches compiled hardware.
+    // The ETS hardware selection stores the unique DEVICE_HW_ID (build-independent identity),
+    // so we compare it directly against this firmware's compiled DEVICE_HW_ID. This is robust
+    // regardless of how many hardware variants the firmware/product was built with, and stays
+    // valid across firmware/ETS updates (adding/removing other hardware cannot shift it).
     #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;          // Parameter contains index now
-    uint8_t compiledHwIndex = HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID); // Convert HW_ID to index
-    if (selectedHwIndex != compiledHwIndex)
+    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
+    if (selectedHwId != DEVICE_HW_ID)
     {
         _hwConfigMismatch = true;
-        const char* compiledHwName = HardwareMapping::getHardwareName(compiledHwIndex);
-        const char* etsHwName = HardwareMapping::getHardwareName(selectedHwIndex);
+        const char* compiledHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID));
+        const char* etsHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(selectedHwId));
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
-        logErrorP("  Compiled for:  %s (Index: %d, ID: 0x%04X)",
-                  compiledHwName ? compiledHwName : "Unknown", compiledHwIndex, DEVICE_HW_ID);
-        logErrorP("  ETS configured: %s (Index: %d)",
-                  etsHwName ? etsHwName : "Unknown", selectedHwIndex);
+        logErrorP("  Compiled for:  %s (ID: 0x%04X)",
+                  compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
+        logErrorP("  ETS configured: %s (ID: 0x%04X)",
+                  etsHwName ? etsHwName : "Unknown", selectedHwId);
         logErrorP("  GPIO Port configuration from ETS will be IGNORED, to prevent damage and unexpected behaviors!");
         logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
 
-        if (selectedHwIndex == 255)
+        if (selectedHwId == 255)
         {
             // No hardware configured in ETS (dummy value)
             setErrorBlink(NEO_ERROR_NO_HW_CONFIGURED); // 2× blink
@@ -2103,10 +2519,10 @@ void NeoPixelBusModule::configureFromETS()
     #endif
 #else
     #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // Parameter contains index now
-    const char* hwName = HardwareMapping::getHardwareName(selectedHwIndex);
-    logInfoP("Hardware: %s (Index: %d) - ETS runtime selection",
-             hwName ? hwName : "Unknown", selectedHwIndex);
+    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
+    const char* hwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(selectedHwId));
+    logInfoP("Hardware: %s (ID: 0x%04X) - ETS runtime selection",
+             hwName ? hwName : "Unknown", selectedHwId);
     _hwConfigMismatch = false; // No mismatch in runtime mode
     #else
     logWarningP("Hardware selection not available - using default configuration");
@@ -2146,6 +2562,24 @@ void NeoPixelBusModule::configureFromETS()
     // Helper lambda to check if a pin is already used
     auto isPinUsed = [&usedPins](uint8_t pin) {
         return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
+    };
+
+    // CRITICAL SAFETY GUARD: Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+    // On KNeoPix XIAO hardware KNX_UART_TX_PIN == GPIO0 and KNX_UART_RX_PIN == GPIO1. The ETS defaults
+    // (manual GPIO mode + DataGPIO=0) would otherwise let an unconfigured strip take over the KNX TX line,
+    // which kills the TPUart bus initialization (endless "Try Initialize", never "BCU connected").
+    // This check rejects such strips regardless of the configuration mode (manual / hardware port / auto).
+    auto isReservedPin = [](uint8_t pin) -> bool {
+#if defined(KNX_UART_TX_PIN)
+        if (pin == (uint8_t)KNX_UART_TX_PIN) return true;
+#endif
+#if defined(KNX_UART_RX_PIN)
+        if (pin == (uint8_t)KNX_UART_RX_PIN) return true;
+#endif
+#if defined(SAVE_INTERRUPT_PIN)
+        if (pin == (uint8_t)SAVE_INTERRUPT_PIN) return true;
+#endif
+        return false;
     };
 
     // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
@@ -2539,8 +2973,16 @@ void NeoPixelBusModule::configureFromETS()
 
             // Use manager directly for frequency parameter (NeoPixel wrapper doesn't expose this overload yet)
             auto mgr = _neoPixel.getManager();
-            phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
 
+            // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
+            if (isReservedPin(mosiGpio) || isReservedPin(sckGpio))
+            {
+                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/system pins (MOSI=%d, SCK=%d). Strip disabled to protect KNX bus.",
+                          i, mosiGpio, sckGpio);
+                continue; // Skip this strip completely
+            }
+
+            phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
             // Configure SPI strip-specific settings BEFORE init()
             // The config is created in the PhysicalStrip constructor
             if (phys)
@@ -2663,12 +3105,18 @@ void NeoPixelBusModule::configureFromETS()
                 }
             }
 
+            // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
+            if (isReservedPin(dataGpioPin))
+            {
+                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with reserved KNX/system pin. Strip disabled to protect KNX bus.",
+                          i, dataGpioPin);
+                continue; // Skip this strip completely
+            }
+
             phys = _neoPixel.addStrip(dataGpioPin, pixels, proto, order);
             logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s",
                      i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
                      gpioManualConfig ? " (Manual)" : " (Auto)");
-
-            // Configure skipFirstLeds for serial strips (all strip types support this now)
             if (phys)
             {
                 auto* cfg = phys->getConfig();
@@ -2796,6 +3244,10 @@ void NeoPixelBusModule::configureFromETS()
         }
     }
 
+    // Load global Effektmanager definitions (NEOEM channel block) from ETS.
+    // startEffektManager()/console/KO paths consume _emData and require this.
+    loadEffektManagerFromETS();
+
     // 5) Create virtual strip using configured order and apply segments
     if (!_physicalStrips.empty() && _totalLeds > 0)
     {
@@ -2826,6 +3278,333 @@ void NeoPixelBusModule::configureFromETS()
 
     logInfoP("Configuration complete: %d physical strips, %d total LEDs, %d segments",
              maxStrips, _totalLeds, _numberOfSegments);
+}
+
+void NeoPixelBusModule::loadEffektManagerFromETS()
+{
+#if defined(ParamNEOEM_NEOEMEnabled)
+    auto mapEtsEffectTypeToRuntimeIndex = [](uint8_t effectType) -> uint8_t {
+    #ifdef EFFECT_PARAMETER_MAPPING_GENERATED
+        Effect* target = getEffectFromType(effectType);
+        if (!target) return effectType;
+
+        const uint8_t effectCount = EffectPool::getEffectCount();
+        for (uint8_t idx = 0; idx < effectCount; ++idx)
+        {
+            if (EffectPool::getEffectByIndex(idx) == target)
+            {
+                return idx;
+            }
+        }
+    #endif
+        return effectType;
+    };
+
+    auto clearCue = [](EffektCue& cue) {
+        cue.effectId = 0;
+        for (uint8_t i = 0; i < EM_PARAM_COUNT; ++i)
+            cue.params[i] = 0;
+        cue.r = 0;
+        cue.g = 0;
+        cue.b = 0;
+        cue.w = 0;
+        cue.brightness = 0;
+        cue.durationSec = 0;
+        cue.fadeMs = 0;
+        cue.cueName[0] = '\0';
+        cue.effectText[0] = '\0';
+    };
+
+    auto loadCueFromEts = [&](uint8_t cueIndex, EffektCue& cue) {
+        uint8_t effect = 0;
+        uint8_t p0 = 0;
+        uint8_t p1 = 0;
+        uint8_t p2 = 0;
+        uint8_t p3 = 0;
+        uint8_t p4 = 0;
+        uint8_t p5 = 0;
+        uint8_t p6 = 0;
+        uint8_t p7 = 0;
+        uint8_t p8 = 0;
+        uint8_t p9 = 0;
+        uint32_t color = 0;
+        uint8_t w = 0;
+        uint8_t brightness = 0;
+        uint16_t duration = 0;
+        uint16_t fade = 0;
+        std::string cueName;
+        std::string effectText;
+
+        switch (cueIndex)
+        {
+            case 0:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue1Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue1Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue1Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue1Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue1Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue1Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue1Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue1Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue1Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue1Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue1Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue1Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue1W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue1Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue1Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue1Fade;
+                cueName = ParamNEOEM_NEOEMCue1TextStr;
+                effectText = ParamNEOEM_NEOEMCue1EffectTextStr;
+                break;
+            case 1:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue2Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue2Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue2Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue2Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue2Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue2Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue2Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue2Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue2Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue2Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue2Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue2Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue2W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue2Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue2Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue2Fade;
+                cueName = ParamNEOEM_NEOEMCue2TextStr;
+                effectText = ParamNEOEM_NEOEMCue2EffectTextStr;
+                break;
+            case 2:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue3Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue3Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue3Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue3Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue3Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue3Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue3Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue3Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue3Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue3Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue3Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue3Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue3W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue3Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue3Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue3Fade;
+                cueName = ParamNEOEM_NEOEMCue3TextStr;
+                effectText = ParamNEOEM_NEOEMCue3EffectTextStr;
+                break;
+            case 3:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue4Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue4Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue4Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue4Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue4Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue4Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue4Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue4Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue4Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue4Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue4Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue4Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue4W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue4Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue4Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue4Fade;
+                cueName = ParamNEOEM_NEOEMCue4TextStr;
+                effectText = ParamNEOEM_NEOEMCue4EffectTextStr;
+                break;
+            case 4:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue5Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue5Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue5Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue5Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue5Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue5Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue5Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue5Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue5Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue5Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue5Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue5Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue5W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue5Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue5Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue5Fade;
+                cueName = ParamNEOEM_NEOEMCue5TextStr;
+                effectText = ParamNEOEM_NEOEMCue5EffectTextStr;
+                break;
+            case 5:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue6Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue6Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue6Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue6Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue6Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue6Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue6Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue6Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue6Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue6Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue6Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue6Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue6W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue6Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue6Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue6Fade;
+                cueName = ParamNEOEM_NEOEMCue6TextStr;
+                effectText = ParamNEOEM_NEOEMCue6EffectTextStr;
+                break;
+            case 6:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue7Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue7Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue7Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue7Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue7Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue7Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue7Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue7Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue7Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue7Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue7Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue7Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue7W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue7Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue7Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue7Fade;
+                cueName = ParamNEOEM_NEOEMCue7TextStr;
+                effectText = ParamNEOEM_NEOEMCue7EffectTextStr;
+                break;
+            case 7:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue8Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue8Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue8Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue8Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue8Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue8Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue8Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue8Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue8Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue8Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue8Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue8Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue8W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue8Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue8Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue8Fade;
+                cueName = ParamNEOEM_NEOEMCue8TextStr;
+                effectText = ParamNEOEM_NEOEMCue8EffectTextStr;
+                break;
+            case 8:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue9Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue9Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue9Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue9Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue9Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue9Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue9Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue9Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue9Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue9Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue9Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue9Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue9W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue9Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue9Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue9Fade;
+                cueName = ParamNEOEM_NEOEMCue9TextStr;
+                effectText = ParamNEOEM_NEOEMCue9EffectTextStr;
+                break;
+            case 9:
+                effect = (uint8_t)ParamNEOEM_NEOEMCue10Effect;
+                p0 = (uint8_t)ParamNEOEM_NEOEMCue10Param0;
+                p1 = (uint8_t)ParamNEOEM_NEOEMCue10Param1;
+                p2 = (uint8_t)ParamNEOEM_NEOEMCue10Param2;
+                p3 = (uint8_t)ParamNEOEM_NEOEMCue10Param3;
+                p4 = (uint8_t)ParamNEOEM_NEOEMCue10Param4;
+                p5 = (uint8_t)ParamNEOEM_NEOEMCue10Param5;
+                p6 = (uint8_t)ParamNEOEM_NEOEMCue10Param6;
+                p7 = (uint8_t)ParamNEOEM_NEOEMCue10Param7;
+                p8 = (uint8_t)ParamNEOEM_NEOEMCue10Param8;
+                p9 = (uint8_t)ParamNEOEM_NEOEMCue10Param9;
+                color = (uint32_t)ParamNEOEM_NEOEMCue10Color;
+                w = (uint8_t)ParamNEOEM_NEOEMCue10W;
+                brightness = (uint8_t)ParamNEOEM_NEOEMCue10Brightness;
+                duration = (uint16_t)ParamNEOEM_NEOEMCue10Duration;
+                fade = (uint16_t)ParamNEOEM_NEOEMCue10Fade;
+                cueName = ParamNEOEM_NEOEMCue10TextStr;
+                effectText = ParamNEOEM_NEOEMCue10EffectTextStr;
+                break;
+            default:
+                clearCue(cue);
+                return;
+        }
+
+        cue.effectId = mapEtsEffectTypeToRuntimeIndex(effect);
+        cue.params[0] = p0;
+        cue.params[1] = p1;
+        cue.params[2] = p2;
+        cue.params[3] = p3;
+        cue.params[4] = p4;
+        cue.params[5] = p5;
+        cue.params[6] = p6;
+        cue.params[7] = p7;
+        cue.params[8] = p8;
+        cue.params[9] = p9;
+        cue.r = (uint8_t)((color >> 16) & 0xFFu);
+        cue.g = (uint8_t)((color >> 8) & 0xFFu);
+        cue.b = (uint8_t)(color & 0xFFu);
+        cue.w = w;
+        cue.brightness = brightness;
+        cue.durationSec = duration;
+        cue.fadeMs = fade;
+        std::memset(cue.cueName, 0, sizeof(cue.cueName));
+        std::strncpy(cue.cueName, cueName.c_str(), sizeof(cue.cueName) - 1);
+        std::memset(cue.effectText, 0, sizeof(cue.effectText));
+        std::strncpy(cue.effectText, effectText.c_str(), sizeof(cue.effectText) - 1);
+    };
+
+    if (!_emData) return; // EM table not allocated (out of memory) -> nothing to load
+
+    const uint8_t oldChannel = _channelIndex;
+    for (uint8_t em = 0; em < EM_COUNT; ++em)
+    {
+        _channelIndex = em;
+
+        auto& data = _emData[em];
+        std::memset(&data, 0, sizeof(data));
+
+        const std::string name = ParamNEOEM_NEOEMNameStr;
+        std::strncpy(data.header.name, name.c_str(), sizeof(data.header.name) - 1);
+
+        uint8_t cueCount = (uint8_t)ParamNEOEM_NEOEMCueCount;
+        if (cueCount > 10) cueCount = 10;
+        data.header.cueCount = cueCount;
+        data.header.loop = ParamNEOEM_NEOEMLoop ? 1 : 0;
+
+        uint8_t nextEm = (uint8_t)ParamNEOEM_NEOEMNext;
+        data.header.nextEmId = (nextEm <= EM_COUNT) ? nextEm : EM_NONE;
+        data.header.enabled = (uint8_t)ParamNEOEM_NEOEMEnabled;
+
+        for (uint8_t cue = 0; cue < 10; ++cue)
+        {
+            loadCueFromEts(cue, data.cues[cue]);
+        }
+        for (uint8_t cue = 10; cue < EM_CUE_COUNT; ++cue)
+        {
+            clearCue(data.cues[cue]);
+        }
+    }
+    _channelIndex = oldChannel;
+
+    logInfoP("Loaded %d Effektmanager definitions from ETS", (int)EM_COUNT);
+#else
+    if (!_emData) return; // EM table not allocated (out of memory)
+    std::memset(_emData, 0, EM_COUNT * sizeof(EffektManagerData));
+    logWarningP("NEOEM parameter block missing - Effektmanager disabled");
+#endif
 }
 
 // ============================================================================
@@ -3455,31 +4234,42 @@ NeoPixelBusModule::SegmentConfig NeoPixelBusModule::createSegmentConfig(uint8_t 
     // 2D/3D matrix geometry — read from reserved bytes (0 = 1D, no matrix)
     // ParamNEO_NEOMatrixWidth/Height/Topology are defined once the ETS XML is updated.
 #ifdef ParamNEO_NEOMatrixWidth
-    config.matrixWidth  = (uint8_t)ParamNEO_NEOMatrixWidth;
+    config.matrixWidth = (uint8_t)ParamNEO_NEOMatrixWidth;
     config.matrixHeight = (uint8_t)ParamNEO_NEOMatrixHeight;
-    config.matrixDepth  = (uint8_t)ParamNEO_NEOMatrixDepth;
-    config.topology     = (LedTopology)ParamNEO_NEOSegmentTopology;
+    config.matrixDepth = (uint8_t)ParamNEO_NEOMatrixDepth;
+    config.topology = (LedTopology)ParamNEO_NEOSegmentTopology;
 #else
-    config.matrixWidth  = 0;
+    config.matrixWidth = 0;
     config.matrixHeight = 0;
-    config.matrixDepth  = 0;
-    config.topology     = LedTopology::LINEAR_1D;
+    config.matrixDepth = 0;
+    config.topology = LedTopology::LINEAR_1D;
 #endif
 
     // ── Effektkette (virtual band) params ────────────────────────────────
 #ifdef ParamNEO_NEOSyncMode
-    config.syncMode           = (uint8_t)ParamNEO_NEOSyncMode;
+    config.syncMode = (uint8_t)ParamNEO_NEOSyncMode;
     config.syncOverridePolicy = (uint8_t)ParamNEO_NEOSyncOverridePolicy;
-    config.syncTimeoutSteps   = (uint8_t)ParamNEO_NEOSyncTimeout;
+    config.syncTimeoutSteps = (uint8_t)ParamNEO_NEOSyncTimeout;
     config.virtualTotalLength = (uint16_t)ParamNEO_NEOVirtualTotalLength;
-    config.virtualOffset      = (uint16_t)ParamNEO_NEOVirtualOffset;
+    config.virtualOffset = (uint16_t)ParamNEO_NEOVirtualOffset;
 #else
-    config.syncMode           = 0;
+    config.syncMode = 0;
     config.syncOverridePolicy = 0;
-    config.syncTimeoutSteps   = 0;
+    config.syncTimeoutSteps = 0;
     config.virtualTotalLength = 0;
-    config.virtualOffset      = 0;
+    config.virtualOffset = 0;
 #endif
+
+    config.distributedMatrixWidth = 0;
+    config.distributedMatrixHeight = 0;
+    if (config.matrixWidth > 1 && config.matrixHeight > 1 &&
+        config.virtualTotalLength > 0 &&
+        config.virtualTotalLength > ((uint16_t)config.matrixWidth * config.matrixHeight) &&
+        (config.virtualTotalLength % config.matrixHeight) == 0)
+    {
+        config.distributedMatrixWidth = config.virtualTotalLength / config.matrixHeight;
+        config.distributedMatrixHeight = config.matrixHeight;
+    }
 
     logDebugP("Segment %d: Read ETS params - Start=%d, End=%d, Offset=%d, Group=%d, Spacing=%d (ETS Start=%d, End=%d)",
               segmentIndex, config.startLed, config.endLed, config.offset, config.grouping, config.spacing,
@@ -3628,6 +4418,16 @@ void NeoPixelBusModule::applySegmentConfiguration()
             config.segment->setVirtualBand(config.virtualTotalLength, config.virtualOffset);
             logInfoP("Segment %zu: Effektkette mode=%d totalLen=%d offset=%d",
                      i, config.syncMode, config.virtualTotalLength, config.virtualOffset);
+
+            if (config.distributedMatrixWidth > 0)
+            {
+                logInfoP("Segment %zu: Distributed2D global=%dx%d local=%dx%d",
+                         i,
+                         config.distributedMatrixWidth,
+                         config.distributedMatrixHeight,
+                         config.matrixWidth,
+                         config.matrixHeight);
+            }
         }
 
         logDebugP("Applied configuration to segment %zu", i);
@@ -3937,11 +4737,11 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
     #else
         #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwIndex = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
+    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
     uint8_t hwIndex = getCurrentHardwareIndex();
     const char* hwName = HardwareMapping::getHardwareName(hwIndex);
     logInfoP("  Mode:             ETS Runtime Selection");
-    logInfoP("  Selected HW Index:%5d", selectedHwIndex);
+    logInfoP("  Selected HW ID:   0x%04X", selectedHwId);
     logInfoP("  Hardware Index:   %d", hwIndex);
     logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
         #else
@@ -4330,7 +5130,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
         mgr->getGlobalPowerStats(ablCheckCurrent, ablCheckLimit, ablCheckLoad);
         if (ablCheckLoad >= 95 && _activeWarnCode == 0)
         {
-            setWarningBlink(NEO_WARN_ABL_ACTIVE, OpenKNX::Led::Color::Orange); // 1× blink Orange
+            setWarningBlink(NEO_WARN_ABL_ACTIVE); // pulsing Orange (color from warnColorForCode)
         }
     }
 
@@ -4648,34 +5448,74 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
 // Blink Code Helpers
 // =============================================================================
 
+// Single source of truth: blink code -> human-readable console text.
+static const char* errorMsgForCode(uint8_t code)
+{
+    switch (code)
+    {
+        case NEO_ERROR_HW_MISMATCH: return "Hardware mismatch (firmware vs ETS) - GPIO mappings ignored";
+        case NEO_ERROR_NO_HW_CONFIGURED: return "No hardware selected in ETS (dummy 255)";
+        case NEO_ERROR_GPIO_CONFLICT: return "GPIO pin conflict - duplicate pin assignment";
+        case NEO_ERROR_STRIP_FAILED: return "Physical strip creation failed";
+        case NEO_ERROR_VSTRIP_FAILED: return "Virtual strip creation failed - no LED output";
+        default: return "unknown error";
+    }
+}
+
+static const char* warnMsgForCode(uint8_t code)
+{
+    switch (code)
+    {
+        case NEO_WARN_ABL_ACTIVE: return "Auto brightness limiting active (power >= 95% of limit)";
+        case NEO_WARN_FLASH_DISCARDED: return "Saved state discarded (config changed) - using defaults";
+        case NEO_WARN_UNKNOWN_EFFECT: return "Unknown effect type configured in ETS";
+        default: return "unknown warning";
+    }
+}
+
 void NeoPixelBusModule::setErrorBlink(uint8_t code)
 {
     // Only show the most severe (lowest code number) error
     if (_activeErrorCode != 0 && _activeErrorCode <= code) return;
     _activeErrorCode = code;
+    // Always log to console first — independent of whether a STATUS LED is mapped on this hardware.
+    logErrorP("NeoPixel error: %s (STATUS LED red, %d× blink)", errorMsgForCode(code), code);
     auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
     if (led)
     {
         led->color(OpenKNX::Led::Color::Red);
         led->errorCode(code); // Prio 2 — overrides any active pulsing (Prio 5)
-        logInfoP("Error blink code %d activated on STATUS LED (Red, %d× blink)", code, code);
     }
 }
 
-void NeoPixelBusModule::setWarningBlink(uint8_t code, OpenKNX::Led::Color color)
+OpenKNX::Led::Color NeoPixelBusModule::warnColorForCode(uint8_t code)
 {
+    // Single source of truth: warning code -> STATUS LED color.
+    switch (code)
+    {
+        case NEO_WARN_ABL_ACTIVE: return OpenKNX::Led::Color::Orange;
+        case NEO_WARN_FLASH_DISCARDED: return OpenKNX::Led::Color::Purple;
+        case NEO_WARN_UNKNOWN_EFFECT: return OpenKNX::Led::Color::Yellow;
+        default: return OpenKNX::Led::Color::Yellow;
+    }
+}
+
+void NeoPixelBusModule::setWarningBlink(uint8_t code)
+{
+    OpenKNX::Led::Color color = warnColorForCode(code);
     // Don't touch STATUS LED if an error is already showing (errorCode Prio 2 would win,
     // but the color() call would wrongly change the error's color)
     if (_activeErrorCode != 0) return;
     // Only show the most severe (lowest code number) warning
     if (_activeWarnCode != 0 && _activeWarnCode <= code) return;
     _activeWarnCode = code;
+    // Always log to console first — independent of whether a STATUS LED is mapped on this hardware.
+    logWarningP("NeoPixel warning: %s (STATUS LED pulsing)", warnMsgForCode(code));
     auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
     if (led)
     {
         led->color(color);
         led->pulsing(); // Prio 5 — smooth breathing to indicate warning
-        logInfoP("Warning code %d activated on STATUS LED (pulsing)", code);
     }
 }
 
@@ -4686,7 +5526,128 @@ void NeoPixelBusModule::clearBlinkCodes()
     auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
     if (led)
     {
-        led->errorCode(0); // Disable error blink pattern
-        led->off();        // Disable pulsing
+        led->errorCode(0);
+        led->off();
     }
+}
+
+// ============================================================================
+// Effektmanager
+// ============================================================================
+
+void NeoPixelBusModule::loopEffektManager()
+{
+    if (!_emData) return; // EM table not allocated (out of memory) -> EM disabled
+    for (size_t i = 0; i < _segments.size(); i++)
+    {
+        auto& cfg = _segments[i];
+        if (!cfg.segment) continue;
+
+        cfg.emController.tick(cfg.segment, _emData);
+
+        // Keep EM status KOs in sync with cue changes and chaining.
+        // valueNoSendCompare in sendEmStatusKOs avoids bus traffic on unchanged values.
+        sendEmStatusKOs(i);
+    }
+}
+
+void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)
+{
+    if (segmentIndex >= _segments.size())
+    {
+        logWarningP("Segment %d: EM %d start ignored (segment out of range)",
+                    (int)segmentIndex + 1, (int)emId);
+        return;
+    }
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment)
+    {
+        logWarningP("Segment %d: EM %d start ignored (no segment instance)",
+                    (int)segmentIndex + 1, (int)emId);
+        return;
+    }
+
+    if (emId == EM_NONE)
+    {
+        stopEffektManager(segmentIndex);
+        return;
+    }
+
+    if (emId > EM_COUNT)
+    {
+        logWarningP("Segment %d: EM %d start ignored (valid range 1..%d)",
+                    (int)segmentIndex + 1, (int)emId, (int)EM_COUNT);
+        return;
+    }
+
+    if (!_emData) return; // EM table not allocated (out of memory) -> EM disabled
+    const auto& header = _emData[emId - 1].header;
+    if (!header.enabled || header.cueCount == 0)
+    {
+        logWarningP("Segment %d: EM %d nicht startfaehig (enabled=%d, cueCount=%d)",
+                    (int)segmentIndex + 1,
+                    (int)emId,
+                    header.enabled ? 1 : 0,
+                    (int)header.cueCount);
+    }
+
+    // If a normal effect KO wins (Variante A: EM interrupt = sofort)
+    cfg.emController.start(emId, cfg.segment, _emData);
+    sendEmStatusKOs(segmentIndex);
+
+    if (cfg.emController.activeEmId() != emId)
+    {
+        logWarningP("Segment %d: EM %d start fehlgeschlagen (enabled=%d, cueCount=%d, next=%d, loop=%d)",
+                    (int)segmentIndex + 1,
+                    (int)emId,
+                    header.enabled ? 1 : 0,
+                    (int)header.cueCount,
+                    (int)header.nextEmId,
+                    header.loop ? 1 : 0);
+    }
+}
+
+void NeoPixelBusModule::stopEffektManager(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment) return;
+
+    cfg.emController.stop(cfg.segment);
+    sendEmStatusKOs(segmentIndex);
+}
+
+void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
+{
+#ifdef NEOEM_KoEmStatus
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+
+    uint8_t oldCh = _channelIndex;
+    _channelIndex = (uint8_t)segmentIndex;
+
+    bool changed1 = KoNEOEM_EmStatus.valueNoSendCompare(cfg.emController.activeEmId(), DPT_Value_1_Ucount);
+    if (changed1) KoNEOEM_EmStatus.objectWritten();
+
+    bool changed2 = KoNEOEM_EmCueStatus.valueNoSendCompare(cfg.emController.activeCueNum(), DPT_Value_1_Ucount);
+    if (changed2) KoNEOEM_EmCueStatus.objectWritten();
+
+    _channelIndex = oldCh;
+#endif
+}
+
+void NeoPixelBusModule::sendEffectTextStatusKO(size_t segmentIndex)
+{
+#ifdef NEOEM_KoEffectTextStatus
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment) return;
+
+    uint8_t oldCh = _channelIndex;
+    _channelIndex = (uint8_t)segmentIndex;
+
+    KoNEOEM_EffectTextStatus.value(cfg.segment->getConfig().effectText, DPT_String_8859_1);
+
+    _channelIndex = oldCh;
+#endif
 }
