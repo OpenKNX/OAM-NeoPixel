@@ -314,6 +314,38 @@ If the effect was not changed via KO during runtime, the ETS-configured default 
 - Reduce LED count in problem area
 - Split very long strips into multiple segments controlled separately
 
+### Local testing without ETS (`neo init`)
+
+> **For local/bench tests only. Normal operation is configured via ETS.**
+
+If the device is **not programmed via ETS** (e.g. the ETS application does not match
+the firmware, or the KNX flash was erased), the module stays *uninitialized* and every
+hardware console command answers `ERROR: NeoPixel module not initialized!`.
+
+The `neo init` command brings the module up **without** an ETS download so you can build
+a setup by hand and let it render:
+
+```
+neo init                      # enter local test mode (creates the manager, runs loop())
+neo phys add 6 512 ws2812b    # add physical strips (1-Wire: ws2812b|sk6812)
+neo phys add 2 150 apa102 4   # SPI APA102: <clk> <n> apa102 <data>
+neo virt add 862              # create a virtual strip with N LEDs
+neo virt attach 0 0           # attach physical strip <p> to virtual strip <v>
+neo seg add 0 0 511           # segment on virtual <v>, LEDs <start>-<end>
+neo effect set 0 32           # assign an effect by ID (or name) to a segment
+neo info                      # verify
+```
+
+Limitations (by design):
+- **Rendering only** — test mode runs the effect/auto-update path but **skips all KNX
+  group-object traffic** (HCL status, power-monitoring, Effektkette sync). Those require
+  a loaded KO table from ETS; touching KOs without it would fault.
+- **Runtime only** — the setup is **not persisted** and is lost on reboot/power-cycle.
+- **ColorOrder is not settable** from the console (strips use the protocol default).
+- **Effektmanager / cues cannot be created** here — those come exclusively from the ETS
+  configuration (`EffektManagerData`). `neo em start/stop/cue` only drive EMs already
+  loaded from ETS.
+
 ## License
 
 Part of the OpenKNX ecosystem. See individual library licenses.

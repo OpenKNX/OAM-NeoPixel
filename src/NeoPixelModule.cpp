@@ -137,6 +137,18 @@ bool openknxNeoPixelHandleEmChainAction(uint8_t action, int arg1, int arg2)
     return openknxNeoPixelModule.executeEmChainAction(action, arg1, arg2);
 }
 
+bool openknxNeoPixelHandleCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
+                                 uint16_t durSec, uint16_t fadeMs,
+                                 uint8_t bri, uint8_t r, uint8_t g, uint8_t b)
+{
+    return openknxNeoPixelModule.executeCueSet(emId, cueNum, effectId, durSec, fadeMs, bri, r, g, b);
+}
+
+bool openknxNeoPixelHandleCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value)
+{
+    return openknxNeoPixelModule.executeCueParam(emId, cueNum, paramIdx, value);
+}
+
 NeoPixelBusModule::NeoPixelBusModule()
     : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr)
 {
@@ -160,8 +172,9 @@ NeoPixelBusModule::~NeoPixelBusModule()
 void NeoPixelBusModule::setup(bool configured)
 {
     // Allocate the Effektmanager data table here (heap ready), NOT as a global static
-    // initializer: a ~76 KB new[] at C++ static-init time aborts the boot on low-DRAM ESP32
-    // (e.g. ESP32-WROOM without PSRAM). new(std::nothrow) degrades gracefully on tight memory:
+    // initializer: this ~8 KB new[] (16 EMs x ~500 B) at C++ static-init time can abort the
+    // boot on low-DRAM ESP32 (e.g. ESP32-WROOM without PSRAM). new(std::nothrow) degrades
+    // gracefully on tight memory:
     // the device still boots and runs, only the Effektmanager is unavailable.
     if (!_emData)
     {
@@ -227,7 +240,9 @@ void NeoPixelBusModule::setup(bool configured)
 
 void NeoPixelBusModule::loop(bool configured)
 {
-    if (!configured || !_initialized) return;
+    // _localTestMode ('neo init') lets the loop run without an ETS download for bench tests.
+    if ((!configured && !_localTestMode) || !_initialized) return;
+
 
     // Check for hardware configuration mismatch and warn periodically
     if (_hwConfigMismatch)
@@ -261,17 +276,24 @@ void NeoPixelBusModule::loop(bool configured)
         }
     }
 
-    // Update LightManager-backed HCL snapshots and publish status KOs.
-    refreshHclMasterStateCache();
+    // ETS/KO-dependent housekeeping. These publish/read KNX group objects and assume
+    // a loaded KO table + ETS configuration. In _localTestMode ('neo init', no ETS
+    // download) the KO table is NOT loaded, so touching KOs faults — skip them and
+    // only run the rendering path below.
+    if (!_localTestMode)
+    {
+        // Update LightManager-backed HCL snapshots and publish status KOs.
+        refreshHclMasterStateCache();
 
-    // Process relay timers for delayed on/off switching
-    processRelayTimers();
+        // Process relay timers for delayed on/off switching
+        processRelayTimers();
 
-    // Effektkette: check slave watchdog timeouts + master change detection
-    loopSyncWatchdog();
-    loopSyncMaster();
+        // Effektkette: check slave watchdog timeouts + master change detection
+        loopSyncWatchdog();
+        loopSyncMaster();
+    }
 
-    // Effektmanager: tick all active sequencers
+    // Effektmanager: tick all active sequencers (no-op in local test mode — EMs are ETS-only)
     loopEffektManager();
 
     // If global power is OFF, skip all effect processing and pixel updates
@@ -283,13 +305,16 @@ void NeoPixelBusModule::loop(bool configured)
     // Call library loop() for auto-update timer and effect processing
     _neoPixel.loop(configured);
 
-    // Send power monitoring KOs periodically
-    unsigned long now = millis();
-    if (now - _lastPowerMonitoringMs >= _powerMonitoringIntervalMs)
+    // Send power monitoring KOs periodically (KO writes — skip without ETS config)
+    if (!_localTestMode)
     {
-        _lastPowerMonitoringMs = now;
-        // logDebugP("Power monitoring update: Sending KOs");
-        sendPowerMonitoringKOs();
+        unsigned long now = millis();
+        if (now - _lastPowerMonitoringMs >= _powerMonitoringIntervalMs)
+        {
+            _lastPowerMonitoringMs = now;
+            // logDebugP("Power monitoring update: Sending KOs");
+            sendPowerMonitoringKOs();
+        }
     }
 }
 
@@ -1647,8 +1672,15 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     effectiveBrightness = (brightness * _globalBrightness) / 255;
                 }
 
-                // Set the effective brightness level
-                targetSegment->setBrightness(effectiveBrightness);
+                // Master brightness = user/KO intent (after global scaling). The Effektmanager
+                // renders cues at master*cue/255, so dimming via this KO survives cue switches.
+                targetSegment->setMasterBrightness(effectiveBrightness);
+                if (cfgB.emController.isRunning())
+                    // EM owns the render brightness — re-derive it from the new master immediately.
+                    cfgB.emController.reapplyMasterBrightness(targetSegment);
+                else
+                    // No EM: master and render brightness are the same.
+                    targetSegment->setBrightness(effectiveBrightness);
 
                 // Send status feedback (send back percentage)
                 _channelIndex = channel;
@@ -2125,6 +2157,27 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
     }
 #endif
 
+    // neo init — bring the module up WITHOUT an ETS download so the manual console commands
+    // (neo phys/virt/seg/effect/cue/em ...) are accepted and loop() renders. Production
+    // configures via ETS; this is a console bring-up (runtime-only, lost on reboot).
+    if (command == "neo init")
+    {
+        if (_initialized)
+        {
+            logInfoP("neo init: already initialized (testMode=%d)", (int)_localTestMode);
+            return true;
+        }
+        _neoPixel.init();           // create the manager
+        _neoPixel.setup(true);      // sets the library's _initialized flag (no strips yet)
+        _neoPixel.setAutoUpdate(true); // ETS normally enables this; do it here so effects animate
+        _initialized   = true;      // module-level init flag (gates loop() + console)
+        _localTestMode = true;      // let loop() run without ETS 'configured'
+        logInfoP("neo init: NeoPixel up in LOCAL TEST MODE (no ETS config).");
+        logInfoP("  Build: neo phys add <gpio> <n> <type> | neo virt add <n> (+ neo virt attach <v> <p>) | neo seg add <v> <s> <e> | neo effect set <s> <id>");
+        logInfoP("  NOTE: runtime-only (lost on reboot). Build EMs/cues via neo em config / neo cue set.");
+        return true;
+    }
+
     // neo led <subcommand>
     if (command.compare(0, 8, "neo led ") == 0)
     {
@@ -2320,6 +2373,32 @@ void NeoPixelBusModule::printFlashStateTable(int onlySeg)
 bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
 {
     if (!_emData) return false; // EM table not allocated (out of memory) -> EM disabled
+
+    // Console EM/cue authoring. Here arg1 is an EM id (CONFIG/CLEAR) or a MANAGER segment
+    //    index (BIND) — NOT an OAM segment — so handle before the segment-index check below.
+    switch (action)
+    {
+        case NEO_EM_CONFIG:
+        {
+            if (arg1 < 1 || arg1 > EM_COUNT) return false;
+            EffektManagerHeader& h = _emData[arg1 - 1].header;
+            h.loop     = (arg2 & 0xFF) ? 1 : 0;
+            h.nextEmId = (uint8_t)((arg2 >> 8) & 0xFF);
+            h.enabled  = 1; // mark active (cueCount comes from 'neo cue set')
+            return true;
+        }
+        case NEO_CUE_CLEAR:
+        {
+            if (arg1 < 1 || arg1 > EM_COUNT) return false;
+            _emData[arg1 - 1].header.cueCount = 0;
+            return true;
+        }
+        case NEO_EM_BIND:
+            return bindConsoleSegment(arg1) >= 0;
+        default:
+            break; // fall through to the segment-indexed actions
+    }
+
     if (arg1 < 0 || arg1 >= (int)_segments.size()) return false;
     const size_t seg = (size_t)arg1;
 
@@ -2382,6 +2461,107 @@ bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
         default:
             return false;
     }
+}
+
+// Console EM/cue authoring: define one cue in _emData (params seeded with effect defaults).
+bool NeoPixelBusModule::executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
+                                      uint16_t durSec, uint16_t fadeMs,
+                                      uint8_t bri, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (!_emData) return false;
+    if (emId < 1 || emId > EM_COUNT) return false;
+    if (cueNum < 1 || cueNum > EM_CUE_COUNT) return false;
+
+    EffektManagerData& em = _emData[emId - 1];
+    EffektCue& c = em.cues[cueNum - 1];
+    c = EffektCue{};            // zero all fields
+    c.effectId    = effectId;
+    // Seed params with the chosen effect's OWN defaults. A zeroed cue would leave every
+    // param at 0, and applyCue()'s "value < min → default" substitution never fires for
+    // params whose min is 0 (e.g. Clock BlinkColon default 1, Snake BodyHue default 85=green).
+    // Without this the clock never blinks and the snake body renders red (hue 0) — both come
+    // straight from the cue carrying 0 instead of the effect default.
+    const char* defText = nullptr;
+    if (Effect* eff = EffectPool::getEffectByIndex(effectId))
+    {
+        uint8_t pc = eff->getParameterCount();
+        for (uint8_t i = 0; i < pc && i < EM_PARAM_COUNT; i++)
+        {
+            c.params[i] = (uint8_t)eff->getParameterDefault(i);
+            // Capture the effect's default text (string param) so a cue without an
+            // explicit text shows it instead of nothing — e.g. ScrollText → "OpenKNX NeoPixel".
+            if (!defText) defText = eff->getParameterDefaultText(i);
+        }
+    }
+    c.r = r; c.g = g; c.b = b; c.w = 0;
+    c.brightness  = bri;
+    c.durationSec = durSec;
+    c.fadeMs      = fadeMs;
+    c.cueName[0]    = '\0';
+    c.effectText[0] = '\0';
+    if (defText && defText[0])
+    {
+        strncpy(c.effectText, defText, sizeof(c.effectText) - 1);
+        c.effectText[sizeof(c.effectText) - 1] = '\0';
+    }
+    if (cueNum > em.header.cueCount) em.header.cueCount = cueNum; // grow active cue count
+    return true;
+}
+
+bool NeoPixelBusModule::executeCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value)
+{
+    if (!_emData) return false;
+    if (emId < 1 || emId > EM_COUNT) return false;
+    if (cueNum < 1 || cueNum > EM_CUE_COUNT) return false;
+    if (paramIdx >= EM_PARAM_COUNT) return false;
+
+    EffektCue& c = _emData[emId - 1].cues[cueNum - 1];
+    // Clamp against the cue's effect so an out-of-range value can't break the effect.
+    if (Effect* eff = EffectPool::getEffectByIndex(c.effectId))
+    {
+        if (paramIdx >= eff->getParameterCount()) return false;
+        uint32_t v = value;
+        uint32_t lo = eff->getParameterMin(paramIdx);
+        uint32_t hi = eff->getParameterMax(paramIdx);
+        if (v < lo) v = lo;
+        if (v > hi) v = hi;
+        value = (uint8_t)v;
+    }
+    c.params[paramIdx] = value;
+    return true;
+}
+
+// Wrap a console (manager) segment into the OAM _segments list (with an emController)
+// so loopEffektManager() ticks it. Returns the OAM segment index, or -1.
+int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
+{
+    auto* mgr = _neoPixel.getManager();
+    if (!mgr) { openknxNeoPixelConsolePrintf("bind: not initialized (run 'neo init')"); return -1; }
+    if (managerSegIdx < 0 || (uint32_t)managerSegIdx >= mgr->getSegmentCount())
+    {
+        openknxNeoPixelConsolePrintf("bind: manager segment %d not found (have %u)",
+                                     managerSegIdx, (unsigned)mgr->getSegmentCount());
+        return -1;
+    }
+    Segment* seg = mgr->getSegment((uint32_t)managerSegIdx);
+    if (!seg) { openknxNeoPixelConsolePrintf("bind: manager segment %d is null", managerSegIdx); return -1; }
+
+    for (size_t i = 0; i < _segments.size(); i++)
+        if (_segments[i].segment == seg)
+        {
+            openknxNeoPixelConsolePrintf("bind: already bound as OAM segment %u", (unsigned)i);
+            return (int)i;
+        }
+
+    SegmentConfig cfg;
+    cfg.segment  = seg;
+    cfg.startLed = seg->getStartLed();
+    cfg.endLed   = seg->getEndLed();
+    _segments.push_back(cfg);
+    const size_t idx = _segments.size() - 1;
+    openknxNeoPixelConsolePrintf("bind: manager seg %d -> OAM segment %u  (now: neo em start %u <em>)",
+                                 managerSegIdx, (unsigned)idx, (unsigned)idx);
+    return (int)idx;
 }
 
 // FunctionProperty: Handle ETS online functions (hardware detection)
@@ -5582,12 +5762,17 @@ void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)
 
     if (!_emData) return; // EM table not allocated (out of memory) -> EM disabled
     const auto& header = _emData[emId - 1].header;
-    if (!header.enabled || header.cueCount == 0)
+    if (header.isPaused())
     {
-        logWarningP("Segment %d: EM %d nicht startfaehig (enabled=%d, cueCount=%d)",
+        logInfoP("Segment %d: EM %d suspendiert -> Start ignoriert (Konfig/KOs bleiben erhalten)",
+                 (int)segmentIndex + 1, (int)emId);
+    }
+    else if (!header.enabled || header.cueCount == 0)
+    {
+        logWarningP("Segment %d: EM %d nicht startfaehig (state=%d [0=Deaktiviert,1=Aktiv,2=Suspendiert], cueCount=%d)",
                     (int)segmentIndex + 1,
                     (int)emId,
-                    header.enabled ? 1 : 0,
+                    (int)header.enabled,
                     (int)header.cueCount);
     }
 
@@ -5595,12 +5780,13 @@ void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)
     cfg.emController.start(emId, cfg.segment, _emData);
     sendEmStatusKOs(segmentIndex);
 
-    if (cfg.emController.activeEmId() != emId)
+    // Suspendiert (paused) ignoriert Start bewusst -> kein Fehler-Log (oben bereits als Info vermerkt)
+    if (!header.isPaused() && cfg.emController.activeEmId() != emId)
     {
-        logWarningP("Segment %d: EM %d start fehlgeschlagen (enabled=%d, cueCount=%d, next=%d, loop=%d)",
+        logWarningP("Segment %d: EM %d start fehlgeschlagen (state=%d [0=Deaktiviert,1=Aktiv,2=Suspendiert], cueCount=%d, next=%d, loop=%d)",
                     (int)segmentIndex + 1,
                     (int)emId,
-                    header.enabled ? 1 : 0,
+                    (int)header.enabled,
                     (int)header.cueCount,
                     (int)header.nextEmId,
                     header.loop ? 1 : 0);
@@ -5619,6 +5805,10 @@ void NeoPixelBusModule::stopEffektManager(size_t segmentIndex)
 
 void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
 {
+    // Console bring-up ('neo init') has no ETS KO table — writing KOs would fault. Covers
+    // every caller (loopEffektManager/start/stop/triggerCue). _localTestMode is false on a
+    // normal ETS-configured boot, so production is unaffected.
+    if (_localTestMode) return;
 #ifdef NEOEM_KoEmStatus
     if (segmentIndex >= _segments.size()) return;
     auto& cfg = _segments[segmentIndex];

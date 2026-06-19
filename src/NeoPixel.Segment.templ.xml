@@ -20,8 +20,8 @@
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Segment Parameters (overlapping unions by design: effect params share same offsets, only one effect active at a time) -->
-              <!-- Union size bumped 4608→4672 bit (576→584 byte) for Tetris2D AutoPlay param (offset 560); effect spillover now ends ≤583. LAYOUT MIGRATION: shifts per-segment block size → existing ETS/ConfigTransfer/Restore configs require re-import. -->
-              <Union SizeInBit="4672">
+              <!-- Union size bumped 4672→5632 bit (584→704 byte) fuer die zusaetzlichen 2D-Effekte (DNA/Aurora/Lissajous/Metaballs + Reserve fuer ~50+ Effekte; Effekt-Spillover-Ende waechst mit). LAYOUT MIGRATION: per-Segment-Blockgroesse aendert sich -> Offsets wandern (laut Producer-Regel kompatibel, RefIds/KO-Nummern bleiben), aber ETS-Re-Import noetig. -->
+              <Union SizeInBit="5632">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0..1: 16b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%050" Offset="0" BitOffset="0" Name="NEO%C%SegmentStart" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Start LED" Value="1"/>
@@ -71,7 +71,7 @@
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-                <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
+                <!-- Start ID: 600, Start Offset: 30 (FIXED - do not change!) -->
         <!-- END AUTO-GENERATED: Effect Parameters Union -->
 
                  <!-- ═══════════════════════════════════════════════════════════════════════════════════

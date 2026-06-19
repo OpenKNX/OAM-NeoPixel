@@ -8,7 +8,7 @@
     OpenKnxId="0xAD"
     ApplicationNumber="1"
     ApplicationVersion="0.4"
-    ReplacesVersions="0.4 0.3 0.2 0.1 0.0" 
+    ReplacesVersionsDownTo="0.0"
     ApplicationRevision="0"
     ProductName="OpenKNX NeoPixel"
     BusCurrent="30"

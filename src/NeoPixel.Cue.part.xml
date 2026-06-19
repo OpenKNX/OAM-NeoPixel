@@ -94,10 +94,10 @@
               <choose ParamRefId="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201">
                 <when test=">=%CUE_NR%">
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Cue %CUE_NR%" Cell="%CUE_NR%,1" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" Cell="%CUE_NR%,2" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01"   Cell="%CUE_NR%,3" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+14%_R-%TT%%CC%%CUE_PPP+14%01" Cell="%CUE_NR%,4" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+15%_R-%TT%%CC%%CUE_PPP+15%01" Cell="%CUE_NR%,5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" Cell="%CUE_NR%,2" HelpContext="NEO-Cue-Name"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01"   Cell="%CUE_NR%,3" HelpContext="NEO-Cue-Effekt"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+14%_R-%TT%%CC%%CUE_PPP+14%01" Cell="%CUE_NR%,4" HelpContext="NEO-Cue-Dauer"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+15%_R-%TT%%CC%%CUE_PPP+15%01" Cell="%CUE_NR%,5" HelpContext="NEO-Cue-Uebergang"/>
                 </when>
               </choose>
             </CueTableRow>

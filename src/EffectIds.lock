@@ -5,41 +5,33 @@
 0	EffectSolid	Solid
 1	EffectWipe	Wipe
 2	RainbowEffect	Rainbow
-3	RainbowCycleEffect	Rainbow Cycle
-4	PrideEffect	Pride2015
-5	ConfettiEffect	Confetti
-6	JuggleEffect	Juggle
-7	BPMEffect	BPM
-8	CylonEffect	Cylon
-9	RGBWTestEffect	RGBWTest
-10	GarageDoorEffect	GarageDoor
-11	FireEffect	Fire
-12	TheaterChaseEffect	Theater Chase
-13	TheaterChaseRainbowEffect	Theater Chase Rainbow
-14	SinelonEffect	Sinelon
-15	TwinkleEffect	Twinkle
-16	SparkleEffect	Sparkle
-17	BreathingEffect	Breathing
-18	StrobeEffect	Strobe
-19	PulseEffect	Pulse
-20	CometEffect	Comet
-21	MeteorEffect	Meteor
-22	NoiseEffect	Noise
-23	PaletteEffect	Palette
-24	LightningEffect	Lightning
-25	GradientEffect	Gradient
-26	RGBCCTTestEffect	RGBCCTTest
-27	CandleEffect	Candle
-28	CandleMultiEffect	Candle Multi
-29	Fire2DEffect	Fire 2D
-30	Noise2DEffect	Noise 2D
-31	Cylon2DEffect	Cylon 2D
-32	ScrollTextEffect	Scroll Text
-33	Clock2DEffect	Clock 2D
-34	Snake2DEffect	Snake 2D
-35	Matrix2DEffect	Matrix 2D
-36	Tetris2DEffect	Tetris 2D
-37	Tron2DEffect	TRON
-38	StarfieldWarp2DEffect	Starfield Warp
-39	PlasmaNebula2DEffect	Plasma Nebula
-40	UfoSwarm2DEffect	UFO Swarm
+3	PrideEffect	Pride2015
+4	JuggleEffect	Juggle
+5	BPMEffect	BPM
+6	CylonEffect	Cylon
+7	RGBWTestEffect	Test
+8	FireEffect	Fire
+9	TheaterChaseEffect	Theater Chase
+10	SparkleEffect	Sparkle
+11	BreathingEffect	Breathing
+12	StrobeEffect	Strobe
+13	CometEffect	Comet
+14	NoiseEffect	Noise
+15	PaletteEffect	Palette
+16	LightningEffect	Lightning
+17	GradientEffect	Gradient
+18	CandleEffect	Candle
+19	ScrollTextEffect	Scroll Text
+20	Clock2DEffect	Clock 2D
+21	Snake2DEffect	Snake 2D
+22	Matrix2DEffect	Matrix 2D
+23	Tetris2DEffect	Tetris 2D
+24	Tron2DEffect	TRON
+25	StarfieldWarp2DEffect	Starfield Warp
+26	PlasmaNebula2DEffect	Plasma Nebula
+27	UfoSwarm2DEffect	UFO Swarm
+28	GameOfLife2DEffect	Game of Life 2D
+29	DNA2DEffect	DNA 2D
+30	Aurora2DEffect	Aurora 2D
+31	Lissajous2DEffect	Lissajous 2D
+32	Metaballs2DEffect	Metaballs 2D

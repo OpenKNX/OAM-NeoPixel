@@ -276,6 +276,10 @@ class NeoPixelBusModule : public OpenKNX::Module
   private:
     // Console bridge hooks (NeoPixelEmConsole.h) need access to private providers
     friend bool openknxNeoPixelHandleEmChainAction(uint8_t action, int arg1, int arg2);
+    friend bool openknxNeoPixelHandleCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
+                                            uint16_t durSec, uint16_t fadeMs,
+                                            uint8_t bri, uint8_t r, uint8_t g, uint8_t b);
+    friend bool openknxNeoPixelHandleCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value);
     friend int openknxNeoPixelEmSegmentCount();
     friend bool openknxNeoPixelGetEmStatus(uint8_t seg, NeoEmSegStatus& out);
     friend const EffektManagerData* openknxNeoPixelGetEmData(uint8_t emId);
@@ -286,6 +290,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     bool _initialized = false;
     bool _clearLedsAfterSetup = false; // Flag to clear LEDs after hardware initialization
+    bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
     VirtualStrip* _virtualStrip = nullptr;
@@ -392,6 +397,12 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Configuration & Setup
     void configureFromETS(); // reads ETS params and builds phys+virt layout
     bool executeEmChainAction(uint8_t action, int arg1, int arg2);
+    // Console EM/cue authoring (runtime-only; lost on reboot — ETS is the permanent source)
+    bool executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
+                       uint16_t durSec, uint16_t fadeMs,
+                       uint8_t bri, uint8_t r, uint8_t g, uint8_t b);
+    bool executeCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value);
+    int  bindConsoleSegment(int managerSegIdx);
 
     // Console data providers (rendering happens in OFM, see NeoPixelEmConsole.h)
     int emConsoleSegmentCount() const;

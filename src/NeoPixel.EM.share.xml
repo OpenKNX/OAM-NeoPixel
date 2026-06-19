@@ -10,8 +10,13 @@
           <ParameterTypes>
 
             <!-- EM Aktiv (Checkbox, 0=Aus, 1=Ein) -->
+            <!-- 3-Zustand (war Checkbox 0/1): 8-Bit bleibt -> wertstabil zu Bestand (0=aus->Inaktiv, 1=an->Aktiv); 2=Pausiert neu. -->
             <ParameterType Id="%AID%_PT-EMEnabled" Name="EMEnabled">
-              <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="1" UIHint="CheckBox" />
+              <TypeRestriction Base="Value" SizeInBit="8">
+                <Enumeration Text="Aktiv"    Value="1" Id="%ENID%" />
+                <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
+                <Enumeration Text="Suspendiert" Value="2" Id="%ENID%" />
+              </TypeRestriction>
             </ParameterType>
 
             <!-- Effekt-Text KOs aktivieren (Checkbox, 1 Bit) -->
@@ -24,7 +29,12 @@
               <TypeText SizeInBit="128" />
             </ParameterType>
 
-            <!-- PT-EMDisplayName entfernt: EM/Cue-Tree-/KO-Texte zeigen jetzt JS-frei direkt auf die rohen Namen -->
+            <!-- EM Display-Name = roher Name + JS-Zustands-Marker (⛔ Deaktiviert / ⏸ Suspendiert),
+                 berechnet via ParameterCalculation BASE_MarkInactiveChannel. Nicht gespeichert (Access=None,
+                 ohne Offset) -> kostet keinen Speicher; nur fuer Baum-Titel & KO-Namen via TextParameterRefId. -->
+            <ParameterType Id="%AID%_PT-EMDisplayName" Name="EMDisplayName">
+              <TypeText SizeInBit="256" />
+            </ParameterType>
 
             <!-- EM Loop (1 bit) -->
             <ParameterType Id="%AID%_PT-EMLoop" Name="EMLoop">

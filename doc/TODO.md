@@ -60,6 +60,23 @@ Reihenfolge in `share.xml` (kein Layout/KO). **Vorsicht:** große, teils generie
 (Virtuell ~1000 Z., Relais in AUTO-GENERATED-Marker) — sauber per Skript + Producer-Check, nicht
 Last-Minute. (Bewusst zurückgestellt.)
 
+## 7) Dual-Core nutzen — Rendering auf Core1 auslagern  ·  Prio: niedrig (Performance-Reserve, SPÄTER)
+Aktuell läuft **alles auf Core0** (KNX-Stack + alle Modul-`loop()` inkl. NeoPixel-Rendering);
+`loop1()`/Core1 ist für NeoPixel **komplett ungenutzt**. Auf RP2350 (2× M33) liegt damit ein
+ganzer Kern brach. Messung: 862 LEDs + Tetris-2D-KI + Cylon = ~28 ms Compute/Frame, **56 % CPU
+@ 20 Hz** auf einem Core → bei 2D/größeren Matrizen/höheren FPS realistisch **1,5–2× Reserve**.
+
+**Idee:** Rechen-schweres **Rendering auf Core1** (`loop1`), **KNX + Logik auf Core0** lassen
+(KNX ist timing-sensitiv, liegt gut wo es ist). Alternativ KNX-Anteil auf eigenen Core.
+
+⚠️ **Knackpunkt = Synchronisation der geteilten Daten.** Heute sind die im Code vorhandenen
+„Race"-Stellen (Segment-Configs, `_hclTransformContext`, KO-getriebene Änderungen, Effekt-Switch
+via `applyCue`) **harmlos, weil alles sequenziell auf Core0 läuft**. Sobald Rendering auf Core1
+wandert, werden sie **real** → nötig: **Double-Buffering** des Render-Snapshots oder Locks/
+`mutex`/`spinlock`. Auch Flash-Save (Core-Lockout) + DMA-Channel-Ownership sauber trennen.
+Nicht jetzt — eigenes Vorhaben; bei 56 % CPU @ 20 Hz aktuell kein Druck. Erst angehen, wenn
+größere Matrizen / höhere FPS / mehr gleichzeitige 2D-Effekte gefragt sind.
+
 ---
 
 ## Erledigt (Referenz)

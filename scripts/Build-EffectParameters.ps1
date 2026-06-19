@@ -81,7 +81,7 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 # ====================================================================
 $script:Config = @{
   # Effect Parameter IDs (FIXED - referenced in XML comments)
-  EffectParameterStartId     = 73
+  EffectParameterStartId     = 600
   EffectParameterStartOffset = 30
   # Reserved area in segment union that dynamic effect parameters must not overwrite
   EffectReservedStartOffset  = 159
@@ -589,7 +589,7 @@ if ($Clean) {
     # Empty Union Parameters block - keep important comments
     $pattern1 = "(?s)($([regex]::Escape($script:Config.Markers.UnionStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.UnionEnd)))"
     $replacement1 = '$1                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine +
-    '                <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->' + [Environment]::NewLine +
+    '                <!-- Start ID: 600, Start Offset: 30 (FIXED - do not change!) -->' + [Environment]::NewLine +
     '        $3'
     $content = $content -replace $pattern1, $replacement1
 

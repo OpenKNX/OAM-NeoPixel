@@ -4244,8 +4244,8 @@ if ($hardwareConfigs.Count -gt 1) {
     $warnBody = "Hierf&#252;r wird kein Support durch OpenKNX geleistet. Nicht getestet; Pin-Belegung und Funktionsumfang k&#246;nnen abweichen und sind vor dem Anschluss selbst zu pr&#252;fen. Nutzung auf eigene Verantwortung."
     $hwParamRefRefXml += "`n${indent}<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">"
     $hwParamRefRefXml += "`n${indent}  <when test=`"$idList`">"
-    $hwParamRefRefXml += "`n${indent}    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"$warnHead`" UIHint=`"Error`" />"
-    $hwParamRefRefXml += "`n${indent}    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"$warnBody`" />"
+    # Kein Fehler -> Information (nicht roter Error-Style); Kopf + Text in EINER Box (Text steht drin, nicht daneben).
+    $hwParamRefRefXml += "`n${indent}    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"${warnHead}: $warnBody`" UIHint=`"Information`" />"
     $hwParamRefRefXml += "`n${indent}  </when>"
     $hwParamRefRefXml += "`n${indent}</choose>"
   }

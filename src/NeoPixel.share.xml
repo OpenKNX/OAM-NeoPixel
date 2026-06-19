@@ -3,7 +3,7 @@
 <KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
 
   <!-- Benötigt Producer 4.3.7: <Rename> (Inaktiv-Marker am EM-Baum-Knoten) -->
-  <op:minOpenKNXproducerVersion value="4.3.7" />
+  <op:minOpenKNXproducerVersion value="4.3.8" />
 
   <!-- Enable IPTool of ETS. This hide ip settings in network tab -->
   <op:config name="%NET_IPConfigTool%" value="0" />
@@ -1211,8 +1211,9 @@
                 </choose>
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
                     <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
-                      <!-- Mehr als 1 Segment definiert-->
-                      <when test=">1">
+                      <!-- Global-KOs immer sichtbar (>=1 Segment, min=1): "Alle LEDs" auch bei 1 Segment
+                           verknuepfbar -> beim Hinzufuegen weiterer Segmente keine GA-Nacharbeit. -->
+                      <when test=">=1">
                         <!-- Global Power KO -->
                         <ComObjectRefRef RefId="%AID%_O-%TT%00000_R-%TT%0000001"  />
                         <!-- Global Power State KO -->
@@ -1333,13 +1334,13 @@
                         <Row Id="%AID%_PB-nnn_R-16" Name="EM16" />
                       </Rows>
                       <Columns>
-                        <Column Id="%AID%_PB-nnn_C-1" Name="EmNr"   Width="14%" />
-                        <Column Id="%AID%_PB-nnn_C-2" Name="Aktiv"  Width="12%" />
-                        <Column Id="%AID%_PB-nnn_C-3" Name="EmName" Width="74%" />
+                        <Column Id="%AID%_PB-nnn_C-1" Name="Zustand" Width="30%" />
+                        <Column Id="%AID%_PB-nnn_C-2" Name="EmNr"    Width="12%" />
+                        <Column Id="%AID%_PB-nnn_C-3" Name="EmName"  Width="58%" />
                       </Columns>
                       <!-- Header-Zeile (UIHint=Headline = fett, wie bei den Strip-Tabellen) -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="EM"           UIHint="Headline" Cell="0,1"/>
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Aktiv"        UIHint="Headline" Cell="0,2"/>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Zustand"      UIHint="Headline" Cell="0,1"/>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="EM"           UIHint="Headline" Cell="0,2"/>
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Beschreibung" UIHint="Headline" Cell="0,3"/>
                       <!-- Eine Zeile pro EM via Template -->
                       <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/EmTableRow/*" type="template" prefix="NEOEM" IsInner="true" />

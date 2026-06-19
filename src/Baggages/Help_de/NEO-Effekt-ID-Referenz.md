@@ -8,41 +8,33 @@ Format pro Zeile: ID - DE - EN
 - 0 - Solid - Solid
 - 1 - Wipe - Wipe
 - 2 - Rainbow - Rainbow
-- 3 - Rainbow Cycle - Rainbow Cycle
-- 4 - Pride2015 - Pride2015
-- 5 - Confetti - Confetti
-- 6 - Juggle - Juggle
-- 7 - BPM - BPM
-- 8 - Cylon - Cylon
-- 9 - RGBWTest - RGBWTest
-- 10 - GarageDoor - GarageDoor
-- 11 - Fire - Fire
-- 12 - Theater Chase - Theater Chase
-- 13 - Theater Chase Rainbow - Theater Chase Rainbow
-- 14 - Sinelon - Sinelon
-- 15 - Twinkle - Twinkle
-- 16 - Sparkle - Sparkle
-- 17 - Breathing - Breathing
-- 18 - Strobe - Strobe
-- 19 - Pulse - Pulse
-- 20 - Comet - Comet
-- 21 - Meteor - Meteor
-- 22 - Noise - Noise
-- 23 - Palette - Palette
-- 24 - Blitz - Lightning
-- 25 - Gradient - Gradient
-- 26 - RGBCCTTest - RGBCCTTest
-- 27 - Kerze - Candle
-- 28 - Kerzen Multi - Candle Multi
-- 29 - Feuer 2D - Fire 2D
-- 30 - Rauschen 2D - Noise 2D
-- 31 - Cylon 2D - Cylon 2D
-- 32 - Laufschrift - Scroll Text
-- 33 - Uhr 2D - Clock 2D
-- 34 - Snake 2D - Snake 2D
-- 35 - Matrix 2D - Matrix 2D
-- 36 - Tetris 2D - Tetris 2D
-- 37 - TRON - TRON
-- 38 - Starfield Warp - Starfield Warp
-- 39 - Plasma Nebula - Plasma Nebula
-- 40 - UFO Swarm - UFO Swarm
+- 3 - Pride2015 - Pride2015
+- 4 - Juggle - Juggle
+- 5 - BPM - BPM
+- 6 - Cylon - Cylon
+- 7 - Test - Test
+- 8 - Fire - Fire
+- 9 - Theater Chase - Theater Chase
+- 10 - Sparkle - Sparkle
+- 11 - Breathing - Breathing
+- 12 - Strobe - Strobe
+- 13 - Comet - Comet
+- 14 - Noise - Noise
+- 15 - Palette - Palette
+- 16 - Blitz - Lightning
+- 17 - Gradient - Gradient
+- 18 - Kerze - Candle
+- 19 - Laufschrift - Scroll Text
+- 20 - Uhr 2D - Clock 2D
+- 21 - Snake 2D - Snake 2D
+- 22 - Matrix 2D - Matrix 2D
+- 23 - Tetris 2D - Tetris 2D
+- 24 - TRON - TRON
+- 25 - Starfield Warp - Starfield Warp
+- 26 - Plasma Nebula - Plasma Nebula
+- 27 - UFO Swarm - UFO Swarm
+- 28 - Game of Life 2D - Game of Life 2D
+- 29 - DNA 2D - DNA 2D
+- 30 - Aurora 2D - Aurora 2D
+- 31 - Lissajous 2D - Lissajous 2D
+- 32 - Metaballs 2D - Metaballs 2D
