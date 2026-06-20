@@ -2,7 +2,7 @@
 <?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
 
-  <!-- Benötigt Producer 4.3.7: <Rename> (Inaktiv-Marker am EM-Baum-Knoten) -->
+  <!-- EM-Zustands-Marker (Deaktiviert / Suspendiert) JS-basiert via common BASE_MarkInactiveChannel (kein <Rename> mehr) -->
   <op:minOpenKNXproducerVersion value="4.3.8" />
 
   <!-- Enable IPTool of ETS. This hide ip settings in network tab -->

@@ -38,8 +38,8 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%004" Offset="18" BitOffset="0" Name="NEOEM%C%Next"     ParameterType="%AID%_PT-EMNext"     Text="Wenn fertig → Effektmanager" Value="0"/>
                 <!-- Byte 19: reserved -->
 
-                <!-- Byte 19: Zustand (0=Inaktiv, 1=Aktiv, 2=Pausiert). Default 1=Aktiv. Wertstabil zu Bestand (alt 0=aus->Inaktiv, 1=an->Aktiv).
-                     Inaktiv: Typ/Params/KOs entfernt (GAs verloren). Pausiert: alles bleibt, FW rendert nicht (⏸). -->
+                <!-- Byte 19: Zustand (0=Deaktiviert, 1=Aktiv, 2=Suspendiert). Default 1=Aktiv. Wertstabil zu Bestand (alt 0=aus->Deaktiviert, 1=an->Aktiv).
+                     Deaktiviert: Typ/Params/KOs entfernt (GAs verloren). Suspendiert: alles bleibt, FW rendert nicht (⏸). -->
                 <Parameter Id="%AID%_UP-%TT%%CC%005" Offset="19" BitOffset="0" Name="NEOEM%C%Enabled" ParameterType="%AID%_PT-EMEnabled" Text="Zustand" Value="1"/>
 
                 <!-- ── Cues (10 × 44 bytes, Offsets 20-459) ──────────────── -->
@@ -124,7 +124,7 @@
                          Der ParameterBlock-Titel oben zeigt via TextParameterRefId direkt darauf. -->
                     <!-- Zustands-Auswahl (Dropdown Aktiv/Deaktiviert/Suspendiert): IMMER sichtbar, damit man zurueckschalten kann -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" IndentLevel="1" HelpContext="NEO-EM-Aktiv"/>
-                    <!-- Params + KOs nur wenn NICHT Inaktiv (Aktiv oder Pausiert). Bei Inaktiv (0): entfernt -> GAs gehen verloren. Pausiert (2): bleibt voll erhalten, FW rendert nur nicht. -->
+                    <!-- Params + KOs nur wenn NICHT Deaktiviert (Aktiv oder Suspendiert). Bei Deaktiviert (0): entfernt -> GAs gehen verloren. Suspendiert (2): bleibt voll erhalten, FW rendert nur nicht. -->
                     <choose ParamRefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501">
                       <when test="!=0">
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="NEO-EM-Beschreibung"/>
@@ -184,7 +184,7 @@
                         <ComObjectRefRef RefId="%AID%_O-%TT%%CC%007_R-%TT%%CC%00701" />
                       </when>
                     </choose>
-                    <!-- KOs (nur wenn nicht Inaktiv; bei Pausiert bleiben sie linkbar) -->
+                    <!-- KOs (nur wenn nicht Deaktiviert; bei Suspendiert bleiben sie linkbar) -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%001_R-%TT%%CC%00101" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%002_R-%TT%%CC%00201" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%003_R-%TT%%CC%00301" />

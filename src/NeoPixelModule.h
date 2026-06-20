@@ -11,6 +11,8 @@
 #include "Segment.h"            // Segment support from OFM-NeoPixel
 #include "effects/Effect.h"     // Effect system
 #include "effects/EffectPool.h" // Effect pool for singleton instances
+#include <map>
+#include <string>
 #include <vector>
 
 // ETS FunctionProperty Definitions (from the generated NeoPixel-*.debug.xml files)
@@ -111,6 +113,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
         // ── Effektmanager ─────────────────────────────────────────────────
         EffektManagerController emController; ///< per-segment EM sequencer
+        uint16_t lastCueTextKey = 0xFFFF;     ///< (emId<<8|cueNum) of the last applied long cue-text override
 
         // Saved state for power toggle and flash persistence
         bool savedValid = false;
@@ -280,6 +283,7 @@ class NeoPixelBusModule : public OpenKNX::Module
                                             uint16_t durSec, uint16_t fadeMs,
                                             uint8_t bri, uint8_t r, uint8_t g, uint8_t b);
     friend bool openknxNeoPixelHandleCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value);
+    friend bool openknxNeoPixelHandleCueText(uint8_t emId, uint8_t cueNum, const char* text);
     friend int openknxNeoPixelEmSegmentCount();
     friend bool openknxNeoPixelGetEmStatus(uint8_t seg, NeoEmSegStatus& out);
     friend const EffektManagerData* openknxNeoPixelGetEmData(uint8_t emId);
@@ -402,6 +406,7 @@ class NeoPixelBusModule : public OpenKNX::Module
                        uint16_t durSec, uint16_t fadeMs,
                        uint8_t bri, uint8_t r, uint8_t g, uint8_t b);
     bool executeCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value);
+    bool executeCueText(uint8_t emId, uint8_t cueNum, const char* text);
     int  bindConsoleSegment(int managerSegIdx);
 
     // Console data providers (rendering happens in OFM, see NeoPixelEmConsole.h)
@@ -445,7 +450,12 @@ class NeoPixelBusModule : public OpenKNX::Module
     // a ~76 KB new[] during C++ static-init aborts the boot on low-DRAM ESP32 (e.g. ESP32-WROOM
     // without PSRAM). nullptr until setup(); all users must null-check.
     EffektManagerData* _emData = nullptr; ///< Global EM definitions (16 EMs, loaded from ETS)
+    // Console authoring: cue text longer than the 14-byte EffektCue field. Keyed by
+    // (emId<<8|cueNum); re-applied to the segment by applyCueLongText() when that cue
+    // becomes active (Scroll Text renders up to ~240 chars). RAM-only (lost on reboot).
+    std::map<uint16_t, std::string> _cueLongText;
     void loopEffektManager();             ///< Called from loop() — ticks all active EMs
+    void applyCueLongText(SegmentConfig& cfg); ///< Re-apply console long cue-text on a cue switch
     void loadEffektManagerFromETS();      ///< Load global EM definitions from ETS parameter blocks
     void startEffektManager(size_t segmentIndex, uint8_t emId);
     void stopEffektManager(size_t segmentIndex);

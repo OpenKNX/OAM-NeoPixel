@@ -149,6 +149,11 @@ bool openknxNeoPixelHandleCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramId
     return openknxNeoPixelModule.executeCueParam(emId, cueNum, paramIdx, value);
 }
 
+bool openknxNeoPixelHandleCueText(uint8_t emId, uint8_t cueNum, const char* text)
+{
+    return openknxNeoPixelModule.executeCueText(emId, cueNum, text);
+}
+
 NeoPixelBusModule::NeoPixelBusModule()
     : _flashPersistence(nullptr), _effectConfiguration(nullptr), _colorManagement(nullptr), _segmentController(nullptr), _sceneManager(nullptr)
 {
@@ -2528,6 +2533,28 @@ bool NeoPixelBusModule::executeCueParam(uint8_t emId, uint8_t cueNum, uint8_t pa
         value = (uint8_t)v;
     }
     c.params[paramIdx] = value;
+    return true;
+}
+
+bool NeoPixelBusModule::executeCueText(uint8_t emId, uint8_t cueNum, const char* text)
+{
+    if (!_emData) return false;
+    if (emId < 1 || emId > EM_COUNT) return false;
+    if (cueNum < 1 || cueNum > EM_CUE_COUNT) return false;
+
+    EffektCue& c = _emData[emId - 1].cues[cueNum - 1];
+    const char* t = text ? text : "";
+    strncpy(c.effectText, t, sizeof(c.effectText) - 1);
+    c.effectText[sizeof(c.effectText) - 1] = '\0';
+
+    // Text longer than the 14-byte cue field is kept in a RAM side-store and re-applied to
+    // the segment whenever this cue is active (applyCueLongText), so Scroll Text can show the
+    // full string (~240 chars) even though the ETS-mirrored cue itself only holds 13.
+    const uint16_t key = ((uint16_t)emId << 8) | cueNum;
+    if (strlen(t) > sizeof(c.effectText) - 1)
+        _cueLongText[key] = t;
+    else
+        _cueLongText.erase(key);
     return true;
 }
 
@@ -5725,10 +5752,39 @@ void NeoPixelBusModule::loopEffektManager()
 
         cfg.emController.tick(cfg.segment, _emData);
 
+        // Re-apply any long console cue-text after a cue switch (no-op unless one is set).
+        applyCueLongText(cfg);
+
         // Keep EM status KOs in sync with cue changes and chaining.
         // valueNoSendCompare in sendEmStatusKOs avoids bus traffic on unchanged values.
         sendEmStatusKOs(i);
     }
+}
+
+void NeoPixelBusModule::applyCueLongText(SegmentConfig& cfg)
+{
+    // Fast path: nothing configured → zero overhead in the normal (ETS) case.
+    if (_cueLongText.empty()) { cfg.lastCueTextKey = 0xFFFF; return; }
+
+    const uint8_t em  = cfg.emController.activeEmId();
+    const uint8_t cue = cfg.emController.activeCueNum();
+    const uint16_t key = (em && cue) ? (((uint16_t)em << 8) | cue) : 0;
+    if (key == cfg.lastCueTextKey) return; // same cue as last tick → already applied
+    cfg.lastCueTextKey = key;
+    if (key == 0) return;
+
+    auto it = _cueLongText.find(key);
+    if (it == _cueLongText.end()) return; // this cue has no override → keep its 13-char cue text
+
+    Segment* s = cfg.segment;
+    Effect* e = s ? s->getEffect() : nullptr;
+    if (!e) return;
+    for (uint8_t i = 0; i < e->getParameterCount(); ++i)
+        if (e->getParameterType(i) == ParameterType::PARAM_STRING)
+        {
+            e->setParameter(s, i, (uint32_t)(uintptr_t)it->second.c_str());
+            break;
+        }
 }
 
 void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)

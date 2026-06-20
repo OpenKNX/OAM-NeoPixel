@@ -10,7 +10,7 @@
           <ParameterTypes>
 
             <!-- EM Aktiv (Checkbox, 0=Aus, 1=Ein) -->
-            <!-- 3-Zustand (war Checkbox 0/1): 8-Bit bleibt -> wertstabil zu Bestand (0=aus->Inaktiv, 1=an->Aktiv); 2=Pausiert neu. -->
+            <!-- 3-Zustand (war Checkbox 0/1): 8-Bit bleibt -> wertstabil zu Bestand (0=aus->Deaktiviert, 1=an->Aktiv); 2=Suspendiert neu. -->
             <ParameterType Id="%AID%_PT-EMEnabled" Name="EMEnabled">
               <TypeRestriction Base="Value" SizeInBit="8">
                 <Enumeration Text="Aktiv"    Value="1" Id="%ENID%" />
