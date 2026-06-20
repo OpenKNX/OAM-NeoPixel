@@ -2,7 +2,6 @@
 
 Wählt den Lichteffekt für diese Cue aus.
 
-Nach der Auswahl erscheinen die effektspezifischen Parameter darunter (P0–P4).
-Die Bedeutung der Parameter wird als Hinweistext über den Feldern angezeigt.
+Nach der Auswahl erscheinen darunter die **effektspezifischen Parameter** – nur die, die der gewählte Effekt wirklich nutzt, jeweils mit eigenem Namen und eigener Kontext-Hilfe.
 
-Effekte mit 0 Parametern (z. B. Solid) zeigen keine zusätzlichen Felder.
+Effekte ohne zusätzliche Parameter (z. B. Solid) zeigen keine weiteren Felder.

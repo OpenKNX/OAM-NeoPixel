@@ -3783,8 +3783,8 @@ void NeoPixelBusModule::loadEffektManagerFromETS()
         auto& data = _emData[em];
         std::memset(&data, 0, sizeof(data));
 
-        const std::string name = ParamNEOEM_NEOEMNameStr;
-        std::strncpy(data.header.name, name.c_str(), sizeof(data.header.name) - 1);
+        // EM-Beschreibung ist ETS-only (nicht gespeichert) -> nicht aufs Geraet uebernehmen.
+        // header.reserved[0-15] bleibt 0 (memset oben).
 
         uint8_t cueCount = (uint8_t)ParamNEOEM_NEOEMCueCount;
         if (cueCount > 10) cueCount = 10;

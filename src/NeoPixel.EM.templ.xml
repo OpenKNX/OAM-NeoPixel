@@ -26,8 +26,9 @@
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
 
                 <!-- ── EM Header (20 bytes, Offsets 0-19) ─────────────────── -->
-                <!-- Byte 0-15: Name (16 chars) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%001" Offset="0"  BitOffset="0" Name="NEOEM%C%Name"     ParameterType="%AID%_PT-EMName"     Text="Beschreibung" Value=""/>
+                <!-- Byte 0-15: FREI/RESERVIERT fuer spaeteren EM-Ausbau.
+                     Die EM-Beschreibung ist jetzt NICHT-gespeichert (ETS-only, P-001 unten) -> kein Geraete-Speicher. -->
+                <!-- (kein Parameter hier; 16 Byte bleiben ungenutzt) -->
                 <!-- Byte 16: CueCount (1-10) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%002" Offset="16" BitOffset="0" Name="NEOEM%C%CueCount" ParameterType="%AID%_PT-EMCueCount" Text="Anzahl aktiver Cues" SuffixText=" von 10" Value="1"/>
                 <!-- Byte 17, Bit 0: Loop -->
@@ -46,6 +47,10 @@
                 <!-- AUTO-GENERATED via op:part (NeoPixel.Cue.part.xml, 10 instances) -->
                 <op:usePart name="Cue" xpath="//Parameters/*" />
               </Union>
+              <!-- EM-Beschreibung: NICHT-gespeichert (Access=None, ohne Offset) => bis 40 Zeichen, kostet keinen Flash.
+                   Firmware nutzt den Namen nicht (Konsole entfernt); Baum-Titel & KO-Namen via Marker-DisplayName (P-010).
+                   Die fruehere gespeicherte 16-Byte-Stelle (Union Offset 0-15) bleibt frei/reserviert. -->
+              <Parameter Id="%AID%_P-%TT%%CC%001" Name="NEOEM%C%Name" ParameterType="%AID%_PT-EMName" Text="Beschreibung" Value="" />
               <!-- EM Display-Name: roher Name + JS-Zustands-Marker (⛔ Deaktiviert=0 / ⏸ Suspendiert=2),
                    berechnet via ParameterCalculation BASE_MarkInactiveChannel (ETS5-kompatibel statt <Rename>).
                    Access=None + ohne Offset => NICHT gespeichert (kein Speicher, Union bleibt voll/unveraendert);
@@ -54,7 +59,7 @@
             </Parameters>
 
             <ParameterRefs>
-              <ParameterRef Id="%AID%_UP-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_UP-%TT%%CC%001" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_P-%TT%%CC%001" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201" RefId="%AID%_UP-%TT%%CC%002" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%003_R-%TT%%CC%00301" RefId="%AID%_UP-%TT%%CC%003" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%004_R-%TT%%CC%00401" RefId="%AID%_UP-%TT%%CC%004" />
@@ -75,7 +80,7 @@
                   LRTransformationParameters="{&quot;InactiveValue&quot;:0,&quot;PausedValue&quot;:2}">
                 <LParameters>
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" AliasName="InactiveControl" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%001_R-%TT%%CC%00101" AliasName="TextInput" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" AliasName="TextInput" />
                 </LParameters>
                 <RParameters>
                   <ParameterRefRef RefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" AliasName="TextOutput" />
@@ -127,7 +132,7 @@
                     <!-- Params + KOs nur wenn NICHT Deaktiviert (Aktiv oder Suspendiert). Bei Deaktiviert (0): entfernt -> GAs gehen verloren. Suspendiert (2): bleibt voll erhalten, FW rendert nur nicht. -->
                     <choose ParamRefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501">
                       <when test="!=0">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="NEO-EM-Beschreibung"/>
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="NEO-EM-Beschreibung"/>
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201" IndentLevel="1" HelpContext="NEO-EM-Anzahl-Cues"/>
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%003_R-%TT%%CC%00301" IndentLevel="1" HelpContext="NEO-EM-Loop"/>
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%004_R-%TT%%CC%00401" IndentLevel="1" HelpContext="NEO-EM-Next"/>
@@ -203,7 +208,7 @@
                 <when test=">=%C%">
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" Cell="%C%,1" HelpContext="NEO-EM-Aktiv" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="EM %C%" Cell="%C%,2" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%001_R-%TT%%CC%00101" Cell="%C%,3" HelpContext="NEO-EM-Beschreibung"/>
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" Cell="%C%,3" HelpContext="NEO-EM-Beschreibung"/>
                 </when>
               </choose>
             </EmTableRow>

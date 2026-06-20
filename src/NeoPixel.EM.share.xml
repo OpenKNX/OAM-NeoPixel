@@ -26,14 +26,14 @@
 
             <!-- EM Name (16 chars) -->
             <ParameterType Id="%AID%_PT-EMName" Name="EMName">
-              <TypeText SizeInBit="128" />
+              <TypeText SizeInBit="320" />
             </ParameterType>
 
             <!-- EM Display-Name = roher Name + JS-Zustands-Marker (⛔ Deaktiviert / ⏸ Suspendiert),
                  berechnet via ParameterCalculation BASE_MarkInactiveChannel. Nicht gespeichert (Access=None,
                  ohne Offset) -> kostet keinen Speicher; nur fuer Baum-Titel & KO-Namen via TextParameterRefId. -->
             <ParameterType Id="%AID%_PT-EMDisplayName" Name="EMDisplayName">
-              <TypeText SizeInBit="256" />
+              <TypeText SizeInBit="384" />
             </ParameterType>
 
             <!-- EM Loop (1 bit) -->
