@@ -123,16 +123,19 @@
               <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/ParameterRefs/*" />
             </ParameterRefs>
             <ParameterCalculations>
-            <ParameterCalculation Id="%AID%_PC-%TT%9%C%001" Language="JavaScript" Name="Strip%C%_LEDTypeParamCalc" LRTransformationFunc="NEO_LedTypeToRGB" RLTransformationFunc="NEO_Empty">
+            <ParameterCalculation Id="%AID%_PC-%TT%9%C%001" Language="JavaScript" Name="Strip%C%_LEDTypeParamCalc" LRTransformationFunc="NEO_LedTypeToRGB_%C%" RLTransformationFunc="NEO_Empty">
                 <LParameters>
                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" AliasName="LedType" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00194_R-%TT%0019401" AliasName="PendingLedTypeResetStrip" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00195_R-%TT%0019501" AliasName="PendingLedTypeResetLedType" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00196_R-%TT%0019601" AliasName="PendingLedTypeResetTick" />
                 </LParameters>
                 <RParameters>
                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%031_R-%TT%9%C%03101" AliasName="RGBColourOrder"/>
                 </RParameters>
               </ParameterCalculation>
               <!-- Reset Clock GPIO when switching from SPI to 1-Wire LED types -->
-              <ParameterCalculation Id="%AID%_PC-%TT%9%C%002" Language="JavaScript" Name="Strip%C%_ResetClockOnLedTypeChange" LRTransformationFunc="NEO_ResetClockGPIOOnLedTypeChange" RLTransformationFunc="NEO_Empty">
+              <ParameterCalculation Id="%AID%_PC-%TT%9%C%002" Language="JavaScript" Name="Strip%C%_ResetClockOnLedTypeChange" LRTransformationFunc="NEO_ResetClockGPIOOnLedTypeChange_%C%" RLTransformationFunc="NEO_Empty">
                 <LParameters>
                   <ParameterRefRef RefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001" AliasName="LedType" />
                 </LParameters>
@@ -143,6 +146,11 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00114_R-%TT%0011401" AliasName="Strip4ClockPort"/>
                   <ParameterRefRef RefId="%AID%_UP-%TT%00115_R-%TT%0011501" AliasName="Strip5ClockPort"/>
                   <ParameterRefRef RefId="%AID%_UP-%TT%00116_R-%TT%0011601" AliasName="Strip6ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00117_R-%TT%0011701" AliasName="Strip7ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00118_R-%TT%0011801" AliasName="Strip8ClockPort"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00194_R-%TT%0019401" AliasName="PendingLedTypeResetStrip"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00195_R-%TT%0019501" AliasName="PendingLedTypeResetLedType"/>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00196_R-%TT%0019601" AliasName="PendingLedTypeResetTick"/>
                 </RParameters>
               </ParameterCalculation>
               
@@ -196,6 +204,7 @@
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Grundeinstellungen:" UIHint="Headline" />
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie den verwendeten LED-Chip-Typ, die Anzahl der LEDs und die grundlegenden Timing-Parameter. Diese Einstellungen müssen exakt zum angeschlossenen LED-Streifen passen, damit eine korrekte Ansteuerung gewährleistet ist." />
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: ETS-Tooltips wie &quot;Default Value&quot; zeigen auf dieser Seite nur statische Initialwerte aus der Applikation. Dynamisch berechnete oder automatisch angepasste Werte, z. B. nach einem LED-Typ-Wechsel, werden dort nicht angezeigt." UIHint="Information" />
                       <!-- Name/Beschreibung -->
                       <ParameterRefRef RefId="%AID%_P-%TT%9%C%000_R-%TT%9%C%00001" IndentLevel="1" HelpContext="%DOC%" />
                       <!-- LED Type -->

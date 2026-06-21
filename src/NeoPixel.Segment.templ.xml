@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
-   
+
+    <!-- Scene part: defines one scene slot, repeated 10 times via op:part -->
+    <!-- Generic Slot Approach: 19 IDs per scene (9 fixed + 10 generic slots), 36 bytes each -->
+    <op:part href="NeoPixel.Scene.part.xml" name="Scene" instances="10">
+        <op:param name="%PPP%" value="320" increment="20" />
+        <op:param name="%MO%" value="160" increment="36" digits="1"/>
+        <op:param name="%SZ%" value="1" increment="1" digits="1"/>
+        <op:param name="%SN%" value="0" increment="1" asLetter="true"/>
+    </op:part>
+
     <ManufacturerData>
     <Manufacturer RefId="M-00FA">
       <ApplicationPrograms>
@@ -11,7 +20,8 @@
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Segment Parameters (overlapping unions by design: effect params share same offsets, only one effect active at a time) -->
-              <Union SizeInBit="1280" op:nowarn="true">
+              <!-- Union size bumped 4672→5632 bit (584→704 byte) fuer die zusaetzlichen 2D-Effekte (DNA/Aurora/Lissajous/Metaballs + Reserve fuer ~50+ Effekte; Effekt-Spillover-Ende waechst mit). LAYOUT MIGRATION: per-Segment-Blockgroesse aendert sich -> Offsets wandern (laut Producer-Regel kompatibel, RefIds/KO-Nummern bleiben), aber ETS-Re-Import noetig. -->
+              <Union SizeInBit="5632">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0..1: 16b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%050" Offset="0" BitOffset="0" Name="NEO%C%SegmentStart" ParameterType="%AID%_PT-MinMaxValue14Bit" Text="Start LED" Value="1"/>
@@ -28,72 +38,60 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%056" Offset="10" BitOffset="1" Name="NEO%C%SegmentMirrorEffect" ParameterType="%AID%_PT-Boolean" Text="Spiegelung des Effekts" Value="0"/>
                 <!-- Byte 10: Bits 2-4 - Segment Startup Behavior (3 bits) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%066" Offset="10" BitOffset="2" Name="NEO%C%SegmentStartupBehavior" ParameterType="%AID%_PT-SegmentStartupBehavior" Text="Verhalten nach Neustart" Value="2"/>
-                <!-- Byte 10: Bits 5-7 frei -->
+                <!-- Byte 10: Bits 5-7 — LED Matrix Topology (3 bit) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%244" Offset="10" BitOffset="5" Name="NEO%C%SegmentTopology" ParameterType="%AID%_PT-LedTopology" Text="Topologie" Value="0"/>
                 <!-- Byte 11: 8b -->
-                <Parameter Id="%AID%_UP-%TT%%CC%057" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt Typ" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%057" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt" Value="0"/>
                 <!-- Bytes 12-23: Reserved (replaced by dynamic effect parameters) -->
+                <!-- Byte 12: Matrix width (columns, 1-255; 0 = no matrix / 1D) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%245" Offset="12" BitOffset="0" Name="NEO%C%MatrixWidth"  ParameterType="%AID%_PT-MatrixDimension" Text="Matrix: Breite (Spalten)" Value="8"/>
+                <!-- Byte 13: Matrix height (rows, 1-255; 0 = no matrix / 1D) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%246" Offset="13" BitOffset="0" Name="NEO%C%MatrixHeight" ParameterType="%AID%_PT-MatrixDimension" Text="Matrix: Höhe (Zeilen)"    Value="8"/>
+                <!-- Byte 14: Matrix depth (Z-layers, 1-255; 0 or 1 = 2D) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%247" Offset="14" BitOffset="0" Name="NEO%C%MatrixDepth"  ParameterType="%AID%_PT-MatrixDimension" Text="Matrix: Tiefe (Ebenen / Kachel-H&#xF6;he)"  Value="1"/>
+                <!-- ── Effektkette (virtual band) — Bytes 15–20 ──────────────────────── -->
+                <!-- Byte 15, Bits 0-1: SyncMode -->
+                <Parameter Id="%AID%_UP-%TT%%CC%248" Offset="15" BitOffset="0" Name="NEO%C%SyncMode" ParameterType="%AID%_PT-EffektketteSyncMode" Text="Effektkette: Modus" Value="0"/>
+                <!-- Byte 15, Bit 2: OverridePolicy -->
+                <Parameter Id="%AID%_UP-%TT%%CC%249" Offset="15" BitOffset="2" Name="NEO%C%SyncOverridePolicy" ParameterType="%AID%_PT-EffektketteOverride" Text="Sync-Verhalten bei lokalem Override" Value="0"/>
+                <!-- Byte 15, Bits 3-7: SyncTimeout -->
+                <Parameter Id="%AID%_UP-%TT%%CC%250" Offset="15" BitOffset="3" Name="NEO%C%SyncTimeout" ParameterType="%AID%_PT-EffektketteTimeout" Text="Slave-Timeout" Value="3"/>
+                <!-- Bytes 16-17: VirtualTotalLength -->
+                <Parameter Id="%AID%_UP-%TT%%CC%251" Offset="16" BitOffset="0" Name="NEO%C%VirtualTotalLength" ParameterType="%AID%_PT-EffektketteLength" Text="Effektkette: Gesamtlänge (LEDs)" Value="100"/>
+                <!-- Bytes 18-19: VirtualOffset -->
+                <Parameter Id="%AID%_UP-%TT%%CC%252" Offset="18" BitOffset="0" Name="NEO%C%VirtualOffset" ParameterType="%AID%_PT-EffektketteOffset" Text="Effektkette: Mein Offset (LEDs)" Value="0"/>
+                <!-- Byte 21, Bits 0-4: Startup Effektmanager ID (0=keiner, 1-16) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%253" Offset="21" BitOffset="0" Name="NEO%C%StartupEM" ParameterType="%AID%_PT-StartupEM" Text="Effektmanager bei Start" Value="0"/>
                 <!-- Segment Startup Color Parameters (Bytes 24-27: RGB + W) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupColor" ParameterType="%AID%_PT-ColorRGB" Text="Start-Farbe RGB" Value="#FFFFFF"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%194" Offset="23" BitOffset="3" Name="NEO%C%SegmentResetColorOnEffectChange" ParameterType="%AID%_PT-Boolean" Text="Bei Effektwechsel Farbe auf Standard zurücksetzen" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%240" Offset="23" BitOffset="3" Name="NEO%C%SegmentResetColorOnEffectChange" ParameterType="%AID%_PT-Boolean" Text="Bei Effektwechsel Farbe auf Standard zurücksetzen" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-                <!-- Start ID: 73, Start Offset: 30 (FIXED - do not change!) -->
+                <!-- Start ID: 600, Start Offset: 30 (FIXED - do not change!) -->
         <!-- END AUTO-GENERATED: Effect Parameters Union -->
-                
-                <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                     HCL (Human Centric Lighting) Parameters per Segment
-                     Offset 133-152 (20 Bytes) - Only used when HCL Mode = 2 (Benutzerdefiniert)
-                     ═══════════════════════════════════════════════════════════════════════════════════ -->
-                <!-- Byte 133: HCL Mode (3 bits: 0=Deaktiviert, 1=Global, 2=Zeit, 3=Sonne) + Type intern berechnet -->
-                <Parameter Id="%AID%_UP-%TT%%CC%195" Offset="133" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Kurve" Value="1"/>
-                <!-- Byte 133: Bits 3-7 frei (Type wird aus Mode abgeleitet: Mode 2→Type 0, Mode 3→Type 1) -->
-                
-                <!-- Byte 134..135: Start time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%196" Offset="134" BitOffset="0" Name="NEO%C%HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%%CC%197" Offset="135" BitOffset="0" Name="NEO%C%HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
-                
-                <!-- Byte 136..137: End time (only for HCL Type = Feste Zeit) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%198" Offset="136" BitOffset="0" Name="NEO%C%HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
-                <Parameter Id="%AID%_UP-%TT%%CC%199" Offset="137" BitOffset="0" Name="NEO%C%HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
-                
-                <!-- Byte 138..139: Sunrise offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%200" Offset="138" BitOffset="0" Name="NEO%C%HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
-                
-                <!-- Byte 140: HclApplyMode (3 bits) + frei -->
-                <Parameter Id="%AID%_UP-%TT%%CC%201" Offset="140" BitOffset="3" Name="NEO%C%HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
-                
-                <!-- Byte 141..142: Sunset offset (10b signed, only for HCL Type = Sonnenstand) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%202" Offset="141" BitOffset="0" Name="NEO%C%HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
-                
-                <!-- Byte 142: HCLPreserveCurve (3 bits at offset 4-6) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%203" Offset="142" BitOffset="4" Name="NEO%C%HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
-                
-                <!-- Byte 143: Saturation Threshold -->
-                <Parameter Id="%AID%_UP-%TT%%CC%204" Offset="143" BitOffset="0" Name="NEO%C%HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
-                
-                <!-- Byte 144..145: Min Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%205" Offset="144" BitOffset="0" Name="NEO%C%HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
-                
-                <!-- Byte 146..147: Max Kelvin (14b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%206" Offset="146" BitOffset="0" Name="NEO%C%HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
-                
-                <!-- Byte 148: HCL Strength (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%207" Offset="148" BitOffset="0" Name="NEO%C%HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
-                
-                <!-- Byte 149: Slew Rate -->
-                <Parameter Id="%AID%_UP-%TT%%CC%208" Offset="149" BitOffset="0" Name="NEO%C%HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
-                
-                <!-- Byte 150: Brightness Compensation (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%209" Offset="150" BitOffset="0" Name="NEO%C%HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
-                
-                <!-- Byte 151: White Mix (7b) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%210" Offset="151" BitOffset="0" Name="NEO%C%HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
-                
-                <!-- Byte 152: Reserved for future HCL parameters -->
+
+                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                   Scene Configuration (op:part based, 10 scenes x 36 bytes = 360 bytes)
+                   Offset 159: SceneCount, Offset 160-519: Scene data
+                   ═══════════════════════════════════════════════════════════════════════════════════ -->
+                 <!-- Byte 159: SceneCount (4 bits: 0=disabled, 1-10 scenes) -->
+                 <Parameter Id="%AID%_UP-%TT%%CC%254" Offset="159" BitOffset="0" Name="NEO%C%SceneCount" ParameterType="%AID%_PT-SceneCount" Text="Anzahl Szenen" Value="0"/>
+
+                <!-- Scene parameters (injected via op:part, offsets 160-519) -->
+                <op:usePart name="Scene" xpath="//Parameters/*" />
+
+                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
+                   HCL / LightManager selection per Segment
+                   Offset 520-522
+                   ═══════════════════════════════════════════════════════════════════════════════════ -->
+                 <Parameter Id="%AID%_UP-%TT%%CC%241" Offset="520" BitOffset="0" Name="NEO%C%HCLMode" ParameterType="%AID%_PT-HCLModeCombined" Text="HCL-Quelle" Value="1"/>
+                 <Parameter Id="%AID%_UP-%TT%%CC%242" Offset="521" BitOffset="0" Name="NEO%C%HCLMaster" ParameterType="%AID%_PT-LMGMasterSelect" Text="Segment-Lichtmanager" Value="0" />
+                 <Parameter Id="%AID%_UP-%TT%%CC%243" Offset="522" BitOffset="0" Name="NEO%C%HCLApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="Anwendung" Value="0" />
+                 <!-- Remaining bytes reserved for future HCL-related layout changes -->
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -107,42 +105,47 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%055_R-%TT%%CC%05501" RefId="%AID%_UP-%TT%%CC%055" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%056_R-%TT%%CC%05601" RefId="%AID%_UP-%TT%%CC%056" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" RefId="%AID%_UP-%TT%%CC%057" />
+              <!-- Read-only (ausgegraute) Variante des Effekt-Typs fuer die Segmente-Uebersichtstabelle, wenn ein EM zugewiesen ist -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05702" RefId="%AID%_UP-%TT%%CC%057" Access="Read" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" RefId="%AID%_UP-%TT%%CC%067" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" RefId="%AID%_UP-%TT%%CC%070" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" RefId="%AID%_UP-%TT%%CC%071" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%194_R-%TT%%CC%19401" RefId="%AID%_UP-%TT%%CC%194" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%240_R-%TT%%CC%24001" RefId="%AID%_UP-%TT%%CC%240" />
+              <!-- Matrix geometry parameters (Topology + Width + Height) -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401" RefId="%AID%_UP-%TT%%CC%244" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%245_R-%TT%%CC%24501" RefId="%AID%_UP-%TT%%CC%245" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%246_R-%TT%%CC%24601" RefId="%AID%_UP-%TT%%CC%246" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%247_R-%TT%%CC%24701" RefId="%AID%_UP-%TT%%CC%247" />
+              <!-- Effektkette parameters -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%248_R-%TT%%CC%24801" RefId="%AID%_UP-%TT%%CC%248" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%249_R-%TT%%CC%24901" RefId="%AID%_UP-%TT%%CC%249" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%250_R-%TT%%CC%25001" RefId="%AID%_UP-%TT%%CC%250" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%251_R-%TT%%CC%25101" RefId="%AID%_UP-%TT%%CC%251" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%252_R-%TT%%CC%25201" RefId="%AID%_UP-%TT%%CC%252" />
+              <!-- Startup Effektmanager -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301" RefId="%AID%_UP-%TT%%CC%253" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
               <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
               <!-- END AUTO-GENERATED: Effect ParameterRefs -->
 
-              <!--  PARAMETER ID ARCHITECTURE: -->
-              <!--  - IDs 73-175:  Auto-generated effect parameters (current: 26 effects, 103 parameters) -->
-              <!--  - IDs 176-193: BUFFER ZONE - Reserved for future auto-generated effect parameters (MUST remain empty!) -->
-              <!--  - IDs 194-211: Manual HCL/utility parameters (defined below) -->
+              <!-- Scene Count ParameterRef -->
+              <ParameterRef Id="%AID%_UP-%TT%%CC%254_R-%TT%%CC%25401" RefId="%AID%_UP-%TT%%CC%254" />
+              <!-- Scene ParameterRefs (injected via op:part) -->
+              <op:usePart name="Scene" xpath="//ParameterRefs/*" />
 
-              <!--  When adding new effects, Build-EffectParameters.ps1 will use IDs 176-193 first. -->
-              <!--  If buffer is exhausted, manual parameters must be migrated to higher IDs (e.g., 220+). -->
+              <!--  PARAMETER ID ARCHITECTURE (current layout): -->
+              <!--  - IDs 73-201: Auto-generated effect parameters (dynamic block, generated by Build-EffectParameters.ps1) -->
+              <!--  - ID 254:     SceneCount gate parameter for op:part scene visibility -->
+              <!--  - IDs 241-243: Manual HCL/utility parameters (defined below) -->
+
+              <!--  IMPORTANT: Keep manual IDs away from the auto-generated range (73-201). -->
               
               <!-- HCL Parameter References -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" RefId="%AID%_UP-%TT%%CC%195" />
-              <!-- Parameter 178 (HCLtype) removed - Type is derived from Mode (2→FixedTime, 3→SunPosition) -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" RefId="%AID%_UP-%TT%%CC%196" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" RefId="%AID%_UP-%TT%%CC%197" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%198_R-%TT%%CC%19801" RefId="%AID%_UP-%TT%%CC%198" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%199_R-%TT%%CC%19901" RefId="%AID%_UP-%TT%%CC%199" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%200_R-%TT%%CC%20001" RefId="%AID%_UP-%TT%%CC%200" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" RefId="%AID%_UP-%TT%%CC%201" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%202_R-%TT%%CC%20201" RefId="%AID%_UP-%TT%%CC%202" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" RefId="%AID%_UP-%TT%%CC%203" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" RefId="%AID%_UP-%TT%%CC%204" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" RefId="%AID%_UP-%TT%%CC%205" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" RefId="%AID%_UP-%TT%%CC%206" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" RefId="%AID%_UP-%TT%%CC%207" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" RefId="%AID%_UP-%TT%%CC%208" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" RefId="%AID%_UP-%TT%%CC%209" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" RefId="%AID%_UP-%TT%%CC%210" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%241_R-%TT%%CC%24101" RefId="%AID%_UP-%TT%%CC%241" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%242_R-%TT%%CC%24201" RefId="%AID%_UP-%TT%%CC%242" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%243_R-%TT%%CC%24301" RefId="%AID%_UP-%TT%%CC%243" />
             </ParameterRefs>
             <ComObjectTable>
                <!-- Segment Power -->
@@ -179,10 +182,10 @@
               <ComObject Id="%AID%_O-%TT%%CC%016" Number="%K15%" Name="%C%Fx"         Text="Effekt"              FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"              ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Fx Status -->
               <ComObject Id="%AID%_O-%TT%%CC%017" Number="%K16%" Name="%C%FxState"    Text="Effekt Status"       FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10"       ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Preset -->
-              <ComObject Id="%AID%_O-%TT%%CC%018" Number="%K17%" Name="%C%Preset"     Text="Voreinstellung"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 5.10"      ObjectSize="1 Byte"  DatapointType="DPST-5-10"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Preset Status -->
-              <ComObject Id="%AID%_O-%TT%%CC%019" Number="%K18%" Name="%C%PresetState" Text="Voreinstellung Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 5.10" ObjectSize="1 Byte" DatapointType="DPST-5-10"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Scene Control (DPT 18.001: bit 7 = learn/store, bits 0-5 = scene number) -->
+              <ComObject Id="%AID%_O-%TT%%CC%018" Number="%K17%" Name="%C%Scene"     Text="Szenensteuerung"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 18.001"      ObjectSize="1 Byte"  DatapointType="DPST-18-1"   WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Scene Status -->
+              <ComObject Id="%AID%_O-%TT%%CC%019" Number="%K18%" Name="%C%SceneState" Text="Szenensteuerung Status" FunctionText="NeoPixel Segment %C%: Ausgang, DPT 18.001" ObjectSize="1 Byte" DatapointType="DPST-18-1"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGB (3 bytes R,G,B) -->
               <ComObject Id="%AID%_O-%TT%%CC%020" Number="%K19%" Name="%C%RGB"        Text="RGB"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGB Status -->
@@ -191,40 +194,42 @@
               <ComObject Id="%AID%_O-%TT%%CC%022" Number="%K21%" Name="%C%HSV"        Text="HSV"                 FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"                 ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HSV Status -->
               <ComObject Id="%AID%_O-%TT%%CC%023" Number="%K22%" Name="%C%HSVState"   Text="HSV Status"          FunctionText="NeoPixel Segment %C%: Ausgang, DPT 232.600"          ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGBW (6 bytes R,G,B,W,ext1,ext2) -->
+              <!-- RGBW (6 bytes: RGBW + reserved/mask bits per DPT 251.600) -->
               <ComObject Id="%AID%_O-%TT%%CC%024" Number="%K23%" Name="%C%RGBW"       Text="RGBW"                FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"                ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGBW Status -->
               <ComObject Id="%AID%_O-%TT%%CC%025" Number="%K24%" Name="%C%RGBWState"  Text="RGBW Status"         FunctionText="NeoPixel Segment %C%: Ausgang, DPT 251.600"         ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- BriRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%026" Number="%K25%" Name="%C%BriRel"     Text="Dimmen"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"  ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%026" Number="%K25%" Name="%C%BriRel"     Text="Dimmen"  FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"  ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%027" Number="%K26%" Name="%C%RRel"       Text="Rot dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%027" Number="%K26%" Name="%C%RRel"       Text="Rot dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- GRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%028" Number="%K27%" Name="%C%GRel"       Text="Grün dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%028" Number="%K27%" Name="%C%GRel"       Text="Grün dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- BRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%029" Number="%K28%" Name="%C%BRel"       Text="Blau dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%029" Number="%K28%" Name="%C%BRel"       Text="Blau dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- WRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%030" Number="%K29%" Name="%C%WRel"       Text="Weiß dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%030" Number="%K29%" Name="%C%WRel"       Text="Weiß dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"        ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- WWRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%031" Number="%K30%" Name="%C%WWRel"      Text="Warmweiß dimmen"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%031" Number="%K30%" Name="%C%WWRel"      Text="Warmweiß dimmen"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- CWRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%032" Number="%K31%" Name="%C%CWRel"      Text="Kaltweiß dimmen"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%032" Number="%K31%" Name="%C%CWRel"      Text="Kaltweiß dimmen"    FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"    ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%033" Number="%K32%" Name="%C%HRel"       Text="Farbton dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%033" Number="%K32%" Name="%C%HRel"       Text="Farbton dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"         ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- SRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%034" Number="%K33%" Name="%C%SRel"       Text="Sättigung dimmen"   FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"   ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%034" Number="%K33%" Name="%C%SRel"       Text="Sättigung dimmen"   FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"   ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- VRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%035" Number="%K34%" Name="%C%VRel"       Text="Helligkeit (Value) dimmen" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="1 Byte" DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%035" Number="%K34%" Name="%C%VRel"       Text="Helligkeit (Value) dimmen" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="4 Bit"  DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- FxRel -->
-              <ComObject Id="%AID%_O-%TT%%CC%036" Number="%K35%" Name="%C%FxRel"      Text="Effekt schalten"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"      ObjectSize="1 Byte"  DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%036" Number="%K35%" Name="%C%FxRel"      Text="Effekt schalten"      FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7"      ObjectSize="4 Bit"   DatapointType="DPST-3-7"    WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- RGBRel (3 bytes, relative encoding per Byte) -->
               <ComObject Id="%AID%_O-%TT%%CC%037" Number="%K36%" Name="%C%RGBRel"     Text="RGB dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HSVRel (3 bytes, relative encoding per Byte) -->
               <ComObject Id="%AID%_O-%TT%%CC%038" Number="%K37%" Name="%C%HSVRel"     Text="HSV dimmen"         FunctionText="NeoPixel Segment %C%: Eingang, DPT 232.600"         ObjectSize="3 Bytes"  DatapointType="DPST-232-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- RGBWRel (6 bytes total; first 4 = R,G,B,W) -->
+              <!-- RGBWRel (6 bytes: RGBW + reserved/mask bits per DPT 251.600) -->
               <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K38%" Name="%C%RGBWRel"    Text="RGBW dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HCL State (only for segments with HCL Mode = Benutzerdefiniert) -->
               <ComObject Id="%AID%_O-%TT%%CC%044" Number="%K39%" Name="%C%HCLState"   Text="HCL Zustand"        FunctionText="NeoPixel Segment %C%: HCL Kurve Zustandswert" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Effektmanager KOs (K40-K43) are defined in NeoPixel.EM.templ.xml (NEOEM module)
+                   to avoid KoBlockSize overflow. C++ accesses them via NEOEM_Ko* macros. -->
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Segment Power -->
@@ -261,10 +266,10 @@
               <ComObjectRef Id="%AID%_O-%TT%%CC%016_R-%TT%%CC%01601" RefId="%AID%_O-%TT%%CC%016" Text="{{0:%C%}}: Effekt" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- Fx Status -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%017_R-%TT%%CC%01701" RefId="%AID%_O-%TT%%CC%017" Text="{{0:%C%}}: Effekt Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Preset -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" RefId="%AID%_O-%TT%%CC%018" Text="{{0:%C%}}: Voreinstellung" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
-              <!-- Preset Status -->
-              <ComObjectRef Id="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" RefId="%AID%_O-%TT%%CC%019" Text="{{0:%C%}}: Voreinstellung Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Scene Control -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" RefId="%AID%_O-%TT%%CC%018" Text="{{0:%C%}}: Szenensteuerung" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Scene Status -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" RefId="%AID%_O-%TT%%CC%019" Text="{{0:%C%}}: Szenensteuerung Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGB -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%020_R-%TT%%CC%02001" RefId="%AID%_O-%TT%%CC%020" Text="{{0:%C%}}: RGB" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- RGB Status -->
@@ -308,6 +313,9 @@
               <!-- HCL State -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" RefId="%AID%_O-%TT%%CC%044" Text="{{0:%C%}}: HCL Zustand" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
+            <ParameterCalculations>
+              <op:usePart name="Scene" xpath="//ParameterCalculations/*" />
+            </ParameterCalculations>
           </Static>
           <Dynamic>
             <!-- ========================================================================================================= -->
@@ -315,14 +323,9 @@
             <!-- WICHTIG: KEINE choose für Segment-Anzahl hier! Das Include expandiert bereits für jedes Segment! -->
             <!-- ========================================================================================================= -->
             <HCLSegmentKOsBlock>
-              <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
-                <when test="2"> <!-- Benutzerdefiniert (Zeit) -->
-                  <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
-                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
-                  </ParameterBlock>
-                </when>
-                <when test="3"> <!-- Benutzerdefiniert (Sonne) -->
-                  <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
+              <choose ParamRefId="%AID%_UP-%TT%%CC%241_R-%TT%%CC%24101">
+                <when test="2"> <!-- Segment-Lichtmanager -->
+                  <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegment%C%KO" Text="Segment %C%: {{0:-}}" Icon="neo_segment" Inline="true" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
                   </ParameterBlock>
                 </when>
@@ -332,28 +335,105 @@
             <ChannelIndependentBlock>
               <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                 <when test=">=%C%">
-                  <ParameterBlock Id="%AID%_PB-nnn" Name="Basic" Text="LED Segment %C%: {{0:-}}" Icon="segment" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
+                  <ParameterBlock Id="%AID%_PB-nnn" Name="Basic" Text="LED Segment %C%: {{0:-}}" Icon="neo_segment" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Segment-Einstellungen" UIHint="Headline" />
                     <!-- Segment Name -->
                     <ParameterRefRef RefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" IndentLevel="1" HelpContext="%DOC%" /> 
-                    <!-- Start LED  -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%050_R-%TT%%CC%05001" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Ende LED  -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%051_R-%TT%%CC%05101" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Offsett  -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%052_R-%TT%%CC%05201" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Gruppierung  -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%053_R-%TT%%CC%05301" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Spacing  -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%054_R-%TT%%CC%05401" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- ReverseDirection  -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%055_R-%TT%%CC%05501" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- Spiegelung des Effekts -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%056_R-%TT%%CC%05601" IndentLevel="1" HelpContext="%DOC%"/>
+                    <!-- ===== Sub-Knoten "Aufbau": Topologie + LED-Bereich + Darstellung ===== -->
+                    <ParameterBlock Id="%AID%_PB-nnn" Name="SegAufbau" Text="Aufbau" Icon="neo_aufbau" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
+                    <!-- Topologie (1D / 2D Matrix) — zuerst, da sie 1D/2D/3D bestimmt -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Topologie" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401" IndentLevel="1" HelpContext="%DOC%"/>
+                    <!-- Topologie-Erklaerbild je nach Auswahl (TypePicture = echtes Vollbild) -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401">
+                      <when test="0"><ParameterRefRef RefId="%AID%_P-%TT%00410_R-%TT%0041001" /></when>
+                      <when test="1"><ParameterRefRef RefId="%AID%_P-%TT%00411_R-%TT%0041101" /></when>
+                      <when test="2"><ParameterRefRef RefId="%AID%_P-%TT%00412_R-%TT%0041201" /></when>
+                      <when test="3"><ParameterRefRef RefId="%AID%_P-%TT%00413_R-%TT%0041301" /></when>
+                      <when test="4"><ParameterRefRef RefId="%AID%_P-%TT%00414_R-%TT%0041401" /></when>
+                      <when test="6"><ParameterRefRef RefId="%AID%_P-%TT%00415_R-%TT%0041501" /></when>
+                      <when test="7"><ParameterRefRef RefId="%AID%_P-%TT%00416_R-%TT%0041601" /></when>
+                    </choose>
+                    <!-- Matrix Breite/Höhe/Tiefe — nur sichtbar wenn Topologie != 1D -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401">
+                      <when test="!=0">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%245_R-%TT%%CC%24501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%246_R-%TT%%CC%24601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <!-- Tiefe: 3D-Z-Ebene oder Tile-Hoehe (gekachelte 2D-Topologien) -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%247_R-%TT%%CC%24701" IndentLevel="3" HelpContext="NEO-Matrix-Tiefe-Ebenen"/>
+                        <!-- Tiefe-Erklaerbild: Kachel (6/7) bzw. 3D-Ebenen (1-4, nur wenn Tiefe>1) -->
+                        <choose ParamRefId="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401">
+                          <when test="6"><ParameterRefRef RefId="%AID%_P-%TT%00418_R-%TT%0041801" /></when>
+                          <when test="7"><ParameterRefRef RefId="%AID%_P-%TT%00418_R-%TT%0041801" /></when>
+                          <when test="1"><choose ParamRefId="%AID%_UP-%TT%%CC%247_R-%TT%%CC%24701"><when test=">=2"><ParameterRefRef RefId="%AID%_P-%TT%00417_R-%TT%0041701" /></when></choose></when>
+                          <when test="2"><choose ParamRefId="%AID%_UP-%TT%%CC%247_R-%TT%%CC%24701"><when test=">=2"><ParameterRefRef RefId="%AID%_P-%TT%00417_R-%TT%0041701" /></when></choose></when>
+                          <when test="3"><choose ParamRefId="%AID%_UP-%TT%%CC%247_R-%TT%%CC%24701"><when test=">=2"><ParameterRefRef RefId="%AID%_P-%TT%00417_R-%TT%0041701" /></when></choose></when>
+                          <when test="4"><choose ParamRefId="%AID%_UP-%TT%%CC%247_R-%TT%%CC%24701"><when test=">=2"><ParameterRefRef RefId="%AID%_P-%TT%00417_R-%TT%0041701" /></when></choose></when>
+                        </choose>
+                      </when>
+                    </choose>
 
+                    <!-- ===== LED-Bereich (welche LEDs gehoeren zum Segment) ===== -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="LED-Bereich" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%050_R-%TT%%CC%05001" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%051_R-%TT%%CC%05101" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%052_R-%TT%%CC%05201" IndentLevel="1" HelpContext="%DOC%"/>
+
+                    <!-- ===== Darstellung ===== -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Darstellung" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%053_R-%TT%%CC%05301" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%054_R-%TT%%CC%05401" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%055_R-%TT%%CC%05501" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%056_R-%TT%%CC%05601" IndentLevel="1" HelpContext="%DOC%"/>
+                    </ParameterBlock>
+                    <!-- ===== Ende Sub-Knoten "Aufbau" ===== -->
+                    <!-- ============================================================= -->
+                    <!-- Sub-Knoten "Effektkette" -->
+                    <ParameterBlock Id="%AID%_PB-nnn" Name="SegKette" Text="Effektkette" Icon="neo_kette" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektkette" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Mehrere Geräte werden als ein zusammenhängendes LED-Band gesteuert. Nur ein Segment pro Gruppe darf Master sein."/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%248_R-%TT%%CC%24801" IndentLevel="1" HelpContext="%DOC%"/>
+                    <!-- Rollen-Erklaerbild: Master (=1) bzw. Slave (=2) -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%248_R-%TT%%CC%24801">
+                      <when test="1"><ParameterRefRef RefId="%AID%_P-%TT%00419_R-%TT%0041901" /></when>
+                      <when test="2"><ParameterRefRef RefId="%AID%_P-%TT%00420_R-%TT%0042001" /></when>
+                    </choose>
+                    <!-- Gesamtlänge: für Master und Slave sichtbar (Modus != Aus) -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%248_R-%TT%%CC%24801">
+                      <when test="!=0">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%251_R-%TT%%CC%25101" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                    </choose>
+                    <!-- Slave-spezifische Parameter: nur sichtbar bei Modus = Slave.
+                         "Mein Offset" gehört dazu — der Master sitzt per Definition bei Offset 0 (Bandanfang), braucht also keinen. -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%248_R-%TT%%CC%24801">
+                      <when test="2">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%252_R-%TT%%CC%25201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%250_R-%TT%%CC%25001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%249_R-%TT%%CC%24901" IndentLevel="2" HelpContext="%DOC%"/>
+                      </when>
+                    </choose>
+                    </ParameterBlock>
+                    <!-- ===== Ende "Effektkette" | Sub-Knoten "Effekt": Effektmanager + Start-Konfiguration + Effekt-Einstellungen ===== -->
+                    <ParameterBlock Id="%AID%_PB-nnn" Name="SegEffekt" Text="Effekt" Icon="neo_effekt" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
+                    <!-- Effektmanager Startup — nur sichtbar wenn Effektmanager konfiguriert -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301" IndentLevel="1" HelpContext="NEO-Effektmanager-bei-Start-0keiner"/>
+                    <!-- Hinweis nur sichtbar, wenn ein Effektmanager zugewiesen ist (≠ Keiner) -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301">
+                      <when test="!=0">
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Steuerung dieses Segments (Start, Stop, Cue, Effektketten-Sync) erfolgt über die KOs des zugewiesenen Effektmanagers." UIHint="Information"/>
+                      </when>
+                    </choose>
+
+                    <!-- Start-Konfiguration + Effekt-Einstellungen NUR sichtbar, wenn KEIN Effektmanager zugewiesen ist.
+                         Bei zugewiesenem EM uebersteuert dieser den statischen ETS-Effekt ohnehin beim Start
+                         (NeoPixelModule.cpp processAfterStartupDelay: "intentionally override the static ETS base effect").
+                         Die direkten Segment-KOs bleiben sichtbar — sie sind der manuelle Steuerpfad nach "EM Stop". -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301">
+                      <when test="0">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->
-                    <!-- ETS-Konfiguration beim Start (immer sichtbar) -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Start-Konfiguration" UIHint="Headline" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Initiale Farbe beim Start. Wird verwendet wenn 'Verhalten nach Neustart' = 'ETS-Parameterwert'. Kann zur Laufzeit über Segment-KO individuell überschrieben werden."/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" IndentLevel="1" HelpContext="NEO-Start-Farbe"/>
@@ -364,69 +444,41 @@
                     <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-Einstellungen" UIHint="Headline" />
                     <!-- Effect Type -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="NEO-Effekt-Typ"/>
                     <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
                       <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                       <!-- Dynamic choose/when blocks for effect-specific parameters -->
               <!-- END AUTO-GENERATED: Effect Dynamic UI -->
+                      </when>
+                    </choose>
+                    </ParameterBlock>
+                    <!-- ===== Ende "Effekt" | Sub-Knoten "Szenen & HCL" ===== -->
+                    <ParameterBlock Id="%AID%_PB-nnn" Name="SegSzenenHCL" Text="Szenen &amp; HCL" Icon="neo_szenen" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Szenen" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Konfigurierbare Lichtszenen mit Effekt, Farben, Helligkeit und Effekt-spezifischen Parametern. Szenen werden über das Szenensteuerungs-KO abgerufen (DPT 18.001). Bit 7 = Lernen: aktuellen Zustand als Szene speichern." />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%254_R-%TT%%CC%25401" IndentLevel="1" HelpContext="%DOC%"/>
+
+                    <!-- Scene blocks (injected via op:part, each scene self-gates visibility via SceneCount >= %SZ%) -->
+                    <op:usePart name="Scene" xpath="//Dynamic/ChannelIndependentBlock/ParameterBlock[@Id='Scene']/*" />
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                         HCL (Human Centric Lighting) - Segment-basiert
+                         Lichtmanager - Segment-basiert
                          ═══════════════════════════════════════════════════════════════════════════════════ -->
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL (Human Centric Lighting)" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Human Centric Lighting (HCL) passt die Lichtfarbe global und automatisch an die Tageszeit an (von warmweiß morgens/abends bis kaltweiß mittags). Wirkt auf alle Modi (Solid, Effekte) und alle Farben oder nur Weiß. Simuliert natürlichen Tagesverlauf." />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501" IndentLevel="1" HelpContext="%DOC%"/> <!-- HCL Mode Dropdown -->
-                    <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
-                      <when test="2"> <!-- Benutzerdefiniert (Feste Zeiten) -->
-                        <!-- Zeitbasierte HCL-Kurve -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Zeitbasierte Kurve:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%196_R-%TT%%CC%19601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Start Stunde -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%197_R-%TT%%CC%19701" IndentLevel="2" HelpContext="%DOC%"/> <!-- Start Minute -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%198_R-%TT%%CC%19801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Ende Stunde -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%199_R-%TT%%CC%19901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Ende Minute -->
-                        
-                        <!-- Gemeinsame HCL-Einstellungen -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbtemperatur &amp; Stärke:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" IndentLevel="2" HelpContext="%DOC%"/> <!-- Min Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Max Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" IndentLevel="2" HelpContext="%DOC%"/> <!-- HCL Strength -->
-                        
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweiterte Einstellungen:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" IndentLevel="2" HelpContext="%DOC%"/> <!-- Apply Mode -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" IndentLevel="2" HelpContext="%DOC%"/> <!-- Preserve Curve -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" IndentLevel="2" HelpContext="%DOC%"/> <!-- Sat Threshold -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Slew Rate -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Brightness Comp -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" IndentLevel="2" HelpContext="%DOC%"/> <!-- White Mix -->
-                      </when>
-                      <when test="3"> <!-- Benutzerdefiniert (Sonnenstand) -->
-                        <!-- Sonnenstand-basierte HCL-Kurve -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenstand-basierte Kurve:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%200_R-%TT%%CC%20001" IndentLevel="2" HelpContext="%DOC%"/> <!-- Offset Sonnenaufgang -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%202_R-%TT%%CC%20201" IndentLevel="2" HelpContext="%DOC%"/> <!-- Offset Sonnenuntergang -->
-                        
-                        <!-- Gemeinsame HCL-Einstellungen -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbtemperatur &amp; Stärke:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%205_R-%TT%%CC%20501" IndentLevel="2" HelpContext="%DOC%"/> <!-- Min Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%206_R-%TT%%CC%20601" IndentLevel="2" HelpContext="%DOC%"/> <!-- Max Kelvin -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%207_R-%TT%%CC%20701" IndentLevel="2" HelpContext="%DOC%"/> <!-- HCL Strength -->
-                        
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweiterte Einstellungen:" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%201_R-%TT%%CC%20101" IndentLevel="2" HelpContext="%DOC%"/> <!-- Apply Mode -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%203_R-%TT%%CC%20301" IndentLevel="2" HelpContext="%DOC%"/> <!-- Preserve Curve -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%204_R-%TT%%CC%20401" IndentLevel="2" HelpContext="%DOC%"/> <!-- Sat Threshold -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" IndentLevel="2" HelpContext="%DOC%"/> <!-- Slew Rate -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%209_R-%TT%%CC%20901" IndentLevel="2" HelpContext="%DOC%"/> <!-- Brightness Comp -->
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%210_R-%TT%%CC%21001" IndentLevel="2" HelpContext="%DOC%"/> <!-- White Mix -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Lichtmanager" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Farbtemperatur wird aus dem globalen oder segmentbezogenen Lichtmanager übernommen. Die folgenden Parameter steuern nur die Anwendung auf dieses Segment." />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%241_R-%TT%%CC%24101" IndentLevel="1" HelpContext="%DOC%"/>
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%241_R-%TT%%CC%24101">
+                      <when test="2">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%242_R-%TT%%CC%24201" IndentLevel="2" HelpContext="NEO-Lichtmanager"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%243_R-%TT%%CC%24301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                     </choose>
-
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                    <!-- ========================================================================================================= -->
+                    </ParameterBlock>
+                    <!-- ===== Ende "Szenen & HCL" | Verhalten + KOs bleiben auf dem Segment-Knoten ===== -->
                     <!-- Verhalten nach Neustart -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten nach Neustart" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" IndentLevel="1" HelpContext="NEO-Verhalten-nach-Neustart-Segment"/>
 
                     <!-- Segment Power -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" />
@@ -462,10 +514,10 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%016_R-%TT%%CC%01601" />
                     <!-- Fx Status -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%017_R-%TT%%CC%01701" />
-                    <!-- Preset -->
-                    <!-- <ComObjectRefRef RefId="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" /> -->
-                    <!-- Preset Status -->
-                    <!-- <ComObjectRefRef RefId="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" /> -->
+                    <!-- Scene Control (DPT 18.001) -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" />
+                    <!-- Scene Status -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" />
                     <!-- RGB -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%020_R-%TT%%CC%02001" />
                     <!-- RGB Status -->
@@ -506,12 +558,9 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%038_R-%TT%%CC%03801" />
                     <!-- RGBWRel -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" />
-                    <!-- HCL State (nur angezeigt wenn HCL Mode = 2 oder 3) -->
-                    <choose ParamRefId="%AID%_UP-%TT%%CC%195_R-%TT%%CC%19501">
-                      <when test="2"> <!-- Benutzerdefiniert (Zeit) -->
-                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
-                      </when>
-                      <when test="3"> <!-- Benutzerdefiniert (Sonne) -->
+                    <!-- HCL State (nur angezeigt bei Segment-Lichtmanager) -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%241_R-%TT%%CC%24101">
+                      <when test="2"> <!-- Segment-Lichtmanager -->
                         <ComObjectRefRef RefId="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" />
                       </when>
                     </choose>

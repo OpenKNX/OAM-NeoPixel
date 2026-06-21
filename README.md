@@ -1,167 +1,291 @@
-# OAM-NeoPixel: KNX-Controlled Addressable LED Adapter
+# OpenKNX NeoPixel
 
-A powerful OpenKNX firmware module for controlling addressable LED strips (WS2812B, APA102, SK6812, and many others) via KNX bus. Supports segmentation, effects, color temperature, brightness control, and runtime state persistence.
+> **Turn your home into light.** Thousands of addressable LEDs, orchestrated by your KNX bus — from a single warm-white accent to living, breathing light scenes that span entire rooms.
 
-## Features
+**OpenKNX NeoPixel** is the firmware that makes addressable LED strips first-class citizens on the KNX bus. No gateways, no cloud, no smartphone detours — just pixels that answer directly to your installation. Switch them, dim them, paint them in any colour, run cinematic effects, tune the white point to the rhythm of the day, and have every state survive a power cut. All configured in ETS, all running on a tiny, rock-solid OpenKNX controller.
+
+Whether you want a discreet indirect-lighting glow behind the TV, a circadian white-light ceiling that follows the sun, or a full 2D LED matrix playing animated effects across the wall — this firmware drives it, and it does so with a level of polish you normally only find in dedicated lighting consoles.
+
+---
+
+## Why you'll love it
+
+- **It just speaks KNX.** Every colour, every effect, every brightness step is a Group Object. Drop it into your ETS project, link your group addresses, done. Visualisations, push-buttons, logic, time schedules — if it talks KNX, it can drive your light.
+- **Colour, the way you think about it.** RGB, HSV, white channels, or true colour temperature in Kelvin — pick whatever fits the moment. 5-channel RGBCCT strips get real warm/cool white mixing, not a faked tint.
+- **Light that follows the day.** Built-in **Human Centric Lighting** shifts the white point from energising cool daylight to cosy warm evening light, driven by the sun's position or a simple schedule. Set it once and forget it.
+- **Effects that actually look good.** A library of **40+ effects** — from elegant (Rainbow, Breathing, Comet, Fire) to playful — including a whole suite of **2D matrix effects** for LED panels.
+- **Scenes at your fingertips.** Store complete looks per segment and recall them with a single KNX scene telegram (DPT 18.001).
+- **It remembers.** Colours, brightness, the active effect and scene are persisted to flash, so your light comes back exactly the way you left it after any power cycle.
+- **One controller, many zones.** Carve a single strip into up to 16 independently controlled segments — hallway, shelf and cove, each doing its own thing.
+
+## What it can do
+
+### Light & colour
+Direct RGB control, intuitive HSV selection, dedicated warm-white and cool-white channels, and Kelvin-based colour temperature for RGBW and 5-channel RGBCCT strips. Per-segment brightness in clean 0–100% percentages, configurable gamma correction and per-channel white-balance trimming for pixel-perfect colour reproduction.
+
+### Human Centric Lighting
+Automatic, circadian-friendly white-light tuning — globally or per segment. On RGBCCT strips it mixes WW/CW directly for pure, flicker-free white; on RGB/RGBW strips it applies a Kelvin-accurate tint. Choose sun-position curves or time-based scheduling.
+
+### A serious effect engine
+40+ built-in effects, assignable per segment with adjustable speed and intensity, plus **2D/3D matrix support**: declare a segment as a width × height (× depth) matrix, pick a wiring topology, and run native 2D effects like Fire 2D, Plasma Nebula, TRON, Starfield Warp, Matrix rain, UFO Swarm, animated scrolling text and a digital clock.
+
+### Effektmanager & Effektkette
+Sequence effects into automated, timed light shows with the **Effektmanager** (cue-based playback with fades, looping and chaining) — and stretch a single effect seamlessly across **multiple KNX devices** with the **Effektkette** (distributed rendering): one master, many slaves, each painting its own section of one continuous virtual strip.
+
+### Built for real installations
+Support for **28+ LED protocols** (WS2812B, SK6812, APA102, WS2805/WS2814 RGBCCT and many more), 12 colour orders, 11 fine-grained timing presets for clean signals over long cables, intelligent power limiting (up to 65 A budgeting with per-LED modelling), live power monitoring in mA / % / W, and up to 4 external relay outputs for switching strip power supplies.
+
+> **Looking under the hood?** The heavy lifting — hardware-accelerated, stateless effect rendering, geometry mapping and power management — lives in the reusable **[OFM-NeoPixel](lib/OFM-NeoPixel/README.md)** library. Dive in if you want the deep technical story, the C++ API, or to build your own effects.
+
+## Runs great everywhere. Runs *best* on KNeoPiX.
+
+OpenKNX NeoPixel is part of the OpenKNX ecosystem and runs on a broad range of OpenKNX-compatible controllers (RP2040, RP2350 and ESP32 based) — see [Supported Hardware](#supported-hardware) below. Pick the board you already have and you're good to go.
+
+That said, the firmware is **developed and tuned on the OpenKNXiao KNeoPiX** — the LED-control board this project was born on. Signal timing, GPIO drive strength and the whole hardware path are validated there first, so on a KNeoPiX you get the smoothest, best-behaved experience out of the box, with no guesswork about pins or levels. If you're building a new addressable-LED node for KNX, it's the path of least resistance.
+
+## Documentation
+
+- [German application description](doc/Applikationsbeschreibung.md)
+- [LED behavior and diagnostic codes](doc/LED-Behaviour.md)
+- [Hardware abstraction concept (defines & generator)](doc/Konzept-Hardware-Defines.md)
+- [Multi-hardware GPIO template generator (technical deep-dive)](doc/Hardware-Config-Generator.md)
+- [OFM-NeoPixel library (technical deep-dive & C++ API)](lib/OFM-NeoPixel/README.md)
+
+## Features at a glance
 
 ### Core Functionality
-- **Multi-Strip Support**: Control up to 6 independent LED strips simultaneously
-- **Flexible Segmentation**: Divide each strip into segments for granular control
-- **Rich Effect Library**: Built-in effects including fade, rainbow, pulse, sparkle, and more
-- **Effect Auto-Update**: Automatic animation with configurable update speeds
-- **Color Profiles**: RGB, HSV, RGBW, warm/cool white (WW/CW) support
+- **Multi-Strip Support**: Control up to 8 independent LED strips simultaneously
+- **Flexible Segmentation**: Up to 16 segments on the virtual strip for granular control
+- **Rich Effect Library**: 40 built-in effects including Rainbow, Fire, Meteor, Breathing, Sparkle, Comet, and more — including **2D effects** for LED matrices (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock, Matrix 2D, TRON, Starfield Warp, Plasma Nebula, UFO Swarm)
+- **Scene Support**: Up to 10 configurable scenes per segment (DPT 18.001), storing effect, colors, and brightness
+- **Color Profiles**: RGB, HSV, RGBW, RGBCCT (5-channel), warm/cool white (WW/CW) support
 
 ### Control Methods
 - **KNX Group Objects**: Full control via KNX telegrams
-- **Per-Segment KOs**: Independent control of each segment's color, brightness, effect, and power
-- **Global Controls**: Global brightness, power, and HCL (Hue-Color-Light) state
+- **Per-Segment KOs**: Independent control of each segment's color, brightness, effect, scene, and power
+- **Global Controls**: Global brightness, power, and HCL (Human Centric Lighting) state
 - **Relative Controls**: Dimming steps via DPT 3.007 (Control_Dimming) for incremental brightness/color changes
 
 ### Color & Lighting
 - **RGB Direct Control**: Set exact RGB values
 - **HSV Control**: Hue, Saturation, Value for intuitive color selection
-- **Color Temperature (CCT)**: Kelvin-based warm/cool white adjustment
+- **Color Temperature (CCT)**: Kelvin-based warm/cool white adjustment (DPT 7.600)
 - **RGBCCT (5-Channel)**: Full support for 5-channel LED strips with separate Warm White (WW) and Cool White (CW) channels for true color temperature control
 - **HCL (Human Centric Lighting)**: Automatic color temperature adjustment with sun-position curves or time-based scheduling for circadian rhythm support
   - For RGBCCT strips: Directly adjusts WW/CW ratio for pure white color temperature
   - For RGB/RGBW strips: Applies Kelvin-based RGB tinting
+  - Configurable globally and per segment
 - **White Channels**: Dedicated warm white (WW) and cool white (CW) control for RGBW and RGBCCT strips
-- **Brightness Scaling**: Per-segment brightness with DPT 5.001 (percentage 0–100%)
-- **Gamma Correction**: Configurable gamma curve for natural brightness perception
-- **White Balance Correction**: Fine-tune color channel intensity
+- **Brightness Scaling**: Per-segment brightness with DPT 5.001 (percentage 0-100%)
+- **Gamma Correction**: Configurable gamma curve (1.2-2.7, default 2.0)
+- **White Balance Correction**: Per-channel intensity adjustment (R/G/B, default 100% each)
 
 ### Advanced Features
-- **LED Protocol Support**: WS2812B, WS2811, SK6812, SK6805, APA102, SK9822, WS2801, LPD8806, and more
-- **Color Order Configuration**: Automatic and manual color order selection (RGB, GRB, BGR, RGBW, etc.)
-- **Timing Modes**: 11 adjustable timing presets (AUTO, FAST, SLOW) to optimize signal integrity for different cable lengths and LED types
-- **Power Limiting**: Global and per-channel current limiting to prevent brownouts
+- **LED Protocol Support**: 28+ protocols including WS2812B, WS2811, WS2813, SK6812, APA102, SK9822, WS2801, LPD8806, TM1814, WS2805 RGBCCT, WS2814 RGBCCT, and more
+- **Color Order Configuration**: 12 color orders including RGB, GRB, BGR, RGBW, GRBW, RGBCCT, GRBCCT, RGBCTW, GRBCTW
+- **Timing Modes**: 11 adjustable timing presets (AUTO, AUTO_LEGACY, SLOW_5PCT-SLOW_20PCT, FAST_5PCT-FAST_25PCT) to optimize signal integrity for different cable lengths and LED types
+- **Power Limiting**: Multiple modes (disabled, global, custom-fixed, custom-per-LED) with up to 65535 mA global limit
+- **External Relay Control**: Up to 4 relay outputs (hardware-dependent)
 - **Hardware Flexibility**: GPIO and SPI clock configuration for custom wiring
 - **Virtual Strip Architecture**: Internal virtual strip allows flexible physical strip ordering and rearrangement
-- **HCL (Human Centric Lighting)**: Automatic color temperature adjustment based on sun position or time-of-day curves for circadian rhythm support
+- **Power Monitoring**: Total current (mA), load (%), and power (W) status KOs
+- **2D / 3D Matrix Support**: Configure any segment as a 2D or 3D LED matrix — set width, height, wiring topology (serpentine/linear rows or columns) and use 2D-native effects. Multiple panels can share a single segment or use separate segments.
+- **Effektmanager** (Cue sequencer): Per-segment, cue-based light sequences. Each cue is a snapshot (effect, colours, brightness, effect parameters) played with its own duration and fade; cues can loop and chain into another Effektmanager. Assign an Effektmanager to a segment and it drives the output via its KOs.
+- **Effektkette** (Distributed rendering): Link segments across multiple KNX devices so one effect runs seamlessly over the combined strip. One device is Master (sends), others are Slaves (render their section). Watchdog timeout and local override policy configurable per segment.
+
+## Effects
+
+The firmware ships with a continuously growing library of **40+ effects**, and new ones are added regularly. Rather than memorising IDs, just browse the live, always-up-to-date list directly in **ETS** (the effect dropdown per segment) or on the device console with `neo effects` — the firmware is the single source of truth, so the catalogue you see there is never out of date.
+
+To give you a feel for what's on board, the effects fall into a few families:
+
+- **Solid & static** — clean single-colour fills and smooth gradients.
+- **Classic animations** — Rainbow, Rainbow Cycle, Pride, Comet, Meteor, Theater Chase, Sinelon and friends.
+- **Sparkle & motion** — Confetti, Twinkle, Sparkle, Juggle, BPM, Cylon, Blitz and more.
+- **Atmosphere** — Fire, candle simulations (single and multi), Breathing, Pulse, Noise and Palette looks.
+- **Utility & test** — Strobe, Wipe, RGBW/RGBCCT test patterns and the special GarageDoor effect.
+- **2D matrix effects** — for segments configured with matrix geometry (see below).
+
+Every effect exposes its own adjustable parameters (speed, intensity, colours, …) — these are **self-describing**, so they appear automatically in ETS and on the console without any extra configuration.
+
+### 2D / 3D matrix effects
+
+A whole class of effects is designed for LED **matrices**: declare a segment's width, height and wiring topology, and these effects render in real 2D space. The current line-up includes column-based **Fire 2D**, smooth **Noise 2D** fields, sweeping **Cylon 2D**, scrolling **text** (5×7 font, settable via KO), a digital **clock**, plus a SciFi pack — **Matrix rain, TRON light-cycles, Starfield Warp, Plasma Nebula, UFO Swarm, Snake** and **Tetris**. As with everything else, the authoritative list lives in ETS and the console.
+
+> **Tip:** the exact set of effects (and their IDs, if you need them for KO automation) is always visible in ETS and via `neo effects` on the console — no need to chase this README when the library grows.
 
 ## Installation & Setup
 
+### Prerequisites
+Before building this project, your development environment must be set up according to the [OpenKNX Developer Setup](https://github.com/OpenKNX/OpenKNX/wiki/Information-for-Developers). This includes PlatformIO, required toolchains, and the OpenKNX build system.
+
 ### 1. Clone the Repository
 ```bash
-git clone --recursive https://github.com/OpenKNX/OAM-Neopixel.git
-cd OAM-Neopixel
+git clone --recursive https://github.com/OpenKNX/OAM-NeoPixel.git
+cd OAM-NeoPixel
 ```
 
 ### 2. Configure PlatformIO
-Edit `platformio.ini` to select your board:
-```ini
-[env:develop_OpenKNXiaoMiniRP2040_TP]
-board = seeed_xiao_rp2040
-```
+Select your target hardware environment in `platformio.custom.ini`. The release workflow currently covers the following standard targets — the **OpenKNXiao KNeoPiX** environments lead the list because they are the firmware's reference platform and the smoothest place to start:
+
+| Environment | Hardware |
+|-------------|----------|
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1` | OpenKNXiao KNeoPiX RP2350 |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1` | OpenKNXiao KNeoPiX RP2040 |
+| `release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1` | OpenKNXiao Mini RP2040 |
+| `release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1` | OpenKNXiao Mini RP2350 |
+| `release_OKNXHW_REG2_PIPICO_V1` | OpenKNX REG2 PiPico |
+| `release_OKNXHW_REG2_PIPICO_W_V1` | OpenKNX REG2 PiPico W |
+| `release_OKNXHW_REG2_PIPICO2_V1` | OpenKNX REG2 PiPico2 |
+| `release_OKNXHW_REG2_PIPICO2_W_V1` | OpenKNX REG2 PiPico2 W |
+| `release_DEVICE_PIPICO_BCU_CONNECTOR` | OpenKNX PiPico BCU Connector |
+| `release_DEVICE_PIPICO2_BCU_CONNECTOR` | OpenKNX PiPico2 BCU Connector |
+| `release_OKNXHW_UP1_GW_UART` | OpenKNX UP1 GW-UART |
+| `release_GLEDOPTO_ESP32_WLED_DIGITAL_UP` | Gledopto GL-C-309WL ESP32 |
+| `release_QUINLED_DIG2GO` | QuinLED Dig2Go |
+| `release_QUINLED_DIG_UNO_V3_WIFI` | QuinLED Dig-Uno V3 WiFi |
+| `release_QUINLED_DIG_UNO_V3_ETHERNET` | QuinLED Dig-Uno V3 Ethernet |
+| `release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS` | QuinLED Dig-Uno V3 WiFi AE Plus |
+| `release_QUINLED_DIG_QUAD_V3_WIFI` | QuinLED Dig-Quad V3 WiFi |
+| `release_QUINLED_DIG_QUAD_V3_ETHERNET` | QuinLED Dig-Quad V3 Ethernet |
+| `release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS` | QuinLED Dig-Quad V3 WiFi AE Plus |
+| `release_QUINLED_DIG_OCTA_32_8L_WIFI` | QuinLED Dig-Octa-32-8L WiFi |
+| `release_QUINLED_DIG_OCTA_32_8L_ETHERNET` | QuinLED Dig-Octa-32-8L Ethernet |
+| `release_QUINLED_DIG_NEXT2` | QuinLED Dig-Next-2 |
+
+> **Hardware support:** Only the **OpenKNX** targets (KNeoPiX, Mini, REG2, UP1, BCU Connector) are developed, tested and supported — the **KNeoPiX** is the reference platform. The **Gledopto** and **QuinLED** targets are built for convenience but are **untested and not officially supported by OpenKNX**: use them at your own risk — if they work, great; if not, there is no support. For a reliable result, use OpenKNX hardware.
+
+Additional full-build targets are available through `pwsh scripts/Build-Release.ps1 -Full`, including ESP32C3, ESP32C5, ESP32C6 and ESP32S3 variants of the OpenKNXiao KNeoPiX and Mini families, plus the REG2 ESP32S3 Pico target.
 
 ### 3. Build & Upload
 ```bash
-pio run -e develop_OpenKNXiaoMiniRP2040_TP -t upload
+pio run -e release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 -t upload
+```
+
+To create packaged release artifacts instead of a single PlatformIO build, use:
+
+```bash
+pwsh scripts/Build-Release.ps1
+pwsh scripts/Build-Release.ps1 -Release
 ```
 
 ### 4. Configure in ETS
 - **LED Type**: Select your LED protocol (WS2812B, APA102, etc.)
-- **LED Count**: Enter total number of addressable LEDs
+- **LED Count**: Enter total number of addressable LEDs (max 16384)
 - **Color Order**: Match your LED's byte order (GRB for WS2812B, BGR for APA102, etc.)
-- **Timing Mode**: Start with AUTO; switch to SLOW_5PCT–SLOW_20PCT if LEDs flicker or don't respond
+- **Timing Mode**: Start with AUTO; switch to SLOW_5PCT-SLOW_20PCT if LEDs flicker or don't respond
 - **GPIO Configuration**: Set data pin, clock pin (for SPI), MOSI pin
-- **Power Limiting**: Enable if drawing >1A; set appropriate mA limits per LED and globally
+- **Power Limiting**: Configure mode (global, per-LED) and mA limits
 - **Segments**: Define segment start/end positions for granular control
 - **Effects**: Assign effects to segments with speed and intensity parameters
+- **Scenes**: Configure up to 10 scenes per segment with colors, brightness, and effects
 
 ## Configuration Parameters
 
 ### Strip Level
 | Parameter | Type | Range | Default | Description |
 |-----------|------|-------|---------|-------------|
-| LED Type | Enum | 0–10 | 0 (WS2812B) | Addressable LED protocol |
-| Color Order | Enum | 0–7 | 0 (GRB) | Byte sequence for RGB channels |
-| LED Count | Int | 1–1000 | 30 | Total addressable LEDs |
-| Skip First LEDs | Int | 0–100 | 0 | Offset before segment 0 starts |
-| Timing Mode | Enum | 0–10 | 0 (AUTO) | Signal timing optimization |
-| Power Limit (mA) | Int | 100–5000 | 1000 | Global current limit |
-| Gamma Correction | Bool | — | On | Apply gamma curve (2.2) |
-| White Balance | Bool | — | Off | Adjust per-channel intensity |
+| LED Type | Enum | 0-31, 99 | 0 (WS2812B) | Addressable LED protocol |
+| Color Order | Enum | 0-11 | 0 (GRB) | Byte sequence for color channels |
+| LED Count | Int | 1-16384 | 30 | Total addressable LEDs |
+| Skip First LEDs | Int | 0-65535 | 0 | Offset before segment 0 starts |
+| Timing Mode | Enum | 0-10 | 0 (AUTO) | Signal timing optimization |
+| Power Limit Mode | Enum | 0-3 | 1 (Global) | Disabled / Global / Custom-Fixed / Custom-Per-LED |
+| Power Limit Global (mA) | Int | 0-65535 | 1000 | Global current limit |
+| Power Limit Per LED (mA) | Int | 0-70 | 60 | Per-LED current limit |
+| Gamma Correction | Enum | 1.2-2.7 | 2.0 | Gamma curve value |
+| White Balance R/G/B | Int | 0-100% | 100% each | Per-channel intensity correction |
 
 ### Segment Level
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | Segment Start | Int | LED index where segment begins |
 | Segment End | Int | LED index where segment ends (inclusive) |
-| Default Effect | Enum | Effect ID to start with (0=static) |
-| Effect Speed | Int | Animation frame rate (0–255) |
-| Effect Intensity | Int | Animation intensity/brightness (0–255) |
+| Default Effect | Enum | Effect ID to start with (0=Solid) |
+| Effect Speed | Int | Animation frame rate (0-255) |
+| Effect Intensity | Int | Animation intensity/brightness (0-255) |
 | Grouping | Int | LEDs per logical group (1=per-LED) |
 | Spacing | Int | Dark LEDs between groups |
+| Scenes | 1-10 | Configurable scenes with effect, colors, brightness |
+| Startup Behavior | Enum | Use Global / Off / Last State |
 
 ## Group Objects (KOs)
 
 ### Global KOs
-- **Power** (KO 400): DPT 1.001 — Turn all segments on/off
-- **Power Status** (KO 401): DPT 1.001 — Power state feedback
-- **Color Temperature** (KO 402): DPT 7.600 — Color temperature in Kelvin (2700K–6500K) for HCL functionality
-- **Brightness** (KO 403): DPT 5.001 — Global brightness 0–100%
-- **Brightness Status** (KO 404): DPT 5.001 — Brightness state feedback
+| KO | Name | DPT | Direction | Description |
+|----|------|-----|-----------|-------------|
+| 400 | Power | 1.001 | Input | Turn all segments on/off |
+| 401 | Power Status | 1.011 | Output | Power state feedback |
+| 402 | Brightness | 5.001 | Input | Global brightness 0-100% |
+| 403 | Brightness Status | 5.001 | Output | Brightness state feedback |
+| 404 | Current Total | 7.600 | Output | Total current consumption (mA) |
+| 405 | Load Total | 5.001 | Output | Total power load (%) |
+| 406 | Power Watts Total | 14.056 | Output | Total power consumption (W) |
+| 407 | HCL Global State | 7.600 | Output | HCL color temperature state (K) |
+| 408-411 | Relay 1-4 | 1.001 | Input | External relay control |
+| 412-415 | Relay 1-4 Status | 1.011 | Output | External relay state feedback |
 
-### Per-Segment KOs (Block Size 39)
-For segment N (0-indexed), KOs = 600 + N×39:
-- **KO+0**: Segment Power (DPT 1.001)
-- **KO+1**: Segment Power Status (DPT 1.001)
-- **KO+2**: Segment Brightness (DPT 5.001, 0–100%)
-- **KO+3**: Segment Brightness Status (DPT 5.001)
-- **KO+4**: R (Red channel, DPT 5.001)
-- **KO+5**: G (Green channel, DPT 5.001)
-- **KO+6**: B (Blue channel, DPT 5.001)
-- **KO+7**: W (White channel, DPT 5.001)
-- **KO+8**: CCT (Color Temperature, DPT 5.001)
-- **KO+9**: CCT Status (DPT 5.001)
-- **KO+10**: WW (Warm White, DPT 5.001)
-- **KO+11**: CW (Cool White, DPT 5.001)
-- **KO+12**: H (Hue, DPT 5.001)
-- **KO+13**: S (Saturation, DPT 5.001)
-- **KO+14**: V (Value, DPT 5.001)
-- **KO+15**: Effect (Effect ID, DPT 5.010)
-- **KO+16**: Effect Status (DPT 5.010)
-- **KO+17**: Preset (Preset ID, DPT 5.010)
-- **KO+18**: Preset Status (DPT 5.010)
-- **KO+19**: RGB (DPT_Colour_RGB)
-- **KO+20**: RGB Status (DPT_Colour_RGB)
-- **KO+21**: HSV (DPT_Colour_RGB, H/S/V packed)
-- **KO+22**: HSV Status (DPT_Colour_RGB)
-- **KO+23**: RGBW (DPT_Colour_RGBW)
-- **KO+24**: RGBW Status (DPT_Colour_RGBW)
-- **KO+25**: Brightness Relative (DPT 3.007, dimming steps)
-- **KO+26**: R Relative (DPT 3.007)
-- **KO+27**: G Relative (DPT 3.007)
-- **KO+28**: B Relative (DPT 3.007)
-- **KO+29**: W Relative (DPT 3.007)
-- **KO+30**: WW Relative (DPT 3.007)
-- **KO+31**: CW Relative (DPT 3.007)
-- **KO+32**: H Relative (DPT 3.007)
-- **KO+33**: S Relative (DPT 3.007)
-- **KO+34**: V Relative (DPT 3.007)
-- **KO+35**: Effect Relative (DPT 3.007)
-- **KO+36**: RGB Relative (DPT 3.007)
-- **KO+37**: HSV Relative (DPT 3.007)
-- **KO+38**: RGBW Relative (DPT 3.007)
+### Per-Segment KOs (Block Size 40)
+For segment N (1-indexed), base KO = 600 + (N-1) x 40:
 
-**Note**: KO indices are offsets within each segment's 39-KO block. Actual KO number = 600 + segment_index×39 + index.
+| Offset | Name | DPT | Direction | Description |
+|--------|------|-----|-----------|-------------|
+| +0 | Power | 1.001 | Input | Segment on/off |
+| +1 | Power Status | 1.011 | Output | Power state feedback |
+| +2 | Brightness | 5.001 | Input | Brightness 0-100% |
+| +3 | Brightness Status | 5.001 | Output | Brightness feedback |
+| +4 | R | 5.010 | Input | Red channel (0-255) |
+| +5 | G | 5.010 | Input | Green channel (0-255) |
+| +6 | B | 5.010 | Input | Blue channel (0-255) |
+| +7 | W | 5.010 | Input | White channel (0-255) |
+| +8 | CCT | 7.600 | Input | Color temperature (Kelvin) |
+| +9 | CCT Status | 7.600 | Output | Color temperature feedback |
+| +10 | WW | 5.010 | Input | Warm White (0-255) |
+| +11 | CW | 5.010 | Input | Cool White (0-255) |
+| +12 | H | 5.003 | Input | Hue (0-360) |
+| +13 | S | 5.001 | Input | Saturation (0-100%) |
+| +14 | V | 5.001 | Input | Value (0-100%) |
+| +15 | Effect | 5.010 | Input | Effect ID |
+| +16 | Effect Status | 5.010 | Output | Active effect feedback |
+| +17 | Scene | 18.001 | Input | Scene recall/learn |
+| +18 | Scene Status | 18.001 | Output | Active scene feedback |
+| +19 | RGB | 232.600 | Input | RGB combined (3 bytes) |
+| +20 | RGB Status | 232.600 | Output | RGB feedback |
+| +21 | HSV | 232.600 | Input | HSV combined (3 bytes) |
+| +22 | HSV Status | 232.600 | Output | HSV feedback |
+| +23 | RGBW | 251.600 | Input | RGBW combined (6 bytes) |
+| +24 | RGBW Status | 251.600 | Output | RGBW feedback |
+| +25 | Brightness Rel | 3.007 | Input | Relative dimming |
+| +26-28 | R/G/B Rel | 3.007 | Input | Relative R/G/B |
+| +29 | W Rel | 3.007 | Input | Relative White |
+| +30 | WW Rel | 3.007 | Input | Relative Warm White |
+| +31 | CW Rel | 3.007 | Input | Relative Cool White |
+| +32-34 | H/S/V Rel | 3.007 | Input | Relative H/S/V |
+| +35 | Effect Rel | 3.007 | Input | Relative effect switch |
+| +36 | RGB Rel | 232.600 | Input | Relative RGB |
+| +37 | HSV Rel | 232.600 | Input | Relative HSV |
+| +38 | RGBW Rel | 251.600 | Input | Relative RGBW |
+| +39 | HCL State | 7.600 | Output | Segment HCL temperature (K) |
 
-## State Persistence Behavior
+## State Persistence
 
 The firmware persists the following segment state to flash memory for seamless restoration after power cycles:
-- **Power state** (On/Off)
-- **Colors** (RGBWW/CW values)
+- **Power state** (on/off)
+- **Colors** (R, G, B, WW, CW values)
 - **Brightness** (0-100%)
+- **Effect** (if changed via KO at runtime)
+- **Active scene number**
 
-**Important:** The active effect and its parameters (speed, intensity) are **NOT** persisted in flash. After a restart, the effect configuration is always loaded from the ETS parameters. This design prevents conflicts when you reprogram the device via ETS with a new effect configuration.
+If the effect was not changed via KO during runtime, the ETS-configured default effect is used after restart.
 
-**Startup Modes** (configurable per segment or globally):
-- **OFF**: LEDs remain off after restart
-- **LAST**: Restore last power/color/brightness state (effect from ETS)
-- **DEFAULT**: Use predefined color/brightness from ETS parameters (effect from ETS)
+**Startup Behavior** (configurable per segment, with a global default):
 
-This architecture ensures that ETS is the authoritative source for effect configuration, while the flash stores only runtime state.
+| Mode | Global | Per-Segment | Description |
+|------|--------|-------------|-------------|
+| Off | Yes | Yes | LEDs remain off after restart |
+| Last State | Yes | Yes | Restore last persisted state |
+| ETS Parameter | Yes | No | Use ETS-configured default values |
+| Use Global | No | Yes (default) | Inherit global startup setting |
 
 ## Troubleshooting
 
@@ -170,17 +294,17 @@ This architecture ensures that ETS is the authoritative source for effect config
 2. Check power supply (5V stable, sufficient current)
 3. Try **Timing Mode = AUTO_LEGACY** in ETS
 4. Inspect data cable for shorts or poor contacts
-5. Reduce cable length or add a level shifter (3.3V→5V)
+5. Reduce cable length or add a level shifter (3.3V to 5V)
 
 ### LEDs Flicker or Show Wrong Colors
-1. Switch **Timing Mode** from AUTO to SLOW_5PCT–SLOW_20PCT
+1. Switch **Timing Mode** from AUTO to SLOW_5PCT-SLOW_20PCT
 2. Check **Color Order** matches LED type (GRB for WS2812B, BGR for APA102)
 3. Reduce **LED Count** to isolate the problem
 4. Verify ground connection is solid
 
 ### Brightness Control Has No Effect
 1. Confirm brightness KO is **linked in ETS** to a group address
-2. Check that the group address transmits **DPT 5.001** (0–100%), not DPT 5.010
+2. Check that the group address transmits **DPT 5.001** (0-100%), not DPT 5.010
 3. Verify segment power is **ON** (power KO = 1)
 
 ### Long Cables or Signal Issues
@@ -189,6 +313,38 @@ This architecture ensures that ETS is the authoritative source for effect config
 - Consider a level shifter if cable length >3m
 - Reduce LED count in problem area
 - Split very long strips into multiple segments controlled separately
+
+### Local testing without ETS (`neo init`)
+
+> **For local/bench tests only. Normal operation is configured via ETS.**
+
+If the device is **not programmed via ETS** (e.g. the ETS application does not match
+the firmware, or the KNX flash was erased), the module stays *uninitialized* and every
+hardware console command answers `ERROR: NeoPixel module not initialized!`.
+
+The `neo init` command brings the module up **without** an ETS download so you can build
+a setup by hand and let it render:
+
+```
+neo init                      # enter local test mode (creates the manager, runs loop())
+neo phys add 6 512 ws2812b    # add physical strips (1-Wire: ws2812b|sk6812)
+neo phys add 2 150 apa102 4   # SPI APA102: <clk> <n> apa102 <data>
+neo virt add 862              # create a virtual strip with N LEDs
+neo virt attach 0 0           # attach physical strip <p> to virtual strip <v>
+neo seg add 0 0 511           # segment on virtual <v>, LEDs <start>-<end>
+neo effect set 0 32           # assign an effect by ID (or name) to a segment
+neo info                      # verify
+```
+
+Limitations (by design):
+- **Rendering only** — test mode runs the effect/auto-update path but **skips all KNX
+  group-object traffic** (HCL status, power-monitoring, Effektkette sync). Those require
+  a loaded KO table from ETS; touching KOs without it would fault.
+- **Runtime only** — the setup is **not persisted** and is lost on reboot/power-cycle.
+- **ColorOrder is not settable** from the console (strips use the protocol default).
+- **Effektmanager / cues cannot be created** here — those come exclusively from the ETS
+  configuration (`EffektManagerData`). `neo em start/stop/cue` only drive EMs already
+  loaded from ETS.
 
 ## License
 
@@ -199,6 +355,52 @@ Part of the OpenKNX ecosystem. See individual library licenses.
 For issues, feature requests, or contributions:
 - **GitHub Issues**: Report bugs and request features
 - **Documentation**: Check the Help folder for parameter descriptions
-- **Community**: Join OpenKNX forum for discussions
+- **Community**: Join [OpenKNX forum](https://forum.openknx.de) for discussions
+- **KNX-User-Forum Thread**: [OAM-NeoPixel -- In Farben dein Zuhause erstrahlen soll](https://knx-user-forum.de/forum/projektforen/openknx/2088552-oam-neopixel-%E2%80%93-in-farben-dein-zuhause-erstrahlen-soll)
+
+## Supported Hardware
+
+OpenKNX NeoPixel runs on a wide range of OpenKNX-compatible controllers. The **OpenKNXiao KNeoPiX** is the reference board this firmware is developed and validated on — it's the most thoroughly tested choice and the one we recommend for a new build.
+
+### Standard Release Targets
+
+- OpenKNXiao KNeoPiX RP2040 and RP2350
+- OpenKNXiao Mini RP2040 and RP2350
+- OpenKNX REG2 PiPico, PiPico W, PiPico2 and PiPico2 W
+- OpenKNX PiPico BCU Connector and PiPico2 BCU Connector
+- OpenKNX UP1 GW-UART
+- Gledopto GL-C-309WL ESP32
+- QuinLED Dig2Go
+- QuinLED Dig-Uno V3 in WiFi, Ethernet and WiFi AE Plus variants
+- QuinLED Dig-Quad V3 in WiFi, Ethernet and WiFi AE Plus variants
+- QuinLED Dig-Octa-32-8L in WiFi and Ethernet variants
+- QuinLED Dig-Next-2
+
+### Additional Full-Build Targets
+
+- OpenKNXiao KNeoPiX ESP32C3, ESP32C5, ESP32C6 and ESP32S3
+- OpenKNXiao Mini ESP32C3, ESP32C5, ESP32C6 and ESP32S3
+- OpenKNX REG2 ESP32S3 Pico
+
+> **Note:** The GPIO pins for LED data and clock lines can be configured in ETS for many hardware profiles. This makes the firmware adaptable to additional ESP32, RP2040 and RP2350 based boards beyond the release targets listed above, provided the selected firmware and ETS hardware profile match.
 
 ## Changelog
+
+### 0.3.0 (Beta)
+
+- added the **Effektmanager**: cue-based, timed effect sequences per segment with fades, looping and chaining
+- added the **Effektkette** (distributed rendering): run one effect seamlessly across multiple KNX devices (master/slave)
+- added **2D/3D matrix** support with topology-aware geometry and a suite of native 2D effects (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock, Matrix, TRON, Starfield Warp, Plasma Nebula, UFO Swarm, Snake, Tetris)
+- per-effect default values now populate in ETS (segment, scene and cue)
+- reworked the documentation (overview, feature highlights and the OFM-NeoPixel technical deep-dive)
+- released as the **0.3 Beta** product; the development build (Dev product) runs ahead at 0.4 — both can coexist in the ETS catalogue
+
+### 0.2.0
+
+- expanded the standard release matrix with Gledopto and QuinLED hardware variants (UNTESTED!)
+- aligned the release flow and packaged artifacts with the current build targets
+- documented the application scope, diagnostics and commissioning in more detail
+
+### 0.1.0
+
+- first public development release of the OpenKNX NeoPixel application

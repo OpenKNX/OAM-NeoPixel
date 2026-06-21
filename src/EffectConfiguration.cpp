@@ -36,7 +36,7 @@ void EffectConfiguration::configureEffects()
             uint8_t _channelIndex = i;   // Local variable for ETS parameter macros
 
             // 1. Load ETS configuration (Effect + Parameters)
-            uint8_t effectType = ParamNEO_NEONEOEffectType;
+            uint8_t effectType = static_cast<uint8_t>(ParamNEO_NEONEOEffectType);
             applyEffectToSegment(segments[i].segment, effectType);
             setupEffectConfiguration(segments[i].segment, true); // loadDefaultColor = true at startup
 
@@ -166,6 +166,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
     else
     {
         logWarningP("Unknown effect type: %d", effectType);
+        _module->setWarningBlink(NEO_WARN_UNKNOWN_EFFECT); // pulsing Yellow (color from warnColorForCode)
     }
 }
 

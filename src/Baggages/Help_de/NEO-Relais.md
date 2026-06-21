@@ -27,10 +27,21 @@ Typische Einsatzfälle:
 
 ---
 
+## Wichtig: Versorgt das geschaltete Netzteil auch dieses Gerät?
+
+Bevor Sie ein Netzteil über ein Relais schalten, prüfen Sie, **woher dieses OpenKNX-Gerät selbst seinen Strom bezieht** – das hängt von der Hardware-Variante ab:
+
+- **Gerät wird aus demselben Netzteil gespeist** (bei vielen OpenKNX-Geräten der Fall): Schaltet das Relais dieses Netzteil ab, wird auch der Controller stromlos. Das Gerät geht offline und vom KNX-Bus – und kann sich danach **nicht selbst wieder einschalten** (das Relais ließe sich dann nur extern/manuell zurücksetzen).
+- **Gerät hat eine eigene KNX-Hilfsspannung oder eine getrennte Versorgung**: Dann bleibt der Controller bei abgeschaltetem LED-Netzteil aktiv und am Bus – nur die LEDs gehen aus.
+
+**Empfehlung:** Das Netzteil, das auch den Controller speist, nicht über ein Relais komplett abschalten – oder eine getrennte Versorgung bzw. KNX-Hilfsspannung für das OpenKNX-Gerät vorsehen.
+
+---
+
 ## Einstellungen in ETS
 
-**Anzahl Relais**
-Legt fest, wie viele Relais aktiv sind. Bei 0 sind alle Relais deaktiviert und die zugehörigen Kommunikationsobjekte werden ausgeblendet.
+**Externe Relais**
+Legt fest, wie viele Relais aktiv sind. Auf **Deaktiviert** werden alle Relais und die zugehörigen Kommunikationsobjekte ausgeblendet.
 
 **Einschaltverzögerung / Ausschaltverzögerung**
 Das Relais schaltet erst nach der eingestellten Zeit (Sekunden). Bei 0 wird sofort geschaltet.
@@ -51,7 +62,7 @@ Pro aktiviertem Relais gibt es zwei KOs:
 
 ## Deaktivierung
 
-Werden keine Relais benötigt, die Anzahl einfach auf **0** stellen. Es entstehen dann keinerlei Einschränkungen für die übrige LED-Steuerung.
+Werden keine Relais benötigt, die Auswahl einfach auf **Deaktiviert** stellen. Es entstehen dann keinerlei Einschränkungen für die übrige LED-Steuerung.
 
 **Hinweis:** Für komplexere Automatisierungen (z. B. zeitgesteuerte oder verknüpfte Schaltungen) empfiehlt sich ein separates KNX-Schaltaktor-Modul.
 

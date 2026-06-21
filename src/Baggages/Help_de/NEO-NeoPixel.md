@@ -1,15 +1,7 @@
-### NeoPixelBus Modul
+### NeoPixel — adressierbare LED-Steuerung über KNX
 
-Das NeoPixelBus Modul ermöglicht die Steuerung von adressierbaren LED-Streifen über KNX. Es unterstützt verschiedene LED-Typen wie WS2812B, WS2815, APA102, SK6812 und viele andere.
+Steuert adressierbare LED-Streifen und -Matrizen direkt über KNX. Unterstützt nahezu alle gängigen LED-Typen wie WS2812(B), WS2813/14/15, SK6812, SK9822, APA102, TM1814 und UCS890x.
 
-**Hauptfunktionen:**
-- Unterstützung für bis zu 8 Kanäle (je nach Hardware)
-- RGB, RGBW und RGBCCT Farbsteuerung
-- Automatische Stromgrenzbegrenzung (ABL)
-- Gamma-Korrektur und Weißabgleich
-- SPI und PWM Protokoll-Unterstützung
-- Verschiedene Animationsmodi
+**Funktionen:** bis zu 8 Streifen je nach Hardware, Farbsteuerung für RGB, RGBW und RGBCCT, über 40 Effekte inklusive echter 2D-Animationen und Laufschrift, intelligente Strombegrenzung (ABL) zum Schutz von Netzteil und LEDs, Gamma-Korrektur und Weißabgleich sowie SPI- und PWM-Ansteuerung.
 
-**Konfiguration:**
-Jeder Kanal kann individuell konfiguriert werden mit eigenen LED-Typen, GPIO-Pins, Länge und Stromgrenzwerten. Das Modul bietet WLED-kompatible Funktionen für professionelle LED-Installationen.
-
+**Konfiguration:** Jeder Streifen wird einzeln eingerichtet — LED-Typ, GPIO, Länge und Stromgrenzen. Mit Segmenten, Szenen und Effektmanager lassen sich professionelle Lichtinstallationen umsetzen.

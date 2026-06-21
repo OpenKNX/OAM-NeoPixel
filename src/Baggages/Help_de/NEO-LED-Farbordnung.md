@@ -3,6 +3,7 @@
 Die Farbordnung definiert, in welcher Reihenfolge die Farbkanäle an die LEDs gesendet werden. Verschiedene LED-Typen erwarten unterschiedliche Farbordnungen.
 
 **Verfügbare Farbordnungen:**
+
 - **GRB**: Grün-Rot-Blau (Standard für WS2812B, WS2815)
 - **RGB**: Rot-Grün-Blau (selten verwendet)
 - **BRG**: Blau-Rot-Grün (selten)
@@ -11,22 +12,26 @@ Die Farbordnung definiert, in welcher Reihenfolge die Farbkanäle an die LEDs ge
 - **GBR**: Grün-Blau-Rot (einige WS2812B-Klone)
 
 **RGBW Varianten** für 4-Kanal LEDs:
+
 - **RGBW**: Rot-Grün-Blau-Weiß
 - **GRBW**: Grün-Rot-Blau-Weiß (**Standard für SK6812**)
 
-**RGBCCT Varianten** für 5-Kanal LEDs (mit separatem Warm- und Kaltweiss):
-- **RGBCCT**: Rot-Grün-Blau-WarmWeiss-KaltWeiss
-- **GRBCCT**: Grün-Rot-Blau-WarmWeiss-KaltWeiss
-- **RGBCTW**: Rot-Grün-Blau-KaltWeiss-WarmWeiss (umgekehrte W-Reihenfolge)
-- **GRBCTW**: Grün-Rot-Blau-KaltWeiss-WarmWeiss
+**RGBCCT Varianten** für 5-Kanal LEDs (mit separatem Warm- und Kaltweiß):
+
+- **RGBCCT**: Rot-Grün-Blau-Warmweiß-Kaltweiß
+- **GRBCCT**: Grün-Rot-Blau-Warmweiß-Kaltweiß
+- **RGBCTW**: Rot-Grün-Blau-Kaltweiß-Warmweiß (umgekehrte W-Reihenfolge)
+- **GRBCTW**: Grün-Rot-Blau-Kaltweiß-Warmweiß
 
 **RGBCCT für HCL (Human Centric Lighting):**
 Für optimale Farbtemperatursteuerung empfehlen wir 5-Kanal RGBCCT-Streifen. Das HCL-System kann die WW/CW-Kanäle direkt ansteuern:
+
 - **Warme Farbtemperatur** (z.B. 2700K): WW hoch, CW niedrig
 - **Kühle Farbtemperatur** (z.B. 6500K): WW niedrig, CW hoch
 - **Neutrale Farbtemperatur**: Mischung aus beiden
 
 **Häufige LED-Typen und ihre Farbordnung:**
+
 - **WS2812B**: GRB
 - **WS2815**: GRB
 - **SK6812**: GRBW (mit weißem Kanal)

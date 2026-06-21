@@ -3,6 +3,7 @@
 Wählen Sie den passenden LED-Typ für Ihren LED-Streifen aus. Verschiedene LED-Chips verwenden unterschiedliche Protokolle und Timings.
 
 **Unterstützte LED-Typen:**
+
 - **WS2812/WS2812B**: Standard RGB LEDs (800kHz)
 - **WS2815**: 12V RGB LEDs mit Backup-Datenleitung
 - **SK6812**: RGB/RGBW LEDs mit verbesserter Farbqualität

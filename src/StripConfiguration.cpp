@@ -25,8 +25,22 @@ void StripConfiguration::configureFromETS()
         return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
     };
 
-    // 1) Determine number of strips from ETS (max 6 strips supported in virtual configuration)
-    const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(6, ParamNEO_NEONumberOfLEDStrips));
+    // Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+    auto isReservedPin = [](uint8_t pin) -> bool {
+#if defined(KNX_UART_TX_PIN)
+        if (pin == (uint8_t)KNX_UART_TX_PIN) return true;
+#endif
+#if defined(KNX_UART_RX_PIN)
+        if (pin == (uint8_t)KNX_UART_RX_PIN) return true;
+#endif
+#if defined(SAVE_INTERRUPT_PIN)
+        if (pin == (uint8_t)SAVE_INTERRUPT_PIN) return true;
+#endif
+        return false;
+    };
+
+    // 1) Determine number of strips from ETS (match the runtime strip limit)
+    const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
     _module->_totalLeds = 0;
 
     // CRITICAL: Delete old PhysicalStrip objects before clearing vector!
@@ -147,6 +161,7 @@ void StripConfiguration::configureFromETS()
         {
             logErrorP("  - Strip %d (GPIO conflict)", stripIdx);
         }
+        _module->setErrorBlink(NEO_ERROR_GPIO_CONFLICT); // 3× blink
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -159,7 +174,8 @@ void StripConfiguration::configureFromETS()
     for (uint8_t r = 0; r < relayCount; ++r)
     {
         uint8_t portIndex;
-        switch (r) {
+        switch (r)
+        {
             case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
             case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
             case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
@@ -284,6 +300,14 @@ void StripConfiguration::configureFromETS()
                 }
             }
 
+            // Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+            if (isReservedPin(mosiGpio) || isReservedPin(sckGpio))
+            {
+                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/system pins (MOSI=%d, SCK=%d). Strip disabled to protect KNX bus.",
+                          i, mosiGpio, sckGpio);
+                continue; // Skip this strip completely
+            }
+
             // Use manager directly for frequency parameter (NeoPixel wrapper doesn't expose this overload yet)
             auto mgr = _module->_neoPixel.getManager();
             phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
@@ -371,11 +395,13 @@ void StripConfiguration::configureFromETS()
                 else
                 {
                     logErrorP("SPI Strip %d: Failed to cast config to SpiStripConfig!", i);
+                    _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
                 }
             }
             else
             {
                 logErrorP("SPI Strip %d: addSpiStrip returned nullptr!", i);
+                _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
             }
 
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
@@ -404,6 +430,14 @@ void StripConfiguration::configureFromETS()
                     logInfoP("1-Wire Strip %d: Skipped (hardware port not configured)", i);
                     continue;
                 }
+            }
+
+            // Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+            if (isReservedPin(dataGpioPin))
+            {
+                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with reserved KNX/system pin. Strip disabled to protect KNX bus.",
+                          i, dataGpioPin);
+                continue; // Skip this strip completely
             }
 
             phys = _module->_neoPixel.addStrip(dataGpioPin, pixels, proto, order);
@@ -542,6 +576,7 @@ void StripConfiguration::configureFromETS()
         else
         {
             logErrorP("Failed to create strip %d", i);
+            _module->setErrorBlink(NEO_ERROR_STRIP_FAILED); // 4× blink
         }
     }
 
@@ -671,27 +706,33 @@ void StripConfiguration::configureVirtualStripOrder()
 
     logInfoP("Configuring virtual strip order from ETS parameters");
 
-    // Read the virtual strip position parameters (1-6 positions for 1-6 strips)
-    // Value 0 = not used, Values 1-6 = physical strip index (1-based)
-    uint8_t positions[6] = {
+    constexpr size_t kMaxVirtualStripPositions = NEOPIXEL_MAX_PHYSICAL_STRIPS;
+
+    // Read the virtual strip position parameters (1-8 positions for 1-8 strips)
+    // Value 0 = not used, Values 1-8 = physical strip index (1-based)
+    uint8_t positions[kMaxVirtualStripPositions] = {
         static_cast<uint8_t>(ParamNEO_VirtualStripPos1),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos2),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos3),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos4),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos5),
-        static_cast<uint8_t>(ParamNEO_VirtualStripPos6)};
+        static_cast<uint8_t>(ParamNEO_VirtualStripPos6),
+        static_cast<uint8_t>(ParamNEO_VirtualStripPos7),
+        static_cast<uint8_t>(ParamNEO_VirtualStripPos8)};
 
     // Read the start positions (calculated by ETS JavaScript)
-    uint16_t startPositions[6] = {
+    uint16_t startPositions[kMaxVirtualStripPositions] = {
         static_cast<uint16_t>(ParamNEO_VirtualStripStart1),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart2),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart3),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart4),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart5),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart6)};
+        static_cast<uint16_t>(ParamNEO_VirtualStripStart6),
+        static_cast<uint16_t>(ParamNEO_VirtualStripStart7),
+        static_cast<uint16_t>(ParamNEO_VirtualStripStart8)};
 
     // Build the virtual strip configuration based on positions
-    for (uint8_t pos = 0; pos < 6; pos++)
+    for (size_t pos = 0; pos < kMaxVirtualStripPositions; pos++)
     {
         uint8_t physStripIndex = positions[pos];
 
@@ -717,7 +758,7 @@ void StripConfiguration::configureVirtualStripOrder()
             _module->_virtualStripConfiguration.emplace_back(physStripIndex, virtualStartZeroBased, ledCount);
 
             logInfoP("Virtual position %d: Physical strip %d (%d LEDs) starts at virtual position %d (ETS: %d)",
-                     pos + 1, physStripIndex + 1, ledCount, virtualStartZeroBased, virtualStart);
+                     static_cast<int>(pos + 1), physStripIndex + 1, ledCount, virtualStartZeroBased, virtualStart);
         }
         else
         {
@@ -743,6 +784,7 @@ void StripConfiguration::createVirtualStripWithOrder()
     if (_module->_physicalStrips.empty() || _module->_totalLeds == 0 || _module->_virtualStripConfiguration.empty())
     {
         logErrorP("Cannot create virtual strip: insufficient configuration");
+        _module->setErrorBlink(NEO_ERROR_VSTRIP_FAILED); // 5× blink
         return;
     }
 
@@ -788,6 +830,7 @@ void StripConfiguration::createVirtualStripWithOrder()
     if (!_module->_virtualStrip)
     {
         logErrorP("Failed to create virtual strip");
+        _module->setErrorBlink(NEO_ERROR_VSTRIP_FAILED); // 5× blink
         return;
     }
 
@@ -804,6 +847,7 @@ void StripConfiguration::createVirtualStripWithOrder()
     if (!mgr)
     {
         logErrorP("NeoPixelManager not available for virtual strip creation");
+        _module->setErrorBlink(NEO_ERROR_VSTRIP_FAILED); // 5× blink
         return;
     }
 

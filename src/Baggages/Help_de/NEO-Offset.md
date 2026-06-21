@@ -5,6 +5,7 @@ Rotiert/verschiebt die Pixel-Zuordnung innerhalb des Segments um N LEDs mit Umbr
 **Wert:** Anzahl der LEDs zum Verschieben (0-basiert)
 
 **Funktionsweise:** 
+
 - Der Offset wird VOR dem Rendern der Effekte angewendet
 - Animationen "beginnen" N LEDs später im Segment
 - Am Ende des Segments erfolgt ein Umbruch zum Anfang
@@ -18,6 +19,7 @@ Rotiert/verschiebt die Pixel-Zuordnung innerhalb des Segments um N LEDs mit Umbr
 ## Beispiel
 
 Bei einem Segment mit 10 LEDs (0-9) und Offset=3:
+
 - Logische Position 0 → Physische LED 3
 - Logische Position 7 → Physische LED 0 (Umbruch)
 - Logische Position 9 → Physische LED 2

@@ -18,8 +18,17 @@ function NEO_Empty(input, output, context) {
 }
 
 // Map LedType -> ColourOrder (full order including RGBW/RGBCCT)
-function NEO_LedTypeToRGB(input, output, context) {
+function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
+  var numericStripKey = toInt(stripKey, -1);
+  var pendingLedTypeResetStrip = toInt(input.PendingLedTypeResetStrip, 0);
+  var pendingLedTypeResetLedType = toInt(input.PendingLedTypeResetLedType, 255);
+  var hasAnyPendingLedTypeReset = pendingLedTypeResetStrip > 0 &&
+    pendingLedTypeResetLedType !== 255;
+  var hasPendingLedTypeReset = numericStripKey > 0 &&
+    hasAnyPendingLedTypeReset &&
+    pendingLedTypeResetStrip === numericStripKey &&
+    pendingLedTypeResetLedType === ledType;
 
   // Default fallback if a type has no explicit mapping
   var defaultOrder = CO_GRB; // most common default
@@ -69,7 +78,7 @@ function NEO_LedTypeToRGB(input, output, context) {
 
   // 99 = CUSTOM -> leave as user-defined; do not override
   if (ledType === 99) {
-    info("NEO_LedTypeToRGB: CUSTOM type, leaving ColourOrder unchanged");
+    info("NEO_LedTypeToRGB: Strip " + stripKey + " CUSTOM type -> keep current ColourOrder");
     return;
   }
 
@@ -77,17 +86,39 @@ function NEO_LedTypeToRGB(input, output, context) {
   // Clamp to valid 0..11 just in case
   if (ord < 0 || ord > 11 || isNaN(ord)) ord = defaultOrder;
 
+  if (hasPendingLedTypeReset) {
+    output.RGBColourOrder = ord;
+    info("NEO_LedTypeToRGB: Strip " + stripKey + " pending LEDType reset marker matched for LedType " + ledType + " -> reset ColourOrder to " + ord);
+    return;
+  }
+
+  if (hasAnyPendingLedTypeReset) {
+    info("NEO_LedTypeToRGB: Strip " + stripKey + " pending LEDType reset marker belongs to Strip " + pendingLedTypeResetStrip + " with LedType " + pendingLedTypeResetLedType + " -> keep current ColourOrder");
+    return;
+  }
+
   output.RGBColourOrder = ord;
-  info("NEO_LedTypeToRGB: LedType " + ledType + " -> ColourOrder " + ord);
+  info("NEO_LedTypeToRGB: Strip " + stripKey + " no pending LEDType reset marker active for LedType " + ledType + " -> reset ColourOrder to " + ord);
 }
+function NEO_LedTypeToRGB_1(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 1); }
+function NEO_LedTypeToRGB_2(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 2); }
+function NEO_LedTypeToRGB_3(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 3); }
+function NEO_LedTypeToRGB_4(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 4); }
+function NEO_LedTypeToRGB_5(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 5); }
+function NEO_LedTypeToRGB_6(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 6); }
+function NEO_LedTypeToRGB_7(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 7); }
+function NEO_LedTypeToRGB_8(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 8); }
 
 // Reset Clock GPIO when switching between SPI and 1-Wire LED types
-function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
+function NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
   
   // Check if this is a SPI LED type
   var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 || 
                ledType === 22 || ledType === 23 || ledType === 24 || ledType === 25);
+
+  output.PendingLedTypeResetStrip = stripKey;
+  output.PendingLedTypeResetLedType = ledType;
   
   if (!isSPI) {
     // LED type changed to 1-Wire → Reset all Clock Ports to Dummy (15)
@@ -97,27 +128,37 @@ function NEO_ResetClockGPIOOnLedTypeChange(input, output, context) {
     output.Strip4ClockPort = 15;
     output.Strip5ClockPort = 15;
     output.Strip6ClockPort = 15;
+    output.Strip7ClockPort = 15;
+    output.Strip8ClockPort = 15;
     
-    info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (1-Wire) → Clock Ports reset to 15");
+    info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (1-Wire) -> Clock Ports reset to 15, pending colour-order reset marker updated");
   } else {
-    info("NEO_ResetClockGPIOOnLedTypeChange: LED Type " + ledType + " (SPI) → Clock Ports unchanged");
+    info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (SPI) -> Clock Ports unchanged, pending colour-order reset marker updated");
   }
 }
+function NEO_ResetClockGPIOOnLedTypeChange_1(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 1); }
+function NEO_ResetClockGPIOOnLedTypeChange_2(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 2); }
+function NEO_ResetClockGPIOOnLedTypeChange_3(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 3); }
+function NEO_ResetClockGPIOOnLedTypeChange_4(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 4); }
+function NEO_ResetClockGPIOOnLedTypeChange_5(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 5); }
+function NEO_ResetClockGPIOOnLedTypeChange_6(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 6); }
+function NEO_ResetClockGPIOOnLedTypeChange_7(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 7); }
+function NEO_ResetClockGPIOOnLedTypeChange_8(input, output, context) { NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, 8); }
 
 // Calculate Start-LED indices for the virtual strip
 function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   info("NEO_UpdateVirtualStripStartIndices called");
 
-  // Number of physical strips in use (1..6)
-  var numStrips = toInt(input.NumberOfLEDStrips, 6);
+  // Number of physical strips in use (1..8)
+  var numStrips = toInt(input.NumberOfLEDStrips, 8);
   if (numStrips < 1) numStrips = 1;
-  if (numStrips > 6) numStrips = 6;
+  if (numStrips > 8) numStrips = 8;
 
   // ------------------------------------------------------------------
   // Build effective order array pos[] depending on NumberOfLEDStrips
-  // pos[i] = physical strip index (1..6) at virtual position i+1
+  // pos[i] = physical strip index (1..8) at virtual position i+1
   // ------------------------------------------------------------------
-  var pos = [0, 0, 0, 0, 0, 0];
+  var pos = [0, 0, 0, 0, 0, 0, 0, 0];
 
   switch (numStrips) {
     case 1:
@@ -151,6 +192,25 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
       break;
 
     case 6:
+      pos[0] = toInt(input.Pos1_6);
+      pos[1] = toInt(input.Pos2_6);
+      pos[2] = toInt(input.Pos3_6);
+      pos[3] = toInt(input.Pos4_6);
+      pos[4] = toInt(input.Pos5_6);
+      pos[5] = toInt(input.Pos6_6);
+      break;
+
+    case 7:
+      pos[0] = toInt(input.Pos1_7);
+      pos[1] = toInt(input.Pos2_7);
+      pos[2] = toInt(input.Pos3_7);
+      pos[3] = toInt(input.Pos4_7);
+      pos[4] = toInt(input.Pos5_7);
+      pos[5] = toInt(input.Pos6_7);
+      pos[6] = toInt(input.Pos7_7);
+      break;
+
+    case 8:
     default:
       // Full range – UI uses canonical params directly
       pos[0] = toInt(input.Pos1);
@@ -159,10 +219,12 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
       pos[3] = toInt(input.Pos4);
       pos[4] = toInt(input.Pos5);
       pos[5] = toInt(input.Pos6);
+      pos[6] = toInt(input.Pos7);
+      pos[7] = toInt(input.Pos8);
       break;
   }
 
-  // Physical strip lengths (per physical index 1..6)
+  // Physical strip lengths (per physical index 1..8)
   // Always use canonical length params; they are independent of NumberOfLEDStrips.
   var len = [
     toInt(input.Len1),
@@ -170,7 +232,9 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
     toInt(input.Len3),
     toInt(input.Len4),
     toInt(input.Len5),
-    toInt(input.Len6)
+    toInt(input.Len6),
+    toInt(input.Len7),
+    toInt(input.Len8)
   ];
 
   // ------------------------------------------------------------------
@@ -179,7 +243,7 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   var seen = {};        // physStrip -> first position
   var hasDup = 0;
 
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 8; i++) {
     var p = pos[i];
     if (p < 1 || p > numStrips) continue; // ignore invalid / unused
 
@@ -209,11 +273,11 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   // ------------------------------------------------------------------
   // Compute Start-LED and End-LED indices
   // ------------------------------------------------------------------
-  var start = [0, 0, 0, 0, 0, 0];
-  var end = [0, 0, 0, 0, 0, 0];
+  var start = [0, 0, 0, 0, 0, 0, 0, 0];
+  var end = [0, 0, 0, 0, 0, 0, 0, 0];
   var current = 1; // 1-based LED index
 
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 8; i++) {
     var p2 = pos[i];
 
     if (p2 < 1 || p2 > numStrips) {
@@ -236,6 +300,8 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   output.Start4 = start[3];
   output.Start5 = start[4];
   output.Start6 = start[5];
+  output.Start7 = start[6];
+  output.Start8 = start[7];
 
   output.End1 = end[0];
   output.End2 = end[1];
@@ -243,6 +309,8 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
   output.End4 = end[3];
   output.End5 = end[4];
   output.End6 = end[5];
+  output.End7 = end[6];
+  output.End8 = end[7];
 
   info(
     "NumberOfLEDStrips=" + numStrips +
@@ -327,7 +395,8 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
 
 // EventHandler: Hardware auto-detection from firmware
 // Called when user clicks "Hardware automatisch erkennen" button
-// Reads DEVICE_HW_ID from firmware and writes to Hardware Selection parameter
+// Reads DEVICE_HW_ID from firmware, maps it to the generated hardware index,
+// and writes that index to the Hardware Selection parameter.
 function NEO_detectHardware(device, online, progress, context) {
     progress.setText("NeoPixel: Lese Hardware-ID vom Gerät...");
     progress.setProgress(10);
@@ -365,23 +434,24 @@ function NEO_detectHardware(device, online, progress, context) {
         hwName = hardwareNameMap[hwId];  // Direkt Hardware-Name holen
         progress.setText("NeoPixel: Erkannte Hardware: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ")");
     } else {
-      // Unknown hardware - set to 0 (reserved: "no selection") and let user know
+      // Unknown hardware - fall back to the ETS "Bitte wählen..." entry.
       progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
-      hwId = 0;  // 0x0000 = reserved value for "no hardware selected"
+      hwIndex = 255;
     }
     
-    // Write hardware HW_ID directly to parameter (NOT index!)
-    // This makes the parameter stable across ETS versions when new hardware is added
+    // The ETS hardware selection stores the unique DEVICE_HW_ID (not a list index), so the
+    // selection stays valid regardless of which other hardware exists or how the firmware
+    // was built. Write the detected HW-ID directly; reset to 255 ("please select") if unknown.
+    var hwSelectValue = isKnownHardware ? hwId : 255;
     try {
         // Method 1: ETS standard way using getParameterByName
         var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
         if (param) {
-            //param.value = hwId; // ToDo EC: Later: Write HW_ID directly when supported to prevent index shifts!!
-            param.value = hwIndex;
+            param.value = hwSelectValue;
             if (isKnownHardware && hwName) {
                 progress.setText("NeoPixel: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ") ausgewählt");
             } else {
-                progress.setText("NeoPixel: Hardware-Auswahl auf HW-ID 0x" + hwId.toString(16).toUpperCase() + " gesetzt");
+          progress.setText("NeoPixel: Hardware-Auswahl zurückgesetzt - bitte Hardware manuell wählen");
             }
         } else {
             throw new Error("Parameter 'NEO_NeoPixelHardwareSelect' nicht gefunden");
@@ -417,3 +487,12 @@ function NEO_detectHardware(device, online, progress, context) {
 // BEGIN AUTO-GENERATED: Network Module Visibility
 // Cleaned - Ready for regeneration
 // END AUTO-GENERATED: Network Module Visibility
+
+// BEGIN AUTO-GENERATED: Scene Effect Defaults
+
+var NEO_SceneEffectDefaults = {};
+// END AUTO-GENERATED: Scene Effect Defaults
+
+// BEGIN AUTO-GENERATED: Scene Effect Defaults Function
+function NEO_SetSceneEffectDefaults(input, output, context) { }
+// END AUTO-GENERATED: Scene Effect Defaults Function

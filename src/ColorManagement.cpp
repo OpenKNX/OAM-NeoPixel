@@ -213,7 +213,7 @@ void ColorManagement::configureColorCorrection()
     _module->_gammaCorrectionEnabled = colorCalibrationMasterEnabled && (bool)ParamNEOSTRIP_NEOGammaCorrection;
     if (_module->_gammaCorrectionEnabled)
     {
-        uint8_t gammaParam = ParamNEOSTRIP_NEOGammaValue;
+        uint8_t gammaParam = static_cast<uint8_t>(ParamNEOSTRIP_NEOGammaValue);
         _module->_gammaValue = mapGammaValue(gammaParam);
         logInfoP("Gamma correction configured: value=%.2f", _module->_gammaValue);
     }

@@ -2,6 +2,8 @@
 #include "Logic.h"
 #include "OpenKNX.h"
 // #include "VirtualButtonModule.h"
+#include "FunctionBlocksModule.h"
+#include "LightManagerModule.h"
 #include "NeoPixelModule.h"
 // #include <async_http_client.h>
 
@@ -41,10 +43,12 @@ void setup()
 {
     const uint8_t firmwareRevision = 0;
     openknx.init(firmwareRevision);
+    openknx.addModule(2, openknxLightManagerModule);
 #ifdef NEOPIXEL_MODULE
     openknx.addModule(1, openknxNeoPixelModule);
 #endif
     openknx.addModule(3, openknxLogic);
+    openknx.addModule(10, openknxFunctionBlocksModule);
 
 #if defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)
     openknx.addModule(7, openknxNetwork);

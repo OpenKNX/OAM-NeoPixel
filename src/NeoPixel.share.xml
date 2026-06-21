@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
- 
+
+  <!-- EM-Zustands-Marker (Deaktiviert / Suspendiert) JS-basiert via common BASE_MarkInactiveChannel (kein <Rename> mehr) -->
+  <op:minOpenKNXproducerVersion value="4.3.8" />
+
   <!-- Enable IPTool of ETS. This hide ip settings in network tab -->
   <op:config name="%NET_IPConfigTool%" value="0" />
   <op:config name="%NET_WifiTool%" value="0" />
@@ -16,6 +19,14 @@
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
   <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
+  <op:nowarn id="3" regex="NEO_LedTypeToRGB_Impl" />
+  <op:nowarn id="3" regex="NEO_ResetClockGPIOOnLedTypeChange_Impl" />
+  <!-- Suppress intended Union-Integrity overlaps for UI-limited selectors and hardware-specific GPIO unions -->
+  <op:nowarn id="10" regex="Parameter NEO_VirtualStripPos[1-7](_[1-7])?" />
+  <op:nowarn id="10" regex="Parameter NEO_(NEOExternalRelay[1-4]Port|NEORelay[1-4]GPIOPortHW(10|11|[0-9]))" />
+  <op:nowarn id="10" regex="Parameter NEOSTRIP_NEO[1-8](GPIO(Data|Clock)PortHW(10|11|[0-9])|SPICLK|SPICLKMode|GPIOManual|ClockGPIO)" />
+  <!-- Typed cue params overlay the generic cue slot bytes and intentionally default to 0 (full-byte, matching the runtime read), so a value below the type MinInclusive is expected here. -->
+  <op:nowarn id="4" regex="Parameter NEOEM_NEOEM\d+Cue\d+" />
 
   <ManufacturerData>
     <Manufacturer RefId="M-00FA">
@@ -23,17 +34,28 @@
         <ApplicationProgram Id="%AID%" ApplicationNumber="40" ApplicationVersion="1" ProgramType="ApplicationProgram" MaskVersion="MV-07B0" Name="WP-Neopixel" LoadProcedureStyle="MergedProcedure" PeiType="0" DefaultLanguage="de" DynamicTableManagement="false" Linkable="true" MinEtsVersion="4.0">
           <Static>
             <ParameterTypes>
+              <!-- Topologie-Diagramme als Vollbild (TypePicture, rendert echtes Bild statt Mini-Icon) -->
+              <ParameterType Id="%AID%_PT-TopoPic1d"        Name="TopoPic1d"><TypePicture RefId="%FILE-topo-1d%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicSerpRows"  Name="TopoPicSerpRows"><TypePicture RefId="%FILE-topo-serprows%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicLinRows"   Name="TopoPicLinRows"><TypePicture RefId="%FILE-topo-linrows%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicSerpCols"  Name="TopoPicSerpCols"><TypePicture RefId="%FILE-topo-serpcols%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicLinCols"   Name="TopoPicLinCols"><TypePicture RefId="%FILE-topo-lincols%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicTileLin"   Name="TopoPicTileLin"><TypePicture RefId="%FILE-topo-tilelin%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicTileSerp"  Name="TopoPicTileSerp"><TypePicture RefId="%FILE-topo-tileserp%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicDepth3d"   Name="TopoPicDepth3d"><TypePicture RefId="%FILE-topo-depth3d%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-TopoPicDepthTile" Name="TopoPicDepthTile"><TypePicture RefId="%FILE-topo-depthtile%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-ChainPicMaster" Name="ChainPicMaster"><TypePicture RefId="%FILE-topo-chainm%" /></ParameterType>
+              <ParameterType Id="%AID%_PT-ChainPicSlave"  Name="ChainPicSlave"><TypePicture RefId="%FILE-topo-chains%" /></ParameterType>
               <!-- GPIO Port Selection Type (8 Bit for all hardware variants) -->
               <ParameterType Id="%AID%_PT-GPIOPort8Bit" Name="GPIOPort8Bit">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
               </ParameterType>
-              <!-- HCL Mode (per Segment: Deaktiviert / Global / Benutzerdefiniert-Zeit / Benutzerdefiniert-Sonne) -->
+              <!-- HCL Mode (per Segment: Deaktiviert / Globaler Lichtmanager / Segment-Lichtmanager) -->
               <ParameterType Id="%AID%_PT-HCLModeCombined" Name="HCLModeCombined">
                 <TypeRestriction Base="Value" SizeInBit="3">
                   <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%"/>
-                  <Enumeration Text="Global verwenden" Value="1" Id="%ENID%"/>
-                  <Enumeration Text="Benutzerdefiniert (Feste Zeiten)" Value="2" Id="%ENID%"/>
-                  <Enumeration Text="Benutzerdefiniert (Sonnenstand)" Value="3" Id="%ENID%"/>
+                  <Enumeration Text="Globalen Lichtmanager verwenden" Value="1" Id="%ENID%"/>
+                  <Enumeration Text="Segment-Lichtmanager verwenden" Value="2" Id="%ENID%"/>
                 </TypeRestriction>
               </ParameterType>
 
@@ -130,141 +152,166 @@
               <!-- Effect Types -->
               <!-- AUTO-GENERATED: Effect Type Enumeration - DO NOT EDIT MANUALLY -->
               <!-- This section is automatically generated from Effect header files by Build-EffectParameters.ps1 -->
-              <ParameterType Id="%AID%_PT-NEOEffectType" Name="NEOEffectType">
+              <ParameterType Id="%AID%_PT-NEOEffectType" Name="NEOEffectType" op:headerExport="enum">
               <TypeRestriction Base="Value" SizeInBit="8">
                 <!-- GENERATED_EFFECT_ENUMERATIONS_START -->
                 <!-- Content will be generated by Build-EffectParameters.ps1 -->
                 <!-- GENERATED_EFFECT_ENUMERATIONS_END -->
               </TypeRestriction>
               </ParameterType>
-              <!-- Led Types -->
-              <ParameterType Id="%AID%_PT-NEOLedType" Name="NEOLedType">
+
+              <!-- Scene Effect Types: same effects as PT-NEOEffectType plus Effektmanager start actions (200..215) -->
+              <!-- Effect entries are auto-generated by Build-EffectParameters.ps1; EM entries are static -->
+              <ParameterType Id="%AID%_PT-NEOSceneEffectType" Name="NEOSceneEffectType">
               <TypeRestriction Base="Value" SizeInBit="8">
-                <Enumeration Text="WS2812B"              Value="0"  Id="%ENID%"/>
-                <Enumeration Text="WS2805 RGBCCT"        Value="1"  Id="%ENID%"/>
-                <Enumeration Text="WS2811"               Value="2"  Id="%ENID%"/>
-                <Enumeration Text="WS2813"               Value="3"  Id="%ENID%"/>
-                <Enumeration Text="SK6812"               Value="4"  Id="%ENID%"/>
-                <Enumeration Text="APA102"               Value="5"  Id="%ENID%"/>
-                <Enumeration Text="SK9822"               Value="6"  Id="%ENID%"/>
-                <Enumeration Text="WS281x"               Value="7"  Id="%ENID%"/>
-                <Enumeration Text="SK6812/WS2814 (RGBW)" Value="8"  Id="%ENID%"/>
-                <Enumeration Text="TM1814"               Value="9"  Id="%ENID%"/>
-                <Enumeration Text="WS2812_400kHz"        Value="10" Id="%ENID%"/>
-                <Enumeration Text="TM1829"               Value="11" Id="%ENID%"/>
-                <Enumeration Text="UCS8903"              Value="12" Id="%ENID%"/>
-                <Enumeration Text="APA106/PL9823"        Value="13" Id="%ENID%"/>
-                <Enumeration Text="TM1914"               Value="14" Id="%ENID%"/>
-                <Enumeration Text="FW1906"               Value="15" Id="%ENID%"/>
-                <Enumeration Text="UCS8904"              Value="16" Id="%ENID%"/>
-                <Enumeration Text="WS2805_RGBCW"         Value="17" Id="%ENID%"/>
-                <Enumeration Text="SM16825"              Value="18" Id="%ENID%"/>
-                <Enumeration Text="WS2811_WHITE"         Value="19" Id="%ENID%"/>
-                <Enumeration Text="WS281x_WWA"           Value="20" Id="%ENID%"/>
-                <Enumeration Text="WS2801"               Value="21" Id="%ENID%"/>
-                <Enumeration Text="LPD8806"              Value="22" Id="%ENID%"/>
-                <Enumeration Text="LPD6803"              Value="23" Id="%ENID%"/>
-                <Enumeration Text="P9813"                Value="24" Id="%ENID%"/>
-                <Enumeration Text="APA102-Clone"         Value="25" Id="%ENID%"/>
+                <!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_START -->
+                <!-- Content will be generated by Build-EffectParameters.ps1 -->
+                <!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_END -->
+                <Enumeration Text="Effektmanager 1 starten" Value="200" Id="%AID%_PT-NEOSceneEffectType_EN-200"/>
+                <Enumeration Text="Effektmanager 2 starten" Value="201" Id="%AID%_PT-NEOSceneEffectType_EN-201"/>
+                <Enumeration Text="Effektmanager 3 starten" Value="202" Id="%AID%_PT-NEOSceneEffectType_EN-202"/>
+                <Enumeration Text="Effektmanager 4 starten" Value="203" Id="%AID%_PT-NEOSceneEffectType_EN-203"/>
+                <Enumeration Text="Effektmanager 5 starten" Value="204" Id="%AID%_PT-NEOSceneEffectType_EN-204"/>
+                <Enumeration Text="Effektmanager 6 starten" Value="205" Id="%AID%_PT-NEOSceneEffectType_EN-205"/>
+                <Enumeration Text="Effektmanager 7 starten" Value="206" Id="%AID%_PT-NEOSceneEffectType_EN-206"/>
+                <Enumeration Text="Effektmanager 8 starten" Value="207" Id="%AID%_PT-NEOSceneEffectType_EN-207"/>
+                <Enumeration Text="Effektmanager 9 starten" Value="208" Id="%AID%_PT-NEOSceneEffectType_EN-208"/>
+                <Enumeration Text="Effektmanager 10 starten" Value="209" Id="%AID%_PT-NEOSceneEffectType_EN-209"/>
+                <Enumeration Text="Effektmanager 11 starten" Value="210" Id="%AID%_PT-NEOSceneEffectType_EN-210"/>
+                <Enumeration Text="Effektmanager 12 starten" Value="211" Id="%AID%_PT-NEOSceneEffectType_EN-211"/>
+                <Enumeration Text="Effektmanager 13 starten" Value="212" Id="%AID%_PT-NEOSceneEffectType_EN-212"/>
+                <Enumeration Text="Effektmanager 14 starten" Value="213" Id="%AID%_PT-NEOSceneEffectType_EN-213"/>
+                <Enumeration Text="Effektmanager 15 starten" Value="214" Id="%AID%_PT-NEOSceneEffectType_EN-214"/>
+                <Enumeration Text="Effektmanager 16 starten" Value="215" Id="%AID%_PT-NEOSceneEffectType_EN-215"/>
+              </TypeRestriction>
+              </ParameterType>
+              <!-- Led Types -->
+              <ParameterType Id="%AID%_PT-NEOLedType" Name="NEOLedType" op:headerExport="enum">
+              <TypeRestriction Base="Value" SizeInBit="8">
+                <Enumeration Text="WS2812B"              Value="0"  Id="%ENID%" op:headerName="WS2812B"/>
+                <Enumeration Text="WS2805 RGBCCT"        Value="1"  Id="%ENID%" op:headerName="WS2805_RGBCCT"/>
+                <Enumeration Text="WS2811"               Value="2"  Id="%ENID%" op:headerName="WS2811"/>
+                <Enumeration Text="WS2813"               Value="3"  Id="%ENID%" op:headerName="WS2813"/>
+                <Enumeration Text="SK6812"               Value="4"  Id="%ENID%" op:headerName="SK6812"/>
+                <Enumeration Text="APA102"               Value="5"  Id="%ENID%" op:headerName="APA102"/>
+                <Enumeration Text="SK9822"               Value="6"  Id="%ENID%" op:headerName="SK9822"/>
+                <Enumeration Text="WS281x"               Value="7"  Id="%ENID%" op:headerName="WS281x"/>
+                <Enumeration Text="SK6812/WS2814 (RGBW)" Value="8"  Id="%ENID%" op:headerName="SK6812_WS2814_RGBW"/>
+                <Enumeration Text="TM1814"               Value="9"  Id="%ENID%" op:headerName="TM1814"/>
+                <Enumeration Text="WS2812_400kHz"        Value="10" Id="%ENID%" op:headerName="WS2812_400kHz"/>
+                <Enumeration Text="TM1829"               Value="11" Id="%ENID%" op:headerName="TM1829"/>
+                <Enumeration Text="UCS8903"              Value="12" Id="%ENID%" op:headerName="UCS8903"/>
+                <Enumeration Text="APA106/PL9823"        Value="13" Id="%ENID%" op:headerName="APA106_PL9823"/>
+                <Enumeration Text="TM1914"               Value="14" Id="%ENID%" op:headerName="TM1914"/>
+                <Enumeration Text="FW1906"               Value="15" Id="%ENID%" op:headerName="FW1906"/>
+                <Enumeration Text="UCS8904"              Value="16" Id="%ENID%" op:headerName="UCS8904"/>
+                <Enumeration Text="WS2805_RGBCW"         Value="17" Id="%ENID%" op:headerName="WS2805_RGBCW"/>
+                <Enumeration Text="SM16825"              Value="18" Id="%ENID%" op:headerName="SM16825"/>
+                <Enumeration Text="WS2811_WHITE"         Value="19" Id="%ENID%" op:headerName="WS2811_WHITE"/>
+                <Enumeration Text="WS281x_WWA"           Value="20" Id="%ENID%" op:headerName="WS281x_WWA"/>
+                <Enumeration Text="WS2801"               Value="21" Id="%ENID%" op:headerName="WS2801"/>
+                <Enumeration Text="LPD8806"              Value="22" Id="%ENID%" op:headerName="LPD8806"/>
+                <Enumeration Text="LPD6803"              Value="23" Id="%ENID%" op:headerName="LPD6803"/>
+                <Enumeration Text="P9813"                Value="24" Id="%ENID%" op:headerName="P9813"/>
+                <Enumeration Text="APA102-Clone"         Value="25" Id="%ENID%" op:headerName="APA102_Clone"/>
                 <!-- 5-Channel RGBCCT (RGB + Warm White + Cool White) -->
-                <Enumeration Text="SK6812 RGBCCT (5ch)"  Value="30" Id="%ENID%"/>
-                <Enumeration Text="WS2814 RGBCCT (5ch)"  Value="31" Id="%ENID%"/>
-                <Enumeration Text="CUSTOM"               Value="99" Id="%ENID%"/>
+                <Enumeration Text="SK6812 RGBCCT (5ch)"  Value="30" Id="%ENID%" op:headerName="SK6812_RGBCCT_5ch"/>
+                <Enumeration Text="WS2814 RGBCCT (5ch)"  Value="31" Id="%ENID%" op:headerName="WS2814_RGBCCT_5ch"/>
+                <Enumeration Text="CUSTOM"               Value="99" Id="%ENID%" op:headerName="CUSTOM"/>
               </TypeRestriction>
               </ParameterType>
               <!-- Colour Order Type -->
-              <ParameterType Id="%AID%_PT-NEOColourOrder" Name="NEOColourOrder">
+              <ParameterType Id="%AID%_PT-NEOColourOrder" Name="NEOColourOrder" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
-                  <Enumeration Text="GRB"    Value="0" Id="%ENID%" />
-                  <Enumeration Text="RGB"    Value="1" Id="%ENID%" />
-                  <Enumeration Text="BRG"    Value="2" Id="%ENID%" />
-                  <Enumeration Text="RBG"    Value="3" Id="%ENID%" />
-                  <Enumeration Text="BGR"    Value="4" Id="%ENID%" />
-                  <Enumeration Text="GBR"    Value="5" Id="%ENID%" />
-                  <Enumeration Text="RGBW"   Value="6" Id="%ENID%" />
-                  <Enumeration Text="GRBW"   Value="7" Id="%ENID%" />
+                  <Enumeration Text="GRB"    Value="0" Id="%ENID%" op:headerName="GRB" />
+                  <Enumeration Text="RGB"    Value="1" Id="%ENID%" op:headerName="RGB" />
+                  <Enumeration Text="BRG"    Value="2" Id="%ENID%" op:headerName="BRG" />
+                  <Enumeration Text="RBG"    Value="3" Id="%ENID%" op:headerName="RBG" />
+                  <Enumeration Text="BGR"    Value="4" Id="%ENID%" op:headerName="BGR" />
+                  <Enumeration Text="GBR"    Value="5" Id="%ENID%" op:headerName="GBR" />
+                  <Enumeration Text="RGBW"   Value="6" Id="%ENID%" op:headerName="RGBW" />
+                  <Enumeration Text="GRBW"   Value="7" Id="%ENID%" op:headerName="GRBW" />
                   <!-- 5-Channel Color Orders (CCT = Color Temp) -->
-                  <Enumeration Text="RGBCCT" Value="8"  Id="%ENID%" />
-                  <Enumeration Text="GRBCCT" Value="9"  Id="%ENID%" />
-                  <Enumeration Text="RGBCTW" Value="10" Id="%ENID%" />
-                  <Enumeration Text="GRBCTW" Value="11" Id="%ENID%" />
+                  <Enumeration Text="RGBCCT" Value="8"  Id="%ENID%" op:headerName="RGBCCT" />
+                  <Enumeration Text="GRBCCT" Value="9"  Id="%ENID%" op:headerName="GRBCCT" />
+                  <Enumeration Text="RGBCTW" Value="10" Id="%ENID%" op:headerName="RGBCTW" />
+                  <Enumeration Text="GRBCTW" Value="11" Id="%ENID%" op:headerName="GRBCTW" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Voltage Type -->
-              <ParameterType Id="%AID%_PT-NEOVoltage" Name="NEOVoltage">
+              <ParameterType Id="%AID%_PT-NEOVoltage" Name="NEOVoltage" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="2">
-                  <Enumeration Text="5V"  Value="0" Id="%ENID%" />
-                  <Enumeration Text="12V" Value="1" Id="%ENID%" />
-                  <Enumeration Text="24V" Value="2" Id="%ENID%" />
+                  <Enumeration Text="5V"  Value="0" Id="%ENID%" op:headerName="V5" />
+                  <Enumeration Text="12V" Value="1" Id="%ENID%" op:headerName="V12" />
+                  <Enumeration Text="24V" Value="2" Id="%ENID%" op:headerName="V24" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Swap -->
-              <ParameterType Id="%AID%_PT-NEOSwap" Name="NEOSwap">
+              <ParameterType Id="%AID%_PT-NEOSwap" Name="NEOSwap" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="3">
-                  <Enumeration Text="None"      Value="0" Id="%ENID%" />
-                  <Enumeration Text="W and B"   Value="1" Id="%ENID%" />
-                  <Enumeration Text="W and G"   Value="2" Id="%ENID%" />
-                  <Enumeration Text="W and R"   Value="3" Id="%ENID%" />
-                  <Enumeration Text="WW and CW" Value="4" Id="%ENID%" />
+                  <Enumeration Text="None"      Value="0" Id="%ENID%" op:headerName="None" />
+                  <Enumeration Text="W and B"   Value="1" Id="%ENID%" op:headerName="WandB" />
+                  <Enumeration Text="W and G"   Value="2" Id="%ENID%" op:headerName="WandG" />
+                  <Enumeration Text="W and R"   Value="3" Id="%ENID%" op:headerName="WandR" />
+                  <Enumeration Text="WW and CW" Value="4" Id="%ENID%" op:headerName="WWandCW" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Timing -->
-              <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming">
+              <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
-                  <Enumeration Text="AUTO"        Value="0"   Id="%ENID%" />
-                  <Enumeration Text="AUTO_LEGACY" Value="1"   Id="%ENID%" />
-                  <Enumeration Text="SLOW_20PCT"  Value="2"   Id="%ENID%" />
-                  <Enumeration Text="SLOW_15PCT"  Value="3"   Id="%ENID%" />
-                  <Enumeration Text="SLOW_10PCT"  Value="4"   Id="%ENID%" />
-                  <Enumeration Text="SLOW_5PCT"   Value="5"   Id="%ENID%" />
-                  <Enumeration Text="FAST_5PCT"   Value="6"   Id="%ENID%" />
-                  <Enumeration Text="FAST_10PCT"  Value="7"   Id="%ENID%" />
-                  <Enumeration Text="FAST_15PCT"  Value="8"   Id="%ENID%" />
-                  <Enumeration Text="FAST_20PCT"  Value="9"   Id="%ENID%" />
-                  <Enumeration Text="FAST_25PCT"  Value="10"  Id="%ENID%" />
+                  <Enumeration Text="800 kHz"  Value="0"   Id="%ENID%" op:headerName="AUTO" />
+                  <Enumeration Text="960 kHz"  Value="1"   Id="%ENID%" op:headerName="AUTO_LEGACY" />
+                  <Enumeration Text="640 kHz"  Value="2"   Id="%ENID%" op:headerName="SLOW_20PCT" />
+                  <Enumeration Text="680 kHz"  Value="3"   Id="%ENID%" op:headerName="SLOW_15PCT" />
+                  <Enumeration Text="720 kHz"  Value="4"   Id="%ENID%" op:headerName="SLOW_10PCT" />
+                  <Enumeration Text="760 kHz"  Value="5"   Id="%ENID%" op:headerName="SLOW_5PCT" />
+                  <Enumeration Text="840 kHz"  Value="6"   Id="%ENID%" op:headerName="FAST_5PCT" />
+                  <Enumeration Text="880 kHz"  Value="7"   Id="%ENID%" op:headerName="FAST_10PCT" />
+                  <Enumeration Text="920 kHz"  Value="8"   Id="%ENID%" op:headerName="FAST_15PCT" />
+                  <Enumeration Text="960 kHz"  Value="9"   Id="%ENID%" op:headerName="FAST_20PCT" />
+                  <Enumeration Text="1000 kHz" Value="10"  Id="%ENID%" op:headerName="FAST_25PCT" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Types --> 
-              <ParameterType Id="%AID%_PT-NEOPowerLimitType" Name="NEOPowerLimitType">
+              <ParameterType Id="%AID%_PT-NEOPowerLimitType" Name="NEOPowerLimitType" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="3">
-                  <Enumeration Text="Global"      Value="0" Id="%ENID%" />
-                  <Enumeration Text="Per Channel" Value="1" Id="%ENID%" />
-                  <Enumeration Text="Per LED"     Value="2" Id="%ENID%" />
+                  <Enumeration Text="Global"      Value="0" Id="%ENID%" op:headerName="Global" />
+                  <Enumeration Text="Per Channel" Value="1" Id="%ENID%" op:headerName="PerChannel" />
+                  <Enumeration Text="Per LED"     Value="2" Id="%ENID%" op:headerName="PerLED" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Combined (UI-Dropdown: Disabled + Type combined) -->
-              <ParameterType Id="%AID%_PT-NEOPowerLimitCombined" Name="NEOPowerLimitCombined">
+              <ParameterType Id="%AID%_PT-NEOPowerLimitCombined" Name="NEOPowerLimitCombined" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
-                  <Enumeration Text="Deaktiviert"          Value="0" Id="%ENID%" />
-                  <Enumeration Text="Fester Wert (mA)"     Value="1" Id="%ENID%" />
-                  <Enumeration Text="Pro LED (automatisch)" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Deaktiviert"          Value="0" Id="%ENID%" op:headerName="Disabled" />
+                  <Enumeration Text="Fester Wert (mA)"     Value="1" Id="%ENID%" op:headerName="FixedValue" />
+                  <Enumeration Text="Pro LED (automatisch)" Value="2" Id="%ENID%" op:headerName="PerLED" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Main Mode for Strips (Level 1: Main Decision) -->
-              <ParameterType Id="%AID%_PT-NEOPowerLimitCombinedStrip" Name="NEOPowerLimitCombinedStrip">
+              <ParameterType Id="%AID%_PT-NEOPowerLimitCombinedStrip" Name="NEOPowerLimitCombinedStrip" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
-                  <Enumeration Text="Deaktiviert"                           Value="0" Id="%ENID%" />
-                  <Enumeration Text="Global verwenden"                      Value="1" Id="%ENID%" />
-                  <Enumeration Text="Benutzerdefiniert (Fester Wert)"      Value="2" Id="%ENID%" />
-                  <Enumeration Text="Benutzerdefiniert (Pro LED)"          Value="3" Id="%ENID%" />
+                  <Enumeration Text="Deaktiviert"                           Value="0" Id="%ENID%" op:headerName="Disabled" />
+                  <Enumeration Text="Global verwenden"                      Value="1" Id="%ENID%" op:headerName="UseGlobal" />
+                  <Enumeration Text="Benutzerdefiniert (Fester Wert)"      Value="2" Id="%ENID%" op:headerName="CustomFixed" />
+                  <Enumeration Text="Benutzerdefiniert (Pro LED)"          Value="3" Id="%ENID%" op:headerName="CustomPerLED" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Mode REMOVED - now combined into single parameter (0/1/2/3) -->
-              <!-- HCL Mode for Segments (3-bit: Deaktiviert / Global / Benutzerdefiniert-Zeit / Benutzerdefiniert-Sonne) -->
+              <!-- HCL Mode for Segments (3-bit: Deaktiviert / Globaler Lichtmanager / Segment-Lichtmanager) -->
               <ParameterType Id="%AID%_PT-HCLModeCombined" Name="HCLModeCombined">
                 <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
                   <Enumeration Text="Deaktiviert"                          Value="0" Id="%ENID%" />
-                  <Enumeration Text="Global verwenden"                     Value="1" Id="%ENID%" />
-                  <Enumeration Text="Benutzerdefiniert (Feste Zeiten)"    Value="2" Id="%ENID%" />
-                  <Enumeration Text="Benutzerdefiniert (Sonnenstand)"     Value="3" Id="%ENID%" />
+                  <Enumeration Text="Globalen Lichtmanager verwenden"      Value="1" Id="%ENID%" />
+                  <Enumeration Text="Segment-Lichtmanager verwenden"       Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit -->
-              <ParameterType Id="%AID%_PT-NEOPowerLimit" Name="NEOPowerLimit">
+              <ParameterType Id="%AID%_PT-NEOPowerLimit" Name="NEOPowerLimit" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="2">
-                  <Enumeration Text="Globale Strombegrenzung (mA)" Value="0" Id="%ENID%" />
-                  <Enumeration Text="Strom pro LED (mA)"           Value="1" Id="%ENID%" />
-                  <Enumeration Text="Strom pro Kanal (mA)"         Value="2" Id="%ENID%" /> 
+                  <Enumeration Text="Globale Strombegrenzung (mA)" Value="0" Id="%ENID%" op:headerName="GlobalLimit" />
+                  <Enumeration Text="Strom pro LED (mA)"           Value="1" Id="%ENID%" op:headerName="PerLED" />
+                  <Enumeration Text="Strom pro Kanal (mA)"         Value="2" Id="%ENID%" op:headerName="PerChannel" /> 
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Global -->
@@ -278,7 +325,7 @@
                   <Enumeration Text="Normal (20 FPS)"      Value="50"  Id="%ENID%" />
                   <Enumeration Text="Fast (30 FPS)"        Value="33"  Id="%ENID%" />
                   <Enumeration Text="Max (50 FPS)"         Value="20"  Id="%ENID%" />
-                  <Enumeration Text="Extreme (80 FPS)"     Value="12"  Id="%ENID%" />
+                  <Enumeration Text="Extreme (&gt;60 FPS)"   Value="12"  Id="%ENID%" />
                   <!--<Enumeration Text="Ludicrous (120 FPS)"  Value="4"   Id="%ENID%" /> -->
                   <!--<Enumeration Text="FTL (240 FPS)"        Value="0"   Id="%ENID%" /> -->
                 </TypeRestriction>
@@ -292,15 +339,15 @@
                 <TypeNumber SizeInBit="7" Type="unsignedInt" minInclusive="0" maxInclusive="50" />
               </ParameterType>   
               <!-- SPICLK -->
-              <ParameterType Id="%AID%_PT-NEOSPICLK" Name="NEOSPICLK">
+              <ParameterType Id="%AID%_PT-NEOSPICLK" Name="NEOSPICLK" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="3">
-                  <Enumeration Text="1 MHz"  Value="0" Id="%ENID%" />
-                  <Enumeration Text="2 MHz"  Value="1" Id="%ENID%" />
-                  <Enumeration Text="4 MHz"  Value="2" Id="%ENID%" />
-                  <Enumeration Text="8 MHz"  Value="3" Id="%ENID%" />
-                  <Enumeration Text="12 MHz" Value="4" Id="%ENID%" />
-                  <Enumeration Text="16 MHz" Value="5" Id="%ENID%" />
-                  <Enumeration Text="20 MHz" Value="6" Id="%ENID%" />
+                  <Enumeration Text="1 MHz"  Value="0" Id="%ENID%" op:headerName="MHz1" />
+                  <Enumeration Text="2 MHz"  Value="1" Id="%ENID%" op:headerName="MHz2" />
+                  <Enumeration Text="4 MHz"  Value="2" Id="%ENID%" op:headerName="MHz4" />
+                  <Enumeration Text="8 MHz"  Value="3" Id="%ENID%" op:headerName="MHz8" />
+                  <Enumeration Text="12 MHz" Value="4" Id="%ENID%" op:headerName="MHz12" />
+                  <Enumeration Text="16 MHz" Value="5" Id="%ENID%" op:headerName="MHz16" />
+                  <Enumeration Text="20 MHz" Value="6" Id="%ENID%" op:headerName="MHz20" />
                 </TypeRestriction>
               </ParameterType>  
               <!-- SPICLK GPIO-->
@@ -312,24 +359,24 @@
                 <TypeNumber SizeInBit="6" Type="unsignedInt" minInclusive="0" maxInclusive="50" />
               </ParameterType> 
               <!-- GammaValue -->
-              <ParameterType Id="%AID%_PT-NEOGammaValue" Name="NEOGammaValue">
+              <ParameterType Id="%AID%_PT-NEOGammaValue" Name="NEOGammaValue" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
-                  <Enumeration Text="1.2" Value="0" Id="%ENID%" />
-                  <Enumeration Text="1.3" Value="1" Id="%ENID%" />
-                  <Enumeration Text="1.4" Value="2" Id="%ENID%" />
-                  <Enumeration Text="1.5" Value="3" Id="%ENID%" />
-                  <Enumeration Text="1.6" Value="4" Id="%ENID%" />
-                  <Enumeration Text="1.7" Value="5" Id="%ENID%" />
-                  <Enumeration Text="1.8" Value="6" Id="%ENID%" />
-                  <Enumeration Text="1.9" Value="7" Id="%ENID%" />
-                  <Enumeration Text="2.0" Value="8" Id="%ENID%" />
-                  <Enumeration Text="2.1" Value="9" Id="%ENID%" />
-                  <Enumeration Text="2.2" Value="10" Id="%ENID%" />
-                  <Enumeration Text="2.3" Value="11" Id="%ENID%" />
-                  <Enumeration Text="2.4" Value="12" Id="%ENID%" />
-                  <Enumeration Text="2.5" Value="13" Id="%ENID%" />
-                  <Enumeration Text="2.6" Value="14" Id="%ENID%" />
-                  <Enumeration Text="2.7" Value="15" Id="%ENID%" />
+                  <Enumeration Text="1.2" Value="0" Id="%ENID%" op:headerName="Gamma_1_2" />
+                  <Enumeration Text="1.3" Value="1" Id="%ENID%" op:headerName="Gamma_1_3" />
+                  <Enumeration Text="1.4" Value="2" Id="%ENID%" op:headerName="Gamma_1_4" />
+                  <Enumeration Text="1.5" Value="3" Id="%ENID%" op:headerName="Gamma_1_5" />
+                  <Enumeration Text="1.6" Value="4" Id="%ENID%" op:headerName="Gamma_1_6" />
+                  <Enumeration Text="1.7" Value="5" Id="%ENID%" op:headerName="Gamma_1_7" />
+                  <Enumeration Text="1.8" Value="6" Id="%ENID%" op:headerName="Gamma_1_8" />
+                  <Enumeration Text="1.9" Value="7" Id="%ENID%" op:headerName="Gamma_1_9" />
+                  <Enumeration Text="2.0" Value="8" Id="%ENID%" op:headerName="Gamma_2_0" />
+                  <Enumeration Text="2.1" Value="9" Id="%ENID%" op:headerName="Gamma_2_1" />
+                  <Enumeration Text="2.2" Value="10" Id="%ENID%" op:headerName="Gamma_2_2" />
+                  <Enumeration Text="2.3" Value="11" Id="%ENID%" op:headerName="Gamma_2_3" />
+                  <Enumeration Text="2.4" Value="12" Id="%ENID%" op:headerName="Gamma_2_4" />
+                  <Enumeration Text="2.5" Value="13" Id="%ENID%" op:headerName="Gamma_2_5" />
+                  <Enumeration Text="2.6" Value="14" Id="%ENID%" op:headerName="Gamma_2_6" />
+                  <Enumeration Text="2.7" Value="15" Id="%ENID%" op:headerName="Gamma_2_7" />
                 </TypeRestriction>
               </ParameterType>
               
@@ -355,7 +402,7 @@
               </ParameterType>
 
               <ParameterType Id="%AID%_PT-RelayOutputLogic" Name="RelayOutputLogic">
-                <TypeRestriction Base="Value" SizeInBit="1">
+                <TypeRestriction Base="Value" SizeInBit="1" UIHint="DropDown">
                   <Enumeration Text="normal (HIGH = EIN)" Value="0" Id="%ENID%" />
                   <Enumeration Text="invertiert (LOW = EIN)" Value="1" Id="%ENID%" />
                 </TypeRestriction>
@@ -367,11 +414,36 @@
               
               <!-- NumberOfLEDStrips -->
               <ParameterType Id="%AID%_PT-NumberOfLEDStrips" Name="NumberOfLEDStrips">
-                <TypeNumber SizeInBit="4" Type="unsignedInt" minInclusive="1" maxInclusive="6" />
+                <TypeNumber SizeInBit="4" Type="unsignedInt" minInclusive="1" maxInclusive="8" />
               </ParameterType>
               <!-- NumberOfSegments -->
               <ParameterType Id="%AID%_PT-NumberOfSegments" Name="NumberOfSegments">
                 <TypeNumber SizeInBit="5" Type="unsignedInt" minInclusive="1" maxInclusive="16" />
+              </ParameterType>
+              <!-- Effektmanager global Anzahl (0..16) -->
+              <ParameterType Id="%AID%_PT-EMGlobalEnabled" Name="EMGlobalEnabled">
+                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="16" />
+              </ParameterType>              <!-- Startup EM per segment (0=none, 1-16) -->
+              <ParameterType Id="%AID%_PT-StartupEM" Name="StartupEM">
+                <TypeRestriction Base="Value" SizeInBit="5" UIHint="DropDown">
+                  <Enumeration Text="Keiner" Value="0" Id="%AID%_PT-StartupEM_EN-0"/>
+                  <Enumeration Text="Effektmanager 1"  Value="1"  Id="%AID%_PT-StartupEM_EN-1"/>
+                  <Enumeration Text="Effektmanager 2"  Value="2"  Id="%AID%_PT-StartupEM_EN-2"/>
+                  <Enumeration Text="Effektmanager 3"  Value="3"  Id="%AID%_PT-StartupEM_EN-3"/>
+                  <Enumeration Text="Effektmanager 4"  Value="4"  Id="%AID%_PT-StartupEM_EN-4"/>
+                  <Enumeration Text="Effektmanager 5"  Value="5"  Id="%AID%_PT-StartupEM_EN-5"/>
+                  <Enumeration Text="Effektmanager 6"  Value="6"  Id="%AID%_PT-StartupEM_EN-6"/>
+                  <Enumeration Text="Effektmanager 7"  Value="7"  Id="%AID%_PT-StartupEM_EN-7"/>
+                  <Enumeration Text="Effektmanager 8"  Value="8"  Id="%AID%_PT-StartupEM_EN-8"/>
+                  <Enumeration Text="Effektmanager 9"  Value="9"  Id="%AID%_PT-StartupEM_EN-9"/>
+                  <Enumeration Text="Effektmanager 10" Value="10" Id="%AID%_PT-StartupEM_EN-10"/>
+                  <Enumeration Text="Effektmanager 11" Value="11" Id="%AID%_PT-StartupEM_EN-11"/>
+                  <Enumeration Text="Effektmanager 12" Value="12" Id="%AID%_PT-StartupEM_EN-12"/>
+                  <Enumeration Text="Effektmanager 13" Value="13" Id="%AID%_PT-StartupEM_EN-13"/>
+                  <Enumeration Text="Effektmanager 14" Value="14" Id="%AID%_PT-StartupEM_EN-14"/>
+                  <Enumeration Text="Effektmanager 15" Value="15" Id="%AID%_PT-StartupEM_EN-15"/>
+                  <Enumeration Text="Effektmanager 16" Value="16" Id="%AID%_PT-StartupEM_EN-16"/>
+                </TypeRestriction>
               </ParameterType>
               <!-- External Relays -->
               <!-- BEGIN AUTO-GENERATED: External Relay ParameterType -->
@@ -391,6 +463,55 @@
                   <Enumeration Text="Aus" Value="1" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="2" Id="%ENID%" />
                 </TypeRestriction>
+              </ParameterType>
+              <!-- LED Matrix Topology (3 bit, stored in Segment Byte 10 Bits 5-7) -->
+              <ParameterType Id="%AID%_PT-LedTopology" Name="LedTopology">
+                <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
+                  <Enumeration Text="1D — Streifen (kein Matrix)"         Value="0" Id="%ENID%" />
+                  <Enumeration Text="2D — Schlangen, Zeilen (→←→←)"       Value="1" Id="%ENID%" />
+                  <Enumeration Text="2D — Linear, Zeilen (→→→→)"          Value="2" Id="%ENID%" />
+                  <Enumeration Text="2D — Schlangen, Spalten (↓↑↓↑)"     Value="3" Id="%ENID%" />
+                  <Enumeration Text="2D — Linear, Spalten (↓↓↓↓)"        Value="4" Id="%ENID%" />
+                  <Enumeration Text="2D — Gekachelt, Spalten linear (Panelkette)"     Value="6" Id="%ENID%" />
+                  <Enumeration Text="2D — Gekachelt, Spalten Schlangen (Panelkette)"  Value="7" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Matrix dimension: 1-255 columns or rows (8-bit, 0 = not configured) -->
+              <ParameterType Id="%AID%_PT-MatrixDimension" Name="MatrixDimension">
+                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="255" />
+              </ParameterType>
+              <!-- Effektkette: Sync-Modus (2 bit: 0=Aus, 1=Master, 2=Slave) -->
+              <ParameterType Id="%AID%_PT-EffektketteSyncMode" Name="EffektketteSyncMode">
+                <TypeRestriction Base="Value" SizeInBit="2" UIHint="DropDown">
+                  <Enumeration Text="Aus (Standalone)"  Value="0" Id="%ENID%" />
+                  <Enumeration Text="Master"            Value="1" Id="%ENID%" />
+                  <Enumeration Text="Slave"             Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Effektkette: Override-Policy (1 bit) -->
+              <ParameterType Id="%AID%_PT-EffektketteOverride" Name="EffektketteOverride">
+                <TypeRestriction Base="Value" SizeInBit="1" UIHint="DropDown">
+                  <Enumeration Text="Sync übernimmt immer"      Value="0" Id="%ENID%" />
+                  <Enumeration Text="Lokal hat Vorrang"         Value="1" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Effektkette: Slave-Watchdog timeout (0=Aus; value × 10s) -->
+              <ParameterType Id="%AID%_PT-EffektketteTimeout" Name="EffektketteTimeout">
+                <TypeRestriction Base="Value" SizeInBit="5" UIHint="DropDown">
+                  <Enumeration Text="Aus (kein Timeout)" Value="0"  Id="%ENID%" />
+                  <Enumeration Text="10 s"               Value="1"  Id="%ENID%" />
+                  <Enumeration Text="30 s"               Value="3"  Id="%ENID%" />
+                  <Enumeration Text="60 s"               Value="6"  Id="%ENID%" />
+                  <Enumeration Text="120 s"              Value="12" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Effektkette: Gesamtlänge und Offset (uint16) -->
+              <!-- TotalLength min=1 (sinnlos bei 0), Offset min=0 (Master startet bei 0) -->
+              <ParameterType Id="%AID%_PT-EffektketteLength" Name="EffektketteLength">
+                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="1" maxInclusive="65535" />
+              </ParameterType>
+              <ParameterType Id="%AID%_PT-EffektketteOffset" Name="EffektketteOffset">
+                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="0" maxInclusive="65535" />
               </ParameterType>
               <!-- Virtual Strip Selection for exactly 1 strip -->
               <ParameterType Id="%AID%_PT-VirtualStripSelect1" Name="VirtualStripSelect1">
@@ -443,56 +564,76 @@
                   <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
+              <!-- for 1..7 strips -->
+              <ParameterType Id="%AID%_PT-VirtualStripSelect7" Name="VirtualStripSelect7">
+                <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 7" Value="7" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- for 1..8 strips (full) -->
+              <ParameterType Id="%AID%_PT-VirtualStripSelect8" Name="VirtualStripSelect8">
+                <TypeRestriction Base="Value" SizeInBit="4" UIHint="DropDown">
+                  <Enumeration Text="Phys. LED Streifen 1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 4" Value="4" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 5" Value="5" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 6" Value="6" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 7" Value="7" Id="%ENID%" />
+                  <Enumeration Text="Phys. LED Streifen 8" Value="8" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Scene Count per Segment (4 bits: 0=disabled, 1-10 scenes) -->
+              <ParameterType Id="%AID%_PT-SceneCount" Name="SceneCount">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
+                  <Enumeration Text="1 Szene" Value="1" Id="%ENID%" />
+                  <Enumeration Text="2 Szenen" Value="2" Id="%ENID%" />
+                  <Enumeration Text="3 Szenen" Value="3" Id="%ENID%" />
+                  <Enumeration Text="4 Szenen" Value="4" Id="%ENID%" />
+                  <Enumeration Text="5 Szenen" Value="5" Id="%ENID%" />
+                  <Enumeration Text="6 Szenen" Value="6" Id="%ENID%" />
+                  <Enumeration Text="7 Szenen" Value="7" Id="%ENID%" />
+                  <Enumeration Text="8 Szenen" Value="8" Id="%ENID%" />
+                  <Enumeration Text="9 Szenen" Value="9" Id="%ENID%" />
+                  <Enumeration Text="10 Szenen" Value="10" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Generic Scene Slot Parameter Types (shared across all effects) -->
+              <ParameterType Id="%AID%_PT-SceneSlotUint8" Name="SceneSlotUint8">
+                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
+              </ParameterType>
+              <!-- BEGIN AUTO-GENERATED: Effect ParameterTypes -->
+              <!-- END AUTO-GENERATED: Effect ParameterTypes -->
             </ParameterTypes>
             <Parameters>
+              <!-- Topologie-Bild-Parameter (Access=Read, kein Speicher; rendern das jeweilige Diagramm) -->
+              <Parameter Id="%AID%_P-%TT%00410" Name="TopoPic1d"        ParameterType="%AID%_PT-TopoPic1d"        Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00411" Name="TopoPicSerpRows"  ParameterType="%AID%_PT-TopoPicSerpRows"  Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00412" Name="TopoPicLinRows"   ParameterType="%AID%_PT-TopoPicLinRows"   Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00413" Name="TopoPicSerpCols"  ParameterType="%AID%_PT-TopoPicSerpCols"  Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00414" Name="TopoPicLinCols"   ParameterType="%AID%_PT-TopoPicLinCols"   Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00415" Name="TopoPicTileLin"   ParameterType="%AID%_PT-TopoPicTileLin"   Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00416" Name="TopoPicTileSerp"  ParameterType="%AID%_PT-TopoPicTileSerp"  Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00417" Name="TopoPicDepth3d"   ParameterType="%AID%_PT-TopoPicDepth3d"   Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00418" Name="TopoPicDepthTile" ParameterType="%AID%_PT-TopoPicDepthTile" Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00419" Name="ChainPicMaster" ParameterType="%AID%_PT-ChainPicMaster" Text="" Access="Read" Value="" />
+              <Parameter Id="%AID%_P-%TT%00420" Name="ChainPicSlave"  ParameterType="%AID%_PT-ChainPicSlave"  Text="" Access="Read" Value="" />
               <Parameter Id="%AID%_P-%TT%00000" Name="TriggerName" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
-              <!-- HCL Curve Parameters -->
-              <!-- HCL Curve Parameters -->
+              <!-- HCL / LightManager Parameters -->
               <Union SizeInBit="160">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
-                <!-- Byte 0 -->
-                <!-- Bits: [0..2]=HCLtype (3b), [3..7]=frei -->
-                <Parameter Id="%AID%_UP-%TT%00001" Offset="0" BitOffset="0" Name="HCLtype" ParameterType="%AID%_PT-HclType" Text="HCL‑Kurventyp" Value="0" />
-                <!-- Byte 1..2 -->
-                <!-- Start time -->
-                <Parameter Id="%AID%_UP-%TT%00002" Offset="1" BitOffset="0" Name="HCLStartHour" ParameterType="%AID%_PT-HourValue" Text="HCL Start (Stunde)" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%00003" Offset="2" BitOffset="0" Name="HCLStartMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Start (Minute)" Value="0"/>
-                <!-- Byte 3..4 -->
-                <!-- End time -->
-                <Parameter Id="%AID%_UP-%TT%00066" Offset="3" BitOffset="0" Name="HCLEndHour" ParameterType="%AID%_PT-HourValue" Text="HCL Ende (Stunde)" Value="22" />
-                <Parameter Id="%AID%_UP-%TT%00067" Offset="4" BitOffset="0" Name="HCLEndMinute" ParameterType="%AID%_PT-MinuteValue" Text="HCL Ende (Minute)" Value="0"/>
-                <!-- Byte 5..6 -->
-                <!-- HCLoffsetSunrise: Byte5[0..7] + Byte6[0..1] => 10b signed -->
-                <Parameter Id="%AID%_UP-%TT%00004" Offset="5" BitOffset="0" Name="HCLoffsetSunrise" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenaufgang" Value="0" SuffixText=" Min"/>
-                <!-- HclApplyMode: Byte6[3..5] => 3b enum -->
-                <!-- Byte6 freie Bits: 2,6,7 -->
-                <Parameter Id="%AID%_UP-%TT%00061" Offset="6" BitOffset="3" Name="HclApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="HCL Anwendungsmodus" Value="0"/>
-                <!-- Byte 7..8 -->
-                <!-- HCLoffsetSunset: Byte7[0..7] + Byte8[0..1] => 10b signed -->
-                <Parameter Id="%AID%_UP-%TT%00005" Offset="7" BitOffset="0" Name="HCLoffsetSunset" ParameterType="%AID%_PT-HCLMinMaxOffset" Text="Verschiebe Sonnenuntergang" Value="0" SuffixText=" Min"/>
-                <!-- Byte8[3] => 1b frei -->
-                <!-- HCLPreserveCurve: Byte8[4..6] => 3b enum -->
-                <!-- Byte8 freie Bits: 2,7 -->
-                <Parameter Id="%AID%_UP-%TT%00006" Offset="8" BitOffset="4" Name="HCLPreserveCurve" ParameterType="%AID%_PT-HCLPreserveCurve" Text="Form der Abblendung" Value="1"/>
-                <!-- Byte 9 -->
-                <Parameter Id="%AID%_UP-%TT%00007" Offset="9" BitOffset="0" Name="HCLSatThreshold" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Sättigungs Schwelle" Value="64"/>
-                <!-- Byte 10..11 -->
-                <!-- 14b: Byte10[0..7] + Byte11[0..5]; Byte11 Bits 6..7 frei -->
-                <Parameter Id="%AID%_UP-%TT%00009" Offset="10" BitOffset="0" Name="HCLminKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Min)" Value="2700" SuffixText=" K"/>
-                <!-- Byte 12..13 -->
-                <!-- 14b: Byte12[0..7] + Byte13[0..5]; Byte13 Bits 6..7 frei -->
-                <Parameter Id="%AID%_UP-%TT%00010" Offset="12" BitOffset="0" Name="HCLmaxKelvin" ParameterType="%AID%_PT-MinMaxValueKelvin" Text="Farbtemperatur (Max)" Value="6500" SuffixText=" K"/>
-                <!-- Byte 14 -->
-                <!-- 7b: Byte14[0..6]; Bit7 frei -->
-                <Parameter Id="%AID%_UP-%TT%00062" Offset="14" BitOffset="0" Name="HCLStrength" ParameterType="%AID%_PT-NEOPercent" Text="HCL Strength / Mix" Value="100" SuffixText=" %"/>
-                <!-- Byte 15 -->
-                <Parameter Id="%AID%_UP-%TT%00063" Offset="15" BitOffset="0" Name="HCLSlewRate" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Kelvin Slew Rate" Value="100" SuffixText=" K/min"/>
-                <!-- Byte 16 -->
-                <!-- 7b: Byte16[0..6]; Bit7 frei -->
-                <Parameter Id="%AID%_UP-%TT%00064" Offset="16" BitOffset="0" Name="HCLBrightnessCompensation" ParameterType="%AID%_PT-NEOPercent" Text="HCL Helligkeitskompensation" Value="100" SuffixText=" %"/>
-                <!-- Byte 17 -->
-                <!-- 7b: Byte17[0..6]; Bit7 frei -->
-                <Parameter Id="%AID%_UP-%TT%00065" Offset="17" BitOffset="0" Name="HCLWhiteMix" ParameterType="%AID%_PT-NEOPercent" Text="HCL Weiß Mix" Value="75" SuffixText=" %"/>
+                <!-- Byte 0: LightManager source selection -->
+                <Parameter Id="%AID%_UP-%TT%00001" Offset="0" BitOffset="0" Name="HCLMaster" ParameterType="%AID%_PT-LMGMasterSelect" Text="Lichtmanager" Value="0" />
+                <!-- Byte 1: HCL application mode -->
+                <Parameter Id="%AID%_UP-%TT%00002" Offset="1" BitOffset="0" Name="HCLApplyMode" ParameterType="%AID%_PT-HclApplyMode" Text="Anwendung" Value="0" />
+                <!-- Remaining bytes reserved for future HCL-related layout changes -->
               </Union>
 
               <!-- Global Hardware Selection Union (Hardware Platform) -->
@@ -507,12 +648,12 @@
               <Union SizeInBit="112">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="22" BitOffset="0" />
                 <!-- Byte 0: 0..3 (4b) -->
-                <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 6"/>
+                <Parameter Id="%AID%_UP-%TT%00020" Offset="0" BitOffset="0" Name="NEONumberOfLEDStrips" ParameterType="%AID%_PT-NumberOfLEDStrips" Text="Anzahl der LED-Streifen" Value="1" SuffixText=" von 8"/>
                 <!-- Byte 1: 0..4 (5b), 5 (1b) -->
                 <Parameter Id="%AID%_UP-%TT%00021" Offset="1" BitOffset="0" Name="NEONumberOfSegments" ParameterType="%AID%_PT-NumberOfSegments" Text="Anzahl der Segmente" Value="1" SuffixText=" von 16"/>
                 <Parameter Id="%AID%_UP-%TT%00023" Offset="1" BitOffset="5" Name="NEOTurnOffBeforeRestart" ParameterType="%AID%_PT-Boolean" Text="LEDs vor Upload/Neustart ausschalten" Value="1"/>
                 <!-- Byte 2: 8b -->
-                <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEOUpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Update Speed" Value="50"/>
+                <Parameter Id="%AID%_UP-%TT%00022" Offset="2" BitOffset="0" Name="NEOUpdateSpeed" ParameterType="%AID%_PT-NEOUpdateSpeed" Text="Aktualisierungsrate" Value="50"/>
                 <!-- Byte 3..4: 16b -->
                 <Parameter Id="%AID%_UP-%TT%00068" Offset="3" BitOffset="0" Name="NEOpowerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
                 <!-- Byte 5: 0..6 (7b) -->
@@ -532,6 +673,8 @@
                 <!-- Byte 11: -->
                 <Parameter Id="%AID%_UP-%TT%00073" Offset="11" BitOffset="0" Name="NEOablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
                 <!-- Byte 12-13: frei-->
+                <!-- Byte 12: Effektmanager global Aus/Ein -->
+                <Parameter Id="%AID%_UP-%TT%00074" Offset="12" BitOffset="0" Name="NEOEMEnabled" ParameterType="%AID%_PT-EMGlobalEnabled" Text="Verfügbare Effektmanager" SuffixText="von 16 (0 = aus)" Value="0"/>
               </Union>
               <!-- Global Startup Behavior Union -->
               <!-- FIXED: Changed Offset from 25 to 36 to avoid overlap with Power Settings (22-35) -->
@@ -546,16 +689,17 @@
                 <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
               </Union>
               <!-- Virtual Strip Configuration -->
-              <!-- FIXED: Changed Offset from 32 to 43 (after Startup Union 36+7=43) -->
-              <Union SizeInBit="32" op:nowarn="true">
+              <Union SizeInBit="40" op:nowarn="true">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="43" BitOffset="0" />
-                <!-- Canonical (full 1..6) -->
-                <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
-                <Parameter Id="%AID%_UP-%TT%00032" Offset="1" BitOffset="0" Name="VirtualStripPos3" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 3" Value="3"/>
-                <Parameter Id="%AID%_UP-%TT%00033" Offset="1" BitOffset="4" Name="VirtualStripPos4" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 4" Value="4"/>
-                <Parameter Id="%AID%_UP-%TT%00034" Offset="2" BitOffset="0" Name="VirtualStripPos5" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 5" Value="5"/>
-                <Parameter Id="%AID%_UP-%TT%00035" Offset="2" BitOffset="4" Name="VirtualStripPos6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 6" Value="6"/>
+                <!-- Canonical (full 1..8) -->
+                <Parameter Id="%AID%_UP-%TT%00030" Offset="0" BitOffset="0" Name="VirtualStripPos1" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 1" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%00031" Offset="0" BitOffset="4" Name="VirtualStripPos2" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 2" Value="2"/>
+                <Parameter Id="%AID%_UP-%TT%00032" Offset="1" BitOffset="0" Name="VirtualStripPos3" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 3" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%00033" Offset="1" BitOffset="4" Name="VirtualStripPos4" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 4" Value="4"/>
+                <Parameter Id="%AID%_UP-%TT%00034" Offset="2" BitOffset="0" Name="VirtualStripPos5" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 5" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%00035" Offset="2" BitOffset="4" Name="VirtualStripPos6" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 6" Value="6"/>
+                <Parameter Id="%AID%_UP-%TT%00082" Offset="3" BitOffset="0" Name="VirtualStripPos7" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 7" Value="7"/>
+                <Parameter Id="%AID%_UP-%TT%00083" Offset="3" BitOffset="4" Name="VirtualStripPos8" ParameterType="%AID%_PT-VirtualStripSelect8" Text="Position 8" Value="8"/>
                 <!-- UI-limited variants (all overlap the same 4 bits) -->
                 <!-- Position 1 -->
                 <Parameter Id="%AID%_UP-%TT%00036" Offset="0" BitOffset="0" Name="VirtualStripPos1_1" ParameterType="%AID%_PT-VirtualStripSelect1" Text="Position 1" Value="1"/>
@@ -563,52 +707,69 @@
                 <Parameter Id="%AID%_UP-%TT%00038" Offset="0" BitOffset="0" Name="VirtualStripPos1_3" ParameterType="%AID%_PT-VirtualStripSelect3" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00039" Offset="0" BitOffset="0" Name="VirtualStripPos1_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 1" Value="1"/>
                 <Parameter Id="%AID%_UP-%TT%00040" Offset="0" BitOffset="0" Name="VirtualStripPos1_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 1" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%00084" Offset="0" BitOffset="0" Name="VirtualStripPos1_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 1" Value="1"/>
+                <Parameter Id="%AID%_UP-%TT%00085" Offset="0" BitOffset="0" Name="VirtualStripPos1_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 1" Value="1"/>
                 <!-- Position 2 -->
                 <Parameter Id="%AID%_UP-%TT%00041" Offset="0" BitOffset="4" Name="VirtualStripPos2_2" ParameterType="%AID%_PT-VirtualStripSelect2" Text="Position 2" Value="2"/>
                 <Parameter Id="%AID%_UP-%TT%00042" Offset="0" BitOffset="4" Name="VirtualStripPos2_3" ParameterType="%AID%_PT-VirtualStripSelect3" Text="Position 2" Value="2"/>
                 <Parameter Id="%AID%_UP-%TT%00043" Offset="0" BitOffset="4" Name="VirtualStripPos2_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 2" Value="2"/>
                 <Parameter Id="%AID%_UP-%TT%00044" Offset="0" BitOffset="4" Name="VirtualStripPos2_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 2" Value="2"/>
+                <Parameter Id="%AID%_UP-%TT%00086" Offset="0" BitOffset="4" Name="VirtualStripPos2_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 2" Value="2"/>
+                <Parameter Id="%AID%_UP-%TT%00087" Offset="0" BitOffset="4" Name="VirtualStripPos2_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 2" Value="2"/>
                 <!-- Position 3 -->
                 <Parameter Id="%AID%_UP-%TT%00045" Offset="1" BitOffset="0" Name="VirtualStripPos3_3" ParameterType="%AID%_PT-VirtualStripSelect3" Text="Position 3" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%00046" Offset="1" BitOffset="0" Name="VirtualStripPos3_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 3" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%00047" Offset="1" BitOffset="0" Name="VirtualStripPos3_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 3" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%00088" Offset="1" BitOffset="0" Name="VirtualStripPos3_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 3" Value="3"/>
+                <Parameter Id="%AID%_UP-%TT%00089" Offset="1" BitOffset="0" Name="VirtualStripPos3_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 3" Value="3"/>
                 <!-- Position 4 -->
                 <Parameter Id="%AID%_UP-%TT%00048" Offset="1" BitOffset="4" Name="VirtualStripPos4_4" ParameterType="%AID%_PT-VirtualStripSelect4" Text="Position 4" Value="4"/>
                 <Parameter Id="%AID%_UP-%TT%00049" Offset="1" BitOffset="4" Name="VirtualStripPos4_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 4" Value="4"/>
+                <Parameter Id="%AID%_UP-%TT%00171" Offset="1" BitOffset="4" Name="VirtualStripPos4_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 4" Value="4"/>
+                <Parameter Id="%AID%_UP-%TT%00172" Offset="1" BitOffset="4" Name="VirtualStripPos4_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 4" Value="4"/>
                 <!-- Position 5 -->
                 <Parameter Id="%AID%_UP-%TT%00050" Offset="2" BitOffset="0" Name="VirtualStripPos5_5" ParameterType="%AID%_PT-VirtualStripSelect5" Text="Position 5" Value="5"/>
-                <!-- Position 6: no limited variant needed, only used if 6 strips -->
+                <Parameter Id="%AID%_UP-%TT%00173" Offset="2" BitOffset="0" Name="VirtualStripPos5_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 5" Value="5"/>
+                <Parameter Id="%AID%_UP-%TT%00174" Offset="2" BitOffset="0" Name="VirtualStripPos5_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 5" Value="5"/>
+                <!-- Position 6 -->
+                <Parameter Id="%AID%_UP-%TT%00175" Offset="2" BitOffset="4" Name="VirtualStripPos6_6" ParameterType="%AID%_PT-VirtualStripSelect6" Text="Position 6" Value="6"/>
+                <Parameter Id="%AID%_UP-%TT%00176" Offset="2" BitOffset="4" Name="VirtualStripPos6_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 6" Value="6"/>
+                <!-- Position 7 -->
+                <Parameter Id="%AID%_UP-%TT%00177" Offset="3" BitOffset="0" Name="VirtualStripPos7_7" ParameterType="%AID%_PT-VirtualStripSelect7" Text="Position 7" Value="7"/>
+                <!-- Position 8: no limited variant needed, only used if 8 strips -->
                 
                 <!-- Duplicate Status Display (informational parameter) -->
-                <Parameter Id="%AID%_UP-%TT%00079" Offset="3" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="None" />
+                <Parameter Id="%AID%_UP-%TT%00079" Offset="4" BitOffset="0" Name="VirtualStripHasDuplicates" ParameterType="%AID%_PT-Boolean" Text="Konfiguration besitzt Duplikate: " Value="0" Access="None" />
                 <!-- Segment Start/End range error flag -->
-                <Parameter Id="%AID%_UP-%TT%00080" Offset="3" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: " Value="0" Access="Read" />
+                <Parameter Id="%AID%_UP-%TT%00080" Offset="4" BitOffset="1" Name="SegmentStartEndError"      ParameterType="%AID%_PT-Boolean" Text="Segment Start/End Fehler: " Value="0" Access="Read" />
               </Union>
 
               <!-- Virtual Strip Start Indices (for UI only) -->
-              <!-- FIXED: Changed Offset from 35 to 46 (after Virtual Strip 43+3=46) -->
-              <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="46" BitOffset="0" />
-                <!-- 6 * 16 bit = 96 bit -->
+              <Union SizeInBit="128">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="48" BitOffset="0" />
+                <!-- 8 * 16 bit = 128 bit -->
                 <Parameter Id="%AID%_UP-%TT%00051" Offset="0" BitOffset="0"  Name="VirtualStripStart1" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 1" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00052" Offset="2" BitOffset="0"  Name="VirtualStripStart2" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 2" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00053" Offset="4" BitOffset="0"  Name="VirtualStripStart3" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 3" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00054" Offset="6" BitOffset="0"  Name="VirtualStripStart4" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 4" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00055" Offset="8" BitOffset="0"  Name="VirtualStripStart5" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 5" Value="1" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00056" Offset="10" BitOffset="0" Name="VirtualStripStart6" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 6" Value="1" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00178" Offset="12" BitOffset="0" Name="VirtualStripStart7" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 7" Value="1" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00179" Offset="14" BitOffset="0" Name="VirtualStripStart8" ParameterType="%AID%_PT-MinMaxValue" Text="Start LED Position 8" Value="1" Access="Read"/>
               </Union>
 
               <!-- Virtual Strip End Indices (for UI only) -->
-              <!-- FIXED: Changed Offset from 47 to 58 (after Strip Start 46+12=58) -->
-              <Union SizeInBit="96">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="58" BitOffset="0" />
-                <!-- 6 * 16 bit = 96 bit -->
-                <Parameter Id="%AID%_UP-%TT%00057" Offset="0" BitOffset="0"  Name="VirtualStripEnd1" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 1" Value="0" Access="Read"/>
+              <Union SizeInBit="128">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="64" BitOffset="0" />
+                <!-- 8 * 16 bit = 128 bit -->
+                <Parameter Id="%AID%_UP-%TT%00057" Offset="0" BitOffset="0"  Name="VirtualStripEnd1" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 1" Value="30" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00058" Offset="2" BitOffset="0"  Name="VirtualStripEnd2" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 2" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00059" Offset="4" BitOffset="0"  Name="VirtualStripEnd3" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 3" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00076" Offset="6" BitOffset="0"  Name="VirtualStripEnd4" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 4" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00077" Offset="8" BitOffset="0"  Name="VirtualStripEnd5" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 5" Value="0" Access="Read"/>
                 <Parameter Id="%AID%_UP-%TT%00078" Offset="10" BitOffset="0" Name="VirtualStripEnd6" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 6" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00180" Offset="12" BitOffset="0" Name="VirtualStripEnd7" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 7" Value="0" Access="Read"/>
+                <Parameter Id="%AID%_UP-%TT%00181" Offset="14" BitOffset="0" Name="VirtualStripEnd8" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 8" Value="0" Access="Read"/>
               </Union>
               
               <!-- BEGIN AUTO-GENERATED: GPIO Port Parameters -->
@@ -651,31 +812,35 @@
               <!-- Cleaned - Ready for regeneration -->
               <!-- END AUTO-GENERATED: External Relay Invert Parameters -->
 
+              <Union SizeInBit="24">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="134" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%00194" Offset="0" BitOffset="0" Name="PendingLedTypeResetStrip" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Pending LED Type Reset Strip" Value="0" Access="None"/>
+                <Parameter Id="%AID%_UP-%TT%00195" Offset="1" BitOffset="0" Name="PendingLedTypeResetLedType" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Pending LED Type Reset LED Type" Value="255" Access="None"/>
+                <Parameter Id="%AID%_UP-%TT%00196" Offset="2" BitOffset="0" Name="PendingLedTypeResetTick" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Pending LED Type Reset Tick" Value="255" Access="None"/>
+              </Union>
+
             </Parameters>
 
             <ParameterRefs>
+              <ParameterRef Id="%AID%_P-%TT%00410_R-%TT%0041001" RefId="%AID%_P-%TT%00410" />
+              <ParameterRef Id="%AID%_P-%TT%00411_R-%TT%0041101" RefId="%AID%_P-%TT%00411" />
+              <ParameterRef Id="%AID%_P-%TT%00412_R-%TT%0041201" RefId="%AID%_P-%TT%00412" />
+              <ParameterRef Id="%AID%_P-%TT%00413_R-%TT%0041301" RefId="%AID%_P-%TT%00413" />
+              <ParameterRef Id="%AID%_P-%TT%00414_R-%TT%0041401" RefId="%AID%_P-%TT%00414" />
+              <ParameterRef Id="%AID%_P-%TT%00415_R-%TT%0041501" RefId="%AID%_P-%TT%00415" />
+              <ParameterRef Id="%AID%_P-%TT%00416_R-%TT%0041601" RefId="%AID%_P-%TT%00416" />
+              <ParameterRef Id="%AID%_P-%TT%00417_R-%TT%0041701" RefId="%AID%_P-%TT%00417" />
+              <ParameterRef Id="%AID%_P-%TT%00418_R-%TT%0041801" RefId="%AID%_P-%TT%00418" />
+              <ParameterRef Id="%AID%_P-%TT%00419_R-%TT%0041901" RefId="%AID%_P-%TT%00419" />
+              <ParameterRef Id="%AID%_P-%TT%00420_R-%TT%0042001" RefId="%AID%_P-%TT%00420" />
               <ParameterRef Id="%AID%_P-%TT%00000_R-%TT%0000001" RefId="%AID%_P-%TT%00000" />
-              <!-- HCL Parameter References -->
+              <!-- LightManager Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00001_R-%TT%0000101" RefId="%AID%_UP-%TT%00001" />
               <ParameterRef Id="%AID%_UP-%TT%00002_R-%TT%0000201" RefId="%AID%_UP-%TT%00002" />
-              <ParameterRef Id="%AID%_UP-%TT%00003_R-%TT%0000301" RefId="%AID%_UP-%TT%00003" />
-              <ParameterRef Id="%AID%_UP-%TT%00004_R-%TT%0000401" RefId="%AID%_UP-%TT%00004" />
-              <ParameterRef Id="%AID%_UP-%TT%00005_R-%TT%0000501" RefId="%AID%_UP-%TT%00005" />
-              <ParameterRef Id="%AID%_UP-%TT%00006_R-%TT%0000601" RefId="%AID%_UP-%TT%00006" />
-              <ParameterRef Id="%AID%_UP-%TT%00007_R-%TT%0000701" RefId="%AID%_UP-%TT%00007" />
-              <ParameterRef Id="%AID%_UP-%TT%00009_R-%TT%0000901" RefId="%AID%_UP-%TT%00009" />
-              <ParameterRef Id="%AID%_UP-%TT%00010_R-%TT%0001001" RefId="%AID%_UP-%TT%00010" />
-              <ParameterRef Id="%AID%_UP-%TT%00061_R-%TT%0006101" RefId="%AID%_UP-%TT%00061" />
-              <ParameterRef Id="%AID%_UP-%TT%00062_R-%TT%0006201" RefId="%AID%_UP-%TT%00062" />
-              <ParameterRef Id="%AID%_UP-%TT%00063_R-%TT%0006301" RefId="%AID%_UP-%TT%00063" />
-              <ParameterRef Id="%AID%_UP-%TT%00064_R-%TT%0006401" RefId="%AID%_UP-%TT%00064" />
-              <ParameterRef Id="%AID%_UP-%TT%00065_R-%TT%0006501" RefId="%AID%_UP-%TT%00065" />
               <ParameterRef Id="%AID%_UP-%TT%00077_R-%TT%0007701" RefId="%AID%_UP-%TT%00077" />
               <ParameterRef Id="%AID%_UP-%TT%00078_R-%TT%0007801" RefId="%AID%_UP-%TT%00078" />
               <ParameterRef Id="%AID%_UP-%TT%00079_R-%TT%0007901" RefId="%AID%_UP-%TT%00079" />
               <ParameterRef Id="%AID%_UP-%TT%00080_R-%TT%0008001" RefId="%AID%_UP-%TT%00080" />
-              <ParameterRef Id="%AID%_UP-%TT%00066_R-%TT%0006601" RefId="%AID%_UP-%TT%00066" />
-              <ParameterRef Id="%AID%_UP-%TT%00067_R-%TT%0006701" RefId="%AID%_UP-%TT%00067" />
                <!-- NEO Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00020_R-%TT%0002001" RefId="%AID%_UP-%TT%00020" />
               <ParameterRef Id="%AID%_UP-%TT%00021_R-%TT%0002101" RefId="%AID%_UP-%TT%00021" />
@@ -687,6 +852,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00071_R-%TT%0007101" RefId="%AID%_UP-%TT%00071" />
               <ParameterRef Id="%AID%_UP-%TT%00072_R-%TT%0007201" RefId="%AID%_UP-%TT%00072" />
               <ParameterRef Id="%AID%_UP-%TT%00073_R-%TT%0007301" RefId="%AID%_UP-%TT%00073" />
+              <ParameterRef Id="%AID%_UP-%TT%00074_R-%TT%0007401" RefId="%AID%_UP-%TT%00074" />
               <ParameterRef Id="%AID%_UP-%TT%00081_R-%TT%0008101" RefId="%AID%_UP-%TT%00081" />
 
               <!-- BEGIN AUTO-GENERATED: External Relay ParameterRefs -->
@@ -708,26 +874,43 @@
               <ParameterRef Id="%AID%_UP-%TT%00033_R-%TT%0003301" RefId="%AID%_UP-%TT%00033" />
               <ParameterRef Id="%AID%_UP-%TT%00034_R-%TT%0003401" RefId="%AID%_UP-%TT%00034" />
               <ParameterRef Id="%AID%_UP-%TT%00035_R-%TT%0003501" RefId="%AID%_UP-%TT%00035" />
+              <ParameterRef Id="%AID%_UP-%TT%00082_R-%TT%0008201" RefId="%AID%_UP-%TT%00082" />
+              <ParameterRef Id="%AID%_UP-%TT%00083_R-%TT%0008301" RefId="%AID%_UP-%TT%00083" />
               <!-- Pos1 -->
               <ParameterRef Id="%AID%_UP-%TT%00036_R-%TT%0003601" RefId="%AID%_UP-%TT%00036" />
               <ParameterRef Id="%AID%_UP-%TT%00037_R-%TT%0003701" RefId="%AID%_UP-%TT%00037" />
               <ParameterRef Id="%AID%_UP-%TT%00038_R-%TT%0003801" RefId="%AID%_UP-%TT%00038" />
               <ParameterRef Id="%AID%_UP-%TT%00039_R-%TT%0003901" RefId="%AID%_UP-%TT%00039" />
               <ParameterRef Id="%AID%_UP-%TT%00040_R-%TT%0004001" RefId="%AID%_UP-%TT%00040" />
+              <ParameterRef Id="%AID%_UP-%TT%00084_R-%TT%0008401" RefId="%AID%_UP-%TT%00084" />
+              <ParameterRef Id="%AID%_UP-%TT%00085_R-%TT%0008501" RefId="%AID%_UP-%TT%00085" />
               <!-- Pos2 -->
               <ParameterRef Id="%AID%_UP-%TT%00041_R-%TT%0004101" RefId="%AID%_UP-%TT%00041" />
               <ParameterRef Id="%AID%_UP-%TT%00042_R-%TT%0004201" RefId="%AID%_UP-%TT%00042" />
               <ParameterRef Id="%AID%_UP-%TT%00043_R-%TT%0004301" RefId="%AID%_UP-%TT%00043" />
               <ParameterRef Id="%AID%_UP-%TT%00044_R-%TT%0004401" RefId="%AID%_UP-%TT%00044" />
+              <ParameterRef Id="%AID%_UP-%TT%00086_R-%TT%0008601" RefId="%AID%_UP-%TT%00086" />
+              <ParameterRef Id="%AID%_UP-%TT%00087_R-%TT%0008701" RefId="%AID%_UP-%TT%00087" />
               <!-- Pos3 -->
               <ParameterRef Id="%AID%_UP-%TT%00045_R-%TT%0004501" RefId="%AID%_UP-%TT%00045" />
               <ParameterRef Id="%AID%_UP-%TT%00046_R-%TT%0004601" RefId="%AID%_UP-%TT%00046" />
               <ParameterRef Id="%AID%_UP-%TT%00047_R-%TT%0004701" RefId="%AID%_UP-%TT%00047" />
+              <ParameterRef Id="%AID%_UP-%TT%00088_R-%TT%0008801" RefId="%AID%_UP-%TT%00088" />
+              <ParameterRef Id="%AID%_UP-%TT%00089_R-%TT%0008901" RefId="%AID%_UP-%TT%00089" />
               <!-- Pos4 -->
               <ParameterRef Id="%AID%_UP-%TT%00048_R-%TT%0004801" RefId="%AID%_UP-%TT%00048" />
               <ParameterRef Id="%AID%_UP-%TT%00049_R-%TT%0004901" RefId="%AID%_UP-%TT%00049" />
+              <ParameterRef Id="%AID%_UP-%TT%00171_R-%TT%0017101" RefId="%AID%_UP-%TT%00171" />
+              <ParameterRef Id="%AID%_UP-%TT%00172_R-%TT%0017201" RefId="%AID%_UP-%TT%00172" />
               <!-- Pos5 -->
               <ParameterRef Id="%AID%_UP-%TT%00050_R-%TT%0005001" RefId="%AID%_UP-%TT%00050" />
+              <ParameterRef Id="%AID%_UP-%TT%00173_R-%TT%0017301" RefId="%AID%_UP-%TT%00173" />
+              <ParameterRef Id="%AID%_UP-%TT%00174_R-%TT%0017401" RefId="%AID%_UP-%TT%00174" />
+              <!-- Pos6 -->
+              <ParameterRef Id="%AID%_UP-%TT%00175_R-%TT%0017501" RefId="%AID%_UP-%TT%00175" />
+              <ParameterRef Id="%AID%_UP-%TT%00176_R-%TT%0017601" RefId="%AID%_UP-%TT%00176" />
+              <!-- Pos7 -->
+              <ParameterRef Id="%AID%_UP-%TT%00177_R-%TT%0017701" RefId="%AID%_UP-%TT%00177" />
 
               <!-- BEGIN AUTO-GENERATED: GPIO Port ParameterRefs -->
               <!-- Cleaned - GPIO Port ParameterRefs now in Template -->
@@ -748,19 +931,26 @@
               <ParameterRef Id="%AID%_UP-%TT%00054_R-%TT%0005401" RefId="%AID%_UP-%TT%00054" />
               <ParameterRef Id="%AID%_UP-%TT%00055_R-%TT%0005501" RefId="%AID%_UP-%TT%00055" />
               <ParameterRef Id="%AID%_UP-%TT%00056_R-%TT%0005601" RefId="%AID%_UP-%TT%00056" />
+              <ParameterRef Id="%AID%_UP-%TT%00178_R-%TT%0017801" RefId="%AID%_UP-%TT%00178" />
+              <ParameterRef Id="%AID%_UP-%TT%00179_R-%TT%0017901" RefId="%AID%_UP-%TT%00179" />
               
               <!-- Virtual Strip End Index Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00057_R-%TT%0005701" RefId="%AID%_UP-%TT%00057" />
               <ParameterRef Id="%AID%_UP-%TT%00058_R-%TT%0005801" RefId="%AID%_UP-%TT%00058" />
               <ParameterRef Id="%AID%_UP-%TT%00059_R-%TT%0005901" RefId="%AID%_UP-%TT%00059" />
               <ParameterRef Id="%AID%_UP-%TT%00076_R-%TT%0007601" RefId="%AID%_UP-%TT%00076" />
+              <ParameterRef Id="%AID%_UP-%TT%00180_R-%TT%0018001" RefId="%AID%_UP-%TT%00180" />
+              <ParameterRef Id="%AID%_UP-%TT%00181_R-%TT%0018101" RefId="%AID%_UP-%TT%00181" />
+              <ParameterRef Id="%AID%_UP-%TT%00194_R-%TT%0019401" RefId="%AID%_UP-%TT%00194" Access="None" Value="0"/>
+              <ParameterRef Id="%AID%_UP-%TT%00195_R-%TT%0019501" RefId="%AID%_UP-%TT%00195" Access="None" Value="255"/>
+              <ParameterRef Id="%AID%_UP-%TT%00196_R-%TT%0019601" RefId="%AID%_UP-%TT%00196" Access="None" Value="255"/>
               
               </ParameterRefs>
               <ParameterCalculations>
               <!-- Virtual Strip Start LED Calculation -->
               <ParameterCalculation Id="%AID%_PC-%TT%00037" Language="JavaScript" Name="VirtualStripStartOffsets" LRTransformationFunc="NEO_UpdateVirtualStripStartIndices" RLTransformationFunc="NEO_Empty">
                 <LParameters>
-                  <!-- Anzahl physikalischer LED-Streifen (1..6) -->
+                  <!-- Anzahl physikalischer LED-Streifen (1..8) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" AliasName="NumberOfLEDStrips" />
                   <!-- Kanonische virtuelle Reihenfolge (nach Auto-Swap) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" AliasName="Pos1" />
@@ -769,6 +959,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00033_R-%TT%0003301" AliasName="Pos4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00034_R-%TT%0003401" AliasName="Pos5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" AliasName="Pos6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" AliasName="Pos7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00083_R-%TT%0008301" AliasName="Pos8" />
                   <!-- UI-limitierte Varianten: nur zum Triggern der Berechnung -->
                   <!-- Position 1 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00036_R-%TT%0003601" AliasName="Pos1_1" />
@@ -776,27 +968,44 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00038_R-%TT%0003801" AliasName="Pos1_3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00039_R-%TT%0003901" AliasName="Pos1_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00040_R-%TT%0004001" AliasName="Pos1_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00084_R-%TT%0008401" AliasName="Pos1_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00085_R-%TT%0008501" AliasName="Pos1_7" />
                   <!-- Position 2 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00041_R-%TT%0004101" AliasName="Pos2_2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00042_R-%TT%0004201" AliasName="Pos2_3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00043_R-%TT%0004301" AliasName="Pos2_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00044_R-%TT%0004401" AliasName="Pos2_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00086_R-%TT%0008601" AliasName="Pos2_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00087_R-%TT%0008701" AliasName="Pos2_7" />
                   <!-- Position 3 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00045_R-%TT%0004501" AliasName="Pos3_3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00046_R-%TT%0004601" AliasName="Pos3_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00047_R-%TT%0004701" AliasName="Pos3_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00088_R-%TT%0008801" AliasName="Pos3_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00089_R-%TT%0008901" AliasName="Pos3_7" />
                   <!-- Position 4 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00048_R-%TT%0004801" AliasName="Pos4_4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00049_R-%TT%0004901" AliasName="Pos4_5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00171_R-%TT%0017101" AliasName="Pos4_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" AliasName="Pos4_7" />
                   <!-- Position 5 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00050_R-%TT%0005001" AliasName="Pos5_5" />
-                  <!-- Physikalische Streifenlängen (NEO%C%Length) -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00173_R-%TT%0017301" AliasName="Pos5_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00174_R-%TT%0017401" AliasName="Pos5_7" />
+                  <!-- Position 6 -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00175_R-%TT%0017501" AliasName="Pos6_6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" AliasName="Pos6_7" />
+                  <!-- Position 7 -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" AliasName="Pos7_7" />
+                  <!-- Physikalische Streifenlängen (NEO%C%Length, 1..8) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%91037_R-%TT%9103701" AliasName="Len1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%92037_R-%TT%9203701" AliasName="Len2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%93037_R-%TT%9303701" AliasName="Len3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%94037_R-%TT%9403701" AliasName="Len4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%95037_R-%TT%9503701" AliasName="Len5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%96037_R-%TT%9603701" AliasName="Len6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%97037_R-%TT%9703701" AliasName="Len7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%98037_R-%TT%9803701" AliasName="Len8" />
                 </LParameters>
                 <RParameters>
                   <!-- Start-LED Outputs (read-only Parameter in der Tabelle) -->
@@ -806,6 +1015,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" AliasName="Start4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" AliasName="Start5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" AliasName="Start6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00178_R-%TT%0017801" AliasName="Start7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00179_R-%TT%0017901" AliasName="Start8" />
                   <!-- End-LED Outputs (read-only Parameter in der Tabelle) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00057_R-%TT%0005701" AliasName="End1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" AliasName="End2" />
@@ -813,6 +1024,8 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00076_R-%TT%0007601" AliasName="End4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" AliasName="End5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" AliasName="End6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00180_R-%TT%0018001" AliasName="End7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00181_R-%TT%0018101" AliasName="End8" />
                   <!-- Duplicate flag -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" AliasName="HasDuplicates" />
                 </RParameters>
@@ -967,10 +1180,12 @@
           <Dynamic>
           <Channel Id="%AID%_CH-%PREFIX%" Number="%PREFIX%" Name="Main" Text="NeoPixel" Icon="neopixel" HelpContext="NEO-NeoPixel">
             <ParameterBlock Id="%AID%_PB-nnnn" Name="Basic" Text="Allgemein" Icon="cog-outline" HelpContext="NEO-NeoPixel">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="OpenKNX NeoPixel &amp; kompatible LEDs" UIHint="Headline" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Professionelle Steuerung adressierbarer LED‑Streifen über KNX. Unterstützt NeoPixel&#169;‑Produkte von Adafruit sowie kompatible RGB/RGBW/RGBCCT‑LEDs mit Effekten, Farbsteuerung und intelligenter Strombegrenzung." />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel&#169; ist ein eingetragenes Markenzeichen der Adafruit Industries." />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %ModuleVersion%" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="OpenKNX NeoPixel &#8212; die professionelle LED-Engine für KNX" UIHint="Headline" Icon="neopixel_color" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ein Streifen. Eine Matrix. Tausende Pixel. Volle KNX-Kontrolle über jeden einzelnen." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Über 40 Effekte, echte 2D-Animationen, Laufschrift und Szenen. Farbsteuerung für RGB, RGBW und RGBCCT, pixelgenau und in Echtzeit." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager mit Cue-Sequenzen, Human Centric Lighting und intelligente Strombegrenzung. Schaltbare Relais inklusive. Skaliert vom einzelnen Akzent bis zur ganzen Matrix-Wand." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Unterstützt nahezu alle gängigen LED-Chips: WS2812(B), WS2813/14/15, SK6812, SK9822, APA102, TM1814, UCS890x u.v.m. NeoPixel&#169; ist ein eingetragenes Markenzeichen der Adafruit Industries." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %NEO_ProductVersion%" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Hardware Auswahl" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Bitte wählen Sie hier das von Ihnen verwendete OpenKNX‑Gerät aus. Die korrekte Auswahl ist erforderlich, damit ausschließlich die für dieses Gerät passenden Parameter und Funktionen bereitgestellt werden." />
@@ -996,8 +1211,9 @@
                 </choose>
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
                     <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
-                      <!-- Mehr als 1 Segment definiert-->
-                      <when test=">1">
+                      <!-- Global-KOs immer sichtbar (>=1 Segment, min=1): "Alle LEDs" auch bei 1 Segment
+                           verknuepfbar -> beim Hinzufuegen weiterer Segmente keine GA-Nacharbeit. -->
+                      <when test=">=1">
                         <!-- Global Power KO -->
                         <ComObjectRefRef RefId="%AID%_O-%TT%00000_R-%TT%0000001"  />
                         <!-- Global Power State KO -->
@@ -1027,76 +1243,9 @@
                   </choose>
                   <!-- ========================================================================================================= -->
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Kurve" UIHint="Headline" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Human Centric Lighting (HCL) passt die Lichtfarbe global und automatisch an die Tageszeit an (von warmweiß morgens/abends bis kaltweiß mittags). Wirkt auf alle Modi (Solid, Effekte) und alle Farben oder nur Weiß. Simuliert natürlichen Tagesverlauf." />
-                  <!-- HCL Type -->
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL / Lichtmanager" UIHint="Headline" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" HelpContext="%DOC%"/>
-                  <choose ParamRefId="%AID%_UP-%TT%00001_R-%TT%0000101">
-                    <when test="!=0">
-                       <!-- ===== Common (für alle aktiven Modi) ===== -->
-                      <!-- Preserve Curve -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00006_R-%TT%0000601" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Saturation Threshold -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00007_R-%TT%0000701" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Min/Max Kelvin -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00009_R-%TT%0000901" IndentLevel="2" HelpContext="%DOC%"/>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00010_R-%TT%0001001" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Apply mode -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Strength / Mix -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00062_R-%TT%0006201" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Transition time -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00063_R-%TT%0006301" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Brightness compensation -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00064_R-%TT%0006401" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- White mix -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00065_R-%TT%0006501" IndentLevel="2" HelpContext="%DOC%"/>
-                    </when>
-                    <!-- 1 = Sonnenstand -->
-                    <when test="=1">
-                      <!-- ===== Sun-specific ===== -->
-                      <!-- Offset Sunrise -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00004_R-%TT%0000401" IndentLevel="2" HelpContext="%DOC%"/>
-                      <!-- Offset Sunset -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00005_R-%TT%0000501" IndentLevel="2" HelpContext="%DOC%"/>
-                    </when>
-                    <!-- 2 = Zeit -->
-                    <when test="=2">
-                      <!-- ===== Time-specific ===== -->
-                      <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid">
-                        <Rows>
-                          <Row Id="%AID%_PB-nnn_R-1"/>
-                          <Row Id="%AID%_PB-nnn_R-2"/>
-                        </Rows>
-                        <Columns>
-                          <!-- Indent Level 2 -->
-                          <Column Id="%AID%_PB-nnn_C-1" Width="3%" />
-                          <!-- Label -->
-                          <Column Id="%AID%_PB-nnn_C-2" Width="42%" />
-                          <!-- HH -->
-                          <Column Id="%AID%_PB-nnn_C-3" Width="10%" />
-                          <!-- ":" -->
-                          <Column Id="%AID%_PB-nnn_C-4" Width="2%" />
-                          <!-- MM -->
-                          <Column Id="%AID%_PB-nnn_C-5" Width="10%" />
-                          <!-- HH:MM Label -->
-                          <Column Id="%AID%_PB-nnn_C-6" Width="14%" />
-                        </Columns>
-                        <!-- Row 1: Begin time -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Startzeit" Cell="1,2" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" Cell="1,3" HelpContext="%DOC%" />
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text=":" Cell="1,4" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00003_R-%TT%0000301" Cell="1,5" HelpContext="%DOC%"/>
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HH:MM" Cell="1,6" />
-                        <!-- Row 2: End time -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL Endzeit" Cell="2,2" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00066_R-%TT%0006601" Cell="2,3" HelpContext="%DOC%"/>
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text=":" Cell="2,4" />
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00067_R-%TT%0006701" Cell="2,5" HelpContext="%DOC%"/>
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="HH:MM" Cell="2,6" />
-                      </ParameterBlock>
-                    </when>
-                  </choose>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" IndentLevel="2" HelpContext="NEO-Anwendung"/>
                 </ParameterBlock>
               <!-- ========================================================================================================= -->
               <!-- KO-Tree: HCL Hauptkategorie (nur für KOs) -->
@@ -1107,7 +1256,7 @@
                   <ComObjectRefRef RefId="%AID%_O-%TT%00007_R-%TT%0000701" />
                 </ParameterBlock>
                 <!-- Segment KOs Container -->
-                <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegmentsKOs" Text="Segmente" Icon="segment" Inline="true" ShowInComObjectTree="true">
+                <ParameterBlock Id="%AID%_PB-nnn" Name="HCLSegmentsKOs" Text="Segmente" Icon="neo_segmente" Inline="true" ShowInComObjectTree="true">
                   <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/HCLSegmentKOsBlock/*" type="template" prefix="NEO" IsInner="true" />
                 </ParameterBlock>
               </ParameterBlock>
@@ -1153,6 +1302,59 @@
               <ParameterSeparator Id="%AID%_PS-nnn" Text="Globale Standardwerte für alle physischen LED-Streifen. Jeder Streifen kann individuell überschrieben werden: Global verwenden, Benutzerdefiniert oder Deaktiviert." UIHint="Information" />
               </ParameterBlock>
               <!-- ========================================================================================================= -->
+              <!-- Effektmanager (Global)                                                                                   -->
+              <!-- ========================================================================================================= -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Effektmanager" Text="Effektmanager" Icon="effectmanager" HelpContext="NEO-Effektmanager" ShowInComObjectTree="true">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ein Effektmanager ist eine gespeicherte Sequenz aus Cues (Szenen). Er wird per KO oder ETS-Startwert auf einem Segment gestartet und kann loopen oder in einen anderen EM übergehen." />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <!-- EM-Auswahltabelle (eine Zeile pro EM: Aktiv + Beschreibung) -->
+                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
+                  <when test="!=0">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Kanalauswahl" UIHint="Headline" />
+                    <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
+                      <Rows>
+                        <Row Id="%AID%_PB-nnn_R-0" Name="Header" />
+                        <Row Id="%AID%_PB-nnn_R-1" Name="EM1" />
+                        <Row Id="%AID%_PB-nnn_R-2" Name="EM2" />
+                        <Row Id="%AID%_PB-nnn_R-3" Name="EM3" />
+                        <Row Id="%AID%_PB-nnn_R-4" Name="EM4" />
+                        <Row Id="%AID%_PB-nnn_R-5" Name="EM5" />
+                        <Row Id="%AID%_PB-nnn_R-6" Name="EM6" />
+                        <Row Id="%AID%_PB-nnn_R-7" Name="EM7" />
+                        <Row Id="%AID%_PB-nnn_R-8" Name="EM8" />
+                        <Row Id="%AID%_PB-nnn_R-9" Name="EM9" />
+                        <Row Id="%AID%_PB-nnn_R-10" Name="EM10" />
+                        <Row Id="%AID%_PB-nnn_R-11" Name="EM11" />
+                        <Row Id="%AID%_PB-nnn_R-12" Name="EM12" />
+                        <Row Id="%AID%_PB-nnn_R-13" Name="EM13" />
+                        <Row Id="%AID%_PB-nnn_R-14" Name="EM14" />
+                        <Row Id="%AID%_PB-nnn_R-15" Name="EM15" />
+                        <Row Id="%AID%_PB-nnn_R-16" Name="EM16" />
+                      </Rows>
+                      <Columns>
+                        <Column Id="%AID%_PB-nnn_C-1" Name="Zustand" Width="30%" />
+                        <Column Id="%AID%_PB-nnn_C-2" Name="EmNr"    Width="12%" />
+                        <Column Id="%AID%_PB-nnn_C-3" Name="EmName"  Width="58%" />
+                      </Columns>
+                      <!-- Header-Zeile (UIHint=Headline = fett, wie bei den Strip-Tabellen) -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Zustand"      UIHint="Headline" Cell="0,1"/>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="EM"           UIHint="Headline" Cell="0,2"/>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Beschreibung" UIHint="Headline" Cell="0,3"/>
+                      <!-- Eine Zeile pro EM via Template -->
+                      <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/EmTableRow/*" type="template" prefix="NEOEM" IsInner="true" />
+                    </ParameterBlock>
+                  </when>
+                </choose>
+                <!-- EM 1-16 via template — nur wenn Anzahl > 0 -->
+                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
+                  <when test="!=0">
+                    <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOEM" IsInner="true" />
+                  </when>
+                </choose>
+              </ParameterBlock>
+              <!-- ========================================================================================================= -->
               <!-- KO-Tree: Strombegrenzung Hauptkategorie (nur für KOs) -->
               <!-- ========================================================================================================= -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitKOs" Text="Strombegrenzung" Inline="true" ShowInComObjectTree="true">
@@ -1184,8 +1386,24 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Reihenfolge der physikalischen LED-Streifen werden in der Einstellung des Virtuellen LED-Streifens festgelegt." UIHint="Information" />
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Virtuell" Text="Virtueller LED Streifen" Icon="vledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
+                <!-- Allgemein (aufgeloest aus fruehrem Subknoten): globale Aktualisierungsrate -->
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemein" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wie oft die Animation pro Sekunde neu berechnet und an die LEDs gesendet wird. Höher = flüssiger, aber mehr Rechenlast. Gilt für den gesamten Streifen." />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="1" HelpContext="NEO-Update-Speed"/>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Reihenfolge der physikalischen LED-Streifen im Virtuellen LED-Streifen" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Legen Sie fest, in welcher Reihenfolge die physikalischen LED-Streifen zum virtuellen Streifen zusammengefügt werden. Diese Reihenfolge bestimmt die LED-Nummerierung im virtuellen Streifen für die Segment-Definition." UIHint="Information" />
+                <!-- Duplikat-Pruefung: nur ab 2 physikalischen Streifen relevant; nur Fehlerfall anzeigen (good case = kein Banner) -->
+                <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" />
+                <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                  <when test="&gt;=2">
+                    <choose ParamRefId="%AID%_UP-%TT%00079_R-%TT%0007901">
+                      <when test="=1">
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Fehler: Mindestens zwei Positionen verwenden denselben physikalischen Streifen — bitte jede Position einem eigenen Streifen zuordnen." UIHint="Error" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
                 <!-- Virtual Strip Order Table -->
                 <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
                   <Rows>
@@ -1196,13 +1414,17 @@
                     <Row Id="%AID%_PB-nnn_R-5" Name="Pos4" />
                     <Row Id="%AID%_PB-nnn_R-6" Name="Pos5" />
                     <Row Id="%AID%_PB-nnn_R-7" Name="Pos6" />
+                    <Row Id="%AID%_PB-nnn_R-8" Name="Pos7" />
+                    <Row Id="%AID%_PB-nnn_R-9" Name="Pos8" />
                   </Rows>
                   <Columns>
+                  <!-- Gesamtbreite ~122% (ETS erlaubt bis 200%): "Physikalischer Streifen"
+                       ist ein Dropdown mit langem Header -> breiter, damit es einzeilig bleibt. -->
                     <Column Id="%AID%_PB-nnn_C-1" Name="Pos" Width="12%" />
-                    <Column Id="%AID%_PB-nnn_C-2" Name="StripSelect" Width="35%" />
-                    <Column Id="%AID%_PB-nnn_C-3" Name="StripName"   Width="31%" />
-                    <Column Id="%AID%_PB-nnn_C-4" Name="StartLED"    Width="11%" />
-                    <Column Id="%AID%_PB-nnn_C-5" Name="EndLED"      Width="11%" />
+                    <Column Id="%AID%_PB-nnn_C-2" Name="StripSelect" Width="50%" />
+                    <Column Id="%AID%_PB-nnn_C-3" Name="StripName"   Width="34%" />
+                    <Column Id="%AID%_PB-nnn_C-4" Name="StartLED"    Width="13%" />
+                    <Column Id="%AID%_PB-nnn_C-5" Name="EndLED"      Width="13%" />
                   </Columns>
                   
                   <!-- Header Row -->
@@ -1234,6 +1456,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00040_R-%TT%0004001" Cell="2,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00084_R-%TT%0008401" Cell="2,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00085_R-%TT%0008501" Cell="2,2" />
+                        </when>
+                        <when test="=8">
                           <!-- full range -->
                           <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" Cell="2,2" />
                         </when>
@@ -1310,8 +1538,57 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00030 (dein Original) -->
+                        <!-- 6 Strips → Wert steckt in 00084 -->
                         <when test="=6">
+                          <choose ParamRefId="%AID%_UP-%TT%00084_R-%TT%0008401">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="2,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="2,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="2,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="2,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="2,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="2,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 7 Strips → Wert steckt in 00085 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00085_R-%TT%0008501">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="2,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="2,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="2,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="2,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="2,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="2,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="2,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00030 -->
+                        <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00030_R-%TT%0003001">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="2,3" />
@@ -1330,6 +1607,12 @@
                             </when>
                             <when test="=6"> 
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="2,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="2,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="2,3" />
                             </when>
                           </choose>
                         </when>
@@ -1356,6 +1639,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00044_R-%TT%0004401" Cell="3,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00086_R-%TT%0008601" Cell="3,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00087_R-%TT%0008701" Cell="3,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00031_R-%TT%0003101" Cell="3,2" />
                         </when>
                       </choose>
@@ -1423,8 +1712,57 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00031 -->
+                        <!-- 6 Strips → Wert steckt in 00086 -->
                         <when test="=6">
+                          <choose ParamRefId="%AID%_UP-%TT%00086_R-%TT%0008601">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="3,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="3,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="3,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="3,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="3,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="3,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 7 Strips → Wert steckt in 00087 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00087_R-%TT%0008701">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="3,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="3,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="3,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="3,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="3,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="3,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="3,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00031 -->
+                        <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00031_R-%TT%0003101">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="3,3" />
@@ -1443,6 +1781,12 @@
                             </when>
                             <when test="=6">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="3,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="3,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="3,3" />
                             </when>
                           </choose>
                         </when>
@@ -1466,6 +1810,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00047_R-%TT%0004701" Cell="4,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00088_R-%TT%0008801" Cell="4,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00089_R-%TT%0008901" Cell="4,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00032_R-%TT%0003201" Cell="4,2" />
                         </when>
                       </choose>
@@ -1522,9 +1872,9 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00032 -->
+                        <!-- 6 Strips → Wert steckt in 00088 -->
                         <when test="=6">
-                          <choose ParamRefId="%AID%_UP-%TT%00032_R-%TT%0003201">
+                          <choose ParamRefId="%AID%_UP-%TT%00088_R-%TT%0008801">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="4,3" />
                             </when>
@@ -1545,6 +1895,61 @@
                             </when>
                           </choose>
                         </when>
+                        <!-- 7 Strips → Wert steckt in 00089 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00089_R-%TT%0008901">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="4,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="4,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="4,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="4,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="4,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="4,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="4,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00032 -->
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00032_R-%TT%0003201">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="4,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="4,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="4,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="4,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="4,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="4,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="4,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="4,3" />
+                            </when>
+                          </choose>
+                        </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" Cell="4,4" />
@@ -1562,6 +1967,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00049_R-%TT%0004901" Cell="5,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00171_R-%TT%0017101" Cell="5,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" Cell="5,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00033_R-%TT%0003301" Cell="5,2" />
                         </when>
                       </choose>
@@ -1604,9 +2015,9 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00033 -->
+                        <!-- 6 Strips → Wert steckt in 00171 -->
                         <when test="=6">
-                          <choose ParamRefId="%AID%_UP-%TT%00033_R-%TT%0003301">
+                          <choose ParamRefId="%AID%_UP-%TT%00171_R-%TT%0017101">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="5,3" />
                             </when>
@@ -1627,6 +2038,61 @@
                             </when>
                           </choose>
                         </when>
+                        <!-- 7 Strips → Wert steckt in 00172 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00172_R-%TT%0017201">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="5,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="5,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="5,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="5,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="5,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="5,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="5,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00033 -->
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00033_R-%TT%0003301">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="5,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="5,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="5,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="5,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="5,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="5,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="5,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="5,3" />
+                            </when>
+                          </choose>
+                        </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" Cell="5,4" />
@@ -1641,6 +2107,12 @@
                           <ParameterRefRef RefId="%AID%_UP-%TT%00050_R-%TT%0005001" Cell="6,2" />
                         </when>
                         <when test="=6">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00173_R-%TT%0017301" Cell="6,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00174_R-%TT%0017401" Cell="6,2" />
+                        </when>
+                        <when test="=8">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00034_R-%TT%0003401" Cell="6,2" />
                         </when>
                       </choose>
@@ -1666,9 +2138,9 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00034 -->
+                        <!-- 6 Strips → Wert steckt in 00173 -->
                         <when test="=6">
-                          <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
+                          <choose ParamRefId="%AID%_UP-%TT%00173_R-%TT%0017301">
                             <when test="=1">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="6,3" />
                             </when>
@@ -1689,6 +2161,61 @@
                             </when>
                           </choose>
                         </when>
+                        <!-- 7 Strips → Wert steckt in 00174 -->
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00174_R-%TT%0017401">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="6,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="6,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="6,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="6,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="6,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="6,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="6,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <!-- 8 Strips → Wert steckt in 00034 -->
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="6,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="6,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="6,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="6,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="6,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="6,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="6,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="6,3" />
+                            </when>
+                          </choose>
+                        </when>
                       </choose>
                       <!-- Column 4: Start LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" Cell="6,4" />
@@ -1698,26 +2225,93 @@
                     <when test=">=6">
                       <!-- Row 6: Position 6 -->
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="6" UIHint="Headline" Cell="7,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" Cell="7,2" />
-                      <!-- Name of selected physical strip used at Position 6 -->
-                      <choose ParamRefId="%AID%_UP-%TT%00035_R-%TT%0003501">
-                        <when test="=1">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
-                        </when>
-                        <when test="=2">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
-                        </when>
-                        <when test="=3">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
-                        </when>
-                        <when test="=4">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
-                        </when>
-                        <when test="=5">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
-                        </when>
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
                         <when test="=6">
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00175_R-%TT%0017501" Cell="7,2" />
+                        </when>
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" Cell="7,2" />
+                        </when>
+                        <when test="=8">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" Cell="7,2" />
+                        </when>
+                      </choose>
+                      <!-- Name of selected physical strip used at Position 6 -->
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <when test="=6">
+                          <choose ParamRefId="%AID%_UP-%TT%00175_R-%TT%0017501">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00176_R-%TT%0017601">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="7,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00035_R-%TT%0003501">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="7,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="7,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="7,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="7,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="7,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="7,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="7,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="7,3" />
+                            </when>
+                          </choose>
                         </when>
                       </choose>
                       <!-- Column 4: Start LED -->
@@ -1725,21 +2319,120 @@
                       <!-- Column 5: End LED -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" Cell="7,5" />
                     </when>
+                    <when test=">=7">
+                      <!-- Row 7: Position 7 -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="7" UIHint="Headline" Cell="8,1" />
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <when test="=7">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" Cell="8,2" />
+                        </when>
+                        <when test="=8">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" Cell="8,2" />
+                        </when>
+                      </choose>
+                      <!-- Name of selected physical strip used at Position 7 -->
+                      <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <when test="=7">
+                          <choose ParamRefId="%AID%_UP-%TT%00177_R-%TT%0017701">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="8,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="8,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="8,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="8,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="8,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="8,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="8,3" />
+                            </when>
+                          </choose>
+                        </when>
+                        <when test="=8">
+                          <choose ParamRefId="%AID%_UP-%TT%00082_R-%TT%0008201">
+                            <when test="=1">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="8,3" />
+                            </when>
+                            <when test="=2">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="8,3" />
+                            </when>
+                            <when test="=3">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="8,3" />
+                            </when>
+                            <when test="=4">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="8,3" />
+                            </when>
+                            <when test="=5">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="8,3" />
+                            </when>
+                            <when test="=6">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="8,3" />
+                            </when>
+                            <when test="=7">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="8,3" />
+                            </when>
+                            <when test="=8">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="8,3" />
+                            </when>
+                          </choose>
+                        </when>
+                      </choose>
+                      <!-- Column 4: Start LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00178_R-%TT%0017801" Cell="8,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00180_R-%TT%0018001" Cell="8,5" />
+                    </when>
+                    <when test=">=8">
+                      <!-- Row 8: Position 8 -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="8" UIHint="Headline" Cell="9,1" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00083_R-%TT%0008301" Cell="9,2" />
+                      <!-- Name of selected physical strip used at Position 8 -->
+                      <choose ParamRefId="%AID%_UP-%TT%00083_R-%TT%0008301">
+                        <when test="=1">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 1}}" TextParameterRefId="%AID%_P-%TT%91000_R-%TT%9100001" Cell="9,3" />
+                        </when>
+                        <when test="=2">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 2}}" TextParameterRefId="%AID%_P-%TT%92000_R-%TT%9200001" Cell="9,3" />
+                        </when>
+                        <when test="=3">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 3}}" TextParameterRefId="%AID%_P-%TT%93000_R-%TT%9300001" Cell="9,3" />
+                        </when>
+                        <when test="=4">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 4}}" TextParameterRefId="%AID%_P-%TT%94000_R-%TT%9400001" Cell="9,3" />
+                        </when>
+                        <when test="=5">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 5}}" TextParameterRefId="%AID%_P-%TT%95000_R-%TT%9500001" Cell="9,3" />
+                        </when>
+                        <when test="=6">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 6}}" TextParameterRefId="%AID%_P-%TT%96000_R-%TT%9600001" Cell="9,3" />
+                        </when>
+                        <when test="=7">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 7}}" TextParameterRefId="%AID%_P-%TT%97000_R-%TT%9700001" Cell="9,3" />
+                        </when>
+                        <when test="=8">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="{{0:LED Streifen 8}}" TextParameterRefId="%AID%_P-%TT%98000_R-%TT%9800001" Cell="9,3" />
+                        </when>
+                      </choose>
+                      <!-- Column 4: Start LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00179_R-%TT%0017901" Cell="9,4" />
+                      <!-- Column 5: End LED -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00181_R-%TT%0018101" Cell="9,5" />
+                    </when>
                 </choose>
                 </ParameterBlock>
-                <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" IndentLevel="1"/> 
-                <!-- Virtual Strip Status Display -->
-                <choose ParamRefId="%AID%_UP-%TT%00079_R-%TT%0007901">
-                  <when test="=1">
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Fehler: Mindestens zwei Teile des virtuelle Streifens verwenden denselben physikalischen Streifen!" UIHint="Error" />
-                  </when>
-                  <when test="=0">
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Alle virtuellen Streifen sind eindeutig konfiguriert" UIHint="Information" />
-                  </when>
-                </choose>
                 <!-- ========================================================================================================= -->
                 <!-- Segment-Übersicht -->
-                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <!-- Segmente-Übersicht als eigener Knoten (kein Stapeln mit der Reihenfolge-Tabelle) -->
+                <ParameterBlock Id="%AID%_PB-nnn" Name="SegmenteUebersicht" Text="Segmente" Icon="neo_segmente" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Segmente:" UIHint="Headline" />
                 <!-- Segment Anzahl Strips -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie bis zu 16 unabhängige Segmente auf dem virtuellen LED-Streifen. Jedes Segment kann einen eigenen Effekt, eigene Farben und Timing-Einstellungen haben." />
@@ -1776,11 +2469,15 @@
                     <Row Id="%AID%_PB-nnn_R-16" Name="Seg15" />
                     <Row Id="%AID%_PB-nnn_R-17" Name="Seg16" />
                   </Rows>
+                  <!-- Gesamtbreite ~140% der Standard-UI-Breite (ETS erlaubt bis 200%),
+                       damit die Dropdown-Spalten "Effekt" und vor allem "EM bei Start"
+                       einzeilig gesetzt werden (kein Umbruch der Auswahltexte). -->
                   <Columns>
-                    <Column Id="%AID%_PB-nnn_C-1" Name="Description" Width="40%" />
-                    <Column Id="%AID%_PB-nnn_C-2" Name="StartLED"    Width="20%" />
-                    <Column Id="%AID%_PB-nnn_C-3" Name="EndLED"      Width="20%" />
-                    <Column Id="%AID%_PB-nnn_C-4" Name="Effect"      Width="20%" />
+                    <Column Id="%AID%_PB-nnn_C-1" Name="Description" Width="32%" />
+                    <Column Id="%AID%_PB-nnn_C-2" Name="StartLED"    Width="13%" />
+                    <Column Id="%AID%_PB-nnn_C-3" Name="EndLED"      Width="13%" />
+                    <Column Id="%AID%_PB-nnn_C-4" Name="Effect"      Width="32%" />
+                    <Column Id="%AID%_PB-nnn_C-5" Name="StartupEM"   Width="50%" />
                   </Columns>
                   
                   <!-- Header Row -->
@@ -1788,177 +2485,186 @@
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Start LED"    UIHint="Headline" Cell="1,2" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende LED"     UIHint="Headline" Cell="1,3" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt"       UIHint="Headline" Cell="1,4" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="EM bei Start" UIHint="Headline" Cell="1,5" />
 
                   <!-- Segment 1 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=1">
-                      <ParameterRefRef RefId="%AID%_P-%TT%01000_R-%TT%0100001"   Cell="2,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%01050_R-%TT%0105001" Cell="2,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%01051_R-%TT%0105101" Cell="2,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%01057_R-%TT%0105701" Cell="2,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%01000_R-%TT%0100001"   Cell="2,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%01050_R-%TT%0105001" Cell="2,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%01051_R-%TT%0105101" Cell="2,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%01253_R-%TT%0125301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%01057_R-%TT%0105701" Cell="2,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%01057_R-%TT%0105702" Cell="2,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%01253_R-%TT%0125301" Cell="2,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 2 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=2">
-                      <ParameterRefRef RefId="%AID%_P-%TT%02000_R-%TT%0200001"   Cell="3,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%02050_R-%TT%0205001" Cell="3,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%02051_R-%TT%0205101" Cell="3,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%02057_R-%TT%0205701" Cell="3,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%02000_R-%TT%0200001"   Cell="3,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%02050_R-%TT%0205001" Cell="3,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%02051_R-%TT%0205101" Cell="3,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%02253_R-%TT%0225301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%02057_R-%TT%0205701" Cell="3,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%02057_R-%TT%0205702" Cell="3,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%02253_R-%TT%0225301" Cell="3,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 3 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=3">
-                      <ParameterRefRef RefId="%AID%_P-%TT%03000_R-%TT%0300001"   Cell="4,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%03050_R-%TT%0305001" Cell="4,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%03051_R-%TT%0305101" Cell="4,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%03057_R-%TT%0305701" Cell="4,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%03000_R-%TT%0300001"   Cell="4,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%03050_R-%TT%0305001" Cell="4,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%03051_R-%TT%0305101" Cell="4,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%03253_R-%TT%0325301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%03057_R-%TT%0305701" Cell="4,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%03057_R-%TT%0305702" Cell="4,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%03253_R-%TT%0325301" Cell="4,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 4 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=4">
-                      <ParameterRefRef RefId="%AID%_P-%TT%04000_R-%TT%0400001"   Cell="5,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%04050_R-%TT%0405001" Cell="5,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%04051_R-%TT%0405101" Cell="5,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%04057_R-%TT%0405701" Cell="5,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%04000_R-%TT%0400001"   Cell="5,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%04050_R-%TT%0405001" Cell="5,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%04051_R-%TT%0405101" Cell="5,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%04253_R-%TT%0425301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%04057_R-%TT%0405701" Cell="5,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%04057_R-%TT%0405702" Cell="5,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%04253_R-%TT%0425301" Cell="5,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 5 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=5">
-                      <ParameterRefRef RefId="%AID%_P-%TT%05000_R-%TT%0500001"   Cell="6,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%05050_R-%TT%0505001" Cell="6,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%05051_R-%TT%0505101" Cell="6,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%05057_R-%TT%0505701" Cell="6,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%05000_R-%TT%0500001"   Cell="6,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%05050_R-%TT%0505001" Cell="6,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%05051_R-%TT%0505101" Cell="6,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%05253_R-%TT%0525301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%05057_R-%TT%0505701" Cell="6,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%05057_R-%TT%0505702" Cell="6,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%05253_R-%TT%0525301" Cell="6,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 6 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=6">
-                      <ParameterRefRef RefId="%AID%_P-%TT%06000_R-%TT%0600001"   Cell="7,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%06050_R-%TT%0605001" Cell="7,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%06051_R-%TT%0605101" Cell="7,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%06057_R-%TT%0605701" Cell="7,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%06000_R-%TT%0600001"   Cell="7,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%06050_R-%TT%0605001" Cell="7,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%06051_R-%TT%0605101" Cell="7,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%06253_R-%TT%0625301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%06057_R-%TT%0605701" Cell="7,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%06057_R-%TT%0605702" Cell="7,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%06253_R-%TT%0625301" Cell="7,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 7 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=7">
-                      <ParameterRefRef RefId="%AID%_P-%TT%07000_R-%TT%0700001"   Cell="8,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%07050_R-%TT%0705001" Cell="8,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%07051_R-%TT%0705101" Cell="8,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%07057_R-%TT%0705701" Cell="8,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%07000_R-%TT%0700001"   Cell="8,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%07050_R-%TT%0705001" Cell="8,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%07051_R-%TT%0705101" Cell="8,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%07253_R-%TT%0725301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%07057_R-%TT%0705701" Cell="8,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%07057_R-%TT%0705702" Cell="8,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%07253_R-%TT%0725301" Cell="8,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 8 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=8">
-                      <ParameterRefRef RefId="%AID%_P-%TT%08000_R-%TT%0800001"   Cell="9,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%08050_R-%TT%0805001" Cell="9,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%08051_R-%TT%0805101" Cell="9,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%08057_R-%TT%0805701" Cell="9,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%08000_R-%TT%0800001"   Cell="9,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%08050_R-%TT%0805001" Cell="9,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%08051_R-%TT%0805101" Cell="9,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%08253_R-%TT%0825301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%08057_R-%TT%0805701" Cell="9,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%08057_R-%TT%0805702" Cell="9,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%08253_R-%TT%0825301" Cell="9,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 9 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=9">
-                      <ParameterRefRef RefId="%AID%_P-%TT%09000_R-%TT%0900001"   Cell="10,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%09050_R-%TT%0905001" Cell="10,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%09051_R-%TT%0905101" Cell="10,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%09057_R-%TT%0905701" Cell="10,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%09000_R-%TT%0900001"   Cell="10,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%09050_R-%TT%0905001" Cell="10,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%09051_R-%TT%0905101" Cell="10,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%09253_R-%TT%0925301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%09057_R-%TT%0905701" Cell="10,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%09057_R-%TT%0905702" Cell="10,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%09253_R-%TT%0925301" Cell="10,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 10 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=10">
-                      <ParameterRefRef RefId="%AID%_P-%TT%10000_R-%TT%1000001"   Cell="11,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%10050_R-%TT%1005001" Cell="11,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%10051_R-%TT%1005101" Cell="11,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%10057_R-%TT%1005701" Cell="11,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%10000_R-%TT%1000001"   Cell="11,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%10050_R-%TT%1005001" Cell="11,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%10051_R-%TT%1005101" Cell="11,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%10253_R-%TT%1025301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%10057_R-%TT%1005701" Cell="11,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%10057_R-%TT%1005702" Cell="11,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%10253_R-%TT%1025301" Cell="11,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 11 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=11">
-                      <ParameterRefRef RefId="%AID%_P-%TT%11000_R-%TT%1100001"   Cell="12,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%11050_R-%TT%1105001" Cell="12,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%11051_R-%TT%1105101" Cell="12,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%11057_R-%TT%1105701" Cell="12,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%11000_R-%TT%1100001"   Cell="12,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%11050_R-%TT%1105001" Cell="12,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%11051_R-%TT%1105101" Cell="12,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%11253_R-%TT%1125301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%11057_R-%TT%1105701" Cell="12,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%11057_R-%TT%1105702" Cell="12,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%11253_R-%TT%1125301" Cell="12,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 12 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=12">
-                      <ParameterRefRef RefId="%AID%_P-%TT%12000_R-%TT%1200001"   Cell="13,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%12050_R-%TT%1205001" Cell="13,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%12051_R-%TT%1205101" Cell="13,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%12057_R-%TT%1205701" Cell="13,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%12000_R-%TT%1200001"   Cell="13,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%12050_R-%TT%1205001" Cell="13,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%12051_R-%TT%1205101" Cell="13,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%12253_R-%TT%1225301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%12057_R-%TT%1205701" Cell="13,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%12057_R-%TT%1205702" Cell="13,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%12253_R-%TT%1225301" Cell="13,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 13 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=13">
-                      <ParameterRefRef RefId="%AID%_P-%TT%13000_R-%TT%1300001"   Cell="14,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%13050_R-%TT%1305001" Cell="14,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%13051_R-%TT%1305101" Cell="14,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%13057_R-%TT%1305701" Cell="14,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%13000_R-%TT%1300001"   Cell="14,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%13050_R-%TT%1305001" Cell="14,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%13051_R-%TT%1305101" Cell="14,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%13253_R-%TT%1325301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%13057_R-%TT%1305701" Cell="14,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%13057_R-%TT%1305702" Cell="14,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%13253_R-%TT%1325301" Cell="14,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 14 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=14">
-                      <ParameterRefRef RefId="%AID%_P-%TT%14000_R-%TT%1400001"   Cell="15,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%14050_R-%TT%1405001" Cell="15,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%14051_R-%TT%1405101" Cell="15,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%14057_R-%TT%1405701" Cell="15,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%14000_R-%TT%1400001"   Cell="15,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%14050_R-%TT%1405001" Cell="15,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%14051_R-%TT%1405101" Cell="15,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%14253_R-%TT%1425301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%14057_R-%TT%1405701" Cell="15,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%14057_R-%TT%1405702" Cell="15,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%14253_R-%TT%1425301" Cell="15,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 15 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=15">
-                      <ParameterRefRef RefId="%AID%_P-%TT%15000_R-%TT%1500001"   Cell="16,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%15050_R-%TT%1505001" Cell="16,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%15051_R-%TT%1505101" Cell="16,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%15057_R-%TT%1505701" Cell="16,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%15000_R-%TT%1500001"   Cell="16,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%15050_R-%TT%1505001" Cell="16,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%15051_R-%TT%1505101" Cell="16,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%15253_R-%TT%1525301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%15057_R-%TT%1505701" Cell="16,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%15057_R-%TT%1505702" Cell="16,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%15253_R-%TT%1525301" Cell="16,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
 
                   <!-- Segment 16 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                     <when test=">=16">
-                      <ParameterRefRef RefId="%AID%_P-%TT%16000_R-%TT%1600001"   Cell="17,1" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%16050_R-%TT%1605001" Cell="17,2" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%16051_R-%TT%1605101" Cell="17,3" />
-                      <ParameterRefRef RefId="%AID%_UP-%TT%16057_R-%TT%1605701" Cell="17,4" />
+                      <ParameterRefRef RefId="%AID%_P-%TT%16000_R-%TT%1600001"   Cell="17,1" HelpContext="NEO-Beschreibung" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%16050_R-%TT%1605001" Cell="17,2" HelpContext="NEO-Start-LED" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%16051_R-%TT%1605101" Cell="17,3" HelpContext="NEO-Ende-LED" />
+                      <choose ParamRefId="%AID%_UP-%TT%16253_R-%TT%1625301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%16057_R-%TT%1605701" Cell="17,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%16057_R-%TT%1605702" Cell="17,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%16253_R-%TT%1625301" Cell="17,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
                     </when>
                   </choose>
                 </ParameterBlock>
-                <ParameterBlock Id="%AID%_PB-nnn" Name="Allgemein-VStrip" Text="Allgemein" Icon="cog-outline" ShowInComObjectTree="true">
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Einstellungen des virtuellen LED-Streifens" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Diese Parameter gelten für alle Segmente und sorgen für ein einheitliches, harmonisches Lichtverhalten des gesamten Streifens." />
-                    <!-- Hier können allgemeine Einstellungen eingefügt werden -->
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemeine Segment Einstellungen:" UIHint="Headline" />
-                    <!-- Update Speed -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="1" HelpContext="%DOC%"/>
-                    <!-- ========================================================================================================= -->
                 </ParameterBlock>
+                <!-- "Allgemein"-Subknoten aufgeloest: Aktualisierungsrate steht jetzt oben auf dieser Seite -->
                 <!-- ========================================================================================================= -->
                 <!-- Segment Templates -->
                 <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEO" IsInner="true" />
@@ -1975,7 +2681,19 @@
         </Baggage>
         <Baggage TargetPath="" Name="Icons.zip" Id="%FILE-ICONS%">
           <FileInfo TimeInfo="%DATETIME%" />
-        </Baggage> 
+        </Baggage>
+        <!-- Topologie-Diagramme als Vollbild (TypePicture) -->
+        <Baggage TargetPath="" Name="topo_1d.png"        Id="%FILE-topo-1d%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_serprows.png"  Id="%FILE-topo-serprows%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_linrows.png"   Id="%FILE-topo-linrows%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_serpcols.png"  Id="%FILE-topo-serpcols%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_lincols.png"   Id="%FILE-topo-lincols%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_tilelin.png"   Id="%FILE-topo-tilelin%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_tileserp.png"  Id="%FILE-topo-tileserp%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_depth3d.png"   Id="%FILE-topo-depth3d%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_depthtile.png" Id="%FILE-topo-depthtile%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_chainm.png" Id="%FILE-topo-chainm%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
+        <Baggage TargetPath="" Name="topo_chains.png" Id="%FILE-topo-chains%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
       </Baggages>
     </Manufacturer>
   </ManufacturerData>

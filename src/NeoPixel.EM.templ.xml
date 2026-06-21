@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/20" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
+
+    <!-- Cue part: 10 cues per EM, 48 bytes each -->
+    <!-- PPP: Param-ID offset, starts at 100, +18 per cue -->
+    <!-- MO:  Flash offset within EM channel, starts at 20, +48 per cue -->
+    <!-- CUE_NR: Display number (1-10) -->
+    <op:part href="NeoPixel.Cue.part.xml" name="Cue" instances="10">
+        <op:param name="%CUE_PPP%" value="100" increment="18" />
+        <op:param name="%CUE_OFF%" value="20"  increment="48" />
+        <op:param name="%CUE_NR%"  value="1"   increment="1"  asLetter="false"/>
+        <op:param name="%CUE_TPP%" value="1000" increment="500" />
+        <!-- CUE_LBL entfernt: Cue-Baum-Titel zeigt jetzt JS-frei direkt auf den rohen Cue-Namen (CUE_PPP+16) -->
+    </op:part>
+
+    <ManufacturerData>
+    <Manufacturer RefId="M-00FA">
+      <ApplicationPrograms>
+        <ApplicationProgram>
+          <Static>
+            <Parameters>
+              <Union SizeInBit="4000" op:nowarn="true">
+                <!-- 500 bytes × 16 EMs = 8000 bytes = 64000 bits (max SizeInBit for Union) -->
+                <!-- Per EM layout: 20 bytes header + 10 × 48 bytes cues = 500 bytes -->
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
+
+                <!-- ── EM Header (20 bytes, Offsets 0-19) ─────────────────── -->
+                <!-- Byte 0-15: FREI/RESERVIERT fuer spaeteren EM-Ausbau.
+                     Die EM-Beschreibung ist jetzt NICHT-gespeichert (ETS-only, P-001 unten) -> kein Geraete-Speicher. -->
+                <!-- (kein Parameter hier; 16 Byte bleiben ungenutzt) -->
+                <!-- Byte 16: CueCount (1-10) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%002" Offset="16" BitOffset="0" Name="NEOEM%C%CueCount" ParameterType="%AID%_PT-EMCueCount" Text="Anzahl aktiver Cues" SuffixText=" von 10" Value="1"/>
+                <!-- Byte 17, Bit 0: Loop -->
+                <Parameter Id="%AID%_UP-%TT%%CC%003" Offset="17" BitOffset="0" Name="NEOEM%C%Loop"     ParameterType="%AID%_PT-EMLoop"     Text="Loop" Value="0"/>
+                <!-- Byte 17, Bit 1: Effekt-Text KOs aktivieren (0=aus, 1=ein) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%009" Offset="17" BitOffset="1" Name="NEOEM%C%TextKOs" ParameterType="%AID%_PT-EMTextKOs" Text="Effekt-Text KOs aktivieren" Value="0"/>
+                <!-- Byte 18: Next EM (0=stop, 1-16) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%004" Offset="18" BitOffset="0" Name="NEOEM%C%Next"     ParameterType="%AID%_PT-EMNext"     Text="Wenn fertig → Effektmanager" Value="0"/>
+                <!-- Byte 19: reserved -->
+
+                <!-- Byte 19: Zustand (0=Deaktiviert, 1=Aktiv, 2=Suspendiert). Default 1=Aktiv. Wertstabil zu Bestand (alt 0=aus->Deaktiviert, 1=an->Aktiv).
+                     Deaktiviert: Typ/Params/KOs entfernt (GAs verloren). Suspendiert: alles bleibt, FW rendert nicht (⏸). -->
+                <Parameter Id="%AID%_UP-%TT%%CC%005" Offset="19" BitOffset="0" Name="NEOEM%C%Enabled" ParameterType="%AID%_PT-EMEnabled" Text="Zustand" Value="1"/>
+
+                <!-- ── Cues (10 × 44 bytes, Offsets 20-459) ──────────────── -->
+                <!-- AUTO-GENERATED via op:part (NeoPixel.Cue.part.xml, 10 instances) -->
+                <op:usePart name="Cue" xpath="//Parameters/*" />
+              </Union>
+              <!-- EM-Beschreibung: NICHT-gespeichert (Access=None, ohne Offset) => bis 40 Zeichen, kostet keinen Flash.
+                   Firmware nutzt den Namen nicht (Konsole entfernt); Baum-Titel & KO-Namen via Marker-DisplayName (P-010).
+                   Die fruehere gespeicherte 16-Byte-Stelle (Union Offset 0-15) bleibt frei/reserviert. -->
+              <Parameter Id="%AID%_P-%TT%%CC%001" Name="NEOEM%C%Name" ParameterType="%AID%_PT-EMName" Text="Beschreibung" Value="" />
+              <!-- EM Display-Name: roher Name + JS-Zustands-Marker (⛔ Deaktiviert=0 / ⏸ Suspendiert=2),
+                   berechnet via ParameterCalculation BASE_MarkInactiveChannel (ETS5-kompatibel statt <Rename>).
+                   Access=None + ohne Offset => NICHT gespeichert (kein Speicher, Union bleibt voll/unveraendert);
+                   nur Baum-Titel & EM-KO-Namen zeigen via TextParameterRefId darauf. -->
+              <Parameter Id="%AID%_P-%TT%%CC%010" Name="NEOEM%C%DisplayName" ParameterType="%AID%_PT-EMDisplayName" Text="" Value="" Access="None" />
+            </Parameters>
+
+            <ParameterRefs>
+              <ParameterRef Id="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_P-%TT%%CC%001" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201" RefId="%AID%_UP-%TT%%CC%002" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%003_R-%TT%%CC%00301" RefId="%AID%_UP-%TT%%CC%003" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%004_R-%TT%%CC%00401" RefId="%AID%_UP-%TT%%CC%004" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" RefId="%AID%_UP-%TT%%CC%005" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%009_R-%TT%%CC%00901" RefId="%AID%_UP-%TT%%CC%009" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" RefId="%AID%_P-%TT%%CC%010" />
+              <!-- P-006/007 + CueLabel-Refs (910-919) entfernt (JS-frei, siehe oben) -->
+              <op:usePart name="Cue" xpath="//ParameterRefs/*" />
+            </ParameterRefs>
+
+            <ParameterCalculations>
+              <!-- Zustands-Marker (JS, ETS5-kompatibel; ersetzt das fruehere <Rename>): schreibt ⛔ vor den
+                   rohen EM-Namen bei Deaktiviert (0) bzw. ⏸ bei Suspendiert (2), sonst kein Marker. Ergebnis
+                   landet im nicht-gespeicherten Display-Name (UP-010); Baum-Titel & alle EM-KOs zeigen darauf.
+                   Aktualisiert live beim Umschalten des Zustands-Dropdowns. -->
+              <ParameterCalculation Id="%AID%_PC-%TT%%CC%001" Language="JavaScript" Name="NEOEM%C%MarkState"
+                  LRTransformationFunc="BASE_MarkInactiveChannel" RLTransformationFunc="BASE_Nop"
+                  LRTransformationParameters="{&quot;InactiveValue&quot;:0,&quot;PausedValue&quot;:2}">
+                <LParameters>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" AliasName="InactiveControl" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" AliasName="TextInput" />
+                </LParameters>
+                <RParameters>
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" AliasName="TextOutput" />
+                </RParameters>
+              </ParameterCalculation>
+            </ParameterCalculations>
+
+            <ComObjectTable>
+              <!-- Effektmanager KOs (K0-K3 per EM/segment) -->
+              <ComObject Id="%AID%_O-%TT%%CC%001" Number="%K0%" Name="%C%EmStart"     Text="Effektmanager Start"  FunctionText="NeoPixel EM %C%: Start (1-16)"     ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%002" Number="%K1%" Name="%C%EmStatus"    Text="Effektmanager Status" FunctionText="NeoPixel EM %C%: Status"             ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%003" Number="%K2%" Name="%C%EmStop"      Text="Effektmanager Stop"   FunctionText="NeoPixel EM %C%: Stop"               ObjectSize="1 Bit"   DatapointType="DPST-1-1"  WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%004" Number="%K3%" Name="%C%EmCueStatus" Text="Aktive Cue"           FunctionText="NeoPixel EM %C%: Aktive Cue-Nummer" ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Cue gezielt anspringen (Eingang für StateEngine/Logik). Wert = Cue-Nr; springt im LAUFENDEN EM. „Weiter" = Logik liest „Aktive Cue" + 1. Direkt nach „Aktive Cue" gruppiert. -->
+              <ComObject Id="%AID%_O-%TT%%CC%009" Number="%K4%" Name="%C%EmCueSet" Text="Cue setzen" FunctionText="NeoPixel EM %C%: Cue anspringen (1-10)" ObjectSize="1 Byte" DatapointType="DPST-5-10" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Effekt-Text KOs (DPT 16.001): set/read the text of the running effect on segment %C% (any source: ETS, Cue, Scene). No-op if effect has no text parameter. -->
+              <!-- EffectText replaces the text; EffectTextAppend appends 14-char chunks (long texts up to 240 chars, e.g. via Logikmodul). Empty EffectText clears. -->
+              <ComObject Id="%AID%_O-%TT%%CC%005" Number="%K5%" Name="%C%EffectText"       Text="Effekt-Text"          FunctionText="NeoPixel EM %C%: Effekt-Text setzen, DPT 16.001"    ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%006" Number="%K6%" Name="%C%EffectTextStatus" Text="Effekt-Text Status"   FunctionText="NeoPixel EM %C%: Effekt-Text Status, DPT 16.001"    ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%007" Number="%K7%" Name="%C%EffectTextAppend" Text="Effekt-Text Anhängen" FunctionText="NeoPixel EM %C%: Effekt-Text anhängen, DPT 16.001" ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Effektkette Sync-Telegramm (intern, Master→Slaves). Raw-Payload: flags/effect/speed/R/G/B/W/brightness/CW. Master sendet, Slave empfängt — gleiche GA auf beiden Seiten verbinden. -->
+              <ComObject Id="%AID%_O-%TT%%CC%008" Number="%K8%" Name="%C%SyncChain"        Text="Effektkette Sync"     FunctionText="NeoPixel Segment %C%: Effektkette Sync-Telegramm (intern)"  ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+            </ComObjectTable>
+
+            <ComObjectRefs>
+              <!-- KO-Texte zeigen auf den JS-Display-Name (UP-010): roher EM-Name + Zustands-Marker (⛔/⏸), berechnet via BASE_MarkInactiveChannel. -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_O-%TT%%CC%001" Text="{{0:%C%}}: EM Start"  TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%002_R-%TT%%CC%00201" RefId="%AID%_O-%TT%%CC%002" Text="{{0:%C%}}: EM Status" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%003_R-%TT%%CC%00301" RefId="%AID%_O-%TT%%CC%003" Text="{{0:%C%}}: EM Stop"   TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%004_R-%TT%%CC%00401" RefId="%AID%_O-%TT%%CC%004" Text="{{0:%C%}}: Aktive Cue" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%009_R-%TT%%CC%00901" RefId="%AID%_O-%TT%%CC%009" Text="{{0:%C%}}: Cue setzen" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" RefId="%AID%_O-%TT%%CC%005" Text="{{0:%C%}}: Effekt-Text" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%006_R-%TT%%CC%00601" RefId="%AID%_O-%TT%%CC%006" Text="{{0:%C%}}: Effekt-Text Status" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%007_R-%TT%%CC%00701" RefId="%AID%_O-%TT%%CC%007" Text="{{0:%C%}}: Effekt-Text Anhängen" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%008_R-%TT%%CC%00801" RefId="%AID%_O-%TT%%CC%008" Text="{{0:%C%}}: Effektkette Sync" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001"/>
+            </ComObjectRefs>
+
+          </Static>
+          <Dynamic>
+            <ChannelIndependentBlock>
+              <choose ParamRefId="%AID%_UP-4000074_R-400007401">
+                <when test=">=%C%">
+                  <ParameterBlock Id="%AID%_PB-%TT%%CC%001" Name="EM%C%" Text="EM %C%: {{0:...}}" Icon="effectmanager" ShowInComObjectTree="true" TextParameterRefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001">
+                    <!-- Zustands-Marker (⛔ Deaktiviert / ⏸ Suspendiert) kommt jetzt aus dem nicht-gespeicherten
+                         JS-Display-Name (UP-010 via BASE_MarkInactiveChannel) — ETS5-kompatibel, kein <Rename> mehr.
+                         Der ParameterBlock-Titel oben zeigt via TextParameterRefId direkt darauf. -->
+                    <!-- Zustands-Auswahl (Dropdown Aktiv/Deaktiviert/Suspendiert): IMMER sichtbar, damit man zurueckschalten kann -->
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" IndentLevel="1" HelpContext="NEO-EM-Aktiv"/>
+                    <!-- Params + KOs nur wenn NICHT Deaktiviert (Aktiv oder Suspendiert). Bei Deaktiviert (0): entfernt -> GAs gehen verloren. Suspendiert (2): bleibt voll erhalten, FW rendert nur nicht. -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501">
+                      <when test="!=0">
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="NEO-EM-Beschreibung"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201" IndentLevel="1" HelpContext="NEO-EM-Anzahl-Cues"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%003_R-%TT%%CC%00301" IndentLevel="1" HelpContext="NEO-EM-Loop"/>
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%004_R-%TT%%CC%00401" IndentLevel="1" HelpContext="NEO-EM-Next"/>
+                        <!-- Effekt-Text KOs: Checkbox + Info direkt hier (damit es nicht unter die Cue-Tabelle rutscht) -->
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%009_R-%TT%%CC%00901" IndentLevel="1" HelpContext="NEO-EM-TextKOs"/>
+                        <choose ParamRefId="%AID%_UP-%TT%%CC%009_R-%TT%%CC%00901">
+                          <when test="1">
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="N&#xF6;tig, wenn ein Cue den Effekt &quot;Laufschrift&quot; nutzt und der Text zur Laufzeit per KNX (DPT 16.001) ge&#xE4;ndert werden soll. Aus = Text-KOs bleiben ausgeblendet." UIHint="Information"/>
+                          </when>
+                        </choose>
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler"/>
+                        <!-- Cue-Übersichtstabelle -->
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Cue-Übersicht" UIHint="Headline"/>
+                        <ParameterBlock Id="%AID%_PB-nnn" Name="CueTable%C%" Text="" HelpContext="Empty" Inline="true" Layout="Grid">
+                          <Rows>
+                            <Row Id="%AID%_PB-nnn_R-0"/>
+                            <Row Id="%AID%_PB-nnn_R-1"/>
+                            <Row Id="%AID%_PB-nnn_R-2"/>
+                            <Row Id="%AID%_PB-nnn_R-3"/>
+                            <Row Id="%AID%_PB-nnn_R-4"/>
+                            <Row Id="%AID%_PB-nnn_R-5"/>
+                            <Row Id="%AID%_PB-nnn_R-6"/>
+                            <Row Id="%AID%_PB-nnn_R-7"/>
+                            <Row Id="%AID%_PB-nnn_R-8"/>
+                            <Row Id="%AID%_PB-nnn_R-9"/>
+                            <Row Id="%AID%_PB-nnn_R-10"/>
+                          </Rows>
+                          <!-- Gesamtbreite ~128% (ETS erlaubt bis 200%): "Effekt" ist ein
+                               Dropdown mit langen Namen -> deutlich breiter; "Übergang (ms)"
+                               etwas breiter, damit der Header nicht umbricht. -->
+                          <Columns>
+                            <Column Id="%AID%_PB-nnn_C-1" Width="8%"/>
+                            <Column Id="%AID%_PB-nnn_C-2" Width="26%"/>
+                            <Column Id="%AID%_PB-nnn_C-3" Width="48%"/>
+                            <Column Id="%AID%_PB-nnn_C-4" Width="20%"/>
+                            <Column Id="%AID%_PB-nnn_C-5" Width="26%"/>
+                          </Columns>
+                          <!-- Header-Zeile -->
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Cue"           UIHint="Headline" Cell="0,1"/>
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Name"          UIHint="Headline" Cell="0,2"/>
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt"        UIHint="Headline" Cell="0,3"/>
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Dauer (s)"     UIHint="Headline" Cell="0,4"/>
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Übergang (ms)" UIHint="Headline" Cell="0,5"/>
+                          <op:usePart name="Cue" xpath="//Dynamic/CueTableRow/*" />
+                        </ParameterBlock>
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler"/>
+                        <!-- Cue Sub-Nodes (choose-wrapped per Cue in Cue.part.xml) -->
+                        <op:usePart name="Cue" xpath="//Dynamic/ChannelIndependentBlock/*" />
+                    <!-- Effekt-Text KOs im KO-Baum (bedingt) — Checkbox + Info stehen jetzt oben bei den Parametern -->
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%009_R-%TT%%CC%00901">
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%006_R-%TT%%CC%00601" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%%CC%007_R-%TT%%CC%00701" />
+                      </when>
+                    </choose>
+                    <!-- KOs (nur wenn nicht Deaktiviert; bei Suspendiert bleiben sie linkbar) -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%001_R-%TT%%CC%00101" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%002_R-%TT%%CC%00201" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%003_R-%TT%%CC%00301" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%004_R-%TT%%CC%00401" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%009_R-%TT%%CC%00901" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%008_R-%TT%%CC%00801" />
+                      </when>
+                    </choose>
+                  </ParameterBlock>
+                </when>
+              </choose>
+            </ChannelIndependentBlock>
+            <!-- Tabellenzeile für die EM-Auswahltabelle auf der Hauptseite (wird in share.xml included) -->
+            <EmTableRow>
+              <choose ParamRefId="%AID%_UP-4000074_R-400007401">
+                <when test=">=%C%">
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%005_R-%TT%%CC%00501" Cell="%C%,1" HelpContext="NEO-EM-Aktiv" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="EM %C%" Cell="%C%,2" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" Cell="%C%,3" HelpContext="NEO-EM-Beschreibung"/>
+                </when>
+              </choose>
+            </EmTableRow>
+          </Dynamic>
+        </ApplicationProgram>
+      </ApplicationPrograms>
+    </Manufacturer>
+    </ManufacturerData>
+</KNX>

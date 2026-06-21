@@ -12,3 +12,4 @@ compile_commands.json
 include/versions.h
 /.vscode/extensions.json
 /.vscode/settings.json
+**/*.html

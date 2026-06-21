@@ -57,19 +57,19 @@ function Show-Help {
     Write-Host "  .\Build-Release.ps1 [-Release] [-Full] [-SkipFirmware] [-Clean]"
     Write-Host ""
     Write-Host "OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -Release       Create release build (default: beta)"
+    Write-Host "  -Release       Create release build (default: dev)"
     Write-Host "  -Full          Build ALL hardware variants (default: tested only)"
     Write-Host "  -SkipFirmware  Generate configs only, skip firmware compilation"
-    Write-Host "  -Clean         Remove generated files, prompt for rebuild"
+    Write-Host "  -Clean         Remove generated files and exit"
     Write-Host "  -Help, -h      Show this help"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\Build-Release.ps1              " -NoNewline -ForegroundColor White
-    Write-Host "# Beta build (tested hardware)" -ForegroundColor DarkGray
+    Write-Host "# Dev build (tested hardware)" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release     " -NoNewline -ForegroundColor White
     Write-Host "# Release build" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
-    Write-Host "# Include untested REG2 boards" -ForegroundColor DarkGray
+    Write-Host "# Include untested REG2 boards and third-party hardware" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release -Full" -NoNewline -ForegroundColor White
     Write-Host " # Full release" -ForegroundColor DarkGray
     Write-Host ""
@@ -146,64 +146,99 @@ if ($isClean) {
 # BUILD TARGET CONFIGURATION - Add new hardware variants here
 # ============================================================================
 #
-# Target format: @{ Env = "environment"; Name = "Output-Filename"; Features = "featureset"; HwSection = "section-name" }
+# Target format: @{ Env = "environment"; Name = "Output-Filename"; Ext = "feature-set"; HwSection = "section-name" }
 #   Env       - PlatformIO environment name from platformio.ini (e.g., release_OKNXHW_...)
 #   Name      - Output firmware filename without extension (e.g., OpenKNX-XIAO-KNeoPiX-RP2350_V1)
-#   Features  - FeatureSet passed to Build-Step.ps1, controls upload script generation:
-#                 rp2040-tp    : RP2040, KNX TP bus only (USB flash + KNX-Upload)
-#                 rp2040-ip    : RP2040, IP/OTA only (USB flash + OTA-Upload, no KNX-Upload)
-#                 rp2040-tpip  : RP2040, KNX TP + IP/OTA (USB flash + KNX-Upload + OTA-Upload)
-#                 rp2350-tp    : RP2350, KNX TP bus only
-#                 rp2350-ip    : RP2350, IP/OTA only
-#                 rp2350-tpip  : RP2350, KNX TP + IP/OTA
-#                 esp32-ip     : ESP32, IP/OTA (WiFi OTA, no KNX-Upload)
-#                 esp32-tp     : ESP32, KNX TP bus only
-#                 esp32-tpip   : ESP32, KNX TP + IP/OTA
-#               Deprecated (still supported for compatibility):
-#                 uf2          : RP2040 TP-only (use rp2040-tp instead)
-#                 bin          : SAMD (legacy, not used for current hardware)
-#                 esp32        : alias for esp32-ip
+#   Ext       - Build-Step featureSet (historical field name; not a literal file extension)
+#               featureSet replaces the old binaryFormat setting in a compatible way.
+#               It is interpreted as an enum with some deprecated values for compatibility:
+#                       bin (deprecated)   - old SAMD processor (deprecated)
+#                       uf2 (deprecated)   - RP2040 without OTA
+#                       esp32 (deprecated) - ESP32 with OTA
+#                       esp32-ip (new)     - ESP32 with OTA
+#                       esp32-tp (new)     - ESP32 with KNX
+#                       esp32-tpip (new)   - ESP32 with KNX and OTA
+#                       esp32-iptp (new)   - ESP32 with KNX and OTA
+#                       rp2040-ip (new)    - RP2040 with OTA
+#                       rp2040-tp (new)    - RP2040 with KNX
+#                       rp2040-tpip (new)  - RP2040 with KNX and OTA
+#                       rp2040-iptp (new)  - RP2040 with KNX and OTA
+#                       rp2350-ip (new)    - RP2350 with OTA
+#                       rp2350-tp (new)    - RP2350 with KNX
+#                       rp2350-tpip (new)  - RP2350 with KNX and OTA
+#                       rp2350-iptp (new)  - RP2350 with KNX and OTA
+#               Inherent logic:
+#                 a device with OTA does not need a KNX upload script
+#                 ESP is always IP and OTA is always possible
+#                 RP2040/RP2350 needs to distinguish between IP and TP variants
 #   HwSection - EXACT section name from platformio.hardware.ini (e.g., neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1)
 #               This section name is used by Build-HardwareConfig.ps1 to extract build_flags for the C preprocessor
 #
-# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Features = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
 # ============================================================================
 
 # Standard Build Targets (tested hardware)
 $standardTargets = @(
-    # OpenKNXiao KNeoPiX (XIAO RP2350/RP2040 + KNeoPiX shield, KNX TP only)
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Features = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Features = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
-    # OpenKNXiao Mini (standalone XIAO without shield, KNX TP only)
-    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Features = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Features = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
-    # OpenKNX REG2 - PiPico Variants (TP only / TP+IP for W-variants with WiFi)
-    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Features = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Features = "rp2040-tpip"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Features = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Features = "rp2350-tpip"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
-    # OpenKNX PiPico BCU Connector (direct BCU bus connection, TP only)
-    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Features = "rp2040-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
-    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Features = "rp2350-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
-    # OpenKNX UP1 Board (RP2040, KNX TP only)
-    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Features = "rp2040-tp"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
-)
+    # OpenKNXiao KNeoPiX
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    #@{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_IP"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    # OpenKNXiao Mini
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32S3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32S3_MINI_V1" }
+    # OpenKNX UP1 Board
+    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
+    )
 
 # Full Build Targets (additional, not yet tested hardware)
 $fullTargets = @(
-    # OpenKNXiao KNeoPiX - ESP32 Variants (XIAO ESP32 + KNeoPiX shield, KNX TP + WiFi OTA)
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C5_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
-    # OpenKNXiao Mini - ESP32 Variants (standalone XIAO ESP32, KNX TP + WiFi OTA)
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C3-Mini_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C3_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C5_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C5-Mini_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C5_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32S3-Mini_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32S3_MINI_V1" }
-    # OpenKNX REG2 - ESP32S3 Pico V1 (KNX TP + WiFi OTA)
-    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Features = "esp32-tpip"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" }
-)
+    # OpenKNXiao KNeoPiX - ESP32 Variants
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C5_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V1" }
+    
+    # OpenKNXiao Mini - ESP32 Variants
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C3_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C5_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C5-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C5_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
+   
+    # OpenKNX REG2 - ESP32S3 Variant (Pico form factor)
+    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" }
+
+    # OpenKNX REG2 - PiPico Variants
+    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
+    
+    # OpenKNX PiPico BCU Connector
+    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
+    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
+
+    # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz (Gledopto: https://gledopto.com/h-pd-124.html)
+    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
+    @{ Env = "release_GLEDOPTO_GL_C_017WL";             Name = "Gledopto-GL-C-017WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_017WL" }
+    @{ Env = "release_GLEDOPTO_GL_C_620WL";              Name = "Gledopto-GL-C-620WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_620WL" }
+    
+    # QuinLED Variants (QuinLED: https://www.quinled.info/)
+    @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG2GO" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI";           Name = "QuinLED-Dig-Uno-V3-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_ETHERNET";       Name = "QuinLED-Dig-Uno-V3-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS";   Name = "QuinLED-Dig-Uno-V3-WiFi-AE-Plus";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI";          Name = "QuinLED-Dig-Quad-V3-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_ETHERNET";      Name = "QuinLED-Dig-Quad-V3-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS";  Name = "QuinLED-Dig-Quad-V3-WiFi-AE-Plus";  Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_WIFI" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_NEXT2" }
+    )
+
+# Hardware identity list (ETS dropdown / JS auto-detect / HW map):
+#   'Dynamic' (default) = only hardware built here -> small files; mismatch-safe via stable HW-ID
+#   'Full'              = all of platformio.hardware.ini -> every product offers all hardware
+$HardwareListMode = 'Dynamic'
 
 # Generate dynamic GPIO templates before building
 # Collect exact hardware section names from all targets that will be built
@@ -215,9 +250,9 @@ if ($isFull) {
 # Extract unique hardware section names from targets
 $hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
 
-Write-Host "Generating GPIO templates for selected hardware..." -ForegroundColor Cyan
+Write-Host "Generating GPIO templates for selected hardware (mode: $HardwareListMode)..." -ForegroundColor Cyan
 Write-Host "  Section filter: $($hardwareFilter -join ', ')" -ForegroundColor DarkGray
-scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter
+scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter -HardwareListMode $HardwareListMode
 if (!$?) {
     Write-Host "GPIO template generation failed!" -ForegroundColor Red
     exit 1
@@ -232,8 +267,8 @@ if (!$?) {
 }
 
 # Determine build parameter for OpenKNXproducer
-# Pass "Release" if it was Release, otherwise empty (Beta)
-$buildParam = if ($isRelease) { "Release" } else { "" }
+# Pass "Release" or "Dev" to select the matching XML file
+$buildParam = if ($isRelease) { "Release" } else { "Dev" }
 
 # Execute generic pre-build steps
 ../OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
@@ -250,15 +285,15 @@ if (-not $isSkipFirmware) {
     # Build standard targets
     Write-Host "Building standard targets (tested hardware)..." -ForegroundColor Cyan
     foreach ($target in $standardTargets) {
-        ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Features
+        ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
         if (!$?) { exit 1 }
     }
     
     # Build full targets if requested
     if ($isFull) {
-        Write-Host "Building full targets (untested ESP32/additional hardware)..." -ForegroundColor Cyan
+        Write-Host "Building full targets (untested REG2 hardware)..." -ForegroundColor Cyan
         foreach ($target in $fullTargets) {
-            ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Features
+            ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
             if (!$?) { exit 1 }
         }
     } else {

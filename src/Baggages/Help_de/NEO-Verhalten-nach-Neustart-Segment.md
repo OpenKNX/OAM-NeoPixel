@@ -8,6 +8,7 @@ Diese Einstellung legt fest, welchen Zustand dieses LED-Segment nach einem Neust
 Das Segment übernimmt die globale Einstellung "Verhalten nach Neustart (Global)".
 
 **Anwendungsfall:**
+
 - Einheitliches Verhalten über alle oder mehrere Segmente
 - Zentrale Konfiguration, einfache Verwaltung
 
@@ -18,11 +19,13 @@ Wenn global "Letzter Zustand" eingestellt ist, wird auch dieses Segment im letzt
 Dieses Segment wird nach einem Neustart ausgeschaltet, unabhängig von der globalen Einstellung.
 
 **Anwendungsfall:**
+
 - Dekorative Beleuchtung, die nur manuell aktiviert werden soll
 - Energiesparen für selten genutzte Bereiche
 - Notbeleuchtung, die nur bei Bedarf eingeschaltet wird
 
 **Beispiel:**
+
 - Global: "Letzter Zustand"
 - Segment 1-3: "Global verwenden" (starten im letzten Zustand)
 - Segment 4 (Party-Effekt): "Aus" (wird nur manuell aktiviert)
@@ -31,6 +34,7 @@ Dieses Segment wird nach einem Neustart ausgeschaltet, unabhängig von der globa
 Dieses Segment wird im zuletzt aktiven Zustand wiederhergestellt, unabhängig von der globalen Einstellung.
 
 Das System speichert vor jedem Neustart automatisch:
+
 - Farbe (RGBW-Werte)
 - Helligkeit
 - Power-Status (Ein/Aus)
@@ -38,6 +42,7 @@ Das System speichert vor jedem Neustart automatisch:
 **Wichtig:** Der aktive Effekt und dessen Parameter (Speed, Intensity) werden **nicht** im Flash gespeichert. Nach einem Neustart wird immer der in ETS konfigurierte Effekt verwendet. Dies stellt sicher, dass nach einer ETS-Umprogrammierung keine alten Effekt-Einstellungen die neue Konfiguration überschreiben.
 
 **Anwendungsfall:**
+
 - Wichtige Segmente sollen immer ihren Zustand beibehalten
 - Grundbeleuchtung mit zuverlässiger Wiederherstellung
 
@@ -47,16 +52,19 @@ Das System speichert vor jedem Neustart automatisch:
 Dieses Segment startet mit einer eigenen vordefinierten Farbe und Helligkeit, unabhängig von der globalen Einstellung.
 
 Zusätzliche Parameter (nur sichtbar bei dieser Option):
+
 - **Standard-Farbe R/G/B/W:** RGB-Farbwerte (0-255) und optional Weiß-Kanal
 - **Standard-Helligkeit:** Helligkeit von 0-255
 - **Standard-Effekt:** Optional ein Effekt (z.B. Rainbow, Cylon)
 
 **Anwendungsfall:**
+
 - Statusanzeige mit definierter Startfarbe (z.B. grün = "System bereit")
 - Segment mit spezifischer Grundbeleuchtung
 - Akzentbeleuchtung mit fester Farbe
 
 **Beispiel:**
+
 - Global: "Letzter Zustand"
 - Segment 1-3: "Global verwenden" (starten im letzten Zustand)
 - Segment 4 (Status-LED): "Standard-Farbe (eigene)" → grün, 50% Helligkeit, Solid-Effekt
@@ -87,6 +95,7 @@ Die Segment-Einstellung hat **immer Vorrang** vor der globalen Einstellung:
   → Zeigt immer System-Bereitschaft mit blauem Licht
 
 **Ergebnis nach Neustart:**
+
 - Segment 0+1: Letzte Farbe/Helligkeit wiederhergestellt
 - Segment 2: Aus
 - Segment 3: Blaues Statuslicht (30%)

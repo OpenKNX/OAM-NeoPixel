@@ -13,7 +13,7 @@ class Segment;
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
  *
- * Storage: 10 bytes per segment × 16 segments = 160 bytes max (+ relay state)
+ * Storage: 14 bytes per segment × 16 segments = 224 bytes max (+ relay state)
  */
 class NeoPixelFlashPersistence
 {
@@ -39,7 +39,7 @@ class NeoPixelFlashPersistence
      */
     struct SegmentFlashState
     {
-        uint8_t version;    // Structure version (0x01)
+        uint8_t version;    // = FLASH_FORMAT_VERSION; validated on read (discard on mismatch)
         uint8_t validFlags; // Bitfield: which values are valid/changed via KO
 
         // KO-changed values (restored if corresponding validFlags bit set):
@@ -51,7 +51,19 @@ class NeoPixelFlashPersistence
         uint8_t effectFlags; // bit0=effectValid, bit1=lastWasEffect
 
         // Reserved for future KO parameters (HSV, CCT, effect params):
-        uint8_t reserved[3]; // Phase 2: HSV/CCT/effect parameter values
+        uint8_t reserved[3]; // reserved[0] = last active scene number (0 = no scene)
+                             // reserved[1] = last active Effektmanager ID (0 = none)
+                             // reserved[2] = reserved
+        //
+        // BACKWARD COMPATIBILITY (version stays 0x01, no migration needed):
+        //   These two bytes were repurposed from the original zero-initialized
+        //   reserved[] pool. Saves written by older firmware had reserved[]=0,
+        //   and 0 is a valid "none" sentinel for BOTH fields (scene 0 = no scene,
+        //   EM_NONE == 0). Restoring an old blob therefore yields "no scene / no
+        //   EM" — correct, no data loss.
+        //   IMPORTANT: if the meaning of any reserved[] byte changes in a way
+        //   where 0 is no longer a safe default, bump `version` and gate the
+        //   read on it (see readFromFlash) before reinterpreting old blobs.
 
         // Total: 14 bytes per segment × 16 segments = 224 bytes max
     } __attribute__((packed));
@@ -62,10 +74,18 @@ class NeoPixelFlashPersistence
      */
     struct RelayFlashState
     {
-        uint8_t count;        // Number of relays configured (0..kMax)
-        uint8_t statesMask;   // Bitmask: bit0=Relay1, bit1=Relay2, ...
-        uint8_t signature;    // 0xA5 when valid
+        uint8_t count;      // Number of relays configured (0..kMax)
+        uint8_t statesMask; // Bitmask: bit0=Relay1, bit1=Relay2, ...
+        uint8_t signature;  // 0xA5 when valid
     } __attribute__((packed));
+
+    // Format version of the persisted SegmentFlashState layout. Written into every
+    // record's `version` byte and validated on read. BUMP THIS whenever the meaning
+    // of any byte changes (even if the total size stays the same) — a firmware
+    // update will then DISCARD the now-incompatible saved state and fall back to
+    // ETS/defaults, instead of misinterpreting old bytes (which caused "weird
+    // behaviour" after firmware updates that kept the old size).
+    static constexpr uint8_t FLASH_FORMAT_VERSION = 0x01;
 
     /**
      * @brief Constructor
@@ -75,7 +95,7 @@ class NeoPixelFlashPersistence
 
     /**
      * @brief Calculate flash size needed for storing segment states
-     * @return Number of bytes required (10 bytes × configured segments)
+     * @return Number of bytes required (14 bytes × configured segments)
      */
     uint16_t calculateFlashSize() const;
 
