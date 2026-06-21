@@ -386,14 +386,24 @@ OpenKNX NeoPixel runs on a wide range of OpenKNX-compatible controllers. The **O
 
 ## Changelog
 
-### 0.3.0 (Beta)
+### 0.3.0
 
+- ⚠️ **not backward compatible with v0.2** — the configuration layout and feature set changed substantially; re-create the configuration in ETS and re-commission the device (a v0.2 project cannot be updated in place, existing group-address links do not carry over)
 - added the **Effektmanager**: cue-based, timed effect sequences per segment with fades, looping and chaining
+- Effektmanager channels now have **three states** — Active, Disabled (removed) and Suspended (kept configured/linked but not rendering); the device tree marks Disabled with ⛔ and Suspended with ⏸ *(this state model may still change in an upcoming version)*
 - added the **Effektkette** (distributed rendering): run one effect seamlessly across multiple KNX devices (master/slave)
-- added **2D/3D matrix** support with topology-aware geometry and a suite of native 2D effects (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock, Matrix, TRON, Starfield Warp, Plasma Nebula, UFO Swarm, Snake, Tetris)
+- added **scenes**: up to 10 per segment with KNX store/recall (DPT 18.001)
+- added **2D/3D matrix** support with topology-aware geometry and a suite of native 2D effects (Fire 2D, Noise 2D, Cylon 2D, Scroll Text, Clock, Matrix, TRON, Starfield Warp, Plasma Nebula, UFO Swarm, Snake, Tetris, Game of Life, DNA, Aurora, Lissajous, Metaballs)
+- added **effect-text objects** (DPT 16.001): set or append the running text live over KNX (e.g. for Scroll Text), up to 240 characters
+- added **external relays** (up to 4) for switching LED power supplies, fans etc., with on/off delays, minimum off-time and inverted-logic option; ETS warns if a relay also powers this device
+- **long, freely editable descriptions** (up to 40 characters) for Effektmanagers and relays
+- **context help (?)** throughout, including the segment overview table cells
+- **HCL / human-centric lighting** moved to the LightManager module
+- **stable hardware identity** (device HW-ID survives ETS catalogue changes); new hardware: Gledopto GL-C-017WL / GL-C-620WL and RP2350 (Pico 2) targets
 - per-effect default values now populate in ETS (segment, scene and cue)
+- stability: fixed an ESP32-WROOM boot crash; repartitioned the RP2350 4 MB flash so the larger firmware fits
 - reworked the documentation (overview, feature highlights and the OFM-NeoPixel technical deep-dive)
-- released as the **0.3 Beta** product; the development build (Dev product) runs ahead at 0.4 — both can coexist in the ETS catalogue
+- released as the **0.3** product; the development build (Dev product) runs ahead at 0.4 — both can coexist in the ETS catalogue
 
 ### 0.2.0
 
