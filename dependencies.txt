@@ -8,6 +8,6 @@ ac2dd64 v1dev lib/OFM-LightManager https://github.com/OpenKNX/OFM-LightManager
 abce9a9 v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
 3052857 v1dev lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 55119fc v1dev lib/OFM-UsbExchange https://github.com/OpenKNX/OFM-UsbExchange.git
-6fdb851 ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
+b4b31fd ec/v1dev-ec-wip lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
 43dd2b9 v1dev lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
 419f08d main lib/TPUart https://github.com/OpenKNX/TPUart
