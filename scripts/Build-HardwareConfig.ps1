@@ -886,7 +886,7 @@ function Generate-RelayConfigParametersInShare {
   $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00182`" Name=`"NEOExternalRelay1Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />`n"
   $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00183`" Name=`"NEOExternalRelay2Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />`n"
   $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00184`" Name=`"NEOExternalRelay3Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />`n"
-  $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00185`" Name=`"NEOExternalRelay4Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" Access=`"None`" />"
+  $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00185`" Name=`"NEOExternalRelay4Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $markers['RelayConfigStart'] `
