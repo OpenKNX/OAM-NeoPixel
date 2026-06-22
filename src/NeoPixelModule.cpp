@@ -253,7 +253,6 @@ void NeoPixelBusModule::loop(bool configured)
     // _localTestMode ('neo init') lets the loop run without an ETS download for bench tests.
     if ((!configured && !_localTestMode) || !_initialized) return;
 
-
     // Check for hardware configuration mismatch and warn periodically
     if (_hwConfigMismatch)
     {
@@ -432,6 +431,15 @@ void NeoPixelBusModule::processAfterStartupDelay()
     {
         logInfoP("Startup complete - ETS configuration active");
         return;
+    }
+
+    // Restore the last runtime state ("Letzter Zustand") from flash onto the live
+    // segments. This must run here so the restored effect/colour/brightness become
+    // the active segment state (and are reported by the ETS sync-back readback).
+    // StartupEM is evaluated afterwards so it can still override the restored state.
+    if (_flashPersistence)
+    {
+        _flashPersistence->restoreStatesAfterStartup();
     }
 
     uint8_t previousChannel = _channelIndex;
@@ -2200,11 +2208,11 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
             logInfoP("neo init: already initialized (testMode=%d)", (int)_localTestMode);
             return true;
         }
-        _neoPixel.init();           // create the manager
-        _neoPixel.setup(true);      // sets the library's _initialized flag (no strips yet)
+        _neoPixel.init();              // create the manager
+        _neoPixel.setup(true);         // sets the library's _initialized flag (no strips yet)
         _neoPixel.setAutoUpdate(true); // ETS normally enables this; do it here so effects animate
-        _initialized   = true;      // module-level init flag (gates loop() + console)
-        _localTestMode = true;      // let loop() run without ETS 'configured'
+        _initialized = true;           // module-level init flag (gates loop() + console)
+        _localTestMode = true;         // let loop() run without ETS 'configured'
         logInfoP("neo init: NeoPixel up in LOCAL TEST MODE (no ETS config).");
         logInfoP("  Build: neo phys add <gpio> <n> <type> | neo virt add <n> (+ neo virt attach <v> <p>) | neo seg add <v> <s> <e> | neo effect set <s> <id>");
         logInfoP("  NOTE: runtime-only (lost on reboot). Build EMs/cues via neo em config / neo cue set.");
@@ -2415,9 +2423,9 @@ bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
         {
             if (arg1 < 1 || arg1 > EM_COUNT) return false;
             EffektManagerHeader& h = _emData[arg1 - 1].header;
-            h.loop     = (arg2 & 0xFF) ? 1 : 0;
+            h.loop = (arg2 & 0xFF) ? 1 : 0;
             h.nextEmId = (uint8_t)((arg2 >> 8) & 0xFF);
-            h.enabled  = 1; // mark active (cueCount comes from 'neo cue set')
+            h.enabled = 1; // mark active (cueCount comes from 'neo cue set')
             return true;
         }
         case NEO_CUE_CLEAR:
@@ -2507,8 +2515,8 @@ bool NeoPixelBusModule::executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effe
 
     EffektManagerData& em = _emData[emId - 1];
     EffektCue& c = em.cues[cueNum - 1];
-    c = EffektCue{};            // zero all fields
-    c.effectId    = effectId;
+    c = EffektCue{}; // zero all fields
+    c.effectId = effectId;
     // Seed params with the chosen effect's OWN defaults. A zeroed cue would leave every
     // param at 0, and applyCue()'s "value < min → default" substitution never fires for
     // params whose min is 0 (e.g. Clock BlinkColon default 1, Snake BodyHue default 85=green).
@@ -2526,11 +2534,14 @@ bool NeoPixelBusModule::executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effe
             if (!defText) defText = eff->getParameterDefaultText(i);
         }
     }
-    c.r = r; c.g = g; c.b = b; c.w = 0;
-    c.brightness  = bri;
+    c.r = r;
+    c.g = g;
+    c.b = b;
+    c.w = 0;
+    c.brightness = bri;
     c.durationSec = durSec;
-    c.fadeMs      = fadeMs;
-    c.cueName[0]    = '\0';
+    c.fadeMs = fadeMs;
+    c.cueName[0] = '\0';
     c.effectText[0] = '\0';
     if (defText && defText[0])
     {
@@ -2591,7 +2602,11 @@ bool NeoPixelBusModule::executeCueText(uint8_t emId, uint8_t cueNum, const char*
 int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
 {
     auto* mgr = _neoPixel.getManager();
-    if (!mgr) { openknxNeoPixelConsolePrintf("bind: not initialized (run 'neo init')"); return -1; }
+    if (!mgr)
+    {
+        openknxNeoPixelConsolePrintf("bind: not initialized (run 'neo init')");
+        return -1;
+    }
     if (managerSegIdx < 0 || (uint32_t)managerSegIdx >= mgr->getSegmentCount())
     {
         openknxNeoPixelConsolePrintf("bind: manager segment %d not found (have %u)",
@@ -2599,7 +2614,11 @@ int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
         return -1;
     }
     Segment* seg = mgr->getSegment((uint32_t)managerSegIdx);
-    if (!seg) { openknxNeoPixelConsolePrintf("bind: manager segment %d is null", managerSegIdx); return -1; }
+    if (!seg)
+    {
+        openknxNeoPixelConsolePrintf("bind: manager segment %d is null", managerSegIdx);
+        return -1;
+    }
 
     for (size_t i = 0; i < _segments.size(); i++)
         if (_segments[i].segment == seg)
@@ -2609,9 +2628,9 @@ int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
         }
 
     SegmentConfig cfg;
-    cfg.segment  = seg;
+    cfg.segment = seg;
     cfg.startLed = seg->getStartLed();
-    cfg.endLed   = seg->getEndLed();
+    cfg.endLed = seg->getEndLed();
     _segments.push_back(cfg);
     const size_t idx = _segments.size() - 1;
     openknxNeoPixelConsolePrintf("bind: manager seg %d -> OAM segment %u  (now: neo em start %u <em>)",
@@ -5953,9 +5972,13 @@ void NeoPixelBusModule::loopEffektManager()
 void NeoPixelBusModule::applyCueLongText(SegmentConfig& cfg)
 {
     // Fast path: nothing configured → zero overhead in the normal (ETS) case.
-    if (_cueLongText.empty()) { cfg.lastCueTextKey = 0xFFFF; return; }
+    if (_cueLongText.empty())
+    {
+        cfg.lastCueTextKey = 0xFFFF;
+        return;
+    }
 
-    const uint8_t em  = cfg.emController.activeEmId();
+    const uint8_t em = cfg.emController.activeEmId();
     const uint8_t cue = cfg.emController.activeCueNum();
     const uint16_t key = (em && cue) ? (((uint16_t)em << 8) | cue) : 0;
     if (key == cfg.lastCueTextKey) return; // same cue as last tick → already applied
