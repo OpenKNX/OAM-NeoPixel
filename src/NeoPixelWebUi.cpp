@@ -34,7 +34,7 @@ namespace
     constexpr uint16_t kWebUiMinTemperatureKelvin = 2000;
     constexpr uint16_t kWebUiMaxTemperatureKelvin = 6500;
     constexpr uint16_t kWebUiDefaultTemperatureKelvin = 3500;
-    constexpr uint8_t kWebUiMaxEffectType = static_cast<uint8_t>(PT_NEOEffectType::CandleMulti);
+    constexpr uint8_t kWebUiMaxEffectType = NEO_EFFECT_TYPE_MAX_ID;
     constexpr uint8_t kWebUiMaxSegments = 16;
     constexpr uint8_t kWebUiMaxScenesPerSegment = 10;
     constexpr uint32_t kWebUiPersistSaveStartDelayMs = 150;
