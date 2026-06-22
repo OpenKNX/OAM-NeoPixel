@@ -2,12 +2,16 @@
 
 #include "OpenKNX.h"
 #include "knxprod.h"
+#include "versions.h" // Generated module versions (MODULE_NeoPixel_Version)
 
+#include "EffektManager.h"      // Effektmanager sequencer
 #include "HclPixelTransform.h"  // HCL pixel transformation callback
 #include "NeoPixel.h"           // from https://github.com/OpenKNX/OFM-NeoPixel
+#include "NeoPixelEmConsole.h"  // Console bridge (OFM rendering, OAM data/actions)
 #include "Segment.h"            // Segment support from OFM-NeoPixel
 #include "effects/Effect.h"     // Effect system
 #include "effects/EffectPool.h" // Effect pool for singleton instances
+#include <map>
 #include <string>
 #include <vector>
 
@@ -100,14 +104,39 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Segment Configuration Structure
     struct SegmentConfig
     {
-        uint16_t startLed;          // Start LED index
-        uint16_t endLed;            // End LED index
-        uint16_t offset;            // Segment offset
-        uint16_t grouping;          // Grouping parameter
-        uint16_t spacing;           // Spacing between groups
-        bool reverseDirection;      // Reverse direction flag
-        bool mirrorEffect;          // Mirror effect flag
+        uint16_t startLed;     // Start LED index
+        uint16_t endLed;       // End LED index
+        uint16_t offset;       // Segment offset
+        uint16_t grouping;     // Grouping parameter
+        uint16_t spacing;      // Spacing between groups
+        bool reverseDirection; // Reverse direction flag
+        bool mirrorEffect;     // Mirror effect flag
+        // 2D/3D matrix geometry (from ETS Byte 12=width, 13=height, Byte10 Bit5-7=topology)
+        uint8_t matrixWidth = 0;  // 0 = no matrix (1D)
+        uint8_t matrixHeight = 0; // 0 = no matrix (1D)
+        uint8_t matrixDepth = 0;  // 0/1 = 2D, >1 = 3D
+        LedTopology topology = LedTopology::LINEAR_1D;
         Segment* segment = nullptr; // Pointer to actual segment
+
+        // ── Effektkette (virtual band) config ────────────────────────────
+        uint8_t syncMode = 0;                 ///< 0=Aus, 1=Master, 2=Slave
+        uint8_t syncOverridePolicy = 0;       ///< 0=Sync immer, 1=Lokal hat Vorrang
+        uint8_t syncTimeoutSteps = 0;         ///< 0=Aus; N×10s timeout for slaves
+        uint16_t virtualTotalLength = 0;      ///< total band length (0=standalone)
+        uint16_t virtualOffset = 0;           ///< this segment's start in band
+        uint16_t distributedMatrixWidth = 0;  ///< derived global matrix width for distributed 2D
+        uint16_t distributedMatrixHeight = 0; ///< derived global matrix height for distributed 2D
+
+        // ── Effektkette runtime state (not persisted) ─────────────────────
+        uint32_t lastSyncMs = 0;         ///< millis() when last sync was received
+        bool localOverride = false;      ///< local KO has overridden sync state
+        uint8_t lastSyncPayload[9] = {}; ///< last payload sent by master (change detection)
+        uint32_t lastSyncSentMs = 0;     ///< millis() when master last sent a sync telegram
+        bool syncPayloadValid = false;   ///< lastSyncPayload contains a sent payload
+
+        // ── Effektmanager ─────────────────────────────────────────────────
+        EffektManagerController emController; ///< per-segment EM sequencer
+        uint16_t lastCueTextKey = 0xFFFF;     ///< (emId<<8|cueNum) of the last applied long cue-text override
 
         // Saved state for power toggle and flash persistence
         bool savedValid = false;
@@ -192,8 +221,8 @@ class NeoPixelBusModule : public OpenKNX::Module
     NeoPixelBusModule();
     ~NeoPixelBusModule();
 
-    const std::string name() override;
-    const std::string version() override;
+    const std::string name() override { return "OpenKNX NeoPixel"; }
+    const std::string version() override { return MODULE_NeoPixel_Version; }
 
     void setup(bool configured) override;
     void loop(bool configured) override;
@@ -281,11 +310,24 @@ class NeoPixelBusModule : public OpenKNX::Module
 #endif
 
   private:
+    // Console bridge hooks (NeoPixelEmConsole.h) need access to private providers
+    friend bool openknxNeoPixelHandleEmChainAction(uint8_t action, int arg1, int arg2);
+    friend bool openknxNeoPixelHandleCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
+                                            uint16_t durSec, uint16_t fadeMs,
+                                            uint8_t bri, uint8_t r, uint8_t g, uint8_t b);
+    friend bool openknxNeoPixelHandleCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value);
+    friend bool openknxNeoPixelHandleCueText(uint8_t emId, uint8_t cueNum, const char* text);
+    friend int openknxNeoPixelEmSegmentCount();
+    friend bool openknxNeoPixelGetEmStatus(uint8_t seg, NeoEmSegStatus& out);
+    friend const EffektManagerData* openknxNeoPixelGetEmData(uint8_t emId);
+    friend bool openknxNeoPixelGetChainStatus(uint8_t seg, NeoChainSegStatus& out);
+
     // OFM-NeoPixel library instance (not registered as separate module)
     NeoPixel _neoPixel;
 
     bool _initialized = false;
     bool _clearLedsAfterSetup = false; // Flag to clear LEDs after hardware initialization
+    bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
     VirtualStrip* _virtualStrip = nullptr;
@@ -390,7 +432,26 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint32_t _powerMonitoringIntervalMs = 5000; // Send power stats every 5 seconds
 
     // Configuration & Setup
-    void configureFromETS();               // reads ETS params and builds phys+virt layout
+    void configureFromETS(); // reads ETS params and builds phys+virt layout
+    bool executeEmChainAction(uint8_t action, int arg1, int arg2);
+    // Console EM/cue authoring (runtime-only; lost on reboot — ETS is the permanent source)
+    bool executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
+                       uint16_t durSec, uint16_t fadeMs,
+                       uint8_t bri, uint8_t r, uint8_t g, uint8_t b);
+    bool executeCueParam(uint8_t emId, uint8_t cueNum, uint8_t paramIdx, uint8_t value);
+    bool executeCueText(uint8_t emId, uint8_t cueNum, const char* text);
+    int  bindConsoleSegment(int managerSegIdx);
+
+    // Console data providers (rendering happens in OFM, see NeoPixelEmConsole.h)
+    int emConsoleSegmentCount() const;
+    bool emConsoleGetEmStatus(uint8_t seg, NeoEmSegStatus& out);
+    const EffektManagerData* emConsoleGetEmData(uint8_t emId) const;
+    bool emConsoleGetChainStatus(uint8_t seg, NeoChainSegStatus& out) const;
+
+    // OAM-owned console command: dump persisted flash contents (parsing + rendering
+    // both here, since flash persistence is purely an OAM concern). onlySeg=-1 = all.
+    void printFlashStateTable(int onlySeg);
+
     void initializeGpioPins();             // Initialize all configured GPIO pins to LOW before strip creation
     void configurePowerManagement();       // Configure power management using OFM PowerManager
     void configureStripOptions();          // Configure swap and skip options from ETS parameters
@@ -408,6 +469,31 @@ class NeoPixelBusModule : public OpenKNX::Module
     void createSegments();            // Create segments on virtual strip
     void applySegmentConfiguration(); // Apply segment-specific settings (grouping, spacing, reverse, mirror)
     void applySegmentConfiguration(size_t segmentIndex, const SegmentConfig& config);
+
+    // ── Effektkette ──────────────────────────────────────────────────────
+    void composeSyncPayload(size_t segmentIndex, uint8_t* payload); ///< 9-byte master state snapshot
+    void sendSyncTelegram(size_t segmentIndex);
+    void receiveSyncTelegram(size_t segmentIndex, const uint8_t* payload, uint8_t len);
+    void loopSyncMaster(); ///< Master: detect state changes (colour/speed/brightness/power) and send sync
+    void loopSyncWatchdog();
+
+    // ── Effektmanager ─────────────────────────────────────────────────────
+    // Heap-allocated: 16 × (20 + 99×48) = ~76 KB — too large for static BSS on classic ESP32 (dram0 overflow).
+    // Allocated lazily in setup() via new(std::nothrow), NOT as a default member initializer:
+    // a ~76 KB new[] during C++ static-init aborts the boot on low-DRAM ESP32 (e.g. ESP32-WROOM
+    // without PSRAM). nullptr until setup(); all users must null-check.
+    EffektManagerData* _emData = nullptr; ///< Global EM definitions (16 EMs, loaded from ETS)
+    // Console authoring: cue text longer than the 14-byte EffektCue field. Keyed by
+    // (emId<<8|cueNum); re-applied to the segment by applyCueLongText() when that cue
+    // becomes active (Scroll Text renders up to ~240 chars). RAM-only (lost on reboot).
+    std::map<uint16_t, std::string> _cueLongText;
+    void loopEffektManager();             ///< Called from loop() — ticks all active EMs
+    void applyCueLongText(SegmentConfig& cfg); ///< Re-apply console long cue-text on a cue switch
+    void loadEffektManagerFromETS();      ///< Load global EM definitions from ETS parameter blocks
+    void startEffektManager(size_t segmentIndex, uint8_t emId);
+    void stopEffektManager(size_t segmentIndex);
+    void sendEmStatusKOs(size_t segmentIndex);
+    void sendEffectTextStatusKO(size_t segmentIndex);
     void refreshHclMasterStateCache();                       // Update cached LightManager values + status KOs
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 
@@ -438,9 +524,10 @@ class NeoPixelBusModule : public OpenKNX::Module
 #endif
 
     // Blink code helpers
-    void setErrorBlink(uint8_t code);                              // Set error on STATUS LED (Red + errorCode) — lowest code wins
-    void setWarningBlink(uint8_t code, OpenKNX::Led::Color color); // Set warning on STATUS LED (color + pulsing)
-    void clearBlinkCodes();                                        // Reset all blink codes and turn off STATUS LED
+    void setErrorBlink(uint8_t code);                          // Set error on STATUS LED (Red + errorCode) — lowest code wins
+    void setWarningBlink(uint8_t code);                        // Set warning on STATUS LED (pulsing); color derived from code
+    static OpenKNX::Led::Color warnColorForCode(uint8_t code); // Single source of truth: warn code -> color
+    void clearBlinkCodes();                                    // Reset all blink codes and turn off STATUS LED
 
     // Blink code state (for testing / diagnostics)
     uint8_t getActiveErrorCode() const { return _activeErrorCode; }

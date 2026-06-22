@@ -8,10 +8,10 @@
                 <ApplicationProgram>
                     <Static>
                         <Parameters>
-                            <!-- Scene %SZ%: 22 bytes at offset %MO% within segment Union -->
+                            <!-- Scene %SZ%: 36 bytes at offset %MO% within segment Union -->
                             <!-- Generic Slot Approach: 10 generic Parameters + aliased ParameterRefs per effect -->
-                            <!-- Byte %MO%+0: Effect Type (1 byte) -->
-                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+0%" Offset="%MO%" BitOffset="0" Name="NEO%C%Scene%SN%EffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt Typ" Value="0"/>
+                            <!-- Byte %MO%+0: Effect Type (1 byte) — effects plus 'Effektmanager N starten' (200..215) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+0%" Offset="%MO%" BitOffset="0" Name="NEO%C%Scene%SN%EffectType" ParameterType="%AID%_PT-NEOSceneEffectType" Text="Effekt" Value="0"/>
 
                             <!-- Byte %MO%+1..3: Primary Color RGB (3 bytes) -->
                             <Parameter Id="%AID%_UP-%TT%%CC%%PPP+1%" Offset="%MO+1%" BitOffset="0" Name="NEO%C%Scene%SN%PrimaryColor" ParameterType="%AID%_PT-ColorRGB" Text="Primärfarbe RGB" Value="#FFFFFF"/>
@@ -40,6 +40,9 @@
 
                             <!-- END AUTO-GENERATED: Scene Effect Parameters -->
 
+                            <!-- Byte %MO%+22..35: Effect Text (14 bytes, DPT 16.001) -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+18%" Offset="%MO+22%" BitOffset="0" Name="NEO%C%Scene%SN%EffectText" ParameterType="%AID%_PT-CueText" Text="Effekt-Text (Szene %SZ%)" Value=""/>
+
                         </Parameters>
                         <ParameterRefs>
                             <!-- Scene %SZ% ParameterRefs (fixed params) -->
@@ -51,6 +54,7 @@
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+5%_R-%TT%%CC%%PPP+5%01" RefId="%AID%_UP-%TT%%CC%%PPP+5%" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+6%_R-%TT%%CC%%PPP+6%01" RefId="%AID%_UP-%TT%%CC%%PPP+6%" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+7%_R-%TT%%CC%%PPP+7%01" RefId="%AID%_UP-%TT%%CC%%PPP+7%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%01" RefId="%AID%_UP-%TT%%CC%%PPP+18%" />
                             <!-- BEGIN AUTO-GENERATED: Scene Effect ParameterRefs -->
 
                             <!-- END AUTO-GENERATED: Scene Effect ParameterRefs -->
@@ -71,29 +75,41 @@
                     <Dynamic>
                         <ChannelIndependentBlock>
                             <ParameterBlock Id="Scene">
-                              <choose ParamRefId="%AID%_UP-%TT%%CC%212_R-%TT%%CC%21201">
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%254_R-%TT%%CC%25401">
                                 <when test=">=%SZ%">
                                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Szene %SZ%" UIHint="Headline" />
 
                                 <!-- Effect Type -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene"/>
 
+                                <!-- Hinweis, wenn diese Szene einen Effektmanager startet (Werte 200-215) -->
+                                <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">
+                                  <when test="&gt;=200">
+                                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Diese Szene startet einen Effektmanager. Farben, Helligkeit und Effekt-Parameter entfallen — die Steuerung läuft über dessen KOs." UIHint="Information"/>
+                                  </when>
+                                </choose>
+
+                                <!-- Farben + Helligkeit nur bei echtem Effekt (Wert < 200), nicht bei Effektmanager-Start -->
+                                <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">
+                                  <when test="&lt;200">
                                 <!-- Primary Color RGB -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+1%_R-%TT%%CC%%PPP+1%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-RGB-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+1%_R-%TT%%CC%%PPP+1%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-RGB-Szene"/>
                                 <!-- Primary WW -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+2%_R-%TT%%CC%%PPP+2%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-Warmweiss-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+2%_R-%TT%%CC%%PPP+2%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-Warmweiss-Szene"/>
                                 <!-- Primary CW -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+3%_R-%TT%%CC%%PPP+3%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-Kaltweiss-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+3%_R-%TT%%CC%%PPP+3%01" IndentLevel="2" HelpContext="NEO-Primaerfarbe-Kaltweiss-Szene"/>
 
                                 <!-- Secondary Color RGB -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+4%_R-%TT%%CC%%PPP+4%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-RGB-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+4%_R-%TT%%CC%%PPP+4%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-RGB-Szene"/>
                                 <!-- Secondary WW -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+5%_R-%TT%%CC%%PPP+5%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-Warmweiss-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+5%_R-%TT%%CC%%PPP+5%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-Warmweiss-Szene"/>
                                 <!-- Secondary CW -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+6%_R-%TT%%CC%%PPP+6%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-Kaltweiss-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+6%_R-%TT%%CC%%PPP+6%01" IndentLevel="2" HelpContext="NEO-Sekundaerfarbe-Kaltweiss-Szene"/>
 
                                 <!-- Brightness -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+7%_R-%TT%%CC%%PPP+7%01" IndentLevel="2" HelpContext="NEO-Helligkeit-Szene-%SZ%"/>
+                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+7%_R-%TT%%CC%%PPP+7%01" IndentLevel="2" HelpContext="NEO-Helligkeit-Szene"/>
+                                  </when>
+                                </choose>
 
                                 <!-- Effect-specific parameters via choose/when on aliased ParameterRefs -->
                                 <!-- BEGIN AUTO-GENERATED: Scene Effect Dynamic UI -->

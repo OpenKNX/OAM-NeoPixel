@@ -16,11 +16,16 @@ class NeoPixelBusModule;
  * Manages up to 10 ETS-configured scenes per segment. Each scene stores:
  * - Effect type, primary/secondary colors (RGBWWCW), brightness
  * - Effect-specific parameters (10 bytes, auto-generated)
+ * - Effect text (14 bytes, DPT 16.001)
  *
  * Uses computed byte offsets for generic scene access (no per-scene switch/case).
  * ETS scene data is read once from the segment Union and then kept in an
  * OAM-owned runtime cache. Web UI changes must not write into KNX table memory
  * on ESP32 IP targets because that memory can be flash-backed.
+ * Scene data originates from the segment Union at offsets 160-519 (10 x 36 bytes),
+ * is copied once into an OAM-owned runtime cache, and may later be restored from
+ * a persisted scene snapshot. Web UI changes must not write back into KNX table
+ * memory on ESP32 IP targets because that memory can be flash-backed.
  */
 class SceneManager
 {
@@ -46,12 +51,12 @@ class SceneManager
     };
 
     // Memory layout constants (must match NeoPixel.Segment.templ.xml and NeoPixel.Scene.part.xml)
-    static constexpr uint16_t SCENE_DATA_START = 140;        // First scene at offset 140 within Union
-    static constexpr uint8_t SCENE_SIZE = 22;                // Bytes per scene
-    static constexpr uint8_t SCENE_COUNT_OFFSET = 137;       // SceneCount param offset within Union
+    static constexpr uint16_t SCENE_DATA_START = 160;        // First scene at offset 160 within Union
+    static constexpr uint8_t SCENE_SIZE = 36;                // Bytes per scene (V3: 12 fixed + 10 slots + 14 text)
+    static constexpr uint8_t SCENE_COUNT_OFFSET = 159;       // SceneCount param offset within Union
     static constexpr uint8_t SCENE_EFFECT_PARAM_OFFSET = 12; // Effect params at byte 12 within scene
 
-    // Scene field offsets within the 22-byte scene slot
+    // Scene field offsets within the 36-byte scene slot
     static constexpr uint8_t FIELD_EFFECT_TYPE = 0;
     static constexpr uint8_t FIELD_PRIMARY_R = 1;
     static constexpr uint8_t FIELD_PRIMARY_G = 2;
@@ -64,6 +69,11 @@ class SceneManager
     static constexpr uint8_t FIELD_SECONDARY_WW = 9;
     static constexpr uint8_t FIELD_SECONDARY_CW = 10;
     static constexpr uint8_t FIELD_BRIGHTNESS = 11;
+    static constexpr uint8_t FIELD_EFFECT_TEXT = 22; // 14 bytes, DPT 16.001
+    static constexpr uint8_t EFFECT_TEXT_SIZE = 14;
+
+    // EffectType values >= EM_ACTION_BASE start an Effektmanager instead of an effect
+    static constexpr uint8_t EM_ACTION_BASE = 200; // 200 = EM 1 ... 215 = EM 16
 
     explicit SceneManager(NeoPixelBusModule* module);
     ~SceneManager() = default;
@@ -207,7 +217,7 @@ class SceneManager
      *
      * @param channelIndex Segment index (0-15)
      * @param sceneIndex Scene index (0-based)
-     * @param fieldOffset Field offset within the 22-byte scene slot
+     * @param fieldOffset Field offset within the 36-byte scene slot
      * @return Field value (uint8_t)
      */
     uint8_t readSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset);
@@ -217,7 +227,7 @@ class SceneManager
      *
      * @param channelIndex Segment index (0-15)
      * @param sceneIndex Scene index (0-based)
-     * @param fieldOffset Field offset within the 22-byte scene slot
+     * @param fieldOffset Field offset within the 36-byte scene slot
      * @param value Value to write
      */
     bool writeSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset, uint8_t value);

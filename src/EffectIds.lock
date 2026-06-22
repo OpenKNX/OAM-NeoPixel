@@ -1,0 +1,37 @@
+# AUTO-MANAGED by Build-EffectParameters.ps1 - DO NOT EDIT BY HAND.
+# Frozen effect ID assignment (referenced by KNX KOs). New effects are
+# appended automatically; changing an existing ID makes the build FAIL.
+# Columns (TAB-separated): ID  EffectClassName  DisplayNameEN
+0	EffectSolid	Solid
+1	EffectWipe	Wipe
+2	RainbowEffect	Rainbow
+3	PrideEffect	Pride2015
+4	JuggleEffect	Juggle
+5	BPMEffect	BPM
+6	CylonEffect	Cylon
+7	RGBWTestEffect	Test
+8	FireEffect	Fire
+9	TheaterChaseEffect	Theater Chase
+10	SparkleEffect	Sparkle
+11	BreathingEffect	Breathing
+12	StrobeEffect	Strobe
+13	CometEffect	Comet
+14	NoiseEffect	Noise
+15	PaletteEffect	Palette
+16	LightningEffect	Lightning
+17	GradientEffect	Gradient
+18	CandleEffect	Candle
+19	ScrollTextEffect	Scroll Text
+20	Clock2DEffect	Clock 2D
+21	Snake2DEffect	Snake 2D
+22	Matrix2DEffect	Matrix 2D
+23	Tetris2DEffect	Tetris 2D
+24	Tron2DEffect	TRON
+25	StarfieldWarp2DEffect	Starfield Warp
+26	PlasmaNebula2DEffect	Plasma Nebula
+27	UfoSwarm2DEffect	UFO Swarm
+28	GameOfLife2DEffect	Game of Life 2D
+29	DNA2DEffect	DNA 2D
+30	Aurora2DEffect	Aurora 2D
+31	Lissajous2DEffect	Lissajous 2D
+32	Metaballs2DEffect	Metaballs 2D

@@ -246,30 +246,30 @@ inline void test_blink_codes(NeoPixelBusModule& module)
     openknx.logger.logWithPrefix("BlinkTest", "Phase 2: Warning code priority");
 
     module.clearBlinkCodes();
-    module.setWarningBlink(3, OpenKNX::Led::Color::Yellow); // Unknown effect
+    module.setWarningBlink(3); // Unknown effect
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 3, "Warn code 3 accepted");
 
-    module.setWarningBlink(3, OpenKNX::Led::Color::Yellow); // Same again
+    module.setWarningBlink(3); // Same again
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 3, "Warn code 3 stays on duplicate");
 
-    module.setWarningBlink(1, OpenKNX::Led::Color::Orange); // Higher priority
+    module.setWarningBlink(1); // Higher priority
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 1, "Warn code 1 overrides 3");
 
-    module.setWarningBlink(2, OpenKNX::Led::Color::Purple); // Lower priority
+    module.setWarningBlink(2); // Lower priority
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 1, "Warn code 2 rejected (1 already active)");
 
     // ── Phase 3: Error suppresses warning ────────────────────────────────
     openknx.logger.logWithPrefix("BlinkTest", "Phase 3: Error suppresses warning");
 
     module.clearBlinkCodes();
-    module.setWarningBlink(1, OpenKNX::Led::Color::Orange);
+    module.setWarningBlink(1);
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 1, "Warning set when no error");
     BLINK_TEST_ASSERT(module.getActiveErrorCode() == 0, "No error active");
 
     module.setErrorBlink(2); // Error overrides
     BLINK_TEST_ASSERT(module.getActiveErrorCode() == 2, "Error overrides warning on LED");
 
-    module.setWarningBlink(1, OpenKNX::Led::Color::Orange); // Try set warning while error active
+    module.setWarningBlink(1); // Try set warning while error active
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 1, "Warn code unchanged (error active, new warn ignored)");
 
     // ── Phase 4: Clear resets everything ─────────────────────────────────
@@ -299,18 +299,18 @@ inline void test_blink_codes(NeoPixelBusModule& module)
     BLINK_TEST_ASSERT(module.getActiveErrorCode() == NEO_ERROR_HW_MISMATCH, "Strip failed (4) rejected (HW mismatch active)");
 
     // 5d: Warning while error active
-    module.setWarningBlink(NEO_WARN_ABL_ACTIVE, OpenKNX::Led::Color::Orange);
+    module.setWarningBlink(NEO_WARN_ABL_ACTIVE);
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 0, "ABL warning rejected while error active");
 
     // 5e: Warnings work standalone
     module.clearBlinkCodes();
-    module.setWarningBlink(NEO_WARN_FLASH_DISCARDED, OpenKNX::Led::Color::Purple);
+    module.setWarningBlink(NEO_WARN_FLASH_DISCARDED);
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == NEO_WARN_FLASH_DISCARDED, "Flash discarded warning (2) set");
 
-    module.setWarningBlink(NEO_WARN_UNKNOWN_EFFECT, OpenKNX::Led::Color::Yellow);
+    module.setWarningBlink(NEO_WARN_UNKNOWN_EFFECT);
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == NEO_WARN_FLASH_DISCARDED, "Unknown effect (3) rejected (flash discarded active)");
 
-    module.setWarningBlink(NEO_WARN_ABL_ACTIVE, OpenKNX::Led::Color::Orange);
+    module.setWarningBlink(NEO_WARN_ABL_ACTIVE);
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == NEO_WARN_ABL_ACTIVE, "ABL active (1) overrides flash discarded (2)");
 
     module.clearBlinkCodes();
@@ -358,7 +358,7 @@ inline void test_blink_codes(NeoPixelBusModule& module)
     for (auto& w : warnings)
     {
         module.clearBlinkCodes();
-        module.setWarningBlink(w.code, w.color);
+        module.setWarningBlink(w.code);
         openknx.logger.logWithPrefixAndValues("BlinkTest", "WARN %d: %s (pulsing) - 3s", w.code, w.name);
         delay(3000);
     }

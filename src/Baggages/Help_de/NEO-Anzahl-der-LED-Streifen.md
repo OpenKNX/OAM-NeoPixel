@@ -7,6 +7,7 @@ Diese Einstellung bestimmt, wie viele physische LED-Streifen in der Applikation 
 
 
 **Hardware-Limitierungen:**
+
 - Diese Applikation stellt bis zu **8** physische LED-Streifen bereit.
 - Die tatsächlich nutzbare Anzahl an Ausgängen hängt zusätzlich von Hardware, Protokoll und Pin-Belegung ab.
 

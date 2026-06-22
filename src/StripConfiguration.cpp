@@ -25,6 +25,20 @@ void StripConfiguration::configureFromETS()
         return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
     };
 
+    // Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+    auto isReservedPin = [](uint8_t pin) -> bool {
+#if defined(KNX_UART_TX_PIN)
+        if (pin == (uint8_t)KNX_UART_TX_PIN) return true;
+#endif
+#if defined(KNX_UART_RX_PIN)
+        if (pin == (uint8_t)KNX_UART_RX_PIN) return true;
+#endif
+#if defined(SAVE_INTERRUPT_PIN)
+        if (pin == (uint8_t)SAVE_INTERRUPT_PIN) return true;
+#endif
+        return false;
+    };
+
     // 1) Determine number of strips from ETS (match the runtime strip limit)
     const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
     _module->_totalLeds = 0;
@@ -286,6 +300,14 @@ void StripConfiguration::configureFromETS()
                 }
             }
 
+            // Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+            if (isReservedPin(mosiGpio) || isReservedPin(sckGpio))
+            {
+                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/system pins (MOSI=%d, SCK=%d). Strip disabled to protect KNX bus.",
+                          i, mosiGpio, sckGpio);
+                continue; // Skip this strip completely
+            }
+
             // Use manager directly for frequency parameter (NeoPixel wrapper doesn't expose this overload yet)
             auto mgr = _module->_neoPixel.getManager();
             phys = mgr->addSpiStrip(mosiGpio, sckGpio, pixels, proto, order, spiFrequency);
@@ -408,6 +430,14 @@ void StripConfiguration::configureFromETS()
                     logInfoP("1-Wire Strip %d: Skipped (hardware port not configured)", i);
                     continue;
                 }
+            }
+
+            // Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
+            if (isReservedPin(dataGpioPin))
+            {
+                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with reserved KNX/system pin. Strip disabled to protect KNX bus.",
+                          i, dataGpioPin);
+                continue; // Skip this strip completely
             }
 
             phys = _module->_neoPixel.addStrip(dataGpioPin, pixels, proto, order);

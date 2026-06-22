@@ -2,13 +2,15 @@
 <?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <op:config href="NeoPixel.conf.xml" />
+  <!-- Marketing-Text-Version (Allgemein-Seite). Pro Variante, in Sync mit ApplicationVersion unten halten. -->
+  <op:config name="%NEO_ProductVersion%" value="0.4" />
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="1"
     ApplicationVersion="0.4"
-    ReplacesVersions="0.4 0.3 0.2 0.1 0.0" 
+    ReplacesVersionsDownTo="0.0"
     ApplicationRevision="0"
-    ProductName="NeoPixel KNX Adapter"
+    ProductName="OpenKNX NeoPixel"
     BusCurrent="30"
     BuildSuffix="-Dev"
     BuildSuffixText=" (Dev)"
@@ -63,7 +65,7 @@
     share="NeoPixel.share.xml"
     template="NeoPixel.Segment.templ.xml"
     NumChannels="16"
-    configTransferName="NeoPixel"
+    configTransferName="NeoPixel (Allgemein + Segmente)"
     KoOffset="600"
     KoSingleOffset="400">
     <op:verify File="../library.json" ModuleVersion="%NEO_VerifyVersion%" />
@@ -74,8 +76,20 @@
     template="NeoPixel.Strip.templ.xml"
     NumChannels="8"
     prefixDoc="NEO"
-    configTransferName="NeoPixel Strip"
+    configTransferName="NeoPixel Streifen (Hardware)"
     KoOffset="500">
+  </op:define>
+
+  <!-- Effektmanager KOs — separate module to avoid BlockSize overflow in NEO segment template -->
+  <!-- 9 KOs per segment × 16 segments = 144 KOs starting at 1612 (after LMG ends at 1611). 9th KO = "Cue setzen" -->
+  <!-- KO order per EM: K0 Start, K1 Status, K2 Stop, K3 Aktive Cue, K4 Cue setzen, K5-K7 Effekt-Text, K8 Effektkette Sync -->
+
+  <op:define prefix="NEOEM" ModuleType="42"
+    share="NeoPixel.EM.share.xml"
+    template="NeoPixel.EM.templ.xml"
+    NumChannels="16"
+    configTransferName="NeoPixel Effektmanager"
+    KoOffset="1612">
   </op:define>
 <generate>
             <Dynamic>

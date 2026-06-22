@@ -3,6 +3,7 @@
 Rendert nur die erste Hälfte des Segments und spiegelt sie auf die zweite Hälfte für Symmetrie.
 
 **Funktionsweise:**
+
 - Nur die erste Hälfte wird berechnet und angezeigt
 - Die zweite Hälfte erhält eine gespiegelte Kopie der ersten Hälfte
 - Bei ungerader Segment-Länge bleibt die mittlere LED unverändert

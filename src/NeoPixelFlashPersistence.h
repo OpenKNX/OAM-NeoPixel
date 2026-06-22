@@ -40,7 +40,7 @@ class NeoPixelFlashPersistence
      */
     struct SegmentFlashState
     {
-        uint8_t version;    // Structure version (0x02)
+        uint8_t version;    // = FLASH_FORMAT_VERSION; validated on read (discard on mismatch)
         uint8_t validFlags; // Bitfield: which values are valid/changed via KO
 
         // KO-changed values (restored if corresponding validFlags bit set):
@@ -55,7 +55,17 @@ class NeoPixelFlashPersistence
 
         // Reserved for future KO parameters (HSV, CCT, effect params):
         uint8_t reserved[3]; // reserved[0] = last active scene number (0 = no scene)
-                             // reserved[1..2] = Phase 2: HSV/CCT values
+                             // reserved[1] = last active Effektmanager ID (0 = none)
+                             // reserved[2] = reserved
+        //
+        // BACKWARD COMPATIBILITY WITHIN FORMAT 0x02:
+        //   These bytes were repurposed from the zero-initialized reserved[] pool.
+        //   Saves written by earlier 0x02 firmware had reserved[]=0, and 0 is a
+        //   valid "none" sentinel for BOTH fields (scene 0 = no scene, EM_NONE == 0).
+        //   Restoring such a blob therefore yields "no scene / no EM" with no data loss.
+        //   IMPORTANT: if the meaning of any reserved[] byte changes in a way where
+        //   0 is no longer a safe default, bump FLASH_FORMAT_VERSION and gate the
+        //   read on it before reinterpreting old blobs.
 
         // Total: 19 bytes per segment × 16 segments = 304 bytes max
     } __attribute__((packed));
@@ -84,6 +94,14 @@ class NeoPixelFlashPersistence
     {
         uint8_t payload[1 + SceneManager::MAX_SCENES * SceneManager::SCENE_SIZE];
     } __attribute__((packed));
+
+    // Format version of the persisted SegmentFlashState layout. Written into every
+    // record's `version` byte and validated on read. BUMP THIS whenever the meaning
+    // of any byte changes (even if the total size stays the same) — a firmware
+    // update will then DISCARD the now-incompatible saved state and fall back to
+    // ETS/defaults, instead of misinterpreting old bytes (which caused "weird
+    // behaviour" after firmware updates that kept the old size).
+    static constexpr uint8_t FLASH_FORMAT_VERSION = 0x02;
 
     /**
      * @brief Constructor

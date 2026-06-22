@@ -3,6 +3,7 @@
 Die Anzahl der LEDs oder LED-Gruppen in dem angeschlossenen LED-Streifen. Bei einfachen LED-Streifen entspricht dies der tatsächlichen LED-Anzahl, bei Streifen mit gruppierten LEDs (z.B. WS2815 mit 3 LEDs pro Gruppe) der Anzahl der steuerbaren Gruppen. Diese Einstellung ist kritisch für die korrekte Funktion und Stromberechnung.
 
 **Wichtige Hinweise:**
+
 - Geben Sie die exakte Anzahl der LEDs oder LED-Gruppen ein
 - Bei gruppierten LEDs (z.B. WS2815): Anzahl der steuerbaren Gruppen, nicht der einzelnen LEDs
 - Bei einfachen LEDs (z.B. WS2812B): Anzahl der einzelnen LEDs
@@ -10,6 +11,7 @@ Die Anzahl der LEDs oder LED-Gruppen in dem angeschlossenen LED-Streifen. Bei ei
 - Zu niedrige Werte bedeuten, dass nicht alle LEDs/Gruppen angesteuert werden
 
 **Grenzen:**
+
 - Minimum: 1 LED/LED-Gruppe
 - Maximum: Abhängig von verfügbarem Speicher und Stromversorgung
 - Empfohlen: Bis zu 300 LEDs/LED-Gruppen pro Kanal für optimale Performance

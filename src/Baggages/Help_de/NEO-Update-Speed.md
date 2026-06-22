@@ -1,26 +1,17 @@
-# Update Speed
+# Aktualisierungsrate
 
-Bestimmt die Aktualisierungsgeschwindigkeit für Animationseffekte in diesem Segment.
+Wie oft die Animation pro Sekunde neu berechnet und an die LEDs gesendet wird (Frames pro Sekunde, FPS). Gilt **global für den gesamten Streifen** — nicht pro Segment.
 
-## Verfügbare Optionen:
+Höher = flüssiger, aber mehr Rechenlast.
 
-- **Slow (10 FPS)**: Langsame Animationen für subtile Effekte
-- **Normal (20 FPS)**: Standard-Geschwindigkeit, guter Kompromiss zwischen Leistung und Flüssigkeit
-- **Fast (30 FPS)**: Flüssige Animationen für dynamische Effekte  
-- **Max (50 FPS)**: Sehr responsive Animationen
-- **Extreme (80 FPS)**: Extrem flüssige Animationen
-- **Ludicrous (120 FPS)**: Maximale Flüssigkeit für anspruchsvolle Effekte
-- **FTL (240 FPS)**: Höchste Aktualisierungsrate für perfekte Flüssigkeit
+**Slow (10 FPS):** Ruhige, langsame Animationen.
 
-## Hinweise:
+**Normal (20 FPS):** Standard — guter Kompromiss aus Leistung und Flüssigkeit (Voreinstellung). Ideal für ruhige/ambiente Effekte (Solid, Breathing, HCL).
 
-- Höhere FPS-Werte benötigen mehr Rechenleistung
-- Bei vielen Segmenten sollten niedrigere Werte gewählt werden
-- Statische Farben benötigen keine hohe Aktualisierungsrate
-- Die Standardeinstellung "Normal (20 FPS)" ist für die meisten Anwendungen ausreichend
+**Fast (30 FPS):** Flüssige, dynamische Effekte — **empfohlen für 2D-Matrizen und Effekte mit viel Bewegung** (Matrix, Snake, Comet, Starfield …).
 
-## Empfehlungen:
+**Max (50 FPS):** Sehr responsiv.
 
-- **10-20 FPS**: Für einfache Farbverläufe und langsame Effekte
-- **30-50 FPS**: Für dynamische Lichteffekte und schnelle Animationen
-- **80+ FPS**: Nur für spezielle Anwendungen mit sehr schnellen Bewegungen
+**Extreme (>60 FPS):** „So schnell wie möglich" — sinnvoll nur bei kurzen Einzelstreifen. Bei vielen/langen LEDs wird die Bildrate ohnehin durch LED-Datenrate und Rechenzeit gedeckelt.
+
+**Hinweis:** Die FPS-Angaben sind ein **Ziel**, kein garantierter Wert — die tatsächlich erreichte Bildrate ist durch die LED-Datenrate (lange Streifen) und die Rechenleistung des Controllers begrenzt. Bei größeren Konfigurationen sind real meist ~50–60 FPS möglich, unabhängig von einer höheren Einstellung. Voreinstellung ist „Normal (20 FPS)" — für animierte 2D-Effekte (Matrix, Snake …) lohnt sich „Fast (30 FPS)".

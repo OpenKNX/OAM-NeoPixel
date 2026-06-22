@@ -69,7 +69,7 @@ function Show-Help {
     Write-Host "  .\Build-Release.ps1 -Release     " -NoNewline -ForegroundColor White
     Write-Host "# Release build" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
-    Write-Host "# Include untested REG2 boards" -ForegroundColor DarkGray
+    Write-Host "# Include untested REG2 boards and third-party hardware" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release -Full" -NoNewline -ForegroundColor White
     Write-Host " # Full release" -ForegroundColor DarkGray
     Write-Host ""
@@ -188,29 +188,8 @@ $standardTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32S3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32S3_MINI_V1" }
-    # OpenKNX REG2 - PiPico Variants
-    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
-    # OpenKNX PiPico BCU Connector
-    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
-    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
     # OpenKNX UP1 Board
     @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
-    # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz
-    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
-    # QuinLED Variants
-    @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG2GO" }
-    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI";           Name = "QuinLED-Dig-Uno-V3-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI" }
-    @{ Env = "release_QUINLED_DIG_UNO_V3_ETHERNET";       Name = "QuinLED-Dig-Uno-V3-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS";   Name = "QuinLED-Dig-Uno-V3-WiFi-AE-Plus";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI";          Name = "QuinLED-Dig-Quad-V3-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V3_ETHERNET";      Name = "QuinLED-Dig-Quad-V3-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS";  Name = "QuinLED-Dig-Quad-V3-WiFi-AE-Plus";  Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_WIFI" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_NEXT2" }
     )
 
 # Full Build Targets (additional, not yet tested hardware)
@@ -225,7 +204,41 @@ $fullTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C5_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C5-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C5_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
    
-    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" })
+    # OpenKNX REG2 - ESP32S3 Variant (Pico form factor)
+    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" }
+
+    # OpenKNX REG2 - PiPico Variants
+    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
+    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
+    
+    # OpenKNX PiPico BCU Connector
+    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
+    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
+
+    # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz (Gledopto: https://gledopto.com/h-pd-124.html)
+    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
+    @{ Env = "release_GLEDOPTO_GL_C_017WL";             Name = "Gledopto-GL-C-017WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_017WL" }
+    @{ Env = "release_GLEDOPTO_GL_C_620WL";              Name = "Gledopto-GL-C-620WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_620WL" }
+    
+    # QuinLED Variants (QuinLED: https://www.quinled.info/)
+    @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG2GO" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI";           Name = "QuinLED-Dig-Uno-V3-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_ETHERNET";       Name = "QuinLED-Dig-Uno-V3-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS";   Name = "QuinLED-Dig-Uno-V3-WiFi-AE-Plus";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI";          Name = "QuinLED-Dig-Quad-V3-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_ETHERNET";      Name = "QuinLED-Dig-Quad-V3-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS";  Name = "QuinLED-Dig-Quad-V3-WiFi-AE-Plus";  Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_WIFI" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_NEXT2" }
+    )
+
+# Hardware identity list (ETS dropdown / JS auto-detect / HW map):
+#   'Dynamic' (default) = only hardware built here -> small files; mismatch-safe via stable HW-ID
+#   'Full'              = all of platformio.hardware.ini -> every product offers all hardware
+$HardwareListMode = 'Dynamic'
 
 # Generate dynamic GPIO templates before building
 # Collect exact hardware section names from all targets that will be built
@@ -237,9 +250,9 @@ if ($isFull) {
 # Extract unique hardware section names from targets
 $hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
 
-Write-Host "Generating GPIO templates for selected hardware..." -ForegroundColor Cyan
+Write-Host "Generating GPIO templates for selected hardware (mode: $HardwareListMode)..." -ForegroundColor Cyan
 Write-Host "  Section filter: $($hardwareFilter -join ', ')" -ForegroundColor DarkGray
-scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter
+scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter -HardwareListMode $HardwareListMode
 if (!$?) {
     Write-Host "GPIO template generation failed!" -ForegroundColor Red
     exit 1

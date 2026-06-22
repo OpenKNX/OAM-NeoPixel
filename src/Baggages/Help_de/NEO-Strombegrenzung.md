@@ -3,6 +3,7 @@
 Automatische Strombegrenzung (Automatic Brightness Limiting - ABL) zum Schutz der Stromversorgung und zur Vermeidung von Überlastung.
 
 **Warum Strombegrenzung?** 
+
 - **Schutz der Stromversorgung**: Verhindert Überlastung des Netzteils 
 - **Stabilität**: Vermeidet Spannungseinbrüche bei hoher Last
 - **Sicherheit**: Reduziert Brandrisiko durch Überhitzung 
@@ -82,6 +83,7 @@ Jeder Strip kann eigene Einstellungen haben oder globale nutzen.
 Kontinuierliche Überwachung des berechneten Stromverbrauchs · Automatische Reduzierung der Helligkeit bei Überschreitung · Sanfte Übergänge ohne sichtbares Flackern
 
 ## Auswahlhilfe:
+
 - **1 Netzteil für alles:** Global aktivieren, Strips auf "Global verwenden"
 - **1 Netzteil pro Strip:** Global deaktiviert, pro Strip eigene Einstellungen
 - **Gemischt:** Global für Haupt-Strips, einzelne Strips mit eigenen Einstellungen

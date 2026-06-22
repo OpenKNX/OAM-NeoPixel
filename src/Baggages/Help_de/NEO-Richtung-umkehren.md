@@ -3,6 +3,7 @@
 Kehrt die Pixel-Reihenfolge des Segments um, sodass Effekte in die entgegengesetzte Richtung laufen.
 
 **Funktionsweise:**
+
 - Die LED-Zuordnung wird von Start→Ende umgekehrt
 - Effekte laufen rückwärts durch das Segment
 - Die physischen LEDs bleiben unverändert, nur die logische Reihenfolge wird umgekehrt

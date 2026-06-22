@@ -112,14 +112,14 @@ function NEO_LedTypeToRGB_8(input, output, context) { NEO_LedTypeToRGB_Impl(inpu
 // Reset Clock GPIO when switching between SPI and 1-Wire LED types
 function NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
-  
+
   // Check if this is a SPI LED type
-  var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 || 
+  var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 ||
                ledType === 22 || ledType === 23 || ledType === 24 || ledType === 25);
 
   output.PendingLedTypeResetStrip = stripKey;
   output.PendingLedTypeResetLedType = ledType;
-  
+
   if (!isSPI) {
     // LED type changed to 1-Wire → Reset all Clock Ports to Dummy (15)
     output.Strip1ClockPort = 15;
@@ -130,7 +130,7 @@ function NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, stripKey
     output.Strip6ClockPort = 15;
     output.Strip7ClockPort = 15;
     output.Strip8ClockPort = 15;
-    
+
     info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (1-Wire) -> Clock Ports reset to 15, pending colour-order reset marker updated");
   } else {
     info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (SPI) -> Clock Ports unchanged, pending colour-order reset marker updated");
@@ -400,32 +400,32 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
 function NEO_detectHardware(device, online, progress, context) {
     progress.setText("NeoPixel: Lese Hardware-ID vom Gerät...");
     progress.setProgress(10);
-    
+
     online.connect();
     progress.setProgress(30);
-    
+
     // Function Property ID for hardware detection (to be implemented in firmware)
     // Returns: [0, hwId_high, hwId_low] where hwId = (high << 8) | low
     var data = [0]; // no input data
     var resp = online.invokeFunctionProperty(160, 11, data); // FP 160/11 = NeoPixel online functions
-    
+
     online.disconnect();
     progress.setProgress(70);
-    
+
     if (!resp || resp.length < 1 || resp[0] != 0) {
         throw new Error("NeoPixel: Keine Antwort vom Gerät!");
     }
-    
+
     if (resp.length < 3) {
         throw new Error("NeoPixel: Ungültige Antwort vom Gerät!");
     }
-    
+
     // Parse hardware ID from response (16-bit value)
     var hwId = (resp[1] << 8) | resp[2];
-    
+
     progress.setText("NeoPixel: Hardware erkannt - ID: 0x" + hwId.toString(16).toUpperCase());
     progress.setProgress(90);
-    
+
      // Check if Hardware-ID is known (validate using mapping)
     var hwIndex = hardwareIdMap[hwId];
     var isKnownHardware = (hwIndex !== undefined);
@@ -438,13 +438,16 @@ function NEO_detectHardware(device, online, progress, context) {
       progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
       hwIndex = 255;
     }
-    
-    // The current ETS parameter model stores the generated hardware index.
+
+    // The ETS hardware selection stores the unique DEVICE_HW_ID (not a list index), so the
+    // selection stays valid regardless of which other hardware exists or how the firmware
+    // was built. Write the detected HW-ID directly; reset to 255 ("please select") if unknown.
+    var hwSelectValue = isKnownHardware ? hwId : 255;
     try {
         // Method 1: ETS standard way using getParameterByName
         var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
         if (param) {
-            param.value = hwIndex;
+            param.value = hwSelectValue;
             if (isKnownHardware && hwName) {
                 progress.setText("NeoPixel: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ") ausgewählt");
             } else {
@@ -453,11 +456,11 @@ function NEO_detectHardware(device, online, progress, context) {
         } else {
             throw new Error("Parameter 'NEO_NeoPixelHardwareSelect' nicht gefunden");
         }
-        
+
     } catch (e) {
         throw new Error("NeoPixel: Konnte Hardware-Auswahl nicht setzen: " + e.message);
     }
-    
+
     progress.setProgress(100);
 }
 

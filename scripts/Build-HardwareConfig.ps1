@@ -116,7 +116,19 @@ param(
   [switch]$DebugOutput,
 
   [Parameter(Mandatory = $false)]
-  [string[]]$EnvironmentFilter = @()
+  [string[]]$EnvironmentFilter = @(),
+
+  # Hardware identity list mode (master switch):
+  #   'Dynamic' (default) = only the hardware actually built (per $EnvironmentFilter) goes into
+  #                         the ETS dropdown, the JS auto-detect map and HardwareMappingData.h.
+  #                         Keeps ETS/JS/XML small. Mismatch-safe because the identity is the
+  #                         stable DEVICE_HW_ID (not a list index).
+  #   'Full'              = the complete platformio.hardware.ini set is emitted regardless of
+  #                         build profile (every product offers all hardware, auto-detect knows
+  #                         all). Larger ETS/JS.
+  [Parameter(Mandatory = $false)]
+  [ValidateSet('Dynamic', 'Full')]
+  [string]$HardwareListMode = 'Dynamic'
 )
 
 $ErrorActionPreference = "Stop"
@@ -214,6 +226,7 @@ if ($TemplateFile.Count -gt 1) {
     if ($HardwareConfigSection) { $params.HardwareConfigSection = $HardwareConfigSection }
     if ($ShowDebugParamsInEtsApp) { $params.ShowDebugParamsInEtsApp = $true }
     if ($EnvironmentFilter.Count -gt 0) { $params.EnvironmentFilter = $EnvironmentFilter }
+    $params.HardwareListMode = $HardwareListMode
 
     # Recursive call with single template
     # Robust cross-platform path resolution
@@ -855,7 +868,25 @@ function Generate-RelayConfigParametersInShare {
     $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"4`" BitOffset=`"0`" Name=`"NEORelay4GPIOPortHW$hwIdx`" ParameterType=`"%AID%_PT-NeoPixelGPIOPortHW$hwIdx`" Text=`"Relais 4 Port`" Value=`"$GPIO_DUMMY_VALUE`"/>`n"
   }
 
-  $paramsXml += "              </Union>"
+  $paramsXml += "              </Union>`n"
+
+  # External Relay Names (free-text ETS labels for the per-relay tree nodes).
+  # APPENDED at segment end (offset 138, after the highest used relay offset ~137)
+  # so NO existing offset shifts -> ETS import / ConfigTransfer / Save-Restore stay
+  # compatible. Firmware never reads these; they are pure ETS display labels.
+  # Relais-Namen: NICHT-gespeichert (ETS-only, bis 40 Zeichen). Die frühere 56-Byte-Union
+  # (Segment RS-04, Offset 138-193) bleibt als RESERVIERTES Loch erhalten, damit nachfolgende
+  # globale Offsets stabil bleiben (kein Shift). Firmware nutzt die Namen nicht.
+  $paramsXml += "`n              <!-- External Relay Names: ETS-only (non-stored). Reservierter 56-Byte-Block bleibt für später. -->`n"
+  $paramsXml += "              <Union SizeInBit=`"448`" op:nowarn=`"true`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"138`" BitOffset=`"0`" />`n"
+  $paramsXml += "                <!-- Versteckter Reserve-Platzhalter: hält die 56 Byte reserviert (Union braucht mindestens 1 Parameter) -->`n"
+  $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00186`" Offset=`"0`" BitOffset=`"0`" Name=`"NEORelayNamesReserved`" ParameterType=`"%AID%_PT-RelayName`" Text=`"reserved`" Value=`"`" Access=`"None`" />`n"
+  $paramsXml += "              </Union>`n"
+  $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00182`" Name=`"NEOExternalRelay1Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />`n"
+  $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00183`" Name=`"NEOExternalRelay2Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />`n"
+  $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00184`" Name=`"NEOExternalRelay3Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />`n"
+  $paramsXml += "              <Parameter Id=`"%AID%_P-%TT%00185`" Name=`"NEOExternalRelay4Name`" ParameterType=`"%AID%_PT-RelayName`" Text=`"Beschreibung`" Value=`"`" />"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $markers['RelayConfigStart'] `
@@ -1224,6 +1255,12 @@ function Generate-RelayParameterRefsInShare {
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00148_R-%TT%0014801`" RefId=`"%AID%_UP-%TT%00148`" />`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00149_R-%TT%0014901`" RefId=`"%AID%_UP-%TT%00149`" />`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00150_R-%TT%0015001`" RefId=`"%AID%_UP-%TT%00150`" />`n"
+
+  $refsXml += "              <!-- External Relay Names -->`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_P-%TT%00182_R-%TT%0018201`" RefId=`"%AID%_P-%TT%00182`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_P-%TT%00183_R-%TT%0018301`" RefId=`"%AID%_P-%TT%00183`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_P-%TT%00184_R-%TT%0018401`" RefId=`"%AID%_P-%TT%00184`" />`n"
+  $refsXml += "              <ParameterRef Id=`"%AID%_P-%TT%00185_R-%TT%0018501`" RefId=`"%AID%_P-%TT%00185`" />`n"
   
   $refsXml += "              <!-- External Relay Manual GPIO Numbers (shown when Port=10) -->`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00155_R-%TT%0015501`" RefId=`"%AID%_UP-%TT%00155`" />`n"
@@ -1477,7 +1514,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
     $clockParamId = ($HW_CLOCK_GPIO_BASE_ID + $hwIdx).ToString().PadLeft(3, '0')
 
     $hardwareList += @{
-      Id = $hwIdx  # Use hardware INDEX for consistency with ParameterType
+      Id = $hwConfig.DeviceIdBit  # Gate the <choose> on the stored DEVICE_HW_ID (selection value), not the rank
       Name = $hwConfig.DeviceName
       DataParam = $dataParamId
       ClockParam = $clockParamId
@@ -1487,6 +1524,11 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   # Determine parameter IDs based on type
   $manualInputParam = if ($Type -eq "Data") { "033" } else { "034" }
   $mosiParam = "035"  # Only for Data type SPI
+
+  # Context-help (.md baggage) per GPIO selection type
+  $portHelp   = if ($Type -eq "Data") { "NEO-Daten-GPIO" } else { "NEO-Clock-GPIO" }
+  $manualHelp = if ($Type -eq "Data") { "NEO-GPIO-manuell-konfigurieren" } else { "NEO-SPI-Takt-manuell-konfigurieren" }
+  $mosiHelp   = "NEO-MOSI-GPIO"
 
   # Start building the XML
   $xml = "<!-- Hardware-specific $Type GPIO Selection - shows correct ports for each hardware -->`n"
@@ -1511,7 +1553,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
 
     $xml += "  <!-- $($hw.Name) -->`n"
     $xml += "  <when test=`"$($hw.Id)`">`n"
-    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${paramId}_R-%TT%0%C%${paramRef}`" IndentLevel=`"2`"/>`n"
+    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${paramId}_R-%TT%0%C%${paramRef}`" IndentLevel=`"2`" HelpContext=`"$portHelp`"/>`n"
     $xml += "  </when>`n"
   }
 
@@ -1520,7 +1562,7 @@ function Generate-HardwareSpecificGPIOSelectionUI {
   $defaultRef = "${defaultParam}01"
   $xml += "  <when default=`"true`">`n"
   $xml += "    <!-- Fallback to manual input -->`n"
-    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${defaultParam}_R-%TT%9%C%${defaultRef}`" IndentLevel=`"2`"/>`n"
+    $xml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${defaultParam}_R-%TT%9%C%${defaultRef}`" IndentLevel=`"2`" HelpContext=`"$portHelp`"/>`n"
   $xml += "  </when>`n"
   $xml += "</choose>`n"
 
@@ -1542,17 +1584,17 @@ function Generate-HardwareSpecificGPIOSelectionUI {
       $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
       $xml += "          <when test=`"5 21 22 23 24 25`">`n"
       $xml += "            <!-- MOSI GPIO nur bei SPI -->`n"
-      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`"/>`n"
+      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`" HelpContext=`"$mosiHelp`"/>`n"
       $xml += "          </when>`n"
       $xml += "          <when default=`"true`">`n"
       $xml += "            <!-- Data GPIO -->`n"
-      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
+      $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"$manualHelp`"/>`n"
       $xml += "          </when>`n"
       $xml += "        </choose>`n"
     }
     else {
       # Clock type is simpler
-      $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
+      $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"$manualHelp`"/>`n"
     }
 
     $xml += "      </when>`n"
@@ -1569,16 +1611,16 @@ function Generate-HardwareSpecificGPIOSelectionUI {
     $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001`">`n"
     $xml += "          <when test=`"5 21 22 23 24 25`">`n"
     $xml += "            <!-- MOSI GPIO nur bei SPI -->`n"
-    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`"/>`n"
+    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${mosiParam}_R-%TT%9%C%${mosiParam}01`" IndentLevel=`"3`" HelpContext=`"$mosiHelp`"/>`n"
     $xml += "          </when>`n"
     $xml += "          <when default=`"true`">`n"
     $xml += "            <!-- Data GPIO -->`n"
-    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
+    $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"$manualHelp`"/>`n"
     $xml += "          </when>`n"
     $xml += "        </choose>`n"
   }
   else {
-    $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`"/>`n"
+    $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%9%C%${manualInputParam}_R-%TT%9%C%${manualInputParam}01`" IndentLevel=`"3`" HelpContext=`"$manualHelp`"/>`n"
   }
 
   $xml += "      </when>`n"
@@ -1617,6 +1659,10 @@ function Generate-RelayParameterTypeInShare {
   }
   
   $ptXml += "                </TypeRestriction>`n"
+  $ptXml += "              </ParameterType>`n"
+  # Relay name/description (free text, ETS label only - firmware does not read it)
+  $ptXml += "              <ParameterType Id=`"%AID%_PT-RelayName`" Name=`"RelayName`">`n"
+  $ptXml += "                <TypeText SizeInBit=`"320`" />`n"
   $ptXml += "              </ParameterType>"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
@@ -1656,7 +1702,7 @@ function Generate-RelayUIInShare {
     $xml = "    <choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
     for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
       $paramId = ($baseId + $hwIdx).ToString().PadLeft(5, '0')
-      $xml += "      <when test=`"$hwIdx`">`n"
+      $xml += "      <when test=`"$($HardwareConfigs[$hwIdx].DeviceIdBit)`">`n"
       $xml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%${paramId}_R-%TT%${paramId}01`" IndentLevel=`"2`"/>`n"
       $xml += "      </when>`n"
     }
@@ -1705,7 +1751,7 @@ function Generate-RelayUIInShare {
     $xml = "    <choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
     for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
       $paramId = ($baseId + $hwIdx).ToString().PadLeft(5, '0')
-      $xml += "      <when test=`"$hwIdx`">`n"
+      $xml += "      <when test=`"$($HardwareConfigs[$hwIdx].DeviceIdBit)`">`n"
       $xml += "        <choose ParamRefId=`"%AID%_UP-%TT%${paramId}_R-%TT%${paramId}01`">`n"
       $xml += "          <when test=`"10`">`n"
       $xml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%${gpioParamId}_R-%TT%${gpioParamId}01`" IndentLevel=`"3`" />`n"
@@ -1745,7 +1791,7 @@ function Generate-RelayUIInShare {
     
     # Generate UI for hardware WITHOUT relay support (each hardware gets own when block)
     foreach ($hwIdx in $hwWithoutRelays) {
-      $uiXml += "  <when test=`"=$hwIdx`">`n"
+      $uiXml += "  <when test=`"=$($HardwareConfigs[$hwIdx].DeviceIdBit)`">`n"
       $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Hardware unterstützt keine Relais`" UIHint=`"Headline`" />`n"
       $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Die ausgewählte Hardware bietet keine Unterstützung für externe Relais. Bitte wählen Sie eine andere Hardware, falls Sie diese Funktion benötigen.`" UIHint=`"Error`" />`n"
       $uiXml += "  </when>`n"
@@ -1760,9 +1806,70 @@ function Generate-RelayUIInShare {
   $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Externe Relais`" UIHint=`"Headline`" />`n"
   $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Aktivieren Sie externe Relais und wählen Sie die passenden GPIO-Ports der Hardware. Pro Relais wird ein 1-Bit Schalt-KO eingeblendet.`" />`n"
   $uiXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`" IndentLevel=`"1`" />`n"
+  # --- Relais-Uebersichtstabelle (Name | Ein-Verz. | Aus-Verz. | Logik) ---
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $uiXml += "      <when test=`">=1`">`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 1`" UIHint=`"Headline`" />`n"
+  # --- Betriebs-Hinweis: Eigenversorgung des OpenKNX-Geraets (Details in Kontext-Hilfe NEO-Relais) ---
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Hinweis: Versorgt ein per Relais geschaltetes Netzteil auch dieses OpenKNX-Ger&#xE4;t, wird es beim Ausschalten selbst stromlos und vom KNX-Bus getrennt.`" UIHint=`"Information`" />`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"&#xDC;bersicht`" UIHint=`"Headline`" />`n"
+  $uiXml += "        <ParameterBlock Id=`"%AID%_PB-nnn`" Inline=`"true`" Layout=`"Grid`" HelpContext=`"Empty`">`n"
+  $uiXml += "          <Rows>`n"
+  $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-0`" />`n"
+  $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-1`" />`n"
+  $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-2`" />`n"
+  $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-3`" />`n"
+  $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-4`" />`n"
+  $uiXml += "          </Rows>`n"
+  # Gesamtbreite ~132% der Standard-UI-Breite (ETS erlaubt die Summe der Spaltenbreiten
+  # bis 200%). Die "Logik"-Spalte wird deutlich breiter, damit das Dropdown
+  # "invertiert (LOW = EIN)" einzeilig bleibt; die Verzoegerungs-Spalten etwas breiter,
+  # damit ihre Header "Ein-Verz. (s)"/"Aus-Verz. (s)" nicht umbrechen.
+  $uiXml += "          <Columns>`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-1`" Width=`"12%`" />`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-2`" Width=`"32%`" />`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-3`" Width=`"18%`" />`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-4`" Width=`"18%`" />`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-5`" Width=`"52%`" />`n"
+  $uiXml += "          </Columns>`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais`"        UIHint=`"Headline`" Cell=`"0,1`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Name`"          UIHint=`"Headline`" Cell=`"0,2`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Ein-Verz. (s)`" UIHint=`"Headline`" Cell=`"0,3`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Aus-Verz. (s)`" UIHint=`"Headline`" Cell=`"0,4`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Logik`"         UIHint=`"Headline`" Cell=`"0,5`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 1`" Cell=`"1,1`" />`n"
+  $uiXml += "          <ParameterRefRef RefId=`"%AID%_P-%TT%00182_R-%TT%0018201`" Cell=`"1,2`" HelpContext=`"NEO-Relais-Name`" />`n"
+  $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00139_R-%TT%0013901`" Cell=`"1,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00140_R-%TT%0014001`" Cell=`"1,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00159_R-%TT%0015901`" Cell=`"1,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "          <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`"><when test=`">=2`">`n"
+  $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 2`" Cell=`"2,1`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_P-%TT%00183_R-%TT%0018301`" Cell=`"2,2`" HelpContext=`"NEO-Relais-Name`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00141_R-%TT%0014101`" Cell=`"2,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00142_R-%TT%0014201`" Cell=`"2,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00160_R-%TT%0016001`" Cell=`"2,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "          </when></choose>`n"
+  $uiXml += "          <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`"><when test=`">=3`">`n"
+  $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 3`" Cell=`"3,1`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_P-%TT%00184_R-%TT%0018401`" Cell=`"3,2`" HelpContext=`"NEO-Relais-Name`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00143_R-%TT%0014301`" Cell=`"3,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00144_R-%TT%0014401`" Cell=`"3,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00161_R-%TT%0016101`" Cell=`"3,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "          </when></choose>`n"
+  $uiXml += "          <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`"><when test=`">=4`">`n"
+  $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 4`" Cell=`"4,1`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_P-%TT%00185_R-%TT%0018501`" Cell=`"4,2`" HelpContext=`"NEO-Relais-Name`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00145_R-%TT%0014501`" Cell=`"4,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00146_R-%TT%0014601`" Cell=`"4,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00162_R-%TT%0016201`" Cell=`"4,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "          </when></choose>`n"
+  $uiXml += "        </ParameterBlock>`n"
+  $uiXml += "      </when>`n"
+  $uiXml += "    </choose>`n"
+  # --- per-Relais Detail-Knoten ---
+  $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
+  $uiXml += "      <when test=`">=1`">`n"
+  $uiXml += "        <ParameterBlock Id=`"%AID%_PB-nnn`" Name=`"Relais1`" Text=`"Relais 1: {{0:...}}`" Icon=`"relay`" ShowInComObjectTree=`"true`" TextParameterRefId=`"%AID%_P-%TT%00182_R-%TT%0018201`">`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_P-%TT%00182_R-%TT%0018201`" IndentLevel=`"1`" HelpContext=`"NEO-Relais-Name`" />`n"
   $uiXml += $relay1Choose + "`n"
   $uiXml += $relay1ManualCheck + "`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00133_R-%TT%0013301`" IndentLevel=`"2`" />`n"
@@ -1777,12 +1884,15 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00147_R-%TT%0014701`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00159_R-%TT%0015901`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00008_R-%TT%0000801`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00012_R-%TT%0001201`" />`n"
+  $uiXml += "        </ParameterBlock>`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $uiXml += "      <when test=`">=2`">`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"`" UIHint=`"HorizontalRuler`" />`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 2`" UIHint=`"Headline`" />`n"
+  $uiXml += "        <ParameterBlock Id=`"%AID%_PB-nnn`" Name=`"Relais2`" Text=`"Relais 2: {{0:...}}`" Icon=`"relay`" ShowInComObjectTree=`"true`" TextParameterRefId=`"%AID%_P-%TT%00183_R-%TT%0018301`">`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_P-%TT%00183_R-%TT%0018301`" IndentLevel=`"1`" HelpContext=`"NEO-Relais-Name`" />`n"
   $uiXml += $relay2Choose + "`n"
   $uiXml += $relay2ManualCheck + "`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00134_R-%TT%0013401`" IndentLevel=`"2`" />`n"
@@ -1797,12 +1907,15 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00148_R-%TT%0014801`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00160_R-%TT%0016001`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00009_R-%TT%0000901`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00013_R-%TT%0001301`" />`n"
+  $uiXml += "        </ParameterBlock>`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $uiXml += "      <when test=`">=3`">`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"`" UIHint=`"HorizontalRuler`" />`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 3`" UIHint=`"Headline`" />`n"
+  $uiXml += "        <ParameterBlock Id=`"%AID%_PB-nnn`" Name=`"Relais3`" Text=`"Relais 3: {{0:...}}`" Icon=`"relay`" ShowInComObjectTree=`"true`" TextParameterRefId=`"%AID%_P-%TT%00184_R-%TT%0018401`">`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_P-%TT%00184_R-%TT%0018401`" IndentLevel=`"1`" HelpContext=`"NEO-Relais-Name`" />`n"
   $uiXml += $relay3Choose + "`n"
   $uiXml += $relay3ManualCheck + "`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00137_R-%TT%0013701`" IndentLevel=`"2`" />`n"
@@ -1817,12 +1930,15 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00149_R-%TT%0014901`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00161_R-%TT%0016101`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00010_R-%TT%0001001`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00014_R-%TT%0001401`" />`n"
+  $uiXml += "        </ParameterBlock>`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $uiXml += "      <when test=`">=4`">`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"`" UIHint=`"HorizontalRuler`" />`n"
-  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 4`" UIHint=`"Headline`" />`n"
+  $uiXml += "        <ParameterBlock Id=`"%AID%_PB-nnn`" Name=`"Relais4`" Text=`"Relais 4: {{0:...}}`" Icon=`"relay`" ShowInComObjectTree=`"true`" TextParameterRefId=`"%AID%_P-%TT%00185_R-%TT%0018501`">`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_P-%TT%00185_R-%TT%0018501`" IndentLevel=`"1`" HelpContext=`"NEO-Relais-Name`" />`n"
   $uiXml += $relay4Choose + "`n"
   $uiXml += $relay4ManualCheck + "`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00138_R-%TT%0013801`" IndentLevel=`"2`" />`n"
@@ -1837,6 +1953,9 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00150_R-%TT%0015001`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00162_R-%TT%0016201`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00011_R-%TT%0001101`" />`n"
+  $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00015_R-%TT%0001501`" />`n"
+  $uiXml += "        </ParameterBlock>`n"
   $uiXml += "      </when>`n"
   $uiXml += "    </choose>`n"
 
@@ -1860,43 +1979,11 @@ function Generate-RelayKOsInShare {
     [array]$HardwareConfigs
   )
 
-  $hasHardwareSelection = $HardwareConfigs.Count -gt 1
-  $koXml = "<!-- External Relay KOs -->`n"
-
-  if ($hasHardwareSelection) {
-    $koXml += "<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">`n"
-    $koXml += "  <when test=`"!=255`">`n"
-  }
-
-  $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
-  $koXml += "      <when test=`">=1`">`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00008_R-%TT%0000801`" />`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00012_R-%TT%0001201`" />`n"
-  $koXml += "      </when>`n"
-  $koXml += "    </choose>`n"
-  $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
-  $koXml += "      <when test=`">=2`">`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00009_R-%TT%0000901`" />`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00013_R-%TT%0001301`" />`n"
-  $koXml += "      </when>`n"
-  $koXml += "    </choose>`n"
-  $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
-  $koXml += "      <when test=`">=3`">`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00010_R-%TT%0001001`" />`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00014_R-%TT%0001401`" />`n"
-  $koXml += "      </when>`n"
-  $koXml += "    </choose>`n"
-  $koXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
-  $koXml += "      <when test=`">=4`">`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00011_R-%TT%0001101`" />`n"
-  $koXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00015_R-%TT%0001501`" />`n"
-  $koXml += "      </when>`n"
-  $koXml += "    </choose>`n"
-
-  if ($hasHardwareSelection) {
-    $koXml += "  </when>`n"
-    $koXml += "</choose>`n"
-  }
+  # Relay KOs now live INSIDE each per-relay tree node (ParameterBlock in
+  # Generate-RelayUIInShare), so they appear under "Relais N" and are gated by
+  # the same count/hardware choose. This shared block is therefore intentionally
+  # empty to avoid duplicate ComObjectRefRef references.
+  $koXml = "<!-- External Relay KOs: emitted per-relay inside the relay tree nodes (see Relay UI) -->"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $markers['RelayKOsStart'] `
@@ -2240,12 +2327,12 @@ function Generate-NetworkVisibilityJS {
     [array]$HardwareConfigs
   )
 
-  # Generate network-capable hardware INDEX array (not IDs!)
+  # Network-capable hardware list keyed by the stored selection value = DEVICE_HW_ID.
   $networkHardware = @()
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $hwConfig = $HardwareConfigs[$hwIdx]
     if ($hwConfig.HasNetwork -eq $true) {
-      $networkHardware += $hwIdx  # Use hardware INDEX for consistency
+      $networkHardware += $hwConfig.DeviceIdBit  # Compare against HardwareSelect (DEVICE_HW_ID)
     }
   }
 
@@ -3091,15 +3178,17 @@ foreach ($match in $sectionMatches) {
   }
 }
 
-# Filter hardware configs if EnvironmentFilter is specified
-if ($EnvironmentFilter.Count -gt 0) {
+# Hardware identity list = either the built subset ($EnvironmentFilter, 'Dynamic') or the
+# complete platformio.hardware.ini set ('Full'). Both are mismatch-safe: the stored identity
+# is the unique DEVICE_HW_ID, not a list index, so subsetting/reordering can never re-point a
+# device's stored selection. 'Dynamic' just keeps ETS/JS/XML small (only what was built).
+if ($HardwareListMode -eq 'Dynamic' -and $EnvironmentFilter.Count -gt 0) {
   $originalCount = $hardwareConfigs.Count
-  $hardwareConfigs = $hardwareConfigs | Where-Object {
-    # Exact match: Check if this section name is in the filter list
-    $EnvironmentFilter -contains $_.Name
-  }
-  $filteredCount = $hardwareConfigs.Count
-  Write-Step "Filtered: $filteredCount/$originalCount configs (exact match)"
+  $hardwareConfigs = @($hardwareConfigs | Where-Object { $EnvironmentFilter -contains $_.Name })
+  Write-Step "HardwareListMode=Dynamic: filtered $($hardwareConfigs.Count)/$originalCount hardware to the built targets (ETS/JS/Map contain only these; HW-ID keeps it mismatch-safe)"
+}
+elseif ($EnvironmentFilter.Count -gt 0) {
+  Write-Step "HardwareListMode=Full: EnvironmentFilter ($($EnvironmentFilter.Count) section(s)) ignored - emitting the complete hardware set"
 }
 
 if ($hardwareConfigs.Count -eq 0) {
@@ -3291,6 +3380,12 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
       $false
     }
 
+    # Extract third-party flag (1 = not OpenKNX hardware -> show "no support" warning in ETS)
+    $hwConfig | Add-Member -NotePropertyName "ThirdParty" -NotePropertyValue $false -Force
+    if ($hwData.ContainsKey("HW_THIRDPARTY_NO_SUPPORT") -and $hwData["HW_THIRDPARTY_NO_SUPPORT"] -eq "1") {
+      $hwConfig.ThirdParty = $true
+    }
+
     # Extract External Relais Support (0=None, 1-4=Count, default=2)
     $hwConfig | Add-Member -NotePropertyName "ExtRelaisCount" -NotePropertyValue 2  # Default
     if ($hwData.ContainsKey("HW_EXT_RELAIS")) {
@@ -3363,6 +3458,11 @@ Write-Step "Step 3: Filtering hardware and generating XML structures..."
 $hardwareConfigsFiltered = @()
 $hardwareConfigsSkipped = @()
 
+# Every hardware variant that exposes a unique DEVICE_HW_ID is part of the hardware identity
+# (ETS selection + firmware map), independent of build profile. This includes third-party
+# controllers (Gledopto/QuinLED, IDs >= 0x2000): they MUST be in the firmware map so a built
+# device can self-identify, and selectable in ETS so their GPIO config can be applied.
+# Only hardware without a DEVICE_HW_ID is skipped (it cannot be identified at runtime).
 foreach ($hwConfig in $hardwareConfigs) {
   if ($hwConfig.DeviceIdBit -eq 0) {
     $hardwareConfigsSkipped += $hwConfig
@@ -3376,8 +3476,23 @@ foreach ($hwConfig in $hardwareConfigs) {
 # Replace hardwareConfigs with filtered list for ETS generation
 $hardwareConfigs = $hardwareConfigsFiltered
 
+# Deterministic, build-independent hardware ordering: sort by the unique DEVICE_HW_ID.
+# The resulting array position is the STABLE hardware index used everywhere downstream
+# (ETS enum Value, HardwareMappingData.h index, "...HW{N}" GPIO parameter blocks and their
+# <when test="N"> gates). Because the order depends only on which DEVICE_HW_IDs exist - not
+# on section order in the .ini and not on which firmware targets are being built - the same
+# physical device always maps to the same index. This is what keeps a device configuration
+# valid when firmware or the ETS product is updated, and makes -Full vs. non-Full builds
+# produce an identical hardware identity.
+$hardwareConfigs = @($hardwareConfigs | Sort-Object -Property DeviceIdBit)
+
 if ($hardwareConfigsSkipped.Count -gt 0) {
   Write-Host "  Skipped $($hardwareConfigsSkipped.Count) hardware(s) without HW_ID" -ForegroundColor DarkYellow
+}
+
+Write-Host "  Hardware identity (stable index = sort by DEVICE_HW_ID):" -ForegroundColor DarkGray
+for ($dbgIdx = 0; $dbgIdx -lt $hardwareConfigs.Count; $dbgIdx++) {
+  Write-Host ("    [{0}] 0x{1} {2}" -f $dbgIdx, $hardwareConfigs[$dbgIdx].DeviceIdBit.ToString('X4'), $hardwareConfigs[$dbgIdx].DeviceName) -ForegroundColor DarkGray
 }
 
 # Check hardware limit
@@ -3437,8 +3552,13 @@ if ($hardwareConfigs.Count -gt 1) {
   for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     $hwConfig = $hardwareConfigs[$hwIdx]
     $hwName = $hwConfig.DeviceName
-    # Use hardware INDEX as Value (0,1,2,3,4,5) - JavaScript sets indices, not Hardware IDs
-    $parameterTypeXml += "    <Enumeration Text=`"${hwName}`" Value=`"${hwIdx}`" Id=`"%ENID%`" />`n"
+    # Use the unique DEVICE_HW_ID as the stored selection value (NOT a list index/rank).
+    # This makes a device's stored hardware selection independent of which other hardware
+    # exists in the product: adding or removing variants never re-points an existing
+    # selection, and firmware/ETS updates keep the configuration valid. The firmware
+    # compares this value directly against its own compiled DEVICE_HW_ID.
+    $hwId = $hwConfig.DeviceIdBit
+    $parameterTypeXml += "    <Enumeration Text=`"${hwName}`" Value=`"${hwId}`" Id=`"%ENID%`" />`n"
   }
 
   $parameterTypeXml += @"
@@ -4118,6 +4238,24 @@ if ($hardwareConfigs.Count -gt 1) {
   # Multiple hardware: Show Hardware Selection ParameterRefRef
   $indent = "                "  # 16 spaces
   $hwParamRefRefXml = "${indent}<ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" IndentLevel=`"1`" />"
+
+  # Third-party (non-OpenKNX) hardware warning: shown only when a board flagged
+  # NEOPIXEL_HW_THIRDPARTY=1 is selected. Gated on the stored DEVICE_HW_ID values, so it
+  # follows the boards automatically (no hard-coded ID range).
+  $thirdPartyIds = @($hardwareConfigs | Where-Object { $_.ThirdParty } | ForEach-Object { $_.DeviceIdBit })
+  if ($thirdPartyIds.Count -gt 0) {
+    $idList = ($thirdPartyIds | Sort-Object) -join ' '
+    # Red headline + one body line (ETS limits each ParameterSeparator Text to 255 chars).
+    # Umlauts as XML entities so this .ps1 stays pure ASCII.
+    $warnHead = "Hardware von Drittanbietern"
+    $warnBody = "Hierf&#252;r wird kein Support durch OpenKNX geleistet. Nicht getestet; Pin-Belegung und Funktionsumfang k&#246;nnen abweichen und sind vor dem Anschluss selbst zu pr&#252;fen. Nutzung auf eigene Verantwortung."
+    $hwParamRefRefXml += "`n${indent}<choose ParamRefId=`"%AID%_UP-4000018_R-400001801`">"
+    $hwParamRefRefXml += "`n${indent}  <when test=`"$idList`">"
+    # Kein Fehler -> Information (nicht roter Error-Style); Kopf + Text in EINER Box (Text steht drin, nicht daneben).
+    $hwParamRefRefXml += "`n${indent}    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"${warnHead}: $warnBody`" UIHint=`"Information`" />"
+    $hwParamRefRefXml += "`n${indent}  </when>"
+    $hwParamRefRefXml += "`n${indent}</choose>"
+  }
 }
 else {
   # Single hardware: Empty content
