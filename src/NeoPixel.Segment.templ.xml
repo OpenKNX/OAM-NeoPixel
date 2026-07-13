@@ -67,7 +67,7 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%240" Offset="23" BitOffset="3" Name="NEO%C%SegmentResetColorOnEffectChange" ParameterType="%AID%_PT-Boolean" Text="Bei Effektwechsel Farbe auf Standard zurücksetzen" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentEmStopReturnMode" ParameterType="%AID%_PT-EmStopReturnMode" Text="Effektmanager-Stop: Rueckkehr" Value="0"/>
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
@@ -228,8 +228,22 @@
               <ComObject Id="%AID%_O-%TT%%CC%039" Number="%K38%" Name="%C%RGBWRel"    Text="RGBW dimmen"        FunctionText="NeoPixel Segment %C%: Eingang, DPT 251.600"        ObjectSize="6 Bytes"  DatapointType="DPST-251-600" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HCL State (only for segments with HCL Mode = Benutzerdefiniert) -->
               <ComObject Id="%AID%_O-%TT%%CC%044" Number="%K39%" Name="%C%HCLState"   Text="HCL Zustand"        FunctionText="NeoPixel Segment %C%: HCL Kurve Zustandswert" ObjectSize="2 Bytes" DatapointType="DPST-7-600"  WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
-              <!-- Effektmanager KOs (K40-K43) are defined in NeoPixel.EM.templ.xml (NEOEM module)
-                   to avoid KoBlockSize overflow. C++ accesses them via NEOEM_Ko* macros. -->
+              <!-- Cue +/- (relativ, DPT 3.7) — nächste/vorherige Cue des laufenden EM -->
+              <ComObject Id="%AID%_O-%TT%%CC%045" Number="%K40%" Name="%C%CueRel" Text="Cue +/-" FunctionText="NeoPixel Segment %C%: Eingang, DPT 3.7" ObjectSize="4 Bit" DatapointType="DPST-3-7" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Sperre (DPT 1.1) — 1 = sperrt alle steuernden KOs dieses Segments, 0 = frei -->
+              <ComObject Id="%AID%_O-%TT%%CC%046" Number="%K41%" Name="%C%Lock" Text="Sperre" FunctionText="NeoPixel Segment %C%: Sperr-Eingang, DPT 1.1" ObjectSize="1 Bit" DatapointType="DPST-1-1" WriteFlag="Enabled" UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <!-- Effektmanager-Steuer-KOs (vom NEOEM-Modul hierher verschoben) — pro Segment, K42-K52 -->
+              <ComObject Id="%AID%_O-%TT%%CC%047" Number="%K42%" Name="%C%EmStart"          Text="Effektmanager Start"        FunctionText="NeoPixel Segment %C%: EM Start (1-16)"              ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%048" Number="%K43%" Name="%C%EmStatus"         Text="Effektmanager Status"       FunctionText="NeoPixel Segment %C%: EM Status"                    ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%049" Number="%K44%" Name="%C%EmStop"           Text="Effektmanager Stop"         FunctionText="NeoPixel Segment %C%: EM Stop"                      ObjectSize="1 Bit"   DatapointType="DPST-1-1"  WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%050" Number="%K45%" Name="%C%EmCueStatus"      Text="Aktive Cue"                 FunctionText="NeoPixel Segment %C%: Aktive Cue-Nummer"            ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%051" Number="%K46%" Name="%C%EmCueSet"         Text="Cue setzen"                 FunctionText="NeoPixel Segment %C%: Cue anspringen (1-10)"        ObjectSize="1 Byte"  DatapointType="DPST-5-10" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%052" Number="%K47%" Name="%C%EffectText"       Text="Effekt-Text"                FunctionText="NeoPixel Segment %C%: Effekt-Text setzen, DPT 16.001"  ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%053" Number="%K48%" Name="%C%EffectTextStatus" Text="Effekt-Text Status"         FunctionText="NeoPixel Segment %C%: Effekt-Text Status, DPT 16.001"  ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%054" Number="%K49%" Name="%C%EffectTextAppend" Text="Effekt-Text Anhängen"       FunctionText="NeoPixel Segment %C%: Effekt-Text anhängen, DPT 16.001" ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%055" Number="%K50%" Name="%C%SyncChain"        Text="Effektkette Sync"           FunctionText="NeoPixel Segment %C%: Effektkette Sync-Telegramm (intern)" ObjectSize="14 Bytes" DatapointType="DPST-16-1" WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%056" Number="%K51%" Name="%C%EmPause"          Text="Effektmanager Pause/Resume" FunctionText="NeoPixel Segment %C%: Pause (1) / Resume (0)"       ObjectSize="1 Bit"   DatapointType="DPST-1-1"  WriteFlag="Enabled"  UpdateFlag="Disabled" ReadFlag="Disabled" TransmitFlag="Disabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%%CC%057" Number="%K52%" Name="%C%EmRunState"       Text="Effektmanager Zustand"      FunctionText="NeoPixel Segment %C%: Zustand (0=gestoppt,1=laeuft,2=pausiert)" ObjectSize="1 Byte" DatapointType="DPST-5-10" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Segment Power -->
@@ -312,6 +326,22 @@
               <ComObjectRef Id="%AID%_O-%TT%%CC%039_R-%TT%%CC%03901" RefId="%AID%_O-%TT%%CC%039" Text="{{0:%C%}}: RGBW dimmen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <!-- HCL State -->
               <ComObjectRef Id="%AID%_O-%TT%%CC%044_R-%TT%%CC%04401" RefId="%AID%_O-%TT%%CC%044" Text="{{0:%C%}}: HCL Zustand" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Cue +/- -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%045_R-%TT%%CC%04501" RefId="%AID%_O-%TT%%CC%045" Text="{{0:%C%}}: Cue +/-" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Sperre -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%046_R-%TT%%CC%04601" RefId="%AID%_O-%TT%%CC%046" Text="{{0:%C%}}: Sperre" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <!-- Effektmanager-Steuer-KOs (K42-K52) -->
+              <ComObjectRef Id="%AID%_O-%TT%%CC%047_R-%TT%%CC%04701" RefId="%AID%_O-%TT%%CC%047" Text="{{0:%C%}}: EM Start" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%048_R-%TT%%CC%04801" RefId="%AID%_O-%TT%%CC%048" Text="{{0:%C%}}: EM Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%049_R-%TT%%CC%04901" RefId="%AID%_O-%TT%%CC%049" Text="{{0:%C%}}: EM Stop" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%050_R-%TT%%CC%05001" RefId="%AID%_O-%TT%%CC%050" Text="{{0:%C%}}: Aktive Cue" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%051_R-%TT%%CC%05101" RefId="%AID%_O-%TT%%CC%051" Text="{{0:%C%}}: Cue setzen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%052_R-%TT%%CC%05201" RefId="%AID%_O-%TT%%CC%052" Text="{{0:%C%}}: Effekt-Text" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%053_R-%TT%%CC%05301" RefId="%AID%_O-%TT%%CC%053" Text="{{0:%C%}}: Effekt-Text Status" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%054_R-%TT%%CC%05401" RefId="%AID%_O-%TT%%CC%054" Text="{{0:%C%}}: Effekt-Text Anhängen" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%055_R-%TT%%CC%05501" RefId="%AID%_O-%TT%%CC%055" Text="{{0:%C%}}: Effektkette Sync" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%056_R-%TT%%CC%05601" RefId="%AID%_O-%TT%%CC%056" Text="{{0:%C%}}: EM Pause/Resume" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%057_R-%TT%%CC%05701" RefId="%AID%_O-%TT%%CC%057" Text="{{0:%C%}}: EM Zustand" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
             <ParameterCalculations>
               <op:usePart name="Scene" xpath="//ParameterCalculations/*" />
@@ -479,6 +509,8 @@
                     <!-- Verhalten nach Neustart -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Verhalten nach Neustart" UIHint="Headline" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" IndentLevel="1" HelpContext="NEO-Verhalten-nach-Neustart-Segment"/>
+                    <!-- EM-Stop Rueckkehr-Verhalten -->
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" IndentLevel="1" HelpContext="NEO-EM-Stop-Rueckkehr"/>
 
                     <!-- Segment Power -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%040_R-%TT%%CC%04001" />
@@ -488,6 +520,23 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%042_R-%TT%%CC%04201" />
                     <!-- Segment Brightness State -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%043_R-%TT%%CC%04301" />
+                    <!-- Cue +/- -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%045_R-%TT%%CC%04501" />
+                    <!-- Sperre -->
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%046_R-%TT%%CC%04601" />
+                    <!-- Effektmanager-Steuerung pro Segment -->
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager (Steuerung)" UIHint="Headline" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%047_R-%TT%%CC%04701" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%048_R-%TT%%CC%04801" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%049_R-%TT%%CC%04901" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%050_R-%TT%%CC%05001" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%051_R-%TT%%CC%05101" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%052_R-%TT%%CC%05201" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%053_R-%TT%%CC%05301" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%054_R-%TT%%CC%05401" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%055_R-%TT%%CC%05501" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%056_R-%TT%%CC%05601" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%%CC%057_R-%TT%%CC%05701" />
                     <!-- R -->
                     <ComObjectRefRef RefId="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" />
                     <!-- G -->

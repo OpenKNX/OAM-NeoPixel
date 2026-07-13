@@ -3,12 +3,12 @@
 <KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <op:config href="NeoPixel.conf.xml" />
   <!-- Marketing-Text-Version (Allgemein-Seite). Pro Variante, in Sync mit ApplicationVersion unten halten. -->
-  <op:config name="%NEO_ProductVersion%" value="0.4" />
+  <op:config name="%NEO_ProductVersion%" value="0.6" />
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="1"
-    ApplicationVersion="0.4"
-    ReplacesVersionsDownTo="0.0"
+    ApplicationVersion="0.6"
+    ReplacesVersionsDownTo="0.1"
     ApplicationRevision="0"
     ProductName="OpenKNX NeoPixel"
     BusCurrent="30"
@@ -52,8 +52,8 @@
     share="../lib/OFM-LightManager/src/LightManagerModule.share.xml"
     template="../lib/OFM-LightManager/src/LightManagerModule.templ.xml"
     NumChannels="16"
-    KoSingleOffset="1250"
-    KoOffset="1260">
+    KoSingleOffset="1460"
+    KoOffset="1500">
     <op:verify File="../lib/OFM-LightManager/library.json" ModuleVersion="%LMG_VerifyVersion%" />
   </op:define>
 
@@ -80,16 +80,15 @@
     KoOffset="500">
   </op:define>
 
-  <!-- Effektmanager KOs — separate module to avoid BlockSize overflow in NEO segment template -->
-  <!-- 9 KOs per segment × 16 segments = 144 KOs starting at 1612 (after LMG ends at 1611). 9th KO = "Cue setzen" -->
-  <!-- KO order per EM: K0 Start, K1 Status, K2 Stop, K3 Aktive Cue, K4 Cue setzen, K5-K7 Effekt-Text, K8 Effektkette Sync -->
+  <!-- Effektmanager KOs — separate module. KoOffset 1860: NEO-Segmentblock waechst (bis 53 KOs/Kanal
+       => 600..1447), LMG verschoben auf single 1460 / channel 1500..1851, daher EM ab 1860. -->
 
   <op:define prefix="NEOEM" ModuleType="42"
     share="NeoPixel.EM.share.xml"
     template="NeoPixel.EM.templ.xml"
     NumChannels="16"
     configTransferName="NeoPixel Effektmanager"
-    KoOffset="1612">
+    KoOffset="1860">
   </op:define>
 <generate>
             <Dynamic>

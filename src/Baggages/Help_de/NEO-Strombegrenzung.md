@@ -70,6 +70,8 @@ Gilt für **alle physischen LED-Streifen zusammen**.
 ### Pro Physischem Strip
 Jeder Strip kann eigene Einstellungen haben oder globale nutzen.
 
+**Wo:** Beim jeweiligen physischen LED-Streifen (Baum: *Physikalische LED Streifen → Streifen X → Strombegrenzung*). Die Werte hier unter „Strombegrenzung (Global)" sind nur die Standardwerte für alle Streifen mit „Global verwenden".
+
 - **Optionen:** **Deaktiviert** (Keine Begrenzung)
 - **Global verwenden** (Nutzt globale Einstellungen)
 - **Fester Wert (mA)** (Eigenes Stromlimit)

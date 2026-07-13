@@ -15,25 +15,9 @@ SegmentController::~SegmentController()
 {
 }
 
-// Calculate DPT3.007 delta for dimming
-int16_t SegmentController::dpt3_007_delta(uint8_t stepCode)
-{
-    // stepCode 1-7 for DPT 3.007: 1=100%, 2=50%, 3=25%, 4=12%, 5=6%, 6=3%, 7=1%
-    int16_t delta = 255; // Start with 100%
-
-    for (uint8_t i = 1; i < stepCode && i < 7; i++)
-    {
-        delta = delta / 2; // Halve for each step
-    }
-
-    // Additional reduction for step 7
-    if (stepCode >= 7)
-    {
-        delta = delta / 4; // ~1-2%
-    }
-
-    return delta;
-}
+// dpt3_007_delta() removed: the start-stop dim ramp is now time-based (see
+// processActiveDimming). The old exponential mapping also returned 0 for
+// stepCode 7 (integer /4 of 3) -> that channel never dimmed.
 
 // Process active start/stop dimming for all segments
 void SegmentController::processActiveDimming()
@@ -59,14 +43,18 @@ void SegmentController::processActiveDimming()
         // Check if it's time for next step
         if (now < segConfig.dimmingNextStep) continue;
 
-        // Calculate step interval based on stepCode (faster = more frequent updates)
-        // stepCode 1 (100%) = ~40ms, stepCode 7 (~2%) = ~250ms
-        uint32_t interval = 40 + (segConfig.dimmingStepCode - 1) * 35;
+        // Time-based start-stop ramp: a full 0..255 dim takes ~DIM_RAMP_FULL_MS,
+        // independent of the sender's step code. MDT & most pushbuttons send
+        // stepCode 1 (100%) start-stop and expect the DIMMER to define the speed.
+        // The old code applied the step percentage per 40ms tick, so stepCode 1
+        // ramped in ~0.2s -> looked like an instant off.
+        // TODO(B): expose DIM_RAMP_FULL_MS as an ETS "Dimmzeit" parameter per segment.
+        static constexpr int32_t DIM_RAMP_FULL_MS = 3000; // 0<->255 in ~3s
+        const uint32_t interval = 40; // fixed tick for a smooth ramp
         segConfig.dimmingNextStep = now + interval;
 
-        // Calculate delta for this step
-        int16_t delta = dpt3_007_delta(segConfig.dimmingStepCode);
-        delta = delta / 6; // Divide by ~6 to make continuous dimming smoother
+        int16_t delta = (int16_t)(((int32_t)255 * (int32_t)interval) / DIM_RAMP_FULL_MS);
+        if (delta < 1) delta = 1; // guarantee visible progress
         if (!segConfig.dimmingIncrease) delta = -delta;
 
         // Apply dimming based on active channel
@@ -75,10 +63,23 @@ void SegmentController::processActiveDimming()
         {
             case NeoPixelBusModule::SegmentConfig::BRIGHTNESS:
             {
-                uint8_t bri = seg->getBrightness();
-                int16_t newBri = bri + delta;
-                newBri = constrain(newBri, 0, 255);
-                seg->setBrightness((uint8_t)newBri);
+                // Ratchet the MASTER (intent) brightness, mirroring the absolute SegmentBrightness KO
+                // (NeoPixelModule.cpp:1812-1830): keep savedBrightness (the pre-global baseline) in sync
+                // and re-derive the render brightness from master. Writing only the render layer (old
+                // behavior) lost the dim on the next cue switch or global-brightness recompute, which
+                // broke the master cascade (P1) and the "live dim survives EM-stop" rule (conflict#1=b).
+                int16_t newDesired = constrain((int16_t)segConfig.savedBrightness + delta, 0, 255);
+                segConfig.savedBrightness = (uint8_t)newDesired;
+
+                uint8_t globalB = _module->getGlobalBrightness();
+                uint8_t effective = (globalB < 255) ? (uint8_t)((newDesired * globalB) / 255) : (uint8_t)newDesired;
+
+                seg->setMasterBrightness(effective);
+                if (segConfig.emController.isRunning())
+                    // EM owns the render brightness — re-derive it from the new master immediately.
+                    segConfig.emController.reapplyMasterBrightness(seg);
+                else
+                    seg->setBrightness(effective);
                 break;
             }
 

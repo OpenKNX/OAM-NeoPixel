@@ -19,8 +19,8 @@ Legt fest, wie viele Effektmanager auf diesem Gerät aktiv sind (0 = keiner, 1�
 Nur die aktivierten Effektmanager werden in der Firmware berücksichtigt.
 
 ### Beschreibung (Name)
-Ein frei wählbarer Name für diesen Effektmanager (bis zu 16 Zeichen).  
-Erscheint im KO-Baum und in Visualisierungen.
+Ein frei wählbarer Name für diesen Effektmanager (bis zu 40 Zeichen).  
+Erscheint im KO-Baum und in den KO-Namen. Reine ETS-Doku (nicht auf dem Gerät gespeichert).
 
 ### Anzahl aktiver Cues
 Wie viele Cues dieser Effektmanager enthält (0 = deaktiviert, 1–10).  
@@ -37,18 +37,20 @@ Gibt an, welcher Effektmanager nach Abschluss dieser Sequenz automatisch gestart
 - **0** = Stop (kein Folge-EM)
 - **1–16** = Nummer des Folge-Effektmanagers
 
-## Steuerung über KNX
+## Steuerung über KNX (pro Segment)
 
-Jeder Effektmanager besitzt vier Kommunikationsobjekte:
+Die Laufzeit-Steuerung gehört zum **Segment** — es läuft immer nur **ein** Effektmanager pro Segment, der Startwert wählt welcher:
 
-- EM Start (1 Byte):
-	Startet den EM. Wert 1-16 = EM-Nummer, 0 = Stop.
-- EM Status (1 Byte):
-	Gibt die aktive EM-Nummer zurueck (0 = kein EM aktiv).
-- EM Stop (1 Bit):
-	Stoppt den laufenden EM sofort.
-- Aktive Cue (1 Byte):
-	Gibt die aktuell gespielte Cue-Nummer zurueck (0 = keine Cue aktiv).
+- **EM Start** (1 Byte): Startet einen EM. Wert 1–16 = EM-Nummer, 0 = Stop.
+- **EM Stop** (1 Bit): Stoppt den laufenden EM. Das Segment kehrt danach zu seinem **direkten Zustand** zurück (zuletzt manuell gesetzte Farbe/Effekt; aus, wenn nichts gesetzt war) — es bleibt **nicht** die letzte Cue stehen.
+- **EM Pause/Resume** (1 Bit): 1 = Pause (die aktuelle Cue wird **eingefroren** und bleibt sichtbar, läuft aber nicht weiter), 0 = Resume (an gleicher Stelle fortsetzen).
+- **EM Status** (1 Byte): Aktive EM-Nummer (0 = keiner).
+- **Aktive Cue** (1 Byte): Aktuell gespielte Cue-Nummer (0 = keine).
+- **EM Zustand** (1 Byte): 0 = gestoppt, 1 = läuft, 2 = pausiert.
+
+**Direkte Steuerung übernimmt:** Ein direktes Farb-, Effekt- (Fx) oder Helligkeits-KO auf dem Segment — oder ein Szenen-Abruf — **stoppt einen laufenden EM** und zeigt den manuellen Wert. So holst du das Segment jederzeit unter direkte Kontrolle.
+
+**Festes Licht / fester Cue:** Statisches Licht über Szenen-Abruf (stoppt den EM, zeigt die Szene) oder die normalen Segment-KOs. Eine Cue mit **Dauer 0** hält unendlich (steht still, bis gestoppt/pausiert/weitergeschaltet wird).
 
 ## Cues konfigurieren
 

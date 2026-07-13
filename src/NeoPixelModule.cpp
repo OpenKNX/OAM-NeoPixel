@@ -408,6 +408,15 @@ void NeoPixelBusModule::processAfterStartupDelay()
         return;
     }
 
+    // Restore last runtime state ("Letzter Zustand") from flash onto the live segments; must run
+    // here so the restored effect/colour/brightness become the ACTIVE state (reported by ETS
+    // sync-back readback). Only acts on segments set to "Letzter Zustand"; StartupEM below is
+    // evaluated afterwards and can override it (priority EM > Effekt > Solid).
+    if (_flashPersistence)
+    {
+        _flashPersistence->restoreStatesAfterStartup();
+    }
+
     uint8_t previousChannel = _channelIndex;
     for (size_t i = 0; i < _segments.size(); ++i)
     {
@@ -616,29 +625,59 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     uint16_t koNumber = ko.asap();
 
     // ── Effektmanager KOs (NEOEM module, KoOffset=1240, BlockSize=4) ─────
-#ifdef NEOEM_KoCalcChannel
+#ifdef NEO_KoEmStart
     {
-        int emChannel = NEOEM_KoCalcChannel(koNumber);
-        if (emChannel >= 0)
+        int emChannel = NEO_KoCalcChannel(koNumber);
+        int emKoIndex = (emChannel >= 0) ? NEO_KoCalcIndex(koNumber) : -1;
+        // The EM control KOs (NEO_KoEmStart..NEO_KoEmRunState) live in the segment block.
+        // Intercept ONLY those here; every other segment KO falls through to the dispatch below.
+        if (emKoIndex >= NEO_KoEmStart && emKoIndex <= NEO_KoEmRunState)
         {
-            int emKoIndex = NEOEM_KoCalcIndex(koNumber);
+            // A locked segment ignores its EM CONTROL KOs — but NOT the internal Effektkette
+            // SyncChain telegram (master->slave coordination): dropping sync for a locked slave
+            // would desync it and can break the whole chain (slave watchdog timeout).
+            if ((size_t)emChannel < _segments.size() && _segments[emChannel].locked)
+            {
+    #ifdef NEO_KoSyncChain
+                if (emKoIndex != NEO_KoSyncChain)
+    #endif
+                    return;
+            }
             switch (emKoIndex)
             {
-                case NEOEM_KoEmStart:
+                case NEO_KoEmStart:
                 {
                     uint8_t emId = ko.value(DPT_Value_1_Ucount);
                     logInfoP("Segment %d: EffektManager Start = %d", emChannel, emId);
                     startEffektManager((size_t)emChannel, emId);
+                    // A direct EM start makes the EM the active source — drop any persisted scene marker
+                    // so "Letzter Zustand" restores the EM, not an older scene (restore checks scene first).
+                    // Guard on "THIS emId is now active": a refused start (suspended/disabled/empty) — even
+                    // while a DIFFERENT EM keeps running — must NOT wipe the scene marker. EM-action scenes
+                    // go through recallScene(), not this KO, so they keep their marker regardless.
+                    if (emId != EM_NONE && _segments[emChannel].emController.activeEmId() == emId)
+                        _segments[emChannel].savedSceneNumber = 0;
                     break;
                 }
-                case NEOEM_KoEmStop:
+                case NEO_KoEmStop:
                 {
                     logInfoP("Segment %d: EffektManager Stop", emChannel);
                     stopEffektManager((size_t)emChannel);
                     break;
                 }
-    #ifdef NEOEM_KoEmCueSet
-                case NEOEM_KoEmCueSet:
+    #ifdef NEO_KoEmPause
+                case NEO_KoEmPause:
+                {
+                    bool doPause = ko.value(DPT_Switch); // 1 = Pause, 0 = Resume
+                    logInfoP("Segment %d: EffektManager %s", emChannel, doPause ? "Pause" : "Resume");
+                    if (doPause) pauseEffektManager((size_t)emChannel);
+                    else
+                        resumeEffektManager((size_t)emChannel);
+                    break;
+                }
+    #endif
+    #ifdef NEO_KoEmCueSet
+                case NEO_KoEmCueSet:
                 {
                     // Jump to a specific cue of the RUNNING EM (input for StateEngine/Logic).
                     // No-op if no EM is running / cue invalid (executeEmChainAction handles bounds).
@@ -648,10 +687,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     break;
                 }
     #endif
-    #ifdef NEOEM_KoEffectText
-                case NEOEM_KoEffectText:
-        #ifdef NEOEM_KoEffectTextAppend
-                case NEOEM_KoEffectTextAppend:
+    #ifdef NEO_KoEffectText
+                case NEO_KoEffectText:
+        #ifdef NEO_KoEffectTextAppend
+                case NEO_KoEffectTextAppend:
         #endif
                 {
                     // Set/append text of the running effect (any source: ETS, Cue, Scene started it).
@@ -664,8 +703,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     if (!effect) break;
                     const char* text = ko.value(DPT_String_8859_1);
                     char buf[sizeof(EffectConfig::effectText)];
-        #ifdef NEOEM_KoEffectTextAppend
-                    if (emKoIndex == NEOEM_KoEffectTextAppend)
+        #ifdef NEO_KoEffectTextAppend
+                    if (emKoIndex == NEO_KoEffectTextAppend)
                     {
                         const char* current = seg->getConfig().effectText;
                         size_t len = strlen(current);
@@ -691,8 +730,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     break;
                 }
     #endif
-    #ifdef NEOEM_KoSyncChain
-                case NEOEM_KoSyncChain:
+    #ifdef NEO_KoSyncChain
+                case NEO_KoSyncChain:
                 {
                     // Effektkette: slave receives sync telegram from master
                     if ((size_t)emChannel < _segments.size() && _segments[emChannel].syncMode == 2)
@@ -724,6 +763,18 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
         if (powerState == false)
         {
+            // Suspend any running EM/chain so it does NOT keep ticking while powered off (a paused
+            // EM's tick() is a no-op). suspendedByPower marks these so Power-On resumes exactly
+            // them — distinct from a manual Pause or a direct-KO interrupt (which stops).
+            for (size_t i = 0; i < _segments.size(); i++)
+            {
+                auto& cfg = _segments[i];
+                if (cfg.segment && cfg.emController.isRunning() && !cfg.emController.isPaused())
+                {
+                    pauseEffektManager(i);
+                    cfg.suspendedByPower = true;
+                }
+            }
             // Power off - turn off all LEDs immediately by clearing all segments
             if (!_segments.empty() && _virtualStrip)
             {
@@ -738,8 +789,22 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 _virtualStrip->show();
             }
         }
-        // Note: Power ON doesn't need special handling - the loop() function
-        // will automatically resume updating segments and effects
+        else
+        {
+            // Power-On resumes EMs that were suspended by a power-off (not manual pauses).
+            // suspendedByPower is shared with the per-segment Power KO, so only revive a segment
+            // whose OWN power is still ON (savedPower != 0) — otherwise a globally-restored bus would
+            // light a segment the user had individually switched off.
+            for (size_t i = 0; i < _segments.size(); i++)
+            {
+                auto& cfg = _segments[i];
+                if (cfg.segment && cfg.suspendedByPower && cfg.savedPower != 0)
+                {
+                    cfg.suspendedByPower = false;
+                    resumeEffektManager(i); // resume() also re-applies master brightness
+                }
+            }
+        }
 
         // Send state feedback
         bool changed = KoNEO_PowerState.valueNoSendCompare(powerState, DPT_Switch);
@@ -843,6 +908,28 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             logWarningP("Channel %d has no valid segment, ignoring KO", channel);
             _channelIndex = oldChannelIndex;
             return;
+        }
+
+        // If this segment is locked (Sperre-KO), ignore ALL controlling KOs. The Lock KO itself
+        // stays active (to unlock); status/output KOs (WriteFlag=Disabled) are never received.
+        if (_segments[channel].locked && koIndex != NEO_KoLock)
+        {
+            _channelIndex = oldChannelIndex;
+            return;
+        }
+
+        // A direct manual command takes over from a running EM on this segment: halt the EM
+        // (without restoring pre-EM state — the command below sets the new visual). Excluded:
+        // read/status KOs, Scene recall (stops the EM itself), brightness (dims the EM, not stops
+        // it), and Cue +/- / Lock (EM/segment control, not a visual takeover).
+        if (koIndex != NEO_KoSegmentPowerState && koIndex != NEO_KoSegmentBrightnessState &&
+            koIndex != NEO_KoCCTState && koIndex != NEO_KoFxState && koIndex != NEO_KoSceneState &&
+            koIndex != NEO_KoRGBState && koIndex != NEO_KoHSVState && koIndex != NEO_KoRGBWState &&
+            koIndex != NEO_KoHCLState && koIndex != NEO_KoScene &&
+            koIndex != NEO_KoSegmentBrightness && koIndex != NEO_KoBriRel &&
+            koIndex != NEO_KoCueRel && koIndex != NEO_KoLock)
+        {
+            interruptEmIfRunning((size_t)channel);
         }
 
         switch (koIndex)
@@ -1373,6 +1460,89 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 break;
             }
 
+            case NEO_KoCueRel:
+            {
+                // Relative cue step (DPT 3.7) on the RUNNING EM. bit3 = direction (1=next,
+                // 0=previous), bits0-2 = step (0 = stop/no-op). Stays in the current run-state
+                // (a paused EM gets the new cue, shown on resume). Does NOT interrupt.
+                uint8_t raw = ko.value(Dpt(5, 10));
+                if ((raw & 0x07) != 0)
+                {
+                    SegmentConfig& cfgQ = _segments[channel];
+                    uint8_t emId = cfgQ.emController.activeEmId();
+                    if (emId >= 1 && emId <= EM_COUNT && _emData)
+                    {
+                        uint8_t cur = cfgQ.emController.activeCueNum(); // 1-based
+                        uint8_t cueCount = _emData[emId - 1].header.cueCount;
+                        uint8_t target = cur;
+                        if (raw & 0x08)
+                        {
+                            if (cur < cueCount) target = cur + 1;
+                        } // next cue
+                        else
+                        {
+                            if (cur > 1) target = cur - 1;
+                        } // previous cue
+                        if (target != cur && target >= 1)
+                        {
+                            cfgQ.emController.triggerCue(target, targetSegment, _emData);
+                            sendEmStatusKOs((size_t)channel);
+                        }
+                    }
+                }
+                break;
+            }
+
+            case NEO_KoLock:
+            {
+                // Sperre — 1 = lock (ignore controlling KOs), 0 = unlock. Gated above.
+                bool lock = ko.value(DPT_Switch);
+                _segments[channel].locked = lock;
+                logInfoP("Segment %d: Sperre %s", channel, lock ? "EIN" : "AUS");
+                break;
+            }
+
+            case NEO_KoFxRel:
+            {
+                // "Effekt schalten" (DPT 3.7), 4-bit dim control: bit3 = direction (1=next,
+                // 0=previous), bits0-2 = step (0 = stop/no-op). Steps by one effect ID through
+                // the EffectPool.
+                uint8_t raw = ko.value(Dpt(5, 10));
+                if ((raw & 0x07) != 0)
+                {
+                    uint8_t cur = getTypeFromEffect(targetSegment->getEffect());
+                    uint8_t count = EffectPool::getEffectCount();
+                    uint8_t next = cur;
+                    if (raw & 0x08)
+                    {
+                        if ((uint8_t)(cur + 1) < count) next = cur + 1;
+                    } // next
+                    else
+                    {
+                        if (cur > 0) next = cur - 1;
+                    } // previous
+                    if (next != cur)
+                    {
+                        logInfoP("Segment %d Effekt schalten: %d -> %d", channel, cur, next);
+                        applyEffectToSegment(targetSegment, next);
+                        _effectConfiguration->setupEffectConfiguration(targetSegment);
+                        SegmentConfig& cfgFx = _segments[channel];
+                        cfgFx.savedEffectType = next;
+                        cfgFx.savedEffectValid = (next > 0); // mirror the absolute NEO_KoFx handler
+
+                        // Effektkette: a master propagates the stepped effect to its slaves (like NEO_KoFx).
+                        if (cfgFx.syncMode == 1) sendSyncTelegram((size_t)channel);
+
+                        // Status feedback so visualisations / feedback logic track the stepped effect.
+                        _channelIndex = channel;
+                        if (KoNEO_FxState.valueNoSendCompare(next, DPT_SceneNumber))
+                            KoNEO_FxState.objectWritten();
+                        _channelIndex = oldChannelIndex;
+                    }
+                }
+                break;
+            }
+
             case NEO_KoFx:
             {
                 uint8_t effect = ko.value(DPT_Value_1_Ucount); // 5.010
@@ -1553,12 +1723,32 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                 if (power)
                 {
+                    // Per-segment power intent is ON regardless of the global state.
+                    cfg.savedPower = 1;
+
+                    // If this segment's EM was suspended by a power-off, resume it (not the
+                    // direct-state restore below). But while GLOBAL power is OFF, only record the
+                    // intent and keep the EM suspended — global Power-On then revives it. This stops a
+                    // single segment-on from defeating the global off (EM ticking + immediate show()).
+                    if (cfg.suspendedByPower)
+                    {
+                        if (_globalPowerOn)
+                        {
+                            cfg.suspendedByPower = false;
+                            resumeEffektManager(channel); // resume() also re-applies master brightness
+                            if (_virtualStrip) _virtualStrip->show();
+                        }
+                        _channelIndex = channel;
+                        if (KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch))
+                            KoNEO_SegmentPowerState.objectWritten();
+                        break;
+                    }
+
                     // logDebugP("Segment %d Power ON: savedValid=%d, savedLastWasEffect=%d, savedEffectValid=%d, type=%d, savedRGB=(%d,%d,%d), savedBri=%d",
                     //           channel, cfg.savedValid, cfg.savedLastWasEffect, cfg.savedEffectValid, cfg.savedEffectType,
                     //           cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedBrightness);
 
-                    // Update power state for flash persistence
-                    cfg.savedPower = 1;
+                    // (cfg.savedPower already set to 1 above, before the suspended-EM branch)
 
                     if (cfg.savedLastWasEffect && cfg.savedEffectValid)
                     {
@@ -1595,14 +1785,24 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         }
                     }
 
-                    // Force immediate show() to update PowerManager with new pixel data
-                    if (_virtualStrip)
+                    // Force immediate show() to update PowerManager with new pixel data — but only
+                    // when global power is ON; otherwise the restored state stays in the buffer and
+                    // appears when global Power-On resumes rendering (segment-on must not defeat
+                    // global-off).
+                    if (_globalPowerOn && _virtualStrip)
                     {
                         _virtualStrip->show();
                     }
                 }
                 else
                 {
+                    // Suspend a running EM so it does NOT keep ticking while this segment is off.
+                    if (cfg.emController.isRunning() && !cfg.emController.isPaused())
+                    {
+                        pauseEffektManager(channel);
+                        cfg.suspendedByPower = true;
+                    }
+
                     // Snapshot PRIMARY COLOR (not current pixels!)
                     // Effects constantly change pixel colors, but primaryColor is the base color
                     uint32_t primaryRGBW = targetSegment->getPrimaryColor();
@@ -1612,7 +1812,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = (primaryRGBW >> 16) & 0xFF;
                     cfg.savedB = (primaryRGBW >> 8) & 0xFF;
                     cfg.savedWW = (primaryRGBW) & 0xFF;
-                    cfg.savedBrightness = targetSegment->getBrightness();
+                    // Save the MASTER (intent) brightness, not the render value: a power-suspended EM
+                    // is paused, so getBrightness() would be the frozen cue-scaled render (master*cue/255).
+                    // Persisting master keeps "Letzter Zustand" consistent for EM segments.
+                    cfg.savedBrightness = targetSegment->getMasterBrightness();
                     cfg.savedValid = true;
 
                     // Update power state for flash persistence
@@ -1998,7 +2201,7 @@ void NeoPixelBusModule::composeSyncPayload(size_t segmentIndex, uint8_t* payload
 
 void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
 {
-#ifdef NEOEM_KoSyncChain
+#ifdef NEO_KoSyncChain
     if (segmentIndex >= _segments.size()) return;
     auto& cfg = _segments[segmentIndex];
     if (cfg.syncMode != 1 || !cfg.segment) return; // only masters send
@@ -2009,7 +2212,7 @@ void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
     uint8_t payload[9];
     composeSyncPayload(segmentIndex, payload);
 
-    auto& ko = KoNEOEM_SyncChain;
+    auto& ko = KoNEO_SyncChain;
     uint8_t* ref = ko.valueRef();
     for (uint8_t b = 0; b < 9; b++)
         ref[b] = payload[b];
@@ -2090,7 +2293,7 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
  */
 void NeoPixelBusModule::loopSyncMaster()
 {
-#ifdef NEOEM_KoSyncChain
+#ifdef NEO_KoSyncChain
     uint32_t now = millis();
     for (size_t i = 0; i < _segments.size(); i++)
     {
@@ -2413,6 +2616,11 @@ bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
         {
             if (arg2 < 0 || arg2 > EM_COUNT) return false;
             startEffektManager(seg, (uint8_t)arg2);
+            // Same as the NEO_KoEmStart KO: a successful direct start makes the EM the active source,
+            // so drop any persisted scene marker (restore checks scene before EM). Guard on "this emId
+            // is now active" so a refused start (while a different EM runs) does not wipe the marker.
+            if (arg2 != EM_NONE && _segments[seg].emController.activeEmId() == (uint8_t)arg2)
+                _segments[seg].savedSceneNumber = 0;
             return true;
         }
         case NEO_EM_STOP:
@@ -2486,16 +2694,12 @@ bool NeoPixelBusModule::executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effe
     // params whose min is 0 (e.g. Clock BlinkColon default 1, Snake BodyHue default 85=green).
     // Without this the clock never blinks and the snake body renders red (hue 0) — both come
     // straight from the cue carrying 0 instead of the effect default.
-    const char* defText = nullptr;
     if (Effect* eff = EffectPool::getEffectByIndex(effectId))
     {
         uint8_t pc = eff->getParameterCount();
         for (uint8_t i = 0; i < pc && i < EM_PARAM_COUNT; i++)
         {
             c.params[i] = (uint8_t)eff->getParameterDefault(i);
-            // Capture the effect's default text (string param) so a cue without an
-            // explicit text shows it instead of nothing — e.g. ScrollText → "OpenKNX NeoPixel".
-            if (!defText) defText = eff->getParameterDefaultText(i);
         }
     }
     c.r = r; c.g = g; c.b = b; c.w = 0;
@@ -2503,12 +2707,10 @@ bool NeoPixelBusModule::executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effe
     c.durationSec = durSec;
     c.fadeMs      = fadeMs;
     c.cueName[0]    = '\0';
+    // A cue carries no text by default -> stays empty. This keeps a runtime text set via
+    // the Effekt-Text KO authoritative across cue changes (see the guard in EffektManager),
+    // and ScrollText renders its own DEFAULT_TEXT at render time when the text is truly empty.
     c.effectText[0] = '\0';
-    if (defText && defText[0])
-    {
-        strncpy(c.effectText, defText, sizeof(c.effectText) - 1);
-        c.effectText[sizeof(c.effectText) - 1] = '\0';
-    }
     if (cueNum > em.header.cueCount) em.header.cueCount = cueNum; // grow active cue count
     return true;
 }
@@ -3345,21 +3547,19 @@ void NeoPixelBusModule::configureFromETS()
             _totalLeds += pixels;
             _physicalStrips.push_back(phys);
 
-            // Configure timing for this physical strip
-            uint8_t timingMode = (uint8_t)ParamNEOSTRIP_NEOTiming;
-            if (timingMode <= 10)
-            {
-                // Map timing mode parameter (0-10) to TimingMode enum
-                TimingMode mode = static_cast<TimingMode>(timingMode);
-                phys->setTimingMode(mode);
-
-                const char* timingModes[] = {
-                    "AUTO", "AUTO_LEGACY",
-                    "SLOW_20%", "SLOW_15%", "SLOW_10%", "SLOW_5%",
-                    "FAST_5%", "FAST_10%", "FAST_15%", "FAST_20%", "FAST_25%"};
-                const char* timingName = (timingMode < 11) ? timingModes[timingMode] : "UNKNOWN";
-                logInfoP("Strip %d: Timing mode=%d (%s)", i, timingMode, timingName);
-            }
+            // ETS "Timing" value -> target kHz. Order MUST match the NEOTiming enum
+            // (NeoPixel.share.xml) and the duplicate table in StripConfiguration.cpp. SPI: no-op.
+            static const uint16_t timingFreqTable[16] = {
+                800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
+            const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
+            const uint16_t freqKhz = timingFreqTable[timingSel];
+            // 3:7:6:4 ratio; only T1H matters on PIO (T1H_ns = 600000 / kHz)
+            const uint16_t t1h = (uint16_t)(600000UL / freqKhz);
+            const uint16_t t0h = (uint16_t)(t1h / 2);
+            const uint16_t t0l = (uint16_t)((uint32_t)t1h * 7 / 6);
+            const uint16_t t1l = (uint16_t)((uint32_t)t1h * 4 / 6);
+            if (phys->setCustomTiming(t0h, t0l, t1h, t1l, 0))
+                logInfoP("Strip %d: Timing = %u kHz (T1H=%u ns)", i, freqKhz, t1h);
 
             // Configure color correction for this strip
             bool colorCalibMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
@@ -4201,13 +4401,13 @@ void NeoPixelBusModule::configurePowerManagement()
                 break;
         }
 
-        // Set soft-limiting threshold (Phase 2)
+        // Set soft-limiting threshold
         powerManager->setThresholdPercent(powerLimitThreshold);
 
-        // Set auto brightness limit (Phase 2)
+        // Set auto brightness limit
         powerManager->setMaxBrightnessPercent(autoBrightnessLimit);
 
-        // Set brightness slew rate (Phase 3)
+        // Set brightness slew rate
         powerManager->setBrightnessSlewRate(ablSlewRate);
 
         // Configure LED current profile based on ETS settings and detected strip type
@@ -5103,14 +5303,11 @@ void NeoPixelBusModule::debugShowConfiguration()
             }
         }
 
-        // Timing Mode
-        uint8_t timingMode = (uint8_t)ParamNEOSTRIP_NEOTiming;
-        const char* timingModes[] = {
-            "AUTO", "AUTO_LEGACY",
-            "SLOW_20%", "SLOW_15%", "SLOW_10%", "SLOW_5%",
-            "FAST_5%", "FAST_10%", "FAST_15%", "FAST_20%", "FAST_25%"};
-        const char* timingName = (timingMode < 11) ? timingModes[timingMode] : "UNKNOWN";
-        logInfoP("  │    Timing Mode:      %d (%s)", timingMode, timingName);
+        // Timing (bitrate): ETS value -> kHz (matches the ETS Timing dropdown)
+        uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
+        static const uint16_t timingFreqTbl[16] = {
+            800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
+        logInfoP("  │    Timing:           value %d = %u kHz", timingSel, timingFreqTbl[timingSel]);
 
         // Skip First LEDs
         uint16_t skipLeds = (uint16_t)ParamNEOSTRIP_NEOSkipFirstLEDs;
@@ -5750,7 +5947,19 @@ void NeoPixelBusModule::loopEffektManager()
         auto& cfg = _segments[i];
         if (!cfg.segment) continue;
 
+        // Detect an auto-finish (non-looping cue chain ends inside tick()). OFM's internal finish
+        // does LAST (restoreDirectState); override here for OFF/DEFAULT, which OFM cannot resolve
+        // (no ETS access). Chaining EM->EM keeps isRunning() true, so only a real chain-end flips
+        // the edge — manual stops go through stopEffektManager(), not this path.
+        bool wasRunning = cfg.emController.isRunning();
         cfg.emController.tick(cfg.segment, _emData);
+        if (wasRunning && !cfg.emController.isRunning())
+        {
+            if (cfg.emStopReturnMode == EM_STOP_OFF)
+                cfg.segment->stop();
+            else if (cfg.emStopReturnMode == EM_STOP_DEFAULT)
+                applySegmentDefaultState(i);
+        }
 
         // Re-apply any long console cue-text after a cue switch (no-op unless one is set).
         applyCueLongText(cfg);
@@ -5832,7 +6041,7 @@ void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)
                     (int)header.cueCount);
     }
 
-    // If a normal effect KO wins (Variante A: EM interrupt = sofort)
+    // A normal effect KO interrupts a running EM immediately
     cfg.emController.start(emId, cfg.segment, _emData);
     sendEmStatusKOs(segmentIndex);
 
@@ -5855,8 +6064,94 @@ void NeoPixelBusModule::stopEffektManager(size_t segmentIndex)
     auto& cfg = _segments[segmentIndex];
     if (!cfg.segment) return;
 
-    cfg.emController.stop(cfg.segment);
+    // Honor the per-segment "EM-Stop return" mode (0=last, 1=default, 2=off).
+    // OFM handles LAST/OFF directly; DEFAULT falls back to LAST inside OFM, so the
+    // OAM applies the ETS default config explicitly here (OFM cannot read ETS).
+    uint8_t mode = cfg.emStopReturnMode;
+    // Capture BEFORE stop(): an EM-Stop on an idle segment (no EM running) must NOT reset the
+    // segment — otherwise it would clobber a manual color/effect/brightness the user just set.
+    // Only a genuine running EM triggers the DEFAULT re-apply (mirrors the loopEffektManager edge).
+    bool wasRunning = cfg.emController.isRunning();
+    // isRunning() is also true for a PAUSED EM (e.g. power-suspended); capture that so a stop
+    // landing on a powered-off segment does not paint the ETS default onto an off segment.
+    bool wasPowerSuspended = cfg.suspendedByPower;
+    cfg.emController.stop(cfg.segment, mode);
+    // An explicit stop clears the power-suspend marker: the EM state is now manually controlled,
+    // so a later power-on must not "resume" it (the shared flag would otherwise go stale-true).
+    cfg.suspendedByPower = false;
+    if (wasRunning && !wasPowerSuspended && mode == EM_STOP_DEFAULT)
+        applySegmentDefaultState(segmentIndex);
     sendEmStatusKOs(segmentIndex);
+}
+
+void NeoPixelBusModule::pauseEffektManager(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment) return;
+
+    cfg.emController.pause(cfg.segment);
+    sendEmStatusKOs(segmentIndex);
+}
+
+void NeoPixelBusModule::resumeEffektManager(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment) return;
+
+    cfg.emController.resume(cfg.segment);
+    sendEmStatusKOs(segmentIndex);
+}
+
+void NeoPixelBusModule::interruptEmIfRunning(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment || !cfg.emController.isRunning()) return;
+    // Halt the EM without restoring the pre-EM state — the triggering direct KO sets the new visual.
+    cfg.emController.stop(cfg.segment, EM_STOP_LEAVE);
+    sendEmStatusKOs(segmentIndex);
+}
+
+void NeoPixelBusModule::applySegmentDefaultState(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (!cfg.segment) return;
+
+    // "Segment-Standardwerte": re-apply the boot-time ETS default for this segment.
+    // Set the channel context so the ParamNEO_ macros resolve for this segment, then restore it.
+    uint8_t prevChannel = getChannelIndex();
+    setChannelIndex(static_cast<uint8_t>(segmentIndex));
+
+    // Base effect + its effect-specific parameters (mirror of configureEffects()).
+    uint8_t effectType = static_cast<uint8_t>(ParamNEO_NEONEOEffectType);
+    applyEffectToSegment(cfg.segment, effectType);
+    setupEffectConfiguration(cfg.segment);
+
+    // Default color/white (TypeColor RGB = 0x00RRGGBB) — the member wrapper above does NOT
+    // load the default color, so apply it explicitly like setupEffectConfiguration(seg, true).
+    uint32_t color = ParamNEO_NEOSegmentStartupColor;
+    uint8_t r = (color >> 16) & 0xFF;
+    uint8_t g = (color >> 8) & 0xFF;
+    uint8_t b = color & 0xFF;
+    uint8_t w = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupW);
+    cfg.segment->setPrimaryColor(r, g, b, w);
+
+    // Start brightness seeds the Segment (master) layer of the cascade — a full reset to ETS
+    // values, so any live dim is intentionally cleared in this mode.
+    uint8_t startupBrightness = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupBrightness);
+    cfg.segment->setMasterBrightness(startupBrightness);
+    cfg.segment->setBrightness(startupBrightness);
+    // Keep the pre-global baseline in sync (mirror the boot seed at EffectConfiguration.cpp:51) so a
+    // later global-brightness recompute / power-restore does not revert to a stale dimmed value.
+    cfg.savedBrightness = startupBrightness;
+
+    cfg.savedEffectType = effectType;
+    cfg.savedEffectValid = true;
+
+    setChannelIndex(prevChannel);
 }
 
 void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
@@ -5865,18 +6160,24 @@ void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
     // every caller (loopEffektManager/start/stop/triggerCue). _localTestMode is false on a
     // normal ETS-configured boot, so production is unaffected.
     if (_localTestMode) return;
-#ifdef NEOEM_KoEmStatus
+#ifdef NEO_KoEmStatus
     if (segmentIndex >= _segments.size()) return;
     auto& cfg = _segments[segmentIndex];
 
     uint8_t oldCh = _channelIndex;
     _channelIndex = (uint8_t)segmentIndex;
 
-    bool changed1 = KoNEOEM_EmStatus.valueNoSendCompare(cfg.emController.activeEmId(), DPT_Value_1_Ucount);
-    if (changed1) KoNEOEM_EmStatus.objectWritten();
+    bool changed1 = KoNEO_EmStatus.valueNoSendCompare(cfg.emController.activeEmId(), DPT_Value_1_Ucount);
+    if (changed1) KoNEO_EmStatus.objectWritten();
 
-    bool changed2 = KoNEOEM_EmCueStatus.valueNoSendCompare(cfg.emController.activeCueNum(), DPT_Value_1_Ucount);
-    if (changed2) KoNEOEM_EmCueStatus.objectWritten();
+    bool changed2 = KoNEO_EmCueStatus.valueNoSendCompare(cfg.emController.activeCueNum(), DPT_Value_1_Ucount);
+    if (changed2) KoNEO_EmCueStatus.objectWritten();
+
+    #ifdef NEO_KoEmRunState
+    // 0 = gestoppt, 1 = läuft, 2 = pausiert
+    bool changed3 = KoNEO_EmRunState.valueNoSendCompare(cfg.emController.runState(), DPT_Value_1_Ucount);
+    if (changed3) KoNEO_EmRunState.objectWritten();
+    #endif
 
     _channelIndex = oldCh;
 #endif
@@ -5884,7 +6185,7 @@ void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
 
 void NeoPixelBusModule::sendEffectTextStatusKO(size_t segmentIndex)
 {
-#ifdef NEOEM_KoEffectTextStatus
+#ifdef NEO_KoEffectTextStatus
     if (segmentIndex >= _segments.size()) return;
     auto& cfg = _segments[segmentIndex];
     if (!cfg.segment) return;
@@ -5892,7 +6193,7 @@ void NeoPixelBusModule::sendEffectTextStatusKO(size_t segmentIndex)
     uint8_t oldCh = _channelIndex;
     _channelIndex = (uint8_t)segmentIndex;
 
-    KoNEOEM_EffectTextStatus.value(cfg.segment->getConfig().effectText, DPT_String_8859_1);
+    KoNEO_EffectTextStatus.value(cfg.segment->getConfig().effectText, DPT_String_8859_1);
 
     _channelIndex = oldCh;
 #endif

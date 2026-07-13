@@ -518,21 +518,19 @@ void StripConfiguration::configureFromETS()
             _module->_totalLeds += pixels;
             _module->_physicalStrips.push_back(phys);
 
-            // Configure timing for this physical strip
-            uint8_t timingMode = (uint8_t)ParamNEOSTRIP_NEOTiming;
-            if (timingMode <= 10)
-            {
-                // Map timing mode parameter (0-10) to TimingMode enum
-                TimingMode mode = static_cast<TimingMode>(timingMode);
-                phys->setTimingMode(mode);
-
-                const char* timingModes[] = {
-                    "AUTO", "AUTO_LEGACY",
-                    "SLOW_20%", "SLOW_15%", "SLOW_10%", "SLOW_5%",
-                    "FAST_5%", "FAST_10%", "FAST_15%", "FAST_20%", "FAST_25%"};
-                const char* timingName = (timingMode < 11) ? timingModes[timingMode] : "UNKNOWN";
-                logInfoP("Strip %d: Timing mode=%d (%s)", i, timingMode, timingName);
-            }
+            // ETS "Timing" value -> target kHz. Order MUST match the NEOTiming enum
+            // (NeoPixel.share.xml) and the duplicate table in NeoPixelModule.cpp. SPI: no-op.
+            static const uint16_t timingFreqTable[16] = {
+                800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
+            const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
+            const uint16_t freqKhz = timingFreqTable[timingSel];
+            // 3:7:6:4 ratio; only T1H matters on PIO (T1H_ns = 600000 / kHz)
+            const uint16_t t1h = (uint16_t)(600000UL / freqKhz);
+            const uint16_t t0h = (uint16_t)(t1h / 2);
+            const uint16_t t0l = (uint16_t)((uint32_t)t1h * 7 / 6);
+            const uint16_t t1l = (uint16_t)((uint32_t)t1h * 4 / 6);
+            if (phys->setCustomTiming(t0h, t0l, t1h, t1l, 0))
+                logInfoP("Strip %d: Timing = %u kHz (T1H=%u ns)", i, freqKhz, t1h);
 
             // Configure color correction for this strip (only if Master-Checkbox is ON)
             bool colorCalibrationMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;

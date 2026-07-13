@@ -1,42 +1,36 @@
-# Timing-Modus
+# Timing (Bitrate)
 
-Bestimmt den Timing-Modus für die Datenübertragung auf den LED-Streifen. Dies optimiert die Synchronisation mit verschiedenen Arten von WS2812B und ähnlichen LED-Streifen.
+Stellt die **Bitrate** der Datenübertragung zum LED-Streifen ein — also wie schnell die einzelnen Bits gesendet werden. Die Auswahl zeigt direkt die Frequenz in **kHz**.
 
-## Verfügbare Modi:
+> **Wichtig:** Das ist **Signal-Feintuning, keine Chip-Auswahl.** Den LED-Chip wählst du oben bei **„LED Typ"**. Dieses Feld korrigiert nur die *Geschwindigkeit* des Signals.
 
-- **0 AUTO**: 800 kHz, automatische Erkennung (Standard)
-- **1 AUTO_LEGACY**: 960 kHz*, für WS2812C/D und Onboard-LEDs
-- **2 SLOW_20PCT**: 640 kHz, -20 % für Signalprobleme
-- **3 SLOW_15PCT**: 680 kHz, -15 %
-- **4 SLOW_10PCT**: 720 kHz, -10 %
-- **5 SLOW_5PCT**: 760 kHz, -5 %
-- **6 FAST_5PCT**: 840 kHz, +5 % Leistungssteigerung
-- **7 FAST_10PCT**: 880 kHz, +10 %
-- **8 FAST_15PCT**: 920 kHz, +15 %
-- **9 FAST_20PCT**: 960 kHz, +20 %
-- **10 FAST_25PCT**: 1000 kHz, +25 % Maximum
+## Standard: 800 kHz
 
-*LEGACY-Modus verwendet einen festen Klock-Divider; die tatsächliche Bitrate hängt von der CPU-Frequenz ab.
+**WS2812B, SK6812, WS2813, WS2815** und die allermeisten 1-Wire-LEDs arbeiten mit **800 kHz**. Läuft dein Streifen sauber → **auf 800 lassen.**
 
-## Empfehlungen:
+## Wann herunter (langsamer)?
 
-- **AUTO (Standard)**: Für die meisten Anwendungen ausreichend und wird automatisch optimiert
-- **AUTO_LEGACY**: Wenn ältere WS2812C/D LEDs oder Onboard-LEDs verwendet werden
-- **SLOW_xx**: Bei Signalintegritätsproblemen, langen Kabeln oder Störeinflüssen
-- **FAST_xx**: Bei stabilen Verbindungen zur Verbesserung der Datenrate
+Niedrigere Werte geben dem Signal mehr Zeit — hilft bei:
 
-## Fehlerbehandlung:
+- **schwachem/verschliffenem Signal** (lange oder dünne Leitungen, Verluste über Pegelwandler)
+- **langen LED-Ketten**
+- **billigen Clones**, die bei 800 kHz flackern oder Farben verdrehen
 
-Falls LEDs flackern oder nicht ansprechen:
+Der Bereich **750–790 kHz** ist bewusst in **5-kHz-Schritten** fein abgestuft — hier findest du für zickige Clones den sauberen Punkt (oft ~770–780 kHz).
 
-1. Mit **AUTO** starten (Standard)
-2. Bei Problemen zu **AUTO_LEGACY** wechseln
-3. Falls weiterhin Probleme: Zu **SLOW_5PCT** bis **SLOW_20PCT** reduzieren
-4. Kabelqualität und -länge überprüfen
+## Wann herauf (schneller)?
 
-## Technische Details:
+Höhere Werte (**840–960 kHz**) nur für Chips, die **crispere/schnellere Flanken** bevorzugen — z. B. **WS2812C/D** (Onboard-LEDs), oft ~960 kHz.
 
-- WS2812B benötigt typischerweise 800 kHz Takt
-- Die Timing-Modi passen die Bitrate um 5-25% an
-- Längere Kabel erfordern möglicherweise niedrigere Bitraten
-- Mehrere Streifen können unterschiedliche Timing-Modi benötigen
+## So findest du den richtigen Wert
+
+1. Mit **800 kHz** starten.
+2. Flackert es, oder sind Farben falsch (typisch bei Clones)? → in **5-kHz-Schritten herunter** (790, 785, 780, …), bis Weiß ruhig **und** Rot=Rot ist.
+3. Nach oben nur, wenn 800 zu langsam wirkt (selten).
+
+Mehrere Streifen dürfen unterschiedliche Werte haben.
+
+## Hinweise
+
+- **640/720 kHz** sind Notnägel für sehr schwache Signale — **nicht mit WS2811 (400 kHz) verwechseln**, das ist ein eigener „LED Typ", kein Timing.
+- Dieses Feld gilt **nur für 1-Wire-LEDs** (WS2812/SK6812/…). **SPI-LEDs** (APA102, SK9822, WS2801, LPD8806, LPD6803, P9813) werden über ihre eigene **Clock-Leitung** getaktet — dort erscheint stattdessen der Parameter **„SPI Clock"**, und dieses Timing-Feld wird ausgeblendet.

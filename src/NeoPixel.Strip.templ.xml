@@ -215,8 +215,13 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%039_R-%TT%9%C%03901" IndentLevel="1" HelpContext="%DOC%"/>
                       <!-- LED Swap (jetzt mit besserem Text) -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%032_R-%TT%9%C%03201" IndentLevel="1" HelpContext="%DOC%"/>
-                      <!-- Timing -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%9%C%072_R-%TT%9%C%07201" IndentLevel="1" HelpContext="%DOC%"/>
+                      <!-- Timing nur bei 1-Wire; SPI-LEDs takten ueber "SPI Clock" -> ausblenden -->
+                      <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+                        <when test="5 6 21 22 23 24 25"><!-- SPI: kein Bitrate-Timing --></when>
+                        <when default="true">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%072_R-%TT%9%C%07201" IndentLevel="1" HelpContext="%DOC%"/>
+                        </when>
+                      </choose>
                       <!-- Anzahl LEDs -->
                       <ParameterRefRef RefId="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" IndentLevel="1" HelpContext="%DOC%"/>
                       <!-- Überspringe erste LEDs -->
@@ -240,8 +245,8 @@
                       
                       <!-- Clock Port Selection (only for SPI LEDs) -->
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-                        <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
-                        <when test="5 21 22 23 24 25">
+                        <!-- SPI-Chipsets: APA102(5), SK9822(6), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
+                        <when test="5 6 21 22 23 24 25">
                           <!-- ═══════════════════════════════════════════════════════════════════════════════════
                                HARDWARE GPIO CLOCK SELECTION UI (from Hardware.templ.xml)
                                ═══════════════════════════════════════════════════════════════════════════════════ -->
@@ -258,8 +263,8 @@
                             SPI CLOCK CONFIGURATION (only for SPI LEDs)
                             ═══════════════════════════════════════════════════════════════════════════════════ -->
                       <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-                        <!-- SPI-Chipsets: APA102(5), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
-                        <when test="5 21 22 23 24 25">
+                        <!-- SPI-Chipsets: APA102(5), SK9822(6), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
+                        <when test="5 6 21 22 23 24 25">
                           <!-- SPI Takt -->
                           <ParameterRefRef RefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" IndentLevel="1" HelpContext="%DOC%"/>
                           <choose ParamRefId="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001">

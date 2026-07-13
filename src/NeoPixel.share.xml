@@ -259,17 +259,24 @@
               <!-- Timing -->
               <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
-                  <Enumeration Text="800 kHz"  Value="0"   Id="%ENID%" op:headerName="AUTO" />
-                  <Enumeration Text="960 kHz"  Value="1"   Id="%ENID%" op:headerName="AUTO_LEGACY" />
-                  <Enumeration Text="640 kHz"  Value="2"   Id="%ENID%" op:headerName="SLOW_20PCT" />
-                  <Enumeration Text="680 kHz"  Value="3"   Id="%ENID%" op:headerName="SLOW_15PCT" />
-                  <Enumeration Text="720 kHz"  Value="4"   Id="%ENID%" op:headerName="SLOW_10PCT" />
-                  <Enumeration Text="760 kHz"  Value="5"   Id="%ENID%" op:headerName="SLOW_5PCT" />
-                  <Enumeration Text="840 kHz"  Value="6"   Id="%ENID%" op:headerName="FAST_5PCT" />
-                  <Enumeration Text="880 kHz"  Value="7"   Id="%ENID%" op:headerName="FAST_10PCT" />
-                  <Enumeration Text="920 kHz"  Value="8"   Id="%ENID%" op:headerName="FAST_15PCT" />
-                  <Enumeration Text="960 kHz"  Value="9"   Id="%ENID%" op:headerName="FAST_20PCT" />
-                  <Enumeration Text="1000 kHz" Value="10"  Id="%ENID%" op:headerName="FAST_25PCT" />
+                  <!-- Bitrate (kHz), 1-Wire. Anzeige nach Frequenz, Values migrations-fest (0-8 = alt).
+                       Firmware-Mapping: NeoPixelModule.cpp / StripConfiguration.cpp (timingFreqTable). -->
+                  <Enumeration Text="640 kHz"            Value="2"  Id="%ENID%" op:headerName="F640" />
+                  <Enumeration Text="680 kHz"            Value="3"  Id="%ENID%" op:headerName="F680" />
+                  <Enumeration Text="720 kHz"            Value="4"  Id="%ENID%" op:headerName="F720" />
+                  <Enumeration Text="750 kHz"            Value="9"  Id="%ENID%" op:headerName="F750" />
+                  <Enumeration Text="760 kHz"            Value="5"  Id="%ENID%" op:headerName="F760" />
+                  <Enumeration Text="765 kHz"            Value="10" Id="%ENID%" op:headerName="F765" />
+                  <Enumeration Text="770 kHz"            Value="11" Id="%ENID%" op:headerName="F770" />
+                  <Enumeration Text="775 kHz"            Value="12" Id="%ENID%" op:headerName="F775" />
+                  <Enumeration Text="780 kHz"            Value="13" Id="%ENID%" op:headerName="F780" />
+                  <Enumeration Text="785 kHz"            Value="14" Id="%ENID%" op:headerName="F785" />
+                  <Enumeration Text="790 kHz"            Value="15" Id="%ENID%" op:headerName="F790" />
+                  <Enumeration Text="800 kHz (Standard)" Value="0"  Id="%ENID%" op:headerName="F800" />
+                  <Enumeration Text="840 kHz"            Value="6"  Id="%ENID%" op:headerName="F840" />
+                  <Enumeration Text="880 kHz"            Value="7"  Id="%ENID%" op:headerName="F880" />
+                  <Enumeration Text="920 kHz"            Value="8"  Id="%ENID%" op:headerName="F920" />
+                  <Enumeration Text="960 kHz"            Value="1"  Id="%ENID%" op:headerName="F960" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Types --> 
@@ -462,6 +469,15 @@
                   <Enumeration Text="Global verwenden" Value="0" Id="%ENID%" />
                   <Enumeration Text="Aus" Value="1" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="2" Id="%ENID%" />
+                  <Enumeration Text="An (ETS-Werte)" Value="3" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- EM-Stop Rueckkehr-Verhalten (Segment Byte 29, Bits 0-1) -->
+              <ParameterType Id="%AID%_PT-EmStopReturnMode" Name="EmStopReturnMode">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Text="Letzter Zustand" Value="0" Id="%ENID%" />
+                  <Enumeration Text="Segment-Standardwerte" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Aus" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <!-- LED Matrix Topology (3 bit, stored in Segment Byte 10 Bits 5-7) -->
@@ -1299,7 +1315,7 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="2" HelpContext="%DOC%"/>
                 </when>
               </choose>
-              <ParameterSeparator Id="%AID%_PS-nnn" Text="Globale Standardwerte für alle physischen LED-Streifen. Jeder Streifen kann individuell überschrieben werden: Global verwenden, Benutzerdefiniert oder Deaktiviert." UIHint="Information" />
+              <ParameterSeparator Id="%AID%_PS-nnn" Text="Globale Standardwerte für alle physischen LED-Streifen. Jeder physische LED-Streifen kann individuell eingestellt und überschrieben werden: Global verwenden, Benutzerdefiniert oder Deaktiviert." UIHint="Information" />
               </ParameterBlock>
               <!-- ========================================================================================================= -->
               <!-- Effektmanager (Global)                                                                                   -->

@@ -133,13 +133,6 @@ class SegmentController
     void processHsvKo(uint8_t channel, GroupObject& ko);
 
     /**
-     * @brief Calculate DPT3.007 delta value from stepCode
-     * @param stepCode Step code (1-7, higher = faster dimming)
-     * @return Delta value for dimming step
-     */
-    int16_t dpt3_007_delta(uint8_t stepCode);
-
-    /**
      * @brief Helper: Apply color channel dimming (shared by R/G/B channels)
      * @param segment Target segment
      * @param colorChannel Which color channel (0=R, 1=G, 2=B)

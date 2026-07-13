@@ -44,8 +44,14 @@ void ColorManagement::applyGlobalBrightness(uint8_t brightness)
 
             uint8_t effectiveBrightness = (originalBrightness * brightness) / 255;
 
-            // Apply effective brightness to segment
-            cfg.segment->setBrightness(effectiveBrightness);
+            // master = Segment-Intent x Global. A running EM re-derives render from master
+            // (master x cue/255) via reapplyMasterBrightness; a non-EM effect uses master directly.
+            // Single-pathed to avoid double-scaling the EM.
+            cfg.segment->setMasterBrightness(effectiveBrightness);
+            if (cfg.emController.isRunning())
+                cfg.emController.reapplyMasterBrightness(cfg.segment);
+            else
+                cfg.segment->setBrightness(effectiveBrightness);
 
             logDebugP("Segment %zu brightness: saved=%d%%, global=%d%%, effective=%d%%",
                       i,
@@ -78,7 +84,12 @@ void ColorManagement::restoreOriginalBrightness()
                 originalBrightness = 255;
             }
 
-            cfg.segment->setBrightness(originalBrightness);
+            // Route through master so a running EM picks it up (see applyGlobalBrightness)
+            cfg.segment->setMasterBrightness(originalBrightness);
+            if (cfg.emController.isRunning())
+                cfg.emController.reapplyMasterBrightness(cfg.segment);
+            else
+                cfg.segment->setBrightness(originalBrightness);
 
             logDebugP("Restored segment %zu brightness to saved: %d%%",
                       i, (originalBrightness * 100 + 127) / 255);
@@ -94,9 +105,8 @@ void ColorManagement::restoreOriginalBrightness()
 // ============================================================================
 // HCL (Human Centric Lighting) post-processing implementation
 //
-// Goal: Circadian Kelvin correction without destroying effects/scenes.
-// We post-process the rendered pixels and apply a Kelvin whitepoint mainly to
-// white/low-saturation pixels (configurable). For RGBW/RGBCCT we can also
+// Circadian Kelvin correction that post-processes rendered pixels: applies a
+// Kelvin whitepoint mainly to white/low-saturation pixels; RGBW/RGBCCT can also
 // extract neutral luminance into W to preserve saturation.
 //
 // Controlled via ETS params (generated in knxprod.h):

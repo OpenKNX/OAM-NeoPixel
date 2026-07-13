@@ -114,6 +114,9 @@ class NeoPixelBusModule : public OpenKNX::Module
         // ── Effektmanager ─────────────────────────────────────────────────
         EffektManagerController emController; ///< per-segment EM sequencer
         uint16_t lastCueTextKey = 0xFFFF;     ///< (emId<<8|cueNum) of the last applied long cue-text override
+        uint8_t  emStopReturnMode = 0;        ///< EM-Stop-Rückkehr — 0=letzter Zustand, 1=Default, 2=Aus (from ETS)
+        bool     suspendedByPower = false;    ///< EM was paused by a power-off → resume on power-on (vs. manual pause / interrupt)
+        bool     locked = false;              ///< segment locked via Sperre-KO → ignore all controlling KOs
 
         // Saved state for power toggle and flash persistence
         bool savedValid = false;
@@ -367,13 +370,9 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool _relayInverted[kRelayStorageSize] = {false};
     RelayTimerState _relayTimers[kRelayStorageSize];
 
-    // HCL (Human Centric Lighting) / Circadian whitepoint control
-    //
-    // Design goal (like many commercial systems):
-    //  - Do NOT overwrite effect/scene colors.
-    //  - Apply Kelvin whitepoint correction mainly to white / low-saturation pixels.
-    //  - Optionally extract neutral component into W for RGBW/RGBCCT strips.
-    //
+    // HCL (Human Centric Lighting) / Circadian whitepoint control.
+    // Applies Kelvin correction mainly to white/low-saturation pixels without overwriting
+    // effect/scene colors; optionally extracts the neutral component into W for RGBW/RGBCCT.
     bool _hclModeEnabled = false;      // Whether HCL post-processing is active
     uint16_t _hclTargetKelvin = 6500;  // Target Kelvin (from KO / curve)
     uint16_t _hclAppliedKelvin = 6500; // Slewed Kelvin applied to output (for TransitionTime)
@@ -459,6 +458,10 @@ class NeoPixelBusModule : public OpenKNX::Module
     void loadEffektManagerFromETS();      ///< Load global EM definitions from ETS parameter blocks
     void startEffektManager(size_t segmentIndex, uint8_t emId);
     void stopEffektManager(size_t segmentIndex);
+    void pauseEffektManager(size_t segmentIndex);
+    void resumeEffektManager(size_t segmentIndex);
+    void interruptEmIfRunning(size_t segmentIndex); ///< direct manual KO takes over a running EM
+    void applySegmentDefaultState(size_t segmentIndex); ///< re-apply the segment's ETS default (effect+color+brightness)
     void sendEmStatusKOs(size_t segmentIndex);
     void sendEffectTextStatusKO(size_t segmentIndex);
     void refreshHclMasterStateCache();                       // Update cached LightManager values + status KOs

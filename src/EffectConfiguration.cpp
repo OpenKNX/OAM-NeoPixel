@@ -40,6 +40,18 @@ void EffectConfiguration::configureEffects()
             applyEffectToSegment(segments[i].segment, effectType);
             setupEffectConfiguration(segments[i].segment, true); // loadDefaultColor = true at startup
 
+            // Seed segment master brightness from ETS "Start-Helligkeit" so it applies to every
+            // effect (render = master x effect/255). savedBrightness = pre-global baseline for
+            // applyGlobalBrightness. "Aus" below sets render to 0 but keeps master for later power-on.
+            uint8_t startupBrightness = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupBrightness);
+            segments[i].segment->setMasterBrightness(startupBrightness);
+            segments[i].segment->setBrightness(startupBrightness);
+            segments[i].savedBrightness = startupBrightness;
+
+            // EM-Stop return mode: what the segment shows after an EM stops/finishes
+            // (0=letzter Zustand, 1=Segment-Standardwerte, 2=Aus).
+            segments[i].emStopReturnMode = static_cast<uint8_t>(ParamNEO_NEOSegmentEmStopReturnMode);
+
             // Initialize saved effect state from ETS defaults
             segments[i].savedEffectType = effectType;
             segments[i].savedEffectValid = true;

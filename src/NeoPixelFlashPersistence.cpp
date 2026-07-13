@@ -153,13 +153,8 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     }
     if (size != expectedSegmentSize && size != expectedTotalSize)
     {
-        logWarningP("========================================");
-        logWarningP("FLASH SIZE MISMATCH - Configuration changed!");
-        logWarningP("Flash data: %d bytes (%d segments)", size, size / sizeof(SegmentFlashState));
-        logWarningP("Current config: %d bytes (%d segments)", expectedSegmentSize, segments.size());
-        logWarningP("Ignoring flash data to prevent corruption");
-        logWarningP("Segments will use default startup behavior");
-        logWarningP("========================================");
+        logWarningP("Flash size mismatch (%d B vs %d B for %d seg) - ignoring saved data, using ETS defaults",
+                    size, expectedSegmentSize, (int)segments.size());
         _module->setWarningBlink(NEO_WARN_FLASH_DISCARDED); // pulsing Purple (color from warnColorForCode)
         return;
     }
@@ -169,12 +164,8 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     // (also stamped on empty/invalid segments), so data[0] is reliable here.
     if (data[0] != FLASH_FORMAT_VERSION)
     {
-        logWarningP("========================================");
-        logWarningP("FLASH FORMAT VERSION MISMATCH - firmware updated!");
-        logWarningP("Flash format v%d, firmware expects v%d", data[0], FLASH_FORMAT_VERSION);
-        logWarningP("Ignoring flash data to prevent corruption");
-        logWarningP("Segments will use default startup behavior");
-        logWarningP("========================================");
+        logWarningP("Flash format v%d != expected v%d (firmware updated) - ignoring saved data, using ETS defaults",
+                    data[0], FLASH_FORMAT_VERSION);
         _module->setWarningBlink(NEO_WARN_FLASH_DISCARDED); // pulsing Purple
         return;
     }
@@ -368,6 +359,11 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // Check if a scene was active — if so, recall it directly
             if (cfg.savedSceneNumber > 0 && _module->_sceneManager)
             {
+                // Seed master from the saved intent BEFORE recall: an EM-action scene starts an EM via
+                // recallScene() (rendering master*cue/255), so without this it would resume at the ETS
+                // boot-seed brightness instead of the remembered level — the EM branch below seeds the
+                // same way. A static scene that carries its own brightness simply overrides this.
+                seg->setMasterBrightness(cfg.savedBrightness);
                 bool sceneRecalled = _module->_sceneManager->recallScene(i, cfg.savedSceneNumber, seg);
                 if (sceneRecalled)
                 {
@@ -384,6 +380,13 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // Restore Effektmanager if one was active
             if (cfg.emController.lastEmId() != EM_NONE)
             {
+                // Seed the master (intent) brightness so the EM renders cue at the remembered level
+                // (render = master*cue/255). restoreState()->start() reads getMasterBrightness() but
+                // does not set it, so without this the EM would resume at the ETS boot-seed brightness.
+                // Unconditional (no >0 guard): a saved 0 is an intentional "dimmed dark" state and
+                // must be honoured, matching the non-EM restore branch below. savedBrightness is always
+                // a valid value here (flash field is always written / boot-seeded).
+                seg->setMasterBrightness(cfg.savedBrightness);
                 cfg.emController.restoreState(seg, _module->_emData);
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED EffektManager %d from Flash", i, cfg.emController.lastEmId());
@@ -423,9 +426,13 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // Restore color from flash
             seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
 
-            // Restore brightness/power state
+            // Restore brightness/power state. Drive the MASTER (intent) layer like the boot seed
+            // (EffectConfiguration.cpp:48-51) so the restored brightness survives a later global-
+            // brightness recompute or EM start (render = master*cue/255). "Aus" keeps master but
+            // renders 0, so a subsequent power-on dims correctly.
             if (cfg.savedPower == 0)
             {
+                seg->setMasterBrightness(cfg.savedBrightness);
                 seg->setBrightness(0);
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED from Flash: OFF (Effect=%d from %s, Color from flash)",
@@ -434,6 +441,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             }
             else
             {
+                seg->setMasterBrightness(cfg.savedBrightness);
                 seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED from Flash: ON (Effect=%d from %s, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
@@ -568,8 +576,17 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
         state.validFlags |= 0x02;
     }
 
-    // Save brightness (always valid)
-    state.brightness = seg->getBrightness();
+    // Save brightness (always valid). For a RUNNING EM, getBrightness() is the cue-scaled render
+    // (master*cue/255); persist the MASTER intent instead, because the restore path
+    // (restoreStatesAfterStartup EM branch) feeds savedBrightness back in as the master — storing
+    // render would double-scale the EM on every reboot. For non-EM segments persist the render as
+    // before (master==render in the normal case, and scene/preset paths set render directly).
+    // For a RUNNING EM, getBrightness() is the cue-scaled render and getMasterBrightness() is the
+    // global-scaled master — persist cfg.savedBrightness, the PRE-global intent (the same baseline
+    // ColorManagement uses), so the restore feeds master back without cue- or global-double-scaling
+    // (_globalBrightness is not persisted and resets to 255 on boot). Non-EM persists the render as
+    // before (scene/preset/direct set the render layer directly).
+    state.brightness = cfg.emController.isRunning() ? cfg.savedBrightness : seg->getBrightness();
     state.validFlags |= 0x04;
 
     // NEW: Save effect state if changed via KO

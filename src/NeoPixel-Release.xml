@@ -3,12 +3,12 @@
 <KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <op:config href="NeoPixel.conf.xml" />
   <!-- Marketing-Text-Version (Allgemein-Seite). Pro Variante, in Sync mit ApplicationVersion unten halten. -->
-  <op:config name="%NEO_ProductVersion%" value="0.3" />
+  <op:config name="%NEO_ProductVersion%" value="0.5" />
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="0"
-    ApplicationVersion="0.3"
-    ReplacesVersionsDownTo="0.0"
+    ApplicationVersion="0.5"
+    ReplacesVersionsDownTo="0.1"
     ApplicationRevision="0"
     ProductName="OpenKNX NeoPixel"
     BusCurrent="30"
@@ -52,8 +52,8 @@
     share="../lib/OFM-LightManager/src/LightManagerModule.share.xml"
     template="../lib/OFM-LightManager/src/LightManagerModule.templ.xml"
     NumChannels="16"
-    KoSingleOffset="1250"
-    KoOffset="1260">
+    KoSingleOffset="1460"
+    KoOffset="1500">
     <op:verify File="../lib/OFM-LightManager/library.json" ModuleVersion="%LMG_VerifyVersion%" />
   </op:define>
 
@@ -85,7 +85,7 @@
     template="NeoPixel.EM.templ.xml"
     NumChannels="16"
     configTransferName="NeoPixel Effektmanager"
-    KoOffset="1612">
+    KoOffset="1860">
   </op:define>
 <generate>
             <Dynamic>
