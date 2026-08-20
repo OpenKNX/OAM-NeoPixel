@@ -2,6 +2,7 @@
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
 #include "HardwareMappingLogic.h"
+#include "NeoPixelTimingSelection.h"
 #include "SceneManager.h"
 #include "SegmentController.h"
 #include "StripConfiguration.h"
@@ -46,6 +47,10 @@
 #include <new>
 #include <string>
 #include <vector>
+
+static_assert((uint8_t)PT_NEOTiming::F800 == 0 && (uint8_t)PT_NEOTiming::F960 == 1 &&
+                  (uint8_t)PT_NEOTiming::F640 == 2 && (uint8_t)PT_NEOTiming::F790 == 15,
+              "PT_NEOTiming must match NeoPixelTimingSelection ETS value mapping");
 // #define NEOPIXEL_MODULE_TEST_ENV
 #ifdef NEOPIXEL_MODULE_TEST_ENV
     #include "test/test.h"
@@ -3547,13 +3552,10 @@ void NeoPixelBusModule::configureFromETS()
             _totalLeds += pixels;
             _physicalStrips.push_back(phys);
 
-            // ETS "Timing" value -> target kHz. Order MUST match the NEOTiming enum
-            // (NeoPixel.share.xml) and the duplicate table in StripConfiguration.cpp. SPI: no-op.
-            // Value 0 means protocol default, not a hand-made 800kHz waveform.
-            static const uint16_t timingFreqTable[16] = {
-                800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
+            // Value 0 keeps the protocol-specific backend waveform. All historic
+            // non-zero ETS values are explicit expert timing overrides.
             const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
-            if (timingSel == 0)
+            if (NeoPixelTimingSelection::isProtocolDefault(timingSel))
             {
                 // Keep the driver's validated protocol waveform. In particular this
                 // avoids replacing ESP RMT's balanced default symbols with custom
@@ -3563,16 +3565,12 @@ void NeoPixelBusModule::configureFromETS()
             }
             else
             {
-                const uint16_t freqKhz = timingFreqTable[timingSel];
-                // 3:7:6:4 ratio; only T1H matters on PIO (T1H_ns = 600000 / kHz).
-                // Both bit cells retain the same total duration before the RMT
-                // backend quantises them to its hardware tick grid.
-                const uint16_t t1h = (uint16_t)(600000UL / freqKhz);
-                const uint16_t t0h = (uint16_t)(t1h / 2);
-                const uint16_t t0l = (uint16_t)((uint32_t)t1h * 7 / 6);
-                const uint16_t t1l = (uint16_t)((uint32_t)t1h * 4 / 6);
-                if (phys->setCustomTiming(t0h, t0l, t1h, t1l, 0))
-                    logInfoP("Strip %d: Timing = %u kHz (custom T1H=%u ns)", i, freqKhz, t1h);
+                const uint16_t freqKhz = NeoPixelTimingSelection::bitrateKhz(timingSel);
+                const auto timing = NeoPixelTimingSelection::customTiming(timingSel);
+                if (phys->setCustomTiming(timing.t0hNs, timing.t0lNs, timing.t1hNs, timing.t1lNs, 0))
+                    logInfoP("Strip %d: Timing = %u kHz%s (expert custom T1H=%u ns)", i, freqKhz,
+                             NeoPixelTimingSelection::isLegacyFineOverride(timingSel) ? ", legacy value" : "",
+                             timing.t1hNs);
             }
 
             // Configure color correction for this strip
@@ -5317,11 +5315,11 @@ void NeoPixelBusModule::debugShowConfiguration()
             }
         }
 
-        // Timing (bitrate): ETS value -> kHz (matches the ETS Timing dropdown)
+        // Timing (bitrate): ETS value -> kHz, from the single persisted-value mapping.
         uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
-        static const uint16_t timingFreqTbl[16] = {
-            800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
-        logInfoP("  │    Timing:           value %d = %u kHz", timingSel, timingFreqTbl[timingSel]);
+        logInfoP("  │    Timing:           value %d = %u kHz%s", timingSel,
+                 NeoPixelTimingSelection::bitrateKhz(timingSel),
+                 NeoPixelTimingSelection::isProtocolDefault(timingSel) ? " (protocol default)" : " (expert override)");
 
         // Skip First LEDs
         uint16_t skipLeds = (uint16_t)ParamNEOSTRIP_NEOSkipFirstLEDs;

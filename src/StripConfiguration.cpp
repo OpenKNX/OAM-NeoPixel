@@ -1,10 +1,15 @@
 #include "StripConfiguration.h"
 #include "HardwareMappingLogic.h"
 #include "NeoPixelModule.h"
+#include "NeoPixelTimingSelection.h"
 #include "OpenKNX.h"
 #include "knxprod.h"
 #include <PhysicalStripConfig.h>
 #include <algorithm>
+
+static_assert((uint8_t)PT_NEOTiming::F800 == 0 && (uint8_t)PT_NEOTiming::F960 == 1 &&
+                  (uint8_t)PT_NEOTiming::F640 == 2 && (uint8_t)PT_NEOTiming::F790 == 15,
+              "PT_NEOTiming must match NeoPixelTimingSelection ETS value mapping");
 
 // Constructor
 StripConfiguration::StripConfiguration(NeoPixelBusModule* module)
@@ -518,26 +523,20 @@ void StripConfiguration::configureFromETS()
             _module->_totalLeds += pixels;
             _module->_physicalStrips.push_back(phys);
 
-            // ETS "Timing" value -> target kHz. Order MUST match the NEOTiming enum
-            // (NeoPixel.share.xml) and the duplicate table in NeoPixelModule.cpp. SPI: no-op.
-            // Value 0 means protocol default, not a hand-made 800kHz waveform.
-            static const uint16_t timingFreqTable[16] = {
-                800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
+            // Retained only for historic callers: value 0 selects the protocol
+            // default and every other selection is an expert override.
             const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
-            if (timingSel == 0)
+            if (NeoPixelTimingSelection::isProtocolDefault(timingSel))
             {
                 phys->clearCustomTiming();
                 logInfoP("Strip %d: Timing = protocol default (AUTO)", i);
             }
             else
             {
-                const uint16_t freqKhz = timingFreqTable[timingSel];
-                const uint16_t t1h = (uint16_t)(600000UL / freqKhz);
-                const uint16_t t0h = (uint16_t)(t1h / 2);
-                const uint16_t t0l = (uint16_t)((uint32_t)t1h * 7 / 6);
-                const uint16_t t1l = (uint16_t)((uint32_t)t1h * 4 / 6);
-                if (phys->setCustomTiming(t0h, t0l, t1h, t1l, 0))
-                    logInfoP("Strip %d: Timing = %u kHz (custom T1H=%u ns)", i, freqKhz, t1h);
+                const uint16_t freqKhz = NeoPixelTimingSelection::bitrateKhz(timingSel);
+                const auto timing = NeoPixelTimingSelection::customTiming(timingSel);
+                if (phys->setCustomTiming(timing.t0hNs, timing.t0lNs, timing.t1hNs, timing.t1lNs, 0))
+                    logInfoP("Strip %d: Timing = %u kHz (expert custom T1H=%u ns)", i, freqKhz, timing.t1hNs);
             }
 
             // Configure color correction for this strip (only if Master-Checkbox is ON)

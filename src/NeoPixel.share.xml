@@ -259,24 +259,25 @@
               <!-- Timing -->
               <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
-                  <!-- Bitrate (kHz), 1-Wire. Anzeige nach Frequenz, Values migrations-fest (0-8 = alt).
-                       Firmware-Mapping: NeoPixelModule.cpp / StripConfiguration.cpp (timingFreqTable). -->
-                  <Enumeration Text="640 kHz"            Value="2"  Id="%ENID%" op:headerName="F640" />
-                  <Enumeration Text="680 kHz"            Value="3"  Id="%ENID%" op:headerName="F680" />
-                  <Enumeration Text="720 kHz"            Value="4"  Id="%ENID%" op:headerName="F720" />
-                  <Enumeration Text="750 kHz"            Value="9"  Id="%ENID%" op:headerName="F750" />
-                  <Enumeration Text="760 kHz"            Value="5"  Id="%ENID%" op:headerName="F760" />
-                  <Enumeration Text="765 kHz"            Value="10" Id="%ENID%" op:headerName="F765" />
-                  <Enumeration Text="770 kHz"            Value="11" Id="%ENID%" op:headerName="F770" />
-                  <Enumeration Text="775 kHz"            Value="12" Id="%ENID%" op:headerName="F775" />
-                  <Enumeration Text="780 kHz"            Value="13" Id="%ENID%" op:headerName="F780" />
-                  <Enumeration Text="785 kHz"            Value="14" Id="%ENID%" op:headerName="F785" />
-                  <Enumeration Text="790 kHz"            Value="15" Id="%ENID%" op:headerName="F790" />
-                  <Enumeration Text="800 kHz (Standard)" Value="0"  Id="%ENID%" op:headerName="F800" />
-                  <Enumeration Text="840 kHz"            Value="6"  Id="%ENID%" op:headerName="F840" />
-                  <Enumeration Text="880 kHz"            Value="7"  Id="%ENID%" op:headerName="F880" />
-                  <Enumeration Text="920 kHz"            Value="8"  Id="%ENID%" op:headerName="F920" />
-                  <Enumeration Text="960 kHz"            Value="1"  Id="%ENID%" op:headerName="F960" />
+                  <!-- Value 0 is the recommended protocol default. All other values are retained
+                       for project compatibility and are explicit expert overrides. Firmware mapping
+                       and PT_NEOTiming compile-time checks: NeoPixelTimingSelection.h. -->
+                  <Enumeration Text="640 kHz (expert)"             Value="2"  Id="%ENID%" op:headerName="F640" />
+                  <Enumeration Text="680 kHz (expert)"             Value="3"  Id="%ENID%" op:headerName="F680" />
+                  <Enumeration Text="720 kHz (expert)"             Value="4"  Id="%ENID%" op:headerName="F720" />
+                  <Enumeration Text="750 kHz (legacy expert)"      Value="9"  Id="%ENID%" op:headerName="F750" />
+                  <Enumeration Text="760 kHz (expert)"             Value="5"  Id="%ENID%" op:headerName="F760" />
+                  <Enumeration Text="765 kHz (legacy expert)"      Value="10" Id="%ENID%" op:headerName="F765" />
+                  <Enumeration Text="770 kHz (legacy expert)"      Value="11" Id="%ENID%" op:headerName="F770" />
+                  <Enumeration Text="775 kHz (legacy expert)"      Value="12" Id="%ENID%" op:headerName="F775" />
+                  <Enumeration Text="780 kHz (legacy expert)"      Value="13" Id="%ENID%" op:headerName="F780" />
+                  <Enumeration Text="785 kHz (legacy expert)"      Value="14" Id="%ENID%" op:headerName="F785" />
+                  <Enumeration Text="790 kHz (legacy expert)"      Value="15" Id="%ENID%" op:headerName="F790" />
+                  <Enumeration Text="Protocol default (recommended)" Value="0" Id="%ENID%" op:headerName="F800" />
+                  <Enumeration Text="840 kHz (expert)"             Value="6"  Id="%ENID%" op:headerName="F840" />
+                  <Enumeration Text="880 kHz (expert)"             Value="7"  Id="%ENID%" op:headerName="F880" />
+                  <Enumeration Text="920 kHz (expert)"             Value="8"  Id="%ENID%" op:headerName="F920" />
+                  <Enumeration Text="960 kHz (expert)"             Value="1"  Id="%ENID%" op:headerName="F960" />
                 </TypeRestriction>
               </ParameterType>
               <!-- Power Limit Types --> 
