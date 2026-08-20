@@ -280,13 +280,13 @@ inline void test_blink_codes(NeoPixelBusModule& module)
     BLINK_TEST_ASSERT(module.getActiveWarnCode() == 0, "Warning cleared");
 
     // ── Phase 5: Simulated error scenarios ───────────────────────────────
-    // These simulate what StripConfiguration / NeoPixelModule would do
+    // These simulate what NeoPixelModule's active configuration path would do
     // when detecting actual configuration problems.
     openknx.logger.logWithPrefix("BlinkTest", "Phase 5: Simulated error scenarios");
 
-    // 5a: Simulate GPIO conflict detection (StripConfiguration)
+    // 5a: Simulate GPIO conflict detection (NeoPixelModule)
     module.clearBlinkCodes();
-    // Production: Two strips configured on same GPIO → StripConfiguration detects conflict
+    // Production: Two strips configured on same GPIO → NeoPixelModule detects conflict
     module.setErrorBlink(NEO_ERROR_GPIO_CONFLICT);
     BLINK_TEST_ASSERT(module.getActiveErrorCode() == NEO_ERROR_GPIO_CONFLICT, "GPIO conflict error (3) set");
 
