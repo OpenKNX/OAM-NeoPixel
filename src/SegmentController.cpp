@@ -279,13 +279,14 @@ void SegmentController::processCctKo(uint8_t channel, GroupObject& ko)
     // Convert Kelvin to RGB
     uint8_t r, g, b;
     ColorHelper::kelvinToRGB(cct, r, g, b);
-    targetSegment->setPrimaryColor(r, g, b, 0);
+    targetSegment->setPrimaryColor(r, g, b, 0, 0);
 
     // Save color for effect restore
     cfg.savedR = r;
     cfg.savedG = g;
     cfg.savedB = b;
     cfg.savedWW = 0;
+    cfg.savedCW = 0;
     cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
     cfg.savedLastWasEffect = false;
@@ -351,7 +352,7 @@ void SegmentController::processHsvKo(uint8_t channel, GroupObject& ko)
     // If Solid effect is running, update immediately
     if (targetSegment->getEffect() == EffectPool::getSolid())
     {
-        targetSegment->setPrimaryColor(r, g, b, cfg.savedWW);
+        targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
         logInfoP("Segment %d: Updated Solid effect with HSV->RGB (%d,%d,%d)", channel, r, g, b);
     }
     else
@@ -454,6 +455,7 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
             cfg.savedG = 0;
             cfg.savedB = 0;
             cfg.savedWW = 0;
+            cfg.savedCW = 0;
         }
     }
     else if (colorChannel == 1) // Green
@@ -468,6 +470,7 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
             cfg.savedR = 0;
             cfg.savedB = 0;
             cfg.savedWW = 0;
+            cfg.savedCW = 0;
         }
     }
     else if (colorChannel == 2) // Blue
@@ -482,6 +485,7 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
             cfg.savedR = 0;
             cfg.savedG = 0;
             cfg.savedWW = 0;
+            cfg.savedCW = 0;
         }
     }
     else if (colorChannel == 3) // White
@@ -506,9 +510,9 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
     if (targetSegment->getEffect() == EffectPool::getSolid())
     {
         if (colorChannel == 3) // White channel for RGBW
-            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, colorValue);
+            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, colorValue, cfg.savedCW);
         else // RGB channels
-            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
         logInfoP("Segment %d: Updated Solid effect color (%s=%d)", channel, channelName, colorValue);
     }
     else
@@ -558,7 +562,7 @@ void SegmentController::processHsvChannelKo(uint8_t channel, GroupObject& ko, ui
     // If Solid effect is running, update immediately
     if (targetSegment->getEffect() == EffectPool::getSolid())
     {
-        targetSegment->setPrimaryColor(r, g, b, cfg.savedWW);
+        targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
         logInfoP("Segment %d: Updated Solid effect with %s=%d -> RGB(%d,%d,%d)",
                  channel, channelName, hsvValue, r, g, b);
     }
@@ -586,9 +590,9 @@ void SegmentController::sendColorStatusFeedback(uint8_t channel)
     uint8_t b = cfg.pendingSolidB;
 
     // Send appropriate status feedback based on strip type
-    if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
+    if (_module->_virtualStrip && _module->_virtualStrip->hasWhiteChannel())
     {
-        // 4-channel RGBW feedback
+        // RGBW feedback uses warm white as the single KNX white component.
         uint8_t w = cfg.pendingSolidWW;
         uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
         bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
@@ -596,7 +600,7 @@ void SegmentController::sendColorStatusFeedback(uint8_t channel)
     }
     else
     {
-        // 3-channel RGB feedback (also used for 5-channel RGBCCT)
+        // 3-channel RGB feedback
         uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
         bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
         if (changed) KoNEO_RGBState.objectWritten();

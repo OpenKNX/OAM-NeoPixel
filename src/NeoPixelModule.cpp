@@ -110,6 +110,28 @@ static ColorOrder mapLedColorOrder(uint8_t c)
     }
 }
 
+// Keep this mapping aligned with NEO_LedTypeToRGB_Impl in NeoPixel.script.js.
+// It is used to recover safely from stale or inconsistent ETS colour-order data.
+static ColorOrder defaultColorOrderForLedType(uint8_t ledType)
+{
+    switch (ledType)
+    {
+        case 1: case 17: case 18: case 30: case 31:
+            return ColorOrder::GRBCCT;
+        case 8: case 9: case 14: case 15:
+            return ColorOrder::GRBW;
+        case 16:
+            return ColorOrder::RGBW;
+        case 2: case 11: case 12: case 13: case 19: case 20: case 21: case 23:
+            return ColorOrder::RGB;
+        case 5: case 6: case 24: case 25:
+            return ColorOrder::BGR;
+        case 0: case 3: case 4: case 7: case 10: case 22:
+        default:
+            return ColorOrder::GRB;
+    }
+}
+
 // Helper: Start/stop dimming for a segment channel
 static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
                              NeoPixelBusModule::SegmentConfig::DimmingChannel channel,
@@ -997,6 +1019,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
                 cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
                 cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
+                cfg.pendingSolidCW = cfg.savedValid ? cfg.savedCW : 0;
 
                 // Update saved values - preserve existing G, B, W
                 cfg.savedR = red;
@@ -1005,6 +1028,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = 0;
                     cfg.savedB = 0;
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
@@ -1013,7 +1037,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     uint8_t g = cfg.savedG;
                     uint8_t b = cfg.savedB;
-                    targetSegment->setPrimaryColor(red, g, b, 0);
+                    targetSegment->setPrimaryColor(red, g, b, cfg.savedWW, cfg.savedCW);
                     logInfoP("Segment %d: Updated primary color (Red=%d)", channel, red);
                 }
 
@@ -1023,8 +1047,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 r = cfg.pendingSolidR;
                 g = cfg.pendingSolidG;
                 b = cfg.pendingSolidB;
-                // Check if virtual strip has white channel (4 bytes per LED)
-                if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
+                if (_virtualStrip && _virtualStrip->hasWhiteChannel())
                 {
                     // Has white channel - send RGBW status
                     uint8_t w = cfg.pendingSolidWW;
@@ -1055,6 +1078,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidG = green;
                 cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
                 cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
+                cfg.pendingSolidCW = cfg.savedValid ? cfg.savedCW : 0;
 
                 // Update saved values - preserve existing R, B, W
                 if (!cfg.savedValid)
@@ -1062,6 +1086,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedR = 0;
                     cfg.savedB = 0;
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedG = green;
                 cfg.savedBrightness = targetSegment->getBrightness();
@@ -1071,7 +1096,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     uint8_t r = cfg.savedR;
                     uint8_t b = cfg.savedB;
-                    targetSegment->setPrimaryColor(r, green, b, 0);
+                    targetSegment->setPrimaryColor(r, green, b, cfg.savedWW, cfg.savedCW);
                     logInfoP("Segment %d: Updated primary color (Green=%d)", channel, green);
                 }
 
@@ -1081,8 +1106,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 r = cfg.pendingSolidR;
                 g = cfg.pendingSolidG;
                 b = cfg.pendingSolidB;
-                // Check if virtual strip has white channel (4 bytes per LED)
-                if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
+                if (_virtualStrip && _virtualStrip->hasWhiteChannel())
                 {
                     // Has white channel - send RGBW status
                     uint8_t w = cfg.pendingSolidWW;
@@ -1113,6 +1137,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
                 cfg.pendingSolidB = blue;
                 cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
+                cfg.pendingSolidCW = cfg.savedValid ? cfg.savedCW : 0;
 
                 // Update saved values - preserve existing R, G, W
                 if (!cfg.savedValid)
@@ -1120,6 +1145,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedR = 0;
                     cfg.savedG = 0;
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedB = blue;
                 cfg.savedBrightness = targetSegment->getBrightness();
@@ -1129,7 +1155,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     uint8_t r = cfg.savedR;
                     uint8_t g = cfg.savedG;
-                    targetSegment->setPrimaryColor(r, g, blue, 0);
+                    targetSegment->setPrimaryColor(r, g, blue, cfg.savedWW, cfg.savedCW);
                     logInfoP("Segment %d: Updated primary color (Blue=%d)", channel, blue);
                 }
 
@@ -1139,8 +1165,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 r = cfg.pendingSolidR;
                 g = cfg.pendingSolidG;
                 b = cfg.pendingSolidB;
-                // Check if virtual strip has white channel (4 bytes per LED)
-                if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
+                if (_virtualStrip && _virtualStrip->hasWhiteChannel())
                 {
                     // Has white channel - send RGBW status
                     uint8_t w = cfg.pendingSolidWW;
@@ -1171,6 +1196,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
                 cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
                 cfg.pendingSolidWW = white;
+                cfg.pendingSolidCW = cfg.savedValid ? cfg.savedCW : 0;
 
                 // Update saved values - preserve existing R, G, B
                 if (!cfg.savedValid)
@@ -1178,6 +1204,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedR = 0;
                     cfg.savedG = 0;
                     cfg.savedB = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedWW = white;
                 cfg.savedBrightness = targetSegment->getBrightness();
@@ -1188,7 +1215,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     uint8_t r = cfg.savedR;
                     uint8_t g = cfg.savedG;
                     uint8_t b = cfg.savedB;
-                    targetSegment->setPrimaryColor(r, g, b, white);
+                    targetSegment->setPrimaryColor(r, g, b, white, cfg.savedCW);
                     logInfoP("Segment %d: Updated primary color (White=%d)", channel, white);
                 }
 
@@ -1216,13 +1243,14 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // Apply color temperature to segment - convert Kelvin to RGB
                 uint8_t r, g, b;
                 ColorHelper::kelvinToRGB(cct, r, g, b);
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                targetSegment->setPrimaryColor(r, g, b, 0, 0);
 
                 // Save color for effect restore
                 cfg.savedR = r;
                 cfg.savedG = g;
                 cfg.savedB = b;
                 cfg.savedWW = 0;
+                cfg.savedCW = 0;
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
@@ -1266,9 +1294,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = r;
                 cfg.pendingSolidG = g;
                 cfg.pendingSolidB = b;
-                if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
+                if (!cfg.savedValid || !_virtualStrip || !_virtualStrip->hasWhiteChannel())
                 {
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -1278,12 +1307,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (!cfg.savedValid)
                 {
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
                 logInfoP("Segment %d: Updated primary color (Hue)", channel);
 
                 // Store and persist HSV values
@@ -1327,9 +1357,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = r;
                 cfg.pendingSolidG = g;
                 cfg.pendingSolidB = b;
-                if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
+                if (!cfg.savedValid || !_virtualStrip || !_virtualStrip->hasWhiteChannel())
                 {
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -1339,12 +1370,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (!cfg.savedValid)
                 {
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
                 logInfoP("Segment %d: Updated primary color (Saturation)", channel);
 
                 // Store HSV values
@@ -1383,9 +1415,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = r;
                 cfg.pendingSolidG = g;
                 cfg.pendingSolidB = b;
-                if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
+                if (!cfg.savedValid || !_virtualStrip || !_virtualStrip->hasWhiteChannel())
                 {
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -1395,12 +1428,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (!cfg.savedValid)
                 {
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
                 logInfoP("Segment %d: Updated primary color (Value)", channel);
 
                 // Store HSV values
@@ -1432,9 +1466,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = r;
                 cfg.pendingSolidG = g;
                 cfg.pendingSolidB = b;
-                if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
+                if (!cfg.savedValid || !_virtualStrip || !_virtualStrip->hasWhiteChannel())
                 {
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -1444,12 +1479,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (!cfg.savedValid)
                 {
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
                 logInfoP("Segment %d: Updated primary color (RGB)", channel);
 
                 // Send status feedback
@@ -1482,9 +1518,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.pendingSolidR = r;
                 cfg.pendingSolidG = g;
                 cfg.pendingSolidB = b;
-                if (!cfg.savedValid || (_virtualStrip && _virtualStrip->getBytesPerLed() != 4))
+                if (!cfg.savedValid || !_virtualStrip || !_virtualStrip->hasWhiteChannel())
                 {
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
 
                 // Update saved values - preserve W if it was already set
@@ -1494,12 +1531,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (!cfg.savedValid)
                 {
                     cfg.savedWW = 0;
+                    cfg.savedCW = 0;
                 }
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                targetSegment->setPrimaryColor(r, g, b, cfg.savedWW, cfg.savedCW);
                 logInfoP("Segment %d: Updated primary color (HSV)", channel);
 
                 // Send status feedback
@@ -1615,7 +1653,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (hasPendingColor)
                 {
                     // User set colors during the previous effect - use those
-                    targetSegment->setPrimaryColor(cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidWW);
+                    targetSegment->setPrimaryColor(cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB,
+                                                   cfg.pendingSolidWW, cfg.pendingSolidCW);
                     logInfoP("Segment %d: Applied pending color (R=%d G=%d B=%d W=%d) to effect %d",
                              channel, cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidWW, effect);
                     // Clear pending after applying
@@ -1623,11 +1662,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.pendingSolidG = 0;
                     cfg.pendingSolidB = 0;
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
                 else if (cfg.savedValid)
                 {
                     // No pending colors - use the saved color
-                    targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+                    targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                     if (effect == 0)
                     {
                         // For Solid effect, also restore brightness
@@ -1811,7 +1851,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // For Solid effect (type=0), restore saved colors
                         if (cfg.savedEffectType == static_cast<uint8_t>(PT_NEOEffectType::Solid))
                         {
-                            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+                            targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                         }
 
                         // Resume effect and reset state (in case stopped during Power OFF)
@@ -1826,7 +1866,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // IMPORTANT: Set brightness FIRST before setPrimaryColor() to ensure pixels are visible
                         targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
                         // savedWW is always 0 for RGB strips, contains actual value for RGBW strips
-                        targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+                        targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                     }
                     else
                     {
@@ -1885,14 +1925,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                     // NOW stop effect and clear pixels
                     targetSegment->stop();
-                    if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
-                    {
-                        targetSegment->setPrimaryColor(0, 0, 0, 0);
-                    }
-                    else
-                    {
-                        targetSegment->setPrimaryColor(0, 0, 0, 0);
-                    }
+                    targetSegment->setPrimaryColor(0, 0, 0, 0, 0);
 
                     // Force immediate sync and show to clear PhysicalStrip buffers
                     // Must use NeoPixelManager to ensure PhysicalStrip buffers are updated!
@@ -1961,6 +1994,16 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t b = targetSegment->getConfig().b();
                 uint8_t cw = targetSegment->getConfig().cw();
                 targetSegment->setPrimaryColor(r, g, b, ww, cw);
+
+                SegmentConfig& cfg = _segments[channel];
+                cfg.savedR = cfg.pendingSolidR = r;
+                cfg.savedG = cfg.pendingSolidG = g;
+                cfg.savedB = cfg.pendingSolidB = b;
+                cfg.savedWW = cfg.pendingSolidWW = ww;
+                cfg.savedCW = cfg.pendingSolidCW = cw;
+                cfg.savedBrightness = targetSegment->getBrightness();
+                cfg.savedValid = true;
+                cfg.savedLastWasEffect = false;
                 break;
             }
 
@@ -1975,6 +2018,16 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t b = targetSegment->getConfig().b();
                 uint8_t ww = targetSegment->getConfig().ww();
                 targetSegment->setPrimaryColor(r, g, b, ww, cw);
+
+                SegmentConfig& cfg = _segments[channel];
+                cfg.savedR = cfg.pendingSolidR = r;
+                cfg.savedG = cfg.pendingSolidG = g;
+                cfg.savedB = cfg.pendingSolidB = b;
+                cfg.savedWW = cfg.pendingSolidWW = ww;
+                cfg.savedCW = cfg.pendingSolidCW = cw;
+                cfg.savedBrightness = targetSegment->getBrightness();
+                cfg.savedValid = true;
+                cfg.savedLastWasEffect = false;
                 break;
             }
 
@@ -1998,6 +2051,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = g;
                     cfg.savedB = b;
                     cfg.savedWW = w;
+                    cfg.savedCW = 0;
+                    cfg.pendingSolidR = r;
+                    cfg.pendingSolidG = g;
+                    cfg.pendingSolidB = b;
+                    cfg.pendingSolidWW = w;
+                    cfg.pendingSolidCW = 0;
                     cfg.savedBrightness = targetSegment->getBrightness();
                     cfg.savedValid = true;
                     cfg.savedLastWasEffect = false;
@@ -3289,12 +3348,24 @@ void NeoPixelBusModule::configureFromETS()
         // ParamNEOSTRIP_* macros use _channelIndex to calculate correct EEPROM address
         _channelIndex = i;
 
-        const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
-        const LedProtocol proto = mapLedProtocol(ledTypeParam);
-
-        // Get color order from ETS setting for all protocols
-        ColorOrder order = mapLedColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
+        const LedProtocol proto = mapLedProtocol(ledType);
+        // A stale colour order can silently remove white channels or request
+        // more channels than the selected LED type supports.
+        ColorOrder order = mapLedColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
+        if (ledType != 99)
+        {
+            const ColorOrder defaultOrder = defaultColorOrderForLedType(ledType);
+            const uint8_t configuredChannels = ProtocolHelper::getChannelCount(order);
+            const uint8_t expectedChannels = ProtocolHelper::getChannelCount(defaultOrder);
+            if (configuredChannels != expectedChannels)
+            {
+                logWarningP("Strip %d: LEDType=%d requires %d channels, but ColorOrder=%s has %d; using %s",
+                            i, ledType, expectedChannels, getColorOrderName(order), configuredChannels,
+                            getColorOrderName(defaultOrder));
+                order = defaultOrder;
+            }
+        }
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
 
@@ -4180,16 +4251,12 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
     {
         if (phys)
         {
-            ColorOrder order = phys->getColorOrder();
-            // Check for 5-channel first (RGBCCT, GRBCCT, RGBCTW, GRBCTW)
-            if (order == ColorOrder::RGBCCT || order == ColorOrder::GRBCCT ||
-                order == ColorOrder::RGBCTW || order == ColorOrder::GRBCTW)
+            if (phys->hasDualWhiteChannel())
             {
                 needsRGBCCT = true;
                 break; // 5-channel is the maximum, no need to check further
             }
-            // Check for 4-channel (RGBW, GRBW)
-            else if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
+            else if (phys->hasWhiteChannel())
             {
                 needsRGBW = true;
             }

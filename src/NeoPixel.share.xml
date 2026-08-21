@@ -192,7 +192,7 @@
                 <Enumeration Text="WS2805 RGBCCT"        Value="1"  Id="%ENID%" op:headerName="WS2805_RGBCCT"/>
                 <Enumeration Text="WS2811"               Value="2"  Id="%ENID%" op:headerName="WS2811"/>
                 <Enumeration Text="WS2813"               Value="3"  Id="%ENID%" op:headerName="WS2813"/>
-                <Enumeration Text="SK6812"               Value="4"  Id="%ENID%" op:headerName="SK6812"/>
+                <Enumeration Text="SK6812 (RGB only)"    Value="4"  Id="%ENID%" op:headerName="SK6812"/>
                 <Enumeration Text="APA102"               Value="5"  Id="%ENID%" op:headerName="APA102"/>
                 <Enumeration Text="SK9822"               Value="6"  Id="%ENID%" op:headerName="SK9822"/>
                 <Enumeration Text="WS281x"               Value="7"  Id="%ENID%" op:headerName="WS281x"/>

@@ -547,7 +547,7 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     {
         uint8_t r, g, b;
         VirtualStrip* vstrip = _module->getVirtualStrip();
-        if (vstrip && vstrip->getBytesPerLed() == 5)
+        if (vstrip && vstrip->hasDualWhiteChannel())
         {
             // RGBCCT (5 bytes per LED)
             uint8_t ww, cw;
@@ -555,7 +555,7 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
             state.ww = ww;
             state.cw = cw;
         }
-        else if (vstrip && vstrip->getBytesPerLed() == 4)
+        else if (vstrip && vstrip->hasWhiteChannel())
         {
             // RGBW (4 bytes per LED)
             uint8_t w;
