@@ -42,7 +42,7 @@ function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
   map[0]  = CO_GRB;    // WS2812B - GRB standard
   map[2]  = CO_RGB;    // WS2811 - RGB order
   map[3]  = CO_GRB;    // WS2813 - GRB standard
-  map[4]  = CO_GRB;    // SK6812 (RGB mode) - GRB standard
+  map[4]  = CO_GRB;    // SK6812 (RGB-only mode) - GRB standard
   map[7]  = CO_GRB;    // WS281x (generic) - GRB standard
   map[10] = CO_GRB;    // WS2812_400kHz - GRB
   map[11] = CO_RGB;    // TM1829 - RGB

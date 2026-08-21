@@ -14,7 +14,7 @@ Die Farbordnung definiert, in welcher Reihenfolge die Farbkanäle an die LEDs ge
 **RGBW Varianten** für 4-Kanal LEDs:
 
 - **RGBW**: Rot-Grün-Blau-Weiß
-- **GRBW**: Grün-Rot-Blau-Weiß (**Standard für SK6812**)
+- **GRBW**: Grün-Rot-Blau-Weiß (**Standard für SK6812 RGBW**)
 
 **RGBCCT Varianten** für 5-Kanal LEDs (mit separatem Warm- und Kaltweiß):
 
@@ -34,7 +34,7 @@ Für optimale Farbtemperatursteuerung empfehlen wir 5-Kanal RGBCCT-Streifen. Das
 
 - **WS2812B**: GRB
 - **WS2815**: GRB
-- **SK6812**: GRBW (mit weißem Kanal)
+- **SK6812 RGBW**: GRBW (mit weißem Kanal)
 - **APA102**: BGR 
 - **SK9822**: BGR
 - **RGBCCT-Streifen**: RGBCCT oder GRBCCT (je nach Hersteller)
