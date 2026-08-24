@@ -66,29 +66,28 @@ static inline int16_t dpt3_007_delta(uint8_t stepCode)
 // ETS enum translation belongs to the active configuration path. Keeping it
 // here avoids an unreachable configuration implementation drifting away from
 // the layout actually installed at startup.
-static LedProtocol mapLedProtocol(uint8_t p)
+static bool mapLedProtocol(uint8_t p, LedProtocol& protocol)
 {
     switch (p)
     {
-        case 0: return LedProtocol::WS2812B;
-        case 1: case 17: return LedProtocol::WS2805_RGBCCT;
-        case 18: return LedProtocol::SM16825;
-        case 2: case 10: case 11: case 13: case 19: return LedProtocol::WS2811;
-        case 3: return LedProtocol::WS2813;
-        case 4: case 8: case 16: return LedProtocol::SK6812;
-        case 5: case 24: return LedProtocol::APA102;
-        case 6: return LedProtocol::SK9822;
-        case 9: case 14: return LedProtocol::TM1814;
-        case 21: return LedProtocol::WS2801;
-        case 22: case 23: return LedProtocol::LPD8806;
-        case 25: return LedProtocol::APA102_CLONE;
-        case 30: return LedProtocol::SK6812_RGBCCT;
-        case 31: return LedProtocol::WS2814_RGBCCT;
-        // Generic, custom and remaining compatible families use the canonical
-        // WS2812B backend profile.
-        case 7: case 12: case 15: case 20: case 99:
-        default: return LedProtocol::WS2812B;
+        case 0: protocol = LedProtocol::WS2812B; break;
+        case 1: case 17: protocol = LedProtocol::WS2805_RGBCCT; break;
+        case 2: case 10: protocol = LedProtocol::WS2811; break;
+        case 3: protocol = LedProtocol::WS2813; break;
+        case 4: case 8: protocol = LedProtocol::SK6812; break;
+        case 5: protocol = LedProtocol::APA102; break;
+        case 6: protocol = LedProtocol::SK9822; break;
+        case 9: protocol = LedProtocol::TM1814; break;
+        case 18: protocol = LedProtocol::SM16825; break;
+        case 21: protocol = LedProtocol::WS2801; break;
+        case 22: protocol = LedProtocol::LPD8806; break;
+        case 25: protocol = LedProtocol::APA102_CLONE; break;
+        case 30: protocol = LedProtocol::SK6812_RGBCCT; break;
+        case 31: protocol = LedProtocol::WS2814_RGBCCT; break;
+        case 99: protocol = LedProtocol::WS2812B; break; // Explicit generic mode
+        default: return false;
     }
+    return true;
 }
 
 static ColorOrder mapLedColorOrder(uint8_t c)
@@ -3287,7 +3286,12 @@ void NeoPixelBusModule::configureFromETS()
         if (pixels == 0) continue; // Skip strips with 0 LEDs
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
-        const LedProtocol proto = mapLedProtocol(ledTypeParam);
+        LedProtocol proto;
+        if (!mapLedProtocol(ledTypeParam, proto))
+        {
+            logErrorP("Strip %d: LED type %d has no validated backend and is disabled", i, ledTypeParam);
+            continue;
+        }
         const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
         if (gpioManualConfig)
@@ -3360,7 +3364,12 @@ void NeoPixelBusModule::configureFromETS()
         _channelIndex = i;
 
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
-        const LedProtocol proto = mapLedProtocol(ledType);
+        LedProtocol proto;
+        if (!mapLedProtocol(ledType, proto))
+        {
+            logErrorP("Strip %d: LED type %d has no validated backend and is disabled", i, ledType);
+            continue;
+        }
         if (ledType == 17)
             logWarningP("Strip %d: WS2805_RGBCW is a legacy alias and uses the WS2805 RGBCCT profile", i);
         // A stale colour order can silently remove white channels or request
