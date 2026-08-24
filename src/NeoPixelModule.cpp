@@ -3254,6 +3254,25 @@ void NeoPixelBusModule::configureFromETS()
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
 
+    // OFM addresses virtual-strip LEDs with uint16_t indices. Reject an ETS
+    // configuration that cannot be represented before creating any outputs.
+    uint32_t configuredLedTotal = 0;
+    for (uint8_t i = 0; i < maxStrips; ++i)
+    {
+        setChannelIndex(i);
+        const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
+        if (configuredLedTotal + pixels > UINT16_MAX)
+        {
+            logErrorP("LED configuration exceeds OFM's 65535 LED limit; no strips will be created");
+            return;
+        }
+        configuredLedTotal += pixels;
+    }
+
+    // Preserve ETS identity: index i is always ETS strip i, even when a
+    // preceding strip is disabled or fails creation.
+    _physicalStrips.assign(maxStrips, nullptr);
+
     // PRE-SCAN: Mark all manually configured GPIO pins as used BEFORE auto-allocation starts
     // This prevents auto-allocation from using pins that are manually configured on other strips
     logInfoP("Pre-scanning %d strips for manual GPIO configurations...", maxStrips);
@@ -3656,8 +3675,8 @@ void NeoPixelBusModule::configureFromETS()
 
         if (phys)
         {
-            _totalLeds += pixels;
-            _physicalStrips.push_back(phys);
+            _totalLeds = (uint16_t)(_totalLeds + pixels);
+            _physicalStrips[i] = phys;
 
             // Value 0 keeps the protocol-specific backend waveform. All historic
             // non-zero ETS values are explicit expert timing overrides.
@@ -4849,24 +4868,34 @@ void NeoPixelBusModule::createSegments()
         SegmentConfig& config = _segments[i];
 
         // Calculate effective start/end considering offset
-        uint16_t effectiveStart = config.startLed + config.offset;
-        uint16_t effectiveEnd = config.endLed + config.offset;
+        const uint32_t effectiveStart = (uint32_t)config.startLed + config.offset;
+        uint32_t effectiveEnd = (uint32_t)config.endLed + config.offset;
+        const uint16_t virtualLedCount = _virtualStrip->getLedCount();
+
+        if (effectiveStart >= virtualLedCount)
+        {
+            logErrorP("Segment %zu: Start %lu is outside virtual strip length %u",
+                      i, (unsigned long)effectiveStart, virtualLedCount);
+            continue;
+        }
 
         // Ensure bounds are within virtual strip
-        if (effectiveEnd >= _virtualStrip->getLedCount())
+        if (effectiveEnd >= virtualLedCount)
         {
-            effectiveEnd = _virtualStrip->getLedCount() - 1;
-            logWarningP("Segment %zu: Adjusted end to %d (within virtual strip bounds)", i, effectiveEnd);
+            effectiveEnd = virtualLedCount - 1;
+            logWarningP("Segment %zu: Adjusted end to %lu (within virtual strip bounds)",
+                        i, (unsigned long)effectiveEnd);
         }
 
         if (effectiveStart <= effectiveEnd)
         {
-            config.segment = mgr->addSegment(_virtualStrip, effectiveStart, effectiveEnd);
+            config.segment = mgr->addSegment(_virtualStrip, (uint16_t)effectiveStart, (uint16_t)effectiveEnd);
 
             if (config.segment)
             {
                 logInfoP("Created segment %zu: LEDs %d-%d (length %d)",
-                         i, effectiveStart, effectiveEnd, effectiveEnd - effectiveStart + 1);
+                         i, (uint16_t)effectiveStart, (uint16_t)effectiveEnd,
+                         (uint16_t)(effectiveEnd - effectiveStart + 1));
             }
             else
             {
@@ -4875,7 +4904,8 @@ void NeoPixelBusModule::createSegments()
         }
         else
         {
-            logErrorP("Segment %zu: Invalid effective range %d-%d", i, effectiveStart, effectiveEnd);
+            logErrorP("Segment %zu: Invalid effective range %lu-%lu", i,
+                      (unsigned long)effectiveStart, (unsigned long)effectiveEnd);
         }
     }
 }
