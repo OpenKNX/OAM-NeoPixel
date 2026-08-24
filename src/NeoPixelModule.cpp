@@ -71,7 +71,7 @@ static LedProtocol mapLedProtocol(uint8_t p)
     switch (p)
     {
         case 0: return LedProtocol::WS2812B;
-        case 1: case 17: case 18: return LedProtocol::WS2805_RGBCCT;
+        case 1: case 17: return LedProtocol::WS2805_RGBCCT;
         case 2: case 10: case 11: case 13: case 19: return LedProtocol::WS2811;
         case 3: return LedProtocol::WS2813;
         case 4: case 8: case 16: return LedProtocol::SK6812;
@@ -116,7 +116,9 @@ static ColorOrder defaultColorOrderForLedType(uint8_t ledType)
 {
     switch (ledType)
     {
-        case 1: case 17: case 18: case 30: case 31:
+        case 1: case 17:
+            return ColorOrder::RGBCCT;
+        case 30: case 31:
             return ColorOrder::GRBCCT;
         case 8: case 9: case 14: case 15:
             return ColorOrder::GRBW;
@@ -3235,6 +3237,11 @@ void NeoPixelBusModule::configureFromETS()
         if (pixels == 0) continue; // Skip strips with 0 LEDs
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
+        if (ledTypeParam == 18)
+        {
+            logErrorP("Strip %d: SM16825 is not supported by this firmware; strip disabled", i);
+            continue;
+        }
         const LedProtocol proto = mapLedProtocol(ledTypeParam);
         const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
@@ -3349,7 +3356,14 @@ void NeoPixelBusModule::configureFromETS()
         _channelIndex = i;
 
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
+        if (ledType == 18)
+        {
+            logErrorP("Strip %d: SM16825 requires a dedicated 16-bit driver and is disabled", i);
+            continue;
+        }
         const LedProtocol proto = mapLedProtocol(ledType);
+        if (ledType == 17)
+            logWarningP("Strip %d: WS2805_RGBCW is a legacy alias and uses the WS2805 RGBCCT profile", i);
         // A stale colour order can silently remove white channels or request
         // more channels than the selected LED type supports.
         ColorOrder order = mapLedColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
@@ -3683,11 +3697,9 @@ void NeoPixelBusModule::configureFromETS()
             else
             {
                 const uint16_t freqKhz = NeoPixelTimingSelection::bitrateKhz(timingSel);
-                const auto timing = NeoPixelTimingSelection::customTiming(timingSel);
-                if (phys->setCustomTiming(timing.t0hNs, timing.t0lNs, timing.t1hNs, timing.t1lNs, 0))
-                    logInfoP("Strip %d: Timing = %u kHz%s (expert custom T1H=%u ns)", i, freqKhz,
-                             NeoPixelTimingSelection::isLegacyFineOverride(timingSel) ? ", legacy value" : "",
-                             timing.t1hNs);
+                if (phys->setBitrateOverride((uint32_t)freqKhz * 1000UL, 0))
+                    logInfoP("Strip %d: Timing = %u kHz%s (protocol-aware override)", i, freqKhz,
+                             NeoPixelTimingSelection::isLegacyFineOverride(timingSel) ? ", legacy value" : "");
             }
 
             // Configure color correction for this strip

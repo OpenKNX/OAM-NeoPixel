@@ -66,9 +66,8 @@ function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
   map[16] = CO_RGBW;   // UCS8904 - RGBW
 
   // ---- 5-Channel RGBCCT Protocols ----
-  map[1]  = CO_GRBCCT; // WS2805 RGBCCT - GRBCCT standard
-  map[17] = CO_GRBCCT; // WS2805_RGBCW - GRBCCT
-  map[18] = CO_GRBCCT; // SM16825 - GRBCCT
+  map[1]  = CO_RGBCCT; // WS2805 RGBCCT - datasheet byte order
+  map[17] = CO_RGBCCT; // WS2805_RGBCW - legacy alias of WS2805 RGBCCT
   map[30] = CO_GRBCCT; // SK6812 RGBCCT (5ch) - GRBCCT
   map[31] = CO_GRBCCT; // WS2814 RGBCCT (5ch) - GRBCCT
 

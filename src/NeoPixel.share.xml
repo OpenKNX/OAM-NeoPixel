@@ -205,8 +205,8 @@
                 <Enumeration Text="TM1914"               Value="14" Id="%ENID%" op:headerName="TM1914"/>
                 <Enumeration Text="FW1906"               Value="15" Id="%ENID%" op:headerName="FW1906"/>
                 <Enumeration Text="UCS8904"              Value="16" Id="%ENID%" op:headerName="UCS8904"/>
-                <Enumeration Text="WS2805_RGBCW"         Value="17" Id="%ENID%" op:headerName="WS2805_RGBCW"/>
-                <Enumeration Text="SM16825"              Value="18" Id="%ENID%" op:headerName="SM16825"/>
+                <Enumeration Text="WS2805 RGBCCT (legacy alias)" Value="17" Id="%ENID%" op:headerName="WS2805_RGBCW"/>
+                <Enumeration Text="SM16825 (unsupported)" Value="18" Id="%ENID%" op:headerName="SM16825"/>
                 <Enumeration Text="WS2811_WHITE"         Value="19" Id="%ENID%" op:headerName="WS2811_WHITE"/>
                 <Enumeration Text="WS281x_WWA"           Value="20" Id="%ENID%" op:headerName="WS281x_WWA"/>
                 <Enumeration Text="WS2801"               Value="21" Id="%ENID%" op:headerName="WS2801"/>
