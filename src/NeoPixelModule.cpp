@@ -3215,13 +3215,18 @@ void NeoPixelBusModule::configureFromETS()
     const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
     _totalLeds = 0;
 
-    // CRITICAL: Delete old PhysicalStrip objects before clearing vector!
-    // This prevents memory leaks and deregisters old DMA handlers
-    for (auto* strip : _physicalStrips)
+    // PhysicalStrip, VirtualStrip, and Segment instances are owned by OFM's
+    // manager. Destroying the raw handles here leaves its owning vectors with
+    // dangling pointers and leads to a second-delete on the next setup.
+    auto manager = _neoPixel.getManager();
+    if (manager)
     {
-        if (strip) delete strip;
+        manager->clearTopology();
     }
     _physicalStrips.clear();
+    _virtualStrip = nullptr;
+    _segments.clear();
+    _numberOfSegments = 0;
 
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
