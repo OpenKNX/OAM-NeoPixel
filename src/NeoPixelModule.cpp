@@ -72,7 +72,8 @@ static bool mapLedProtocol(uint8_t p, LedProtocol& protocol)
     {
         case 0: protocol = LedProtocol::WS2812B; break;
         case 1: case 17: protocol = LedProtocol::WS2805_RGBCCT; break;
-        case 2: case 10: protocol = LedProtocol::WS2811; break;
+        case 2: protocol = LedProtocol::WS2811; break;
+        case 10: protocol = LedProtocol::WS2811_400KHZ; break;
         case 3: protocol = LedProtocol::WS2813; break;
         case 4: case 8: protocol = LedProtocol::SK6812; break;
         case 5: protocol = LedProtocol::APA102; break;
@@ -4529,6 +4530,7 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
         case LedProtocol::WS2813: return "WS2813";
         case LedProtocol::WS2815: return "WS2815";
         case LedProtocol::WS2811: return "WS2811";
+        case LedProtocol::WS2811_400KHZ: return "WS2811/WS2812 400kHz";
         case LedProtocol::SK6812: return "SK6812";
         case LedProtocol::SK6805: return "SK6805";
         case LedProtocol::WS2814: return "WS2814";
