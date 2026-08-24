@@ -125,6 +125,12 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t savedWW = 0; // Warm White (or single white for RGBW)
         uint8_t savedCW = 0; // Cool White (RGBCCT only)
         uint8_t savedBrightness = 0;
+        uint16_t savedCctKelvin = 0; // Exact last DPT 7.600 command, when available
+        bool savedCctValid = false;
+
+        // `Letzter Zustand` must not expose ETS seed values while flash state
+        // is deliberately restored after the framework startup delay.
+        bool startupRestorePending = false;
 
         // Saved effect information
         bool savedEffectValid = false;
@@ -241,6 +247,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Public API for segment control (delegates to SegmentController)
     void processActiveDimming();
+    void processCctKo(uint8_t channel, GroupObject& ko);
 
     // Public API for color management (delegates to ColorManagement)
     void configureColorCorrection();

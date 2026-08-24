@@ -13,7 +13,7 @@ class Segment;
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
  *
- * Storage: 14 bytes per segment × 16 segments = 224 bytes max (+ relay state)
+ * Storage: 16 bytes per segment × 16 segments = 256 bytes max (+ relay state)
  */
 class NeoPixelFlashPersistence
 {
@@ -22,7 +22,7 @@ class NeoPixelFlashPersistence
     const std::string logPrefix() const { return "NeoPixelFlashPersistence"; }
 
     /**
-     * @brief Flash state structure for segment persistence (14 bytes)
+     * @brief Flash state structure for segment persistence (16 bytes)
      *
      * Stores KO-changed values to restore runtime state after power cycle:
      *   - ETS provides BASE configuration (defaults)
@@ -35,7 +35,8 @@ class NeoPixelFlashPersistence
      *   0x04 = brightness (KoNEO_SegmentBrightness)
      *   0x08 = effectType (KoNEO_Fx)
      *   0x10 = effectFlags (effect state tracking)
-     *   0x20-0x80 = reserved for HSV, CCT, effect parameters
+     *   0x20 = CCT Kelvin (KoNEO_CCT, DPT 7.600)
+     *   0x40-0x80 = reserved for HSV and effect parameters
      */
     struct SegmentFlashState
     {
@@ -45,28 +46,20 @@ class NeoPixelFlashPersistence
         // KO-changed values (restored if corresponding validFlags bit set):
         uint8_t power;       // 0 = off, 1 = on (KoNEO_SegmentPower)
         uint8_t r, g, b;     // RGB color (KoNEO_R/G/B)
-        uint8_t ww, cw;      // Warm/Cool white (reserved for future KOs)
+        uint8_t ww, cw;      // Warm/Cool white
         uint8_t brightness;  // Master brightness (KoNEO_SegmentBrightness)
         uint8_t effectType;  // Effect ID (KoNEO_Fx) - 0 = no effect
         uint8_t effectFlags; // bit0=effectValid, bit1=lastWasEffect
 
-        // Reserved for future KO parameters (HSV, CCT, effect params):
-        uint8_t reserved[3]; // reserved[0] = last active scene number (0 = no scene)
-                             // reserved[1] = last active Effektmanager ID (0 = none)
-                             // reserved[2] = reserved
-        //
-        // BACKWARD COMPATIBILITY (version stays 0x01, no migration needed):
-        //   These two bytes were repurposed from the original zero-initialized
-        //   reserved[] pool. Saves written by older firmware had reserved[]=0,
-        //   and 0 is a valid "none" sentinel for BOTH fields (scene 0 = no scene,
-        //   EM_NONE == 0). Restoring an old blob therefore yields "no scene / no
-        //   EM" — correct, no data loss.
-        //   IMPORTANT: if the meaning of any reserved[] byte changes in a way
-        //   where 0 is no longer a safe default, bump `version` and gate the
-        //   read on it (see readFromFlash) before reinterpreting old blobs.
+        uint8_t sceneNumber; // Last active scene number (0 = no scene)
+        uint8_t lastEmId;    // Last active Effektmanager ID (0 = none)
+        uint16_t cctKelvin;  // Exact last DPT 7.600 CCT command (0 = none)
+        uint8_t reserved;    // Must remain zero; preserves a 16-byte record size
 
-        // Total: 14 bytes per segment × 16 segments = 224 bytes max
+        // Total: 16 bytes per segment × 16 segments = 256 bytes max
     } __attribute__((packed));
+
+    static_assert(sizeof(SegmentFlashState) == 16, "Segment flash layout must stay 16 bytes");
 
     /**
      * @brief Flash state structure for external relay persistence
@@ -85,7 +78,7 @@ class NeoPixelFlashPersistence
     // update will then DISCARD the now-incompatible saved state and fall back to
     // ETS/defaults, instead of misinterpreting old bytes (which caused "weird
     // behaviour" after firmware updates that kept the old size).
-    static constexpr uint8_t FLASH_FORMAT_VERSION = 0x01;
+    static constexpr uint8_t FLASH_FORMAT_VERSION = 0x02;
 
     /**
      * @brief Constructor
@@ -95,7 +88,7 @@ class NeoPixelFlashPersistence
 
     /**
      * @brief Calculate flash size needed for storing segment states
-     * @return Number of bytes required (14 bytes × configured segments)
+     * @return Number of bytes required (16 bytes × configured segments)
      */
     uint16_t calculateFlashSize() const;
 

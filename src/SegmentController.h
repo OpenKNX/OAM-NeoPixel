@@ -98,13 +98,6 @@ class SegmentController
     void processWhiteKo(uint8_t channel, GroupObject& ko);
 
     /**
-     * @brief Process Color Temperature (CCT) KO
-     * @param channel Segment index
-     * @param ko GroupObject reference
-     */
-    void processCctKo(uint8_t channel, GroupObject& ko);
-
-    /**
      * @brief Process Hue channel KO
      * @param channel Segment index
      * @param ko GroupObject reference

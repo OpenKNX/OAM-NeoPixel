@@ -82,9 +82,15 @@ void EffectConfiguration::configureEffects()
                     break;
 
                 case 1: // Letzter Zustand (Flash)
-                    // Flash restore will be attempted in processAfterStartupDelay()
-                    // If no flash data exists, the ETS config (already loaded above) will remain
-                    logInfoP("Segment %zu: ETS-Config geladen, Flash-Restore später (Behavior: %s)", i, behaviorNames[1]);
+                    // The framework intentionally restores flash only after its startup
+                    // delay. Do not let the ETS seed effect/colour render in that window:
+                    // it caused a visible wrong colour / flashing effect until restore.
+                    // Keep the ETS master brightness as the explicit no-flash fallback;
+                    // only the render layer is blanked until restoration is complete.
+                    segments[i].startupRestorePending = true;
+                    segments[i].segment->setBrightness(0);
+                    _module->_clearLedsAfterSetup = true;
+                    logInfoP("Segment %zu: ETS-Config geladen, Ausgabe bis Flash-Restore verborgen (Behavior: %s)", i, behaviorNames[1]);
                     break;
 
                 case 2: // ETS-Parameterwert (DEFAULT)

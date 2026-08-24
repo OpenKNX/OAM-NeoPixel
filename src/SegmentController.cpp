@@ -219,7 +219,7 @@ bool SegmentController::processSegmentKo(GroupObject& ko, uint16_t koNumber, uin
             return true;
 
         case NEO_KoCCT:
-            processCctKo(channel, ko);
+            _module->processCctKo(channel, ko);
             return true;
 
         case NEO_KoH:
@@ -266,37 +266,6 @@ void SegmentController::processWhiteKo(uint8_t channel, GroupObject& ko)
 {
     uint8_t white = ko.value(DPT_Value_1_Ucount);
     processColorChannelKo(channel, ko, white, 3, "White");
-}
-
-void SegmentController::processCctKo(uint8_t channel, GroupObject& ko)
-{
-    uint16_t cct = ko.value(DPT_Value_Temp);
-    logInfoP("Segment %d CCT: %dK", channel, cct);
-
-    auto& cfg = _module->_segments[channel];
-    Segment* targetSegment = cfg.segment;
-
-    // Convert Kelvin to RGB
-    uint8_t r, g, b;
-    ColorHelper::kelvinToRGB(cct, r, g, b);
-    targetSegment->setPrimaryColor(r, g, b, 0, 0);
-
-    // Save color for effect restore
-    cfg.savedR = r;
-    cfg.savedG = g;
-    cfg.savedB = b;
-    cfg.savedWW = 0;
-    cfg.savedCW = 0;
-    cfg.savedBrightness = targetSegment->getBrightness();
-    cfg.savedValid = true;
-    cfg.savedLastWasEffect = false;
-
-    // Send status feedback
-    uint8_t _channelIndex = _module->getChannelIndex();
-    _module->_channelIndex = channel;
-    bool changed = KoNEO_CCTState.valueNoSendCompare(cct, DPT_Value_Temp);
-    if (changed) KoNEO_CCTState.objectWritten();
-    _module->_channelIndex = _channelIndex;
 }
 
 void SegmentController::processHueKo(uint8_t channel, GroupObject& ko)

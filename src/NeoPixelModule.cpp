@@ -300,8 +300,9 @@ void NeoPixelBusModule::setup(bool configured)
         // Now that hardware is initialized, clear LEDs if requested during configuration
         if (_clearLedsAfterSetup && _virtualStrip)
         {
+            _virtualStrip->clear();
             _virtualStrip->show();
-            logInfoP("LEDs cleared - will restore saved state after startup delay");
+            logInfoP("LEDs blanked - will restore saved state after startup delay");
             _clearLedsAfterSetup = false;
         }
 
@@ -1239,31 +1240,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
             case NEO_KoCCT:
             {
-                uint16_t cct = ko.value(DPT_Value_Temp);
-                logInfoP("Segment %d CCT: %dK", channel, cct);
-
-                SegmentConfig& cfg = _segments[channel];
-
-                // Apply color temperature to segment - convert Kelvin to RGB
-                uint8_t r, g, b;
-                ColorHelper::kelvinToRGB(cct, r, g, b);
-                targetSegment->setPrimaryColor(r, g, b, 0, 0);
-
-                // Save color for effect restore
-                cfg.savedR = r;
-                cfg.savedG = g;
-                cfg.savedB = b;
-                cfg.savedWW = 0;
-                cfg.savedCW = 0;
-                cfg.savedBrightness = targetSegment->getBrightness();
-                cfg.savedValid = true;
-                cfg.savedLastWasEffect = false;
-
-                // Send status feedback
-                _channelIndex = channel;
-                bool changed = KoNEO_CCTState.valueNoSendCompare(cct, DPT_Value_Temp);
-                if (changed) KoNEO_CCTState.objectWritten();
-                _channelIndex = oldChannelIndex;
+                processCctKo(channel, ko);
                 break;
             }
 
@@ -2008,6 +1985,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
+                cfg.savedCctKelvin = 0;
+                cfg.savedCctValid = false;
                 break;
             }
 
@@ -2032,6 +2011,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
+                cfg.savedCctKelvin = 0;
+                cfg.savedCctValid = false;
                 break;
             }
 
@@ -2276,6 +2257,52 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
         // Auto-update cycle will render changes
     }
+}
+
+void NeoPixelBusModule::processCctKo(uint8_t channel, GroupObject& ko)
+{
+    if (channel >= _segments.size() || !_segments[channel].segment) return;
+
+    const uint8_t oldChannelIndex = _channelIndex;
+    _channelIndex = channel;
+
+    // The KO is declared as DPST-7-600 (unsigned Kelvin), not the two-byte
+    // floating temperature DPT 9.001.
+    const uint16_t cct = ko.value(Dpt(7, 600));
+    logInfoP("Segment %d CCT: %dK", channel, cct);
+
+    SegmentConfig& cfg = _segments[channel];
+    Segment* targetSegment = cfg.segment;
+    uint8_t r = 0, g = 0, b = 0, ww = 0, cw = 0;
+
+    if (_virtualStrip && _virtualStrip->hasDualWhiteChannel())
+    {
+        // A true RGBCCT strip expresses temperature through warm/cool white.
+        // Their sum remains 255; segment/master brightness controls intensity.
+        ProtocolHelper::kelvinToWWCW(cct, ww, cw);
+    }
+    else
+    {
+        // RGB and RGBW cannot represent two independently tunable white dies.
+        ColorHelper::kelvinToRGB(cct, r, g, b);
+    }
+
+    targetSegment->setPrimaryColor(r, g, b, ww, cw);
+    cfg.savedR = r;
+    cfg.savedG = g;
+    cfg.savedB = b;
+    cfg.savedWW = ww;
+    cfg.savedCW = cw;
+    cfg.savedBrightness = targetSegment->getBrightness();
+    cfg.savedValid = true;
+    cfg.savedLastWasEffect = false;
+    cfg.savedCctKelvin = cct;
+    cfg.savedCctValid = true;
+
+    if (KoNEO_CCTState.valueNoSendCompare(cct, Dpt(7, 600)))
+        KoNEO_CCTState.objectWritten();
+
+    _channelIndex = oldChannelIndex;
 }
 
 // ============================================================================
@@ -2632,9 +2659,7 @@ bool NeoPixelBusModule::emConsoleGetChainStatus(uint8_t seg, NeoChainSegStatus& 
 void NeoPixelBusModule::printFlashStateTable(int onlySeg)
 {
     // The saved* fields are the decoded SegmentFlashState as restored at boot
-    // (see NeoPixelFlashPersistence::readFromFlash). The repurposed flash bytes
-    // map as: Scene = reserved[0] (savedSceneNumber), EM = reserved[1]
-    // (emController.lastEmId()). Output uses the shared console logger (no module
+    // (see NeoPixelFlashPersistence::readFromFlash). Output uses the shared console logger (no module
     // prefix) to stay visually consistent with neo phys / neo seg / neo em.
     const char* SEP = "═════════════════════════════════════════════════════════════════════════════";
 
@@ -2651,8 +2676,8 @@ void NeoPixelBusModule::printFlashStateTable(int onlySeg)
     }
     else
     {
-        openknx.logger.log("Seg │ Valid │ Pwr │  R  │  G  │  B  │ WW  │ CW  │ Bri │ Fx │ LastFx │ Scene │ EM");
-        openknx.logger.log("────┼───────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼────┼────────┼───────┼────");
+        openknx.logger.log("Seg │ Valid │ Pwr │  R  │  G  │  B  │ WW  │ CW  │ Bri │ Fx │ LastFx │ Scene │ EM │ CCT");
+        openknx.logger.log("────┼───────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼────┼────────┼───────┼────┼─────");
 
         for (size_t i = 0; i < _segments.size(); i++)
         {
@@ -2665,7 +2690,7 @@ void NeoPixelBusModule::printFlashStateTable(int onlySeg)
                 continue;
             }
 
-            openknx.logger.logWithValues("%3d │ %-5s │ %-3s │ %3d │ %3d │ %3d │ %3d │ %3d │ %3d │ %2d │ %-6s │ %5d │ %3d",
+            openknx.logger.logWithValues("%3d │ %-5s │ %-3s │ %3d │ %3d │ %3d │ %3d │ %3d │ %3d │ %2d │ %-6s │ %5d │ %3d │ %4d",
                                          (int)i,
                                          cfg.savedValid ? "yes" : "no",
                                          cfg.savedPower ? "on" : "off",
@@ -2675,14 +2700,15 @@ void NeoPixelBusModule::printFlashStateTable(int onlySeg)
                                          (int)cfg.savedEffectType,
                                          cfg.savedEffectValid ? (cfg.savedLastWasEffect ? "effect" : "color") : "-",
                                          (int)cfg.savedSceneNumber,
-                                         (int)cfg.emController.lastEmId());
+                                         (int)cfg.emController.lastEmId(),
+                                         cfg.savedCctValid ? (int)cfg.savedCctKelvin : 0);
         }
     }
 
     openknx.logger.color(CONSOLE_HEADLINE_COLOR);
     openknx.logger.log(SEP);
     openknx.logger.color(0);
-    openknx.logger.log("Legend: Scene=reserved[0] (0=none), EM=reserved[1] (0=none), Fx=effect ID (0=none),");
+    openknx.logger.log("Legend: Scene/EM/CCT are persisted fields (0=none), Fx=effect ID (0=none),");
     openknx.logger.log("        LastFx=last output kind, Valid=flash held data for this segment.");
     openknx.logger.log("");
 }
@@ -3383,6 +3409,15 @@ void NeoPixelBusModule::configureFromETS()
         if (ledType != 99)
         {
             const ColorOrder defaultOrder = defaultColorOrderForLedType(ledType);
+            // WS2805 has a fixed RGBW1W2 wire order. Older products persisted
+            // GRBCCT here; both orders have five channels, so a channel-count
+            // check alone silently kept the red/green swap alive.
+            if ((ledType == 1 || ledType == 17) && order != ColorOrder::RGBCCT)
+            {
+                logWarningP("Strip %d: WS2805 requires RGBCCT, but ColorOrder=%s; using RGBCCT",
+                            i, getColorOrderName(order));
+                order = ColorOrder::RGBCCT;
+            }
             const uint8_t configuredChannels = ProtocolHelper::getChannelCount(order);
             const uint8_t expectedChannels = ProtocolHelper::getChannelCount(defaultOrder);
             if (configuredChannels != expectedChannels)

@@ -65,7 +65,7 @@ void NeoPixelFlashPersistence::writeToFlash()
         SegmentFlashState state;
         if (saveSegmentState(i, state))
         {
-            // Write state structure to flash (14 bytes)
+            // Write state structure to flash.
             openknx.flash.write((uint8_t*)&state, sizeof(SegmentFlashState));
 
 #ifdef OPENKNX_DEBUG
@@ -229,10 +229,21 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
             cfg.savedLastWasEffect = (state.effectFlags & 0x02) != 0;
         }
 
-        // Restore last active scene number from reserved[0]
-        cfg.savedSceneNumber = state.reserved[0];
-        // Restore last active Effektmanager ID from reserved[1]
-        cfg.emController.setLastEmId(state.reserved[1]);
+        // Restore the exact CCT command separately from the rendered channels.
+        // This keeps the DPT 7.600 status meaningful across a reboot.
+        if (state.validFlags & 0x20)
+        {
+            cfg.savedCctKelvin = state.cctKelvin;
+            cfg.savedCctValid = state.cctKelvin != 0;
+        }
+        else
+        {
+            cfg.savedCctKelvin = 0;
+            cfg.savedCctValid = false;
+        }
+
+        cfg.savedSceneNumber = state.sceneNumber;
+        cfg.emController.setLastEmId(state.lastEmId);
 
         // Mark data as valid if ANY flag is set
         cfg.savedValid = (state.validFlags != 0);
@@ -353,6 +364,20 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             continue;
         }
 
+        // `configureEffects()` deliberately hid this segment until the delayed
+        // restore completes.  A missing/invalid flash state must reveal the
+        // ETS seed explicitly; a valid restore has already set its own render
+        // brightness before this helper runs.
+        const auto revealAfterRestore = [&]() {
+            if (!cfg.startupRestorePending) return;
+            if (!cfg.savedValid)
+            {
+                seg->setBrightness(seg->getMasterBrightness());
+                logInfoP("[Segment %d] No flash data - ETS startup state revealed", i);
+            }
+            cfg.startupRestorePending = false;
+        };
+
         // Mode is "Letzter Zustand" - try to restore from flash
         if (cfg.savedValid)
         {
@@ -368,6 +393,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 if (sceneRecalled)
                 {
                     if (cfg.savedPower == 0) seg->setBrightness(0);
+                    revealAfterRestore();
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] RESTORED Scene %d from Flash (power=%s)",
                              i, cfg.savedSceneNumber, cfg.savedPower ? "ON" : "OFF");
@@ -388,6 +414,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // a valid value here (flash field is always written / boot-seeded).
                 seg->setMasterBrightness(cfg.savedBrightness);
                 cfg.emController.restoreState(seg, _module->_emData);
+                revealAfterRestore();
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED EffektManager %d from Flash", i, cfg.emController.lastEmId());
                 restoredCount++;
@@ -461,7 +488,22 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             skippedCount++;
 #endif
         }
+
+        revealAfterRestore();
     }
+
+    // Status objects are volatile. Restore the exact DPT 7.600 CCT command
+    // after the segment state so a status read after reboot remains coherent.
+    const uint8_t channelBeforeCctStatus = _module->getChannelIndex();
+    for (size_t i = 0; i < segments.size(); ++i)
+    {
+        const auto& cfg = segments[i];
+        if (!cfg.savedCctValid || cfg.savedCctKelvin == 0) continue;
+        _module->setChannelIndex(static_cast<uint8_t>(i));
+        if (KoNEO_CCTState.valueNoSendCompare(cfg.savedCctKelvin, Dpt(7, 600)))
+            KoNEO_CCTState.objectWritten();
+    }
+    _module->setChannelIndex(channelBeforeCctStatus);
 
     // Trigger hardware update
     VirtualStrip* vstrip = _module->getVirtualStrip();
@@ -512,6 +554,8 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
 {
     if (!_module) return false;
 
+    memset(&state, 0, sizeof(SegmentFlashState));
+
     auto& segments = _module->getSegments();
     if (segmentIndex >= segments.size()) return false;
 
@@ -521,7 +565,6 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     if (!seg)
     {
         // No segment - save empty state
-        memset(&state, 0, sizeof(SegmentFlashState));
         return false;
     }
 
@@ -602,12 +645,15 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
         state.effectFlags = 0;
     }
 
-    // reserved[0] = last active scene number (0 = no scene)
-    state.reserved[0] = cfg.savedSceneNumber;
-    // reserved[1] = last active Effektmanager ID (0 = none)
+    state.sceneNumber = cfg.savedSceneNumber;
     cfg.emController.saveState();
-    state.reserved[1] = cfg.emController.lastEmId();
-    state.reserved[2] = 0;
+    state.lastEmId = cfg.emController.lastEmId();
+
+    if (cfg.savedCctValid && cfg.savedCctKelvin != 0)
+    {
+        state.cctKelvin = cfg.savedCctKelvin;
+        state.validFlags |= 0x20;
+    }
 
     return true;
 }
