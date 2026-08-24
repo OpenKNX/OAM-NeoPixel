@@ -2,6 +2,7 @@
 #include "NeoPixelModule.h"
 #include "OpenKNX.h"
 #include "knxprod.h"
+#include <cstring>
 
 // Include auto-generated effect parameter mappings (for loadSceneEffectParameters)
 #if defined(__has_include)
@@ -22,7 +23,8 @@ SceneManager::SceneManager(NeoPixelBusModule* module)
 uint8_t SceneManager::getSceneCount(uint8_t channelIndex)
 {
     uint16_t addr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_COUNT_OFFSET;
-    return (knx.paramByte(addr) & 0xF0) >> 4;
+    const uint8_t count = (knx.paramByte(addr) & 0xF0) >> 4;
+    return count > 10 ? 10 : count;
 }
 
 uint8_t SceneManager::readSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset)
@@ -138,10 +140,22 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
         uint16_t effectParamBase = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + SCENE_EFFECT_PARAM_OFFSET;
         for (uint8_t i = 0; i < paramCount && i < 10; i++)
         {
+            if (effect->getParameterType(i) == ParameterType::PARAM_STRING)
+            {
+                uint8_t* text = knx.paramData(NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize
+                                              + SCENE_DATA_START + sceneIndex * SCENE_SIZE + FIELD_EFFECT_TEXT);
+                if (text)
+                {
+                    std::memset(text, 0, EFFECT_TEXT_SIZE);
+                    std::strncpy(reinterpret_cast<char*>(text), segment->getConfig().effectText,
+                                 EFFECT_TEXT_SIZE - 1);
+                }
+                continue;
+            }
             uint32_t paramValue = effect->getParameter(segment, i);
             logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i), (unsigned long)paramValue);
             uint8_t* data = knx.paramData(effectParamBase + i);
-            if (data) *data = (uint8_t)(paramValue & 0xFF);
+            if (data) *data = static_cast<uint8_t>(paramValue > 255 ? 255 : paramValue);
         }
     }
 
@@ -230,13 +244,10 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
     _module->applyEffectToSegment(segment, effectType);
 
     // Apply primary color
-    segment->setPrimaryColor(primaryR, primaryG, primaryB, primaryWW);
-    // Note: CW channel - if supported by segment, set via extended API
-    // TODO: Add CW support to Segment::setPrimaryColor if needed
+    segment->setPrimaryColor(primaryR, primaryG, primaryB, primaryWW, primaryCW);
 
     // Apply secondary color
-    EffectConfig& config = segment->getConfig();
-    config.secondaryRGBW = ((uint32_t)secondaryR << 24) | ((uint32_t)secondaryG << 16) | ((uint32_t)secondaryB << 8) | secondaryWW;
+    segment->setSecondaryColor(secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW);
 
     // Apply brightness
     segment->setBrightness(brightness);

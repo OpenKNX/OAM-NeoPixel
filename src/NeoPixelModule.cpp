@@ -3564,9 +3564,19 @@ void NeoPixelBusModule::configureFromETS()
                         logInfoP("SPI Strip %d: All LEDs active (no skipping)", i);
                     }
 
-                    // Apply the configuration (prepares for init)
-                    phys->applyConfig();
-                    logInfoP("SPI Strip %d: Configuration applied successfully", i);
+                    // Apply the configuration before init.  A rejected SPI
+                    // layout must not remain in the manager and later claim
+                    // a resource while emitting the constructor's stale frame.
+                    if (!phys->applyConfig())
+                    {
+                        logErrorP("SPI Strip %d: Configuration rejected; strip disabled", i);
+                        mgr->removeStrip(phys);
+                        phys = nullptr;
+                    }
+                    else
+                    {
+                        logInfoP("SPI Strip %d: Configuration applied successfully", i);
+                    }
                 }
                 else
                 {
@@ -4193,18 +4203,12 @@ void NeoPixelBusModule::configureVirtualStripOrder()
         static_cast<uint8_t>(ParamNEO_VirtualStripPos7),
         static_cast<uint8_t>(ParamNEO_VirtualStripPos8)};
 
-    // Read the start positions (calculated by ETS JavaScript)
-    uint16_t startPositions[kMaxVirtualStripPositions] = {
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart1),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart2),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart3),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart4),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart5),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart6),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart7),
-        static_cast<uint16_t>(ParamNEO_VirtualStripStart8)};
+    // ETS start positions are display data.  Runtime offsets must be derived
+    // from the strips that were actually constructed; otherwise one disabled
+    // or failed strip turns a later valid strip into an overlap or gap.
+    uint32_t currentStart = 0;
 
-    // Build the virtual strip configuration based on positions
+    // Build a contiguous virtual-strip configuration based on positions.
     for (size_t pos = 0; pos < kMaxVirtualStripPositions; pos++)
     {
         uint8_t physStripIndex = positions[pos];
@@ -4221,17 +4225,20 @@ void NeoPixelBusModule::configureVirtualStripOrder()
         // Get the LED count for this physical strip
         if (physStripIndex < _physicalStrips.size() && _physicalStrips[physStripIndex])
         {
-            uint16_t ledCount = _physicalStrips[physStripIndex]->getLedCount();
-            uint16_t virtualStart = startPositions[pos];
+            const uint16_t ledCount = _physicalStrips[physStripIndex]->getLedCount();
+            if (currentStart + ledCount > UINT16_MAX)
+            {
+                logErrorP("Virtual strip order exceeds OFM's 65535 LED address space");
+                _virtualStripConfiguration.clear();
+                return;
+            }
+            _virtualStripConfiguration.emplace_back(physStripIndex,
+                                                     static_cast<uint16_t>(currentStart), ledCount);
 
-            // Convert from 1-based (ETS user-friendly) to 0-based (internal indexing)
-            // ETS shows "Start LED = 1" but internally we need offset 0
-            uint16_t virtualStartZeroBased = (virtualStart > 0) ? (virtualStart - 1) : 0;
-
-            _virtualStripConfiguration.emplace_back(physStripIndex, virtualStartZeroBased, ledCount);
-
-            logInfoP("Virtual position %d: Physical strip %d (%d LEDs) starts at virtual position %d (ETS: %d)",
-                     static_cast<int>(pos + 1), physStripIndex + 1, ledCount, virtualStartZeroBased, virtualStart);
+            logInfoP("Virtual position %d: Physical strip %d (%d LEDs) starts at runtime position %lu",
+                     static_cast<int>(pos + 1), physStripIndex + 1, ledCount,
+                     static_cast<unsigned long>(currentStart));
+            currentStart += ledCount;
         }
         else
         {
@@ -4471,9 +4478,9 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
         case LedProtocol::SK6812_RGBCCT: return "SK6812_RGBCCT";
         case LedProtocol::WS2814_RGBCCT: return "WS2814_RGBCCT";
         case LedProtocol::WS2805_RGBCCT: return "WS2805_RGBCCT";
+        case LedProtocol::SM16825: return "SM16825";
         default: return "UNKNOWN";
     }
-        case LedProtocol::SM16825: return "SM16825";
 }
 
 // ============================================================================
@@ -4960,24 +4967,37 @@ void NeoPixelBusModule::applySegmentConfiguration()
         // Apply 2D/3D matrix geometry
         if (config.matrixWidth > 1 && config.matrixHeight > 1)
         {
-            if (config.matrixDepth > 1)
-                config.segment->setGeometry(config.matrixWidth, config.matrixHeight,
-                                            config.matrixDepth, config.topology);
+            const bool geometryApplied = config.matrixDepth > 1
+                ? config.segment->setGeometry(config.matrixWidth, config.matrixHeight,
+                                              config.matrixDepth, config.topology)
+                : config.segment->setGeometry(config.matrixWidth, config.matrixHeight,
+                                              config.topology);
+            if (geometryApplied)
+            {
+                logInfoP("Segment %zu: Matrix %dx%dx%d topology=%d",
+                         i, config.matrixWidth, config.matrixHeight,
+                         config.matrixDepth > 1 ? config.matrixDepth : 1,
+                         (int)config.topology);
+            }
             else
-                config.segment->setGeometry(config.matrixWidth, config.matrixHeight,
-                                            config.topology);
-            logInfoP("Segment %zu: Matrix %dx%dx%d topology=%d",
-                     i, config.matrixWidth, config.matrixHeight,
-                     config.matrixDepth > 1 ? config.matrixDepth : 1,
-                     (int)config.topology);
+            {
+                logErrorP("Segment %zu: Invalid matrix geometry ignored", i);
+            }
         }
 
         // Apply Effektkette (virtual band)
         if (config.syncMode != 0 && config.virtualTotalLength > 0)
         {
-            config.segment->setVirtualBand(config.virtualTotalLength, config.virtualOffset);
-            logInfoP("Segment %zu: Effektkette mode=%d totalLen=%d offset=%d",
-                     i, config.syncMode, config.virtualTotalLength, config.virtualOffset);
+            if (config.segment->setVirtualBand(config.virtualTotalLength, config.virtualOffset))
+            {
+                logInfoP("Segment %zu: Effektkette mode=%d totalLen=%d offset=%d",
+                         i, config.syncMode, config.virtualTotalLength, config.virtualOffset);
+            }
+            else
+            {
+                logErrorP("Segment %zu: Invalid Effektkette band disabled", i);
+                config.syncMode = 0;
+            }
 
             if (config.distributedMatrixWidth > 0)
             {
