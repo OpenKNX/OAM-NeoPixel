@@ -3128,6 +3128,11 @@ void NeoPixelBusModule::configureFromETS()
         return true;
     };
 
+    auto releaseAutoPin = [&usedPins](uint8_t pin) {
+        const auto it = std::find(usedPins.begin(), usedPins.end(), pin);
+        if (it != usedPins.end()) usedPins.erase(it);
+    };
+
     // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
     _relayCount = std::min<uint8_t>(kMaxExternalRelays, ParamNEO_NEOExternalRelayCount);
     for (uint8_t i = 0; i < kRelayStorageSize; ++i)
@@ -3429,6 +3434,7 @@ void NeoPixelBusModule::configureFromETS()
         if (isSpiProtocol(proto))
         {
             uint8_t mosiGpio, sckGpio;
+            bool autoPinsReserved = false;
 
             // Check if manual GPIO configuration is enabled
             bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
@@ -3481,12 +3487,14 @@ void NeoPixelBusModule::configureFromETS()
                         mosiGpio = availablePins[nextPinIndex + 1];
 
                         // Check if both pins are free
-                        if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio))
+                        if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio) &&
+                            !isReservedPin(sckGpio) && !isReservedPin(mosiGpio))
                         {
                             foundPins = true;
                             // Mark pins as used immediately
                             usedPins.push_back(sckGpio);
                             usedPins.push_back(mosiGpio);
+                            autoPinsReserved = true;
                             nextPinIndex += 2; // Consume both pins
                             break;
                         }
@@ -3531,6 +3539,11 @@ void NeoPixelBusModule::configureFromETS()
             {
                 logErrorP("Strip %d: REFUSED - SPI GPIOs must be distinct and not collide with KNX/system pins (MOSI=%d, SCK=%d).",
                           i, mosiGpio, sckGpio);
+                if (autoPinsReserved)
+                {
+                    releaseAutoPin(mosiGpio);
+                    releaseAutoPin(sckGpio);
+                }
                 continue; // Skip this strip completely
             }
 
@@ -3572,6 +3585,11 @@ void NeoPixelBusModule::configureFromETS()
                         logErrorP("SPI Strip %d: Configuration rejected; strip disabled", i);
                         mgr->removeStrip(phys);
                         phys = nullptr;
+                        if (autoPinsReserved)
+                        {
+                            releaseAutoPin(mosiGpio);
+                            releaseAutoPin(sckGpio);
+                        }
                     }
                     else
                     {
@@ -3586,6 +3604,11 @@ void NeoPixelBusModule::configureFromETS()
             else
             {
                 logErrorP("SPI Strip %d: addSpiStrip returned nullptr!", i);
+                if (autoPinsReserved)
+                {
+                    releaseAutoPin(mosiGpio);
+                    releaseAutoPin(sckGpio);
+                }
             }
 
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
@@ -3596,6 +3619,7 @@ void NeoPixelBusModule::configureFromETS()
         {
             // 1-Wire protocols use Data GPIO
             uint8_t dataGpioPin;
+            bool autoPinReserved = false;
 
             // Check if manual GPIO configuration is enabled
             bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
@@ -3644,11 +3668,12 @@ void NeoPixelBusModule::configureFromETS()
                         dataGpioPin = availablePins[nextPinIndex];
 
                         // Check if pin is free
-                        if (!isPinUsed(dataGpioPin))
+                        if (!isPinUsed(dataGpioPin) && !isReservedPin(dataGpioPin))
                         {
                             foundPin = true;
                             // Mark pin as used immediately
                             usedPins.push_back(dataGpioPin);
+                            autoPinReserved = true;
                             nextPinIndex++; // Consume this pin
                             break;
                         }
@@ -3673,6 +3698,10 @@ void NeoPixelBusModule::configureFromETS()
             }
 
             phys = _neoPixel.addStrip(dataGpioPin, pixels, proto, order);
+            if (!phys && autoPinReserved)
+            {
+                releaseAutoPin(dataGpioPin);
+            }
             logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s",
                      i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
                      gpioManualConfig ? " (Manual)" : " (Auto)");
