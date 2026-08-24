@@ -3056,6 +3056,7 @@ void NeoPixelBusModule::configureFromETS()
 
     // Track used GPIO pins to avoid conflicts
     std::vector<uint8_t> usedPins;
+    std::vector<bool> invalidStripPins(NEOPIXEL_MAX_PHYSICAL_STRIPS, false);
 
 // Available GPIO pins in order (PIN1-PIN8)
 #if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
@@ -3104,6 +3105,28 @@ void NeoPixelBusModule::configureFromETS()
         if (pin == (uint8_t)SAVE_INTERRUPT_PIN) return true;
 #endif
         return false;
+    };
+
+    // Reserve every explicitly selected strip pin before creating a driver.
+    // A warning alone is unsafe: a later pinMode()/SPI begin would still take
+    // over the pin used by a relay, another strip, or the KNX subsystem.
+    auto reserveStripPin = [&](uint8_t stripIndex, uint8_t pin, const char* purpose) -> bool {
+        if (isReservedPin(pin))
+        {
+            logErrorP("Strip %d: %s GPIO %d is reserved by KNX/system hardware", stripIndex, purpose, pin);
+            invalidStripPins[stripIndex] = true;
+            return false;
+        }
+        if (isPinUsed(pin))
+        {
+            logErrorP("Strip %d: %s GPIO %d is already allocated", stripIndex, purpose, pin);
+            invalidStripPins[stripIndex] = true;
+            return false;
+        }
+
+        usedPins.push_back(pin);
+        logInfoP("Strip %d: Reserved %s GPIO %d", stripIndex, purpose, pin);
+        return true;
     };
 
     // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
@@ -3178,15 +3201,15 @@ void NeoPixelBusModule::configureFromETS()
                     continue;
                 }
 
-                if (isPinUsed(gpio))
+                if (isReservedPin(gpio) || isPinUsed(gpio))
                 {
-                    logErrorP("Relay %d: GPIO %d already in use", i + 1, gpio);
+                    logErrorP("Relay %d: GPIO %d is reserved or already in use; relay disabled", i + 1, gpio);
+                    _relayPins[i] = 255;
+                    continue;
                 }
-                else
-                {
-                    usedPins.push_back(gpio);
-                    logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
-                }
+
+                usedPins.push_back(gpio);
+                logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
 
                 pinMode(gpio, OUTPUT);
                 digitalWrite(gpio, LOW); // Default OFF for safety
@@ -3256,40 +3279,15 @@ void NeoPixelBusModule::configureFromETS()
                 uint8_t mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
                 uint8_t sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
 
-                if (!isPinUsed(sckGpio))
-                {
-                    usedPins.push_back(sckGpio);
-                    logInfoP("Strip %d: Pre-marked manual SCK GPIO %d as used", i, sckGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual SCK GPIO %d already marked as used!", i, sckGpio);
-                }
-
-                if (!isPinUsed(mosiGpio))
-                {
-                    usedPins.push_back(mosiGpio);
-                    logInfoP("Strip %d: Pre-marked manual MOSI GPIO %d as used", i, mosiGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual MOSI GPIO %d already marked as used!", i, mosiGpio);
-                }
+                reserveStripPin(i, sckGpio, "manual SCK");
+                reserveStripPin(i, mosiGpio, "manual MOSI");
             }
             else
             {
                 // 1-Wire protocols need 1 pin - read from manual GPIO parameter
                 const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
 
-                if (!isPinUsed(dataGpio))
-                {
-                    usedPins.push_back(dataGpio);
-                    logInfoP("Strip %d: Pre-marked manual Data GPIO %d as used", i, dataGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual Data GPIO %d already marked as used!", i, dataGpio);
-                }
+                reserveStripPin(i, dataGpio, "manual data");
             }
         }
         else
@@ -3311,15 +3309,7 @@ void NeoPixelBusModule::configureFromETS()
 
                     if (dataGpio != 255) // Valid GPIO
                     {
-                        if (!isPinUsed(dataGpio))
-                        {
-                            usedPins.push_back(dataGpio);
-                            logInfoP("Strip %d: Pre-marked hardware Data GPIO %d (port %d) as used", i, dataGpio, dataPortSelection);
-                        }
-                        else
-                        {
-                            logErrorP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortSelection);
-                        }
+                        reserveStripPin(i, dataGpio, "hardware data");
 
                         // For SPI protocols, also mark clock GPIO
                         if (isSpiProtocol(proto))
@@ -3332,15 +3322,7 @@ void NeoPixelBusModule::configureFromETS()
 
                                 if (sckGpio != 255) // Valid GPIO
                                 {
-                                    if (!isPinUsed(sckGpio))
-                                    {
-                                        usedPins.push_back(sckGpio);
-                                        logInfoP("Strip %d: Pre-marked hardware SCK GPIO %d (port %d) as used", i, sckGpio, clockPortSelection);
-                                    }
-                                    else
-                                    {
-                                        logErrorP("Strip %d: Hardware SCK GPIO %d (port %d) already marked as used!", i, sckGpio, clockPortSelection);
-                                    }
+                                    reserveStripPin(i, sckGpio, "hardware SCK");
                                 }
                             }
                         }
@@ -3408,6 +3390,12 @@ void NeoPixelBusModule::configureFromETS()
             continue;
         }
 
+        if (invalidStripPins[i])
+        {
+            logErrorP("Strip %d: Disabled because its GPIO allocation conflicts with another function", i);
+            continue;
+        }
+
         // Determine if this is an SPI protocol and get appropriate GPIO pins
         PhysicalStrip* phys = nullptr;
         if (isSpiProtocol(proto))
@@ -3446,9 +3434,7 @@ void NeoPixelBusModule::configureFromETS()
                     {
                         logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d, clock:%d->%d)",
                                   i, dataPortSelection, mosiGpio, clockPortSelection, sckGpio);
-                        // Fallback to automatic allocation
-                        mosiGpio = 19;
-                        sckGpio = 18;
+                        continue;
                     }
                     else
                     {
@@ -3483,12 +3469,7 @@ void NeoPixelBusModule::configureFromETS()
                     if (!foundPins)
                     {
                         logErrorP("Strip %d: No available GPIO pins for SPI strip!", i);
-                        // Fallback to last resort pins
-                        sckGpio = 18;
-                        mosiGpio = 19;
-                        // Mark fallback pins as used
-                        usedPins.push_back(sckGpio);
-                        usedPins.push_back(mosiGpio);
+                        continue;
                     }
                 }
             }
@@ -3518,9 +3499,9 @@ void NeoPixelBusModule::configureFromETS()
             auto mgr = _neoPixel.getManager();
 
             // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
-            if (isReservedPin(mosiGpio) || isReservedPin(sckGpio))
+            if (mosiGpio == sckGpio || isReservedPin(mosiGpio) || isReservedPin(sckGpio))
             {
-                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/system pins (MOSI=%d, SCK=%d). Strip disabled to protect KNX bus.",
+                logErrorP("Strip %d: REFUSED - SPI GPIOs must be distinct and not collide with KNX/system pins (MOSI=%d, SCK=%d).",
                           i, mosiGpio, sckGpio);
                 continue; // Skip this strip completely
             }
@@ -3607,8 +3588,7 @@ void NeoPixelBusModule::configureFromETS()
                     {
                         logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d)",
                                   i, dataPortSelection, dataGpioPin);
-                        // Fallback to automatic allocation
-                        dataGpioPin = dataGpio;
+                        continue;
                     }
                     else
                     {
@@ -3641,9 +3621,7 @@ void NeoPixelBusModule::configureFromETS()
                     if (!foundPin)
                     {
                         logErrorP("Strip %d: No available GPIO pins for 1-Wire strip!", i);
-                        // Fallback to ETS parameter
-                        dataGpioPin = dataGpio;
-                        usedPins.push_back(dataGpioPin);
+                        continue;
                     }
                 }
             }
