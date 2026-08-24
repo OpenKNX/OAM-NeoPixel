@@ -545,35 +545,35 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     }
     else
     {
-        uint8_t r, g, b;
+        uint8_t r = 0, g = 0, b = 0, ww = 0, cw = 0;
+        const uint16_t firstPixel = seg->isVirtualBand() ? seg->getVirtualOffset() : 0;
+        bool colorRead = false;
         VirtualStrip* vstrip = _module->getVirtualStrip();
         if (vstrip && vstrip->hasDualWhiteChannel())
         {
             // RGBCCT (5 bytes per LED)
-            uint8_t ww, cw;
-            seg->getPixel(0, r, g, b, ww, cw);
-            state.ww = ww;
-            state.cw = cw;
+            colorRead = seg->getPixel(firstPixel, r, g, b, ww, cw);
         }
         else if (vstrip && vstrip->hasWhiteChannel())
         {
             // RGBW (4 bytes per LED)
-            uint8_t w;
-            seg->getPixel(0, r, g, b, w);
-            state.ww = w;
-            state.cw = 0;
+            colorRead = seg->getPixel(firstPixel, r, g, b, ww);
         }
         else
         {
             // RGB (3 bytes per LED)
-            seg->getPixel(0, r, g, b);
-            state.ww = 0;
-            state.cw = 0;
+            colorRead = seg->getPixel(firstPixel, r, g, b);
         }
-        state.r = r;
-        state.g = g;
-        state.b = b;
-        state.validFlags |= 0x02;
+
+        if (colorRead)
+        {
+            state.r = r;
+            state.g = g;
+            state.b = b;
+            state.ww = ww;
+            state.cw = cw;
+            state.validFlags |= 0x02;
+        }
     }
 
     // Save brightness (always valid). For a RUNNING EM, getBrightness() is the cue-scaled render
