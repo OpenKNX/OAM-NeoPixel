@@ -1380,46 +1380,20 @@ function Generate-HardwareChangeResetCalculation {
     [int]$NumStrips = $MAX_PHYSICAL_STRIPS
   )
 
-  # Generate ParameterCalculation that resets all ports to Dummy ($GPIO_DUMMY_VALUE) on hardware change
-  # Prevents conflicts from different port value mappings across hardware variants
-
-  # LParameter: Hardware Selection
-  $lParams = "<LParameters>`n"
-  $lParams += "  <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
-  $lParams += "</LParameters>"
-
-  # RParameters: All Data + Clock ports
-  $rParams = "<RParameters>`n"
-  $rParams += "  <!-- Reset all Data ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
-
-  for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
-    $portParamId = ($SHARE_DATA_PORT_BASE_ID + $stripIdx).ToString().PadLeft(5, '0')
-    $refId = $portParamId + "01"
-    $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${portParamId}_R-%TT%${refId}`" AliasName=`"Strip${stripIdx}DataPort`" />`n"
-  }
-
-  $rParams += "  <!-- Reset external relay ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
-  $relaySharedPortParamIds = @('00131', '00132', '00135', '00136')
-  for ($relayIdx = 1; $relayIdx -le $MAX_EXTERNAL_RELAYS; $relayIdx++) {
-    $sharedPortParamId = $relaySharedPortParamIds[$relayIdx - 1]
-    $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${sharedPortParamId}_R-%TT%${sharedPortParamId}01`" AliasName=`"Relay${relayIdx}Port`" />`n"
-  }
-
-  $rParams += "  <!-- Reset all Clock ports to Dummy (${GPIO_DUMMY_VALUE}) -->`n"
-
-  for ($stripIdx = 1; $stripIdx -le $NumStrips; $stripIdx++) {
-    $clockPortParamId = ($SHARE_CLOCK_PORT_BASE_ID + $stripIdx).ToString().PadLeft(5, '0')
-    $clockRefId = $clockPortParamId + "01"
-    $rParams += "  <ParameterRefRef RefId=`"%AID%_UP-%TT%${clockPortParamId}_R-%TT%${clockRefId}`" AliasName=`"Strip${stripIdx}ClockPort`" />`n"
-  }
-
-  $rParams += "</RParameters>"
-
-  # ParameterCalculation
-  $calcXml = "<ParameterCalculation Id=`"%AID%_PC-%TT%00061`" Language=`"JavaScript`" Name=`"GPIOResetOnHWChange`" LRTransformationFunc=`"NEO_ResetAllPortsOnHardwareChange`" RLTransformationFunc=`"NEO_Empty`">`n"
-  $calcXml += $lParams + "`n"
-  $calcXml += $rParams + "`n"
-  $calcXml += "</ParameterCalculation>"
+  # RETIRED - deliberately emits nothing but a note.
+  #
+  # This used to emit a ParameterCalculation (GPIOResetOnHWChange) that wrote Dummy ($GPIO_DUMMY_VALUE)
+  # into every shared Data/Clock/Relay port parameter. Its only input was HardwareSelection and it never
+  # compared against a previous value, so it reset unconditionally on ANY evaluation. ETS re-evaluates
+  # parameter calculations when an application is updated -> every update wiped all LED and relay ports,
+  # while the visible per-hardware dropdowns still showed the old selection (the reset only touched the
+  # hidden Access="None" parameters the firmware actually reads).
+  #
+  # The range check now lives in NEO_CopyGPIOPortChecked, the single writer of those parameters: a port
+  # still valid for the selected hardware survives an update, one out of range falls back to Dummy.
+  $calcXml = "<!-- Retired: the per-hardware GPIO copy calculations range-check the port themselves`n"
+  $calcXml += "                 (NEO_CopyGPIOPortChecked). A blanket reset here cleared every port on each`n"
+  $calcXml += "                 ETS application update, because ETS re-evaluates calculations on update. -->"
 
   # Replace content using generic function
   return Replace-MarkerContent -FilePath $ShareXmlPath `
@@ -1438,9 +1412,10 @@ function Generate-RelayCopyCalculationsInShare {
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $calcId = ($RELAY_HW_CALC_BASE_ID + $hwIdx).ToString().PadLeft(5, '0')
     $relayParamId = ($RELAY_HW_PARAM_BASE_ID + $hwIdx).ToString().PadLeft(5, '0')
-    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay1_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay1_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyGPIOPortChecked`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
     $calcXml += "            </LParameters>`n"
     $calcXml += "            <RParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%00131_R-%TT%0013101`" AliasName=`"ShareGPIOPort`" />`n"
@@ -1452,9 +1427,10 @@ function Generate-RelayCopyCalculationsInShare {
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $calcId = ($RELAY_HW_CALC_BASE_ID + $RELAY_HW_ID_STRIDE + $hwIdx).ToString().PadLeft(5, '0')
     $relayParamId = ($RELAY_HW_PARAM_BASE_ID + $RELAY_HW_ID_STRIDE + $hwIdx).ToString().PadLeft(5, '0')
-    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay2_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay2_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyGPIOPortChecked`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
     $calcXml += "            </LParameters>`n"
     $calcXml += "            <RParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%00132_R-%TT%0013201`" AliasName=`"ShareGPIOPort`" />`n"
@@ -1466,9 +1442,10 @@ function Generate-RelayCopyCalculationsInShare {
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $calcId = ($RELAY_HW_CALC_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $relayParamId = ($RELAY_HW_PARAM_BASE_ID + (2 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
-    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay3_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay3_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyGPIOPortChecked`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
     $calcXml += "            </LParameters>`n"
     $calcXml += "            <RParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%00135_R-%TT%0013501`" AliasName=`"ShareGPIOPort`" />`n"
@@ -1480,9 +1457,10 @@ function Generate-RelayCopyCalculationsInShare {
   for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
     $calcId = ($RELAY_HW_CALC_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
     $relayParamId = ($RELAY_HW_PARAM_BASE_ID + (3 * $RELAY_HW_ID_STRIDE) + $hwIdx).ToString().PadLeft(5, '0')
-    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay4_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "          <ParameterCalculation Id=`"%AID%_PC-%TT%${calcId}`" Language=`"JavaScript`" Name=`"Relay4_CopyGPIOPort_HW$hwIdx`" LRTransformationFunc=`"NEO_CopyGPIOPortChecked`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "            <LParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%${relayParamId}_R-%TT%${relayParamId}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
     $calcXml += "            </LParameters>`n"
     $calcXml += "            <RParameters>`n"
     $calcXml += "              <ParameterRefRef RefId=`"%AID%_UP-%TT%00136_R-%TT%0013601`" AliasName=`"ShareGPIOPort`" />`n"
@@ -2137,28 +2115,32 @@ function Generate-ConflictDetectionJS {
     $jsRelayConflictAssignmentsOther += "        if (s == $relayIdx) output.Relay${relayNum}HasConflict = 1;`n"
   }
 
+  # Port count per hardware, keyed by the stored selection value (DEVICE_HW_ID). Data, clock and relay
+  # ports all enumerate 0..portCount-1 (plus Manual/Dummy), so a single table covers all three.
+  $portCountEntries = @()
+  foreach ($hwCfg in $HardwareConfigs) {
+    $portCountEntries += "$($hwCfg.DeviceIdBit): $($hwCfg.GPIOPorts.Count)"
+  }
+
   # Full JavaScript function with helper
   $fullJS = "`n// ============================================================================================================`n"
-  $fullJS += "// HELPER: Copy value from input to output`n"
+  $fullJS += "// HELPER: Copy a hardware-specific GPIO port selection into the shared (hidden) port parameter.`n"
+  $fullJS += "// The visible per-hardware parameters are union members on ONE byte, so every per-hardware copy`n"
+  $fullJS += "// calculation reads the same raw value and writes the same target. The range check therefore keys on`n"
+  $fullJS += "// the SELECTED hardware, not on the calculation's own hardware - all copies then agree and the`n"
+  $fullJS += "// evaluation order stops mattering.`n"
+  $fullJS += "// A value still valid for the selected board is preserved, so an ETS application update no longer`n"
+  $fullJS += "// clears the ports. Only a value out of range for the selected board falls back to Dummy.`n"
+  $fullJS += "// Replaces the former NEO_ResetAllPortsOnHardwareChange, which wrote Dummy unconditionally on every`n"
+  $fullJS += "// evaluation and therefore wiped every LED and relay port on each application update.`n"
   $fullJS += "// ============================================================================================================`n"
-  $fullJS += "function NEO_CopyValue(input, output, context) {`n"
-  $fullJS += "  output.ShareGPIOPort = input.TemplateGPIOPort;`n"
-  $fullJS += "}`n"
-  $fullJS += "`n"
-  $fullJS += "// ============================================================================================================`n"
-  $fullJS += "// HARDWARE WECHSEL: Reset alle Port-Zuweisungen auf Dummy ($GPIO_DUMMY_VALUE)`n"
-  $fullJS += "// Verhindert Konflikte durch unterschiedliche Port-Values bei verschiedenen Hardware-Varianten`n"
-  $fullJS += "// ============================================================================================================`n"
-  $fullJS += "function NEO_ResetAllPortsOnHardwareChange(input, output, context) {`n"
-  for ($i = 1; $i -le $NumStrips; $i++) {
-    $fullJS += "  output.Strip${i}DataPort = $GPIO_DUMMY_VALUE;`n"
-  }
-  for ($i = 1; $i -le $NumStrips; $i++) {
-    $fullJS += "  output.Strip${i}ClockPort = $GPIO_DUMMY_VALUE;`n"
-  }
-  for ($relayIdx = 1; $relayIdx -le $MAX_EXTERNAL_RELAYS; $relayIdx++) {
-    $fullJS += "  output.Relay${relayIdx}Port = $GPIO_DUMMY_VALUE;`n"
-  }
+  $fullJS += "var NEO_PortCountByHW = {" + ($portCountEntries -join ', ') + "}; // Auto-generated from platformio.hardware.ini`n"
+  $fullJS += "function NEO_CopyGPIOPortChecked(input, output, context) {`n"
+  $fullJS += "  var value = toInt(input.TemplateGPIOPort, $GPIO_DUMMY_VALUE);`n"
+  $fullJS += "  var portCount = NEO_PortCountByHW[toInt(input.HardwareSelection, -1)];`n"
+  $fullJS += "  var keep = (value === $GPIO_DUMMY_VALUE || value === $GPIO_DUMMY_VALUE_EMPTY ||`n"
+  $fullJS += "              value === $GPIO_MANUAL_VALUE || portCount === undefined || value < portCount);`n"
+  $fullJS += "  output.ShareGPIOPort = keep ? value : $GPIO_DUMMY_VALUE;`n"
   $fullJS += "}`n"
   $fullJS += "`n"
   $fullJS += "// ============================================================================================================`n"
@@ -2679,9 +2661,10 @@ function Generate-GPIOClockCopyCalculation {
 
     # Flat ParameterCalculation (NO Choose-wrapper!)
     $calcXml += "<!-- $hwName -->`n"
-    $calcXml += "<ParameterCalculation Id=`"%AID%_PC-%TT%9%C%${calcId}`" Language=`"JavaScript`" Name=`"Strip%C%_CopyClockGPIOPort_HW${hwIndex}`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "<ParameterCalculation Id=`"%AID%_PC-%TT%9%C%${calcId}`" Language=`"JavaScript`" Name=`"Strip%C%_CopyClockGPIOPort_HW${hwIndex}`" LRTransformationFunc=`"NEO_CopyGPIOPortChecked`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "  <LParameters>`n"
     $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${parameterIndexFormatted}_R-%TT%0%C%${parameterIndexFormatted}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
     $calcXml += "  </LParameters>`n"
     $calcXml += "  <RParameters>`n"
     $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01`" AliasName=`"ShareGPIOPort`" />`n"
@@ -2723,9 +2706,10 @@ function Generate-GPIOCopyCalculation {
 
     # Flat ParameterCalculation (NO Choose-wrapper!)
     $calcXml += "<!-- $hwName -->`n"
-    $calcXml += "<ParameterCalculation Id=`"%AID%_PC-%TT%9%C%${calcId}`" Language=`"JavaScript`" Name=`"Strip%C%_CopyGPIOPort_HW${hwIndex}`" LRTransformationFunc=`"NEO_CopyValue`" RLTransformationFunc=`"NEO_Empty`">`n"
+    $calcXml += "<ParameterCalculation Id=`"%AID%_PC-%TT%9%C%${calcId}`" Language=`"JavaScript`" Name=`"Strip%C%_CopyGPIOPort_HW${hwIndex}`" LRTransformationFunc=`"NEO_CopyGPIOPortChecked`" RLTransformationFunc=`"NEO_Empty`">`n"
     $calcXml += "  <LParameters>`n"
     $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0%C%${parameterIndexFormatted}_R-%TT%0%C%${parameterIndexFormatted}01`" AliasName=`"TemplateGPIOPort`" />`n"
+    $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-4000018_R-400001801`" AliasName=`"HardwareSelection`" />`n"
     $calcXml += "  </LParameters>`n"
     $calcXml += "  <RParameters>`n"
     $calcXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01`" AliasName=`"ShareGPIOPort`" />`n"

@@ -1521,8 +1521,7 @@ function Generate-EffectMappingCpp {
   }
 
   # Generate C++ switch cases
-  $currentYear = (Get-Date).Year
-  $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+  $currentYear = 2026   # fixed -> deterministic output (no per-build churn); bump when needed
   $cppLines = @()
 
   # Header comment (matching HardwareMappingData.h style)
@@ -1535,7 +1534,7 @@ function Generate-EffectMappingCpp {
   $cppLines += " * with the registration order in EffectPool.cpp and the enumeration in NeoPixel.share.xml."
   $cppLines += " *"
   $cppLines += " * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY"
-  $cppLines += " * @note Generated: $currentDateTime"
+  $cppLines += " * @note Auto-generated - do not edit by hand"
   $cppLines += " * @note Source: Build-EffectParameters.ps1"
   $cppLines += " *"
   $cppLines += " * @copyright Copyright (c) $currentYear OpenKNX (Licensed under GNU GPL v3.0)"
@@ -2865,8 +2864,7 @@ $DynamicContent                    $endMarker
 function Generate-CppMapping {
   param([array]$Effects)
 
-  $currentYear = (Get-Date).Year
-  $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+  $currentYear = 2026   # fixed -> deterministic output (no per-build churn); bump when needed
 
   $cpp = @()
   $cpp += '/**'
@@ -2878,7 +2876,7 @@ function Generate-CppMapping {
   $cpp += ' * generated from Effect header files and synchronized with NeoPixel.Effects.*.xml definitions.'
   $cpp += ' *'
   $cpp += ' * @warning AUTO-GENERATED FILE - DO NOT EDIT MANUALLY'
-  $cpp += " * @note Generated: $currentDateTime"
+  $cpp += ' * @note Auto-generated - do not edit by hand'
   $cpp += ' * @note Source: Build-EffectParameters.ps1'
   $cpp += ' *'
   $cpp += " * @copyright Copyright (c) $currentYear OpenKNX (Licensed under GNU GPL v3.0)"
@@ -3602,8 +3600,7 @@ function Generate-SceneCppMapping {
   # Generate loadSceneEffectParameters() C++ function
   # This reads effect params from computed scene offsets (generic, no per-scene switch)
 
-  $currentYear = (Get-Date).Year
-  $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+  $currentYear = 2026   # fixed -> deterministic output (no per-build churn); bump when needed
 
   $cpp = @()
   $cpp += ''
@@ -3618,7 +3615,7 @@ function Generate-SceneCppMapping {
   $cpp += ' * @param effectID Effect type ID (0-28)'
   $cpp += ' * @param channelIndex Channel/Segment index (0-15)'
   $cpp += ' * @param sceneIndex Scene index (0-14)'
-  $cpp += " * @note Auto-generated: $currentDateTime"
+  $cpp += ' * @note Auto-generated - do not edit by hand'
   $cpp += ' */'
   $cpp += 'inline void loadSceneEffectParameters(Effect* effect, Segment* segment, uint8_t effectID, uint8_t channelIndex, uint8_t sceneIndex)'
   $cpp += '{'

@@ -27,6 +27,9 @@ param(
     [switch]$Full,
 
     [Parameter(Mandatory=$false)]
+    [switch]$Mini,
+
+    [Parameter(Mandatory=$false)]
     [Alias("h")]
     [switch]$Help
 )
@@ -54,20 +57,28 @@ function OpenKNX_ShowLogo($AddCustomText = $null) {
 function Show-Help {
     OpenKNX_ShowLogo "Build Release Script"
     Write-Host "USAGE:" -ForegroundColor Yellow
-    Write-Host "  .\Build-Release.ps1 [-Release] [-Full] [-SkipFirmware] [-Clean]"
+    Write-Host "  .\Build-Release.ps1 [-Release] [-Mini|-Full] [-SkipFirmware] [-Clean]"
     Write-Host ""
     Write-Host "OPTIONS:" -ForegroundColor Yellow
     Write-Host "  -Release       Create release build (default: dev)"
+    Write-Host "  -Mini          Build ONLY the hardware kept on the desk (fast turnaround)"
     Write-Host "  -Full          Build ALL hardware variants (default: tested only)"
     Write-Host "  -SkipFirmware  Generate configs only, skip firmware compilation"
     Write-Host "  -Clean         Remove generated files and exit"
     Write-Host "  -Help, -h      Show this help"
+    Write-Host ""
+    Write-Host "TARGET SETS:" -ForegroundColor Yellow
+    Write-Host "  -Mini          KNeoPiX RP2350 + KNeoPiX ESP32S3 only (2 targets)"
+    Write-Host "  (default)      tested hardware (7 targets)"
+    Write-Host "  -Full          tested + untested + third-party (33 targets)"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\Build-Release.ps1              " -NoNewline -ForegroundColor White
     Write-Host "# Dev build (tested hardware)" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release     " -NoNewline -ForegroundColor White
     Write-Host "# Release build" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -Mini        " -NoNewline -ForegroundColor White
+    Write-Host "# Only the two boards on the desk" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
     Write-Host "# Include untested REG2 boards and third-party hardware" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release -Full" -NoNewline -ForegroundColor White
@@ -82,10 +93,10 @@ if ($Help) {
 }
 
 # Validate Mode parameter manually
-$validModes = @("Release", "SkipFirmware", "Clean", "Full", "")
+$validModes = @("Release", "SkipFirmware", "Clean", "Full", "Mini", "")
 if ($Mode -and $Mode -notin $validModes) {
     Write-Host ""
-    Write-Host "ERROR: Invalid mode '$Mode'. Valid values: Release, SkipFirmware, Clean, Full" -ForegroundColor Red
+    Write-Host "ERROR: Invalid mode '$Mode'. Valid values: Release, SkipFirmware, Clean, Full, Mini" -ForegroundColor Red
     Show-Help
     exit 1
 }
@@ -95,6 +106,15 @@ $isClean = ($Mode -eq "Clean") -or $Clean
 $isRelease = ($Mode -eq "Release") -or $Release
 $isSkipFirmware = ($Mode -eq "SkipFirmware") -or $SkipFirmware
 $isFull = ($Mode -eq "Full") -or $Full
+$isMini = ($Mode -eq "Mini") -or $Mini
+
+# Mini and Full select opposite ends of the target list - picking both is a typo,
+# and silently letting one win would produce a build the caller did not ask for.
+if ($isMini -and $isFull) {
+    Write-Host ""
+    Write-Host "ERROR: -Mini and -Full are mutually exclusive. Pick one." -ForegroundColor Red
+    exit 1
+}
 
 # Set product names, allows mapping of (devel) name in project to a more consistent name in release
 # $settings = scripts/OpenKNX-Build-Settings.ps1
@@ -177,6 +197,15 @@ if ($isClean) {
 # Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
 # ============================================================================
 
+# Mini Build Targets (the hardware physically on the desk)
+# Purpose: fast turnaround while developing - two boards, one RP2350 and one ESP32,
+# so both families stay covered. Not a shippable set: the ETS product generated
+# from it offers only these two hardware entries (HardwareListMode 'Dynamic').
+$miniTargets = @(
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    )
+
 # Standard Build Targets (tested hardware)
 $standardTargets = @(
     # OpenKNXiao KNeoPiX
@@ -241,11 +270,21 @@ $fullTargets = @(
 $HardwareListMode = 'Dynamic'
 
 # Generate dynamic GPIO templates before building
-# Collect exact hardware section names from all targets that will be built
-$allTargets = $standardTargets
-if ($isFull) {
+# Collect exact hardware section names from all targets that will be built.
+# One selection drives both the hardware filter and the build loop below - if the
+# two were computed separately they could drift and generate GPIO templates for
+# hardware that never gets built.
+if ($isMini) {
+    $allTargets = $miniTargets
+    $targetSetName = "mini targets (hardware on the desk)"
+} elseif ($isFull) {
     $allTargets = $standardTargets + $fullTargets
+    $targetSetName = "standard + full targets (all hardware)"
+} else {
+    $allTargets = $standardTargets
+    $targetSetName = "standard targets (tested hardware)"
 }
+Write-Host "Target set: $targetSetName - $($allTargets.Count) target(s)" -ForegroundColor Cyan
 
 # Extract unique hardware section names from targets
 $hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
@@ -271,7 +310,7 @@ if (!$?) {
 $buildParam = if ($isRelease) { "Release" } else { "Dev" }
 
 # Execute generic pre-build steps
-../OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
+lib/OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
 if (!$?) { exit 1 }
 
 # ============================================================================
@@ -281,28 +320,21 @@ if (!$?) { exit 1 }
 # OpenKNX Hardware builds (skip if SkipFirmware mode)
 if (-not $isSkipFirmware) {
     Write-Host "Building firmware for hardware variants..." -ForegroundColor Cyan
-    
-    # Build standard targets
-    Write-Host "Building standard targets (tested hardware)..." -ForegroundColor Cyan
-    foreach ($target in $standardTargets) {
-        ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
+    Write-Host "Building $targetSetName..." -ForegroundColor Cyan
+
+    # $allTargets was selected above - the same list the GPIO templates were generated for
+    foreach ($target in $allTargets) {
+        lib/OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
         if (!$?) { exit 1 }
     }
-    
-    # Build full targets if requested
-    if ($isFull) {
-        Write-Host "Building full targets (untested REG2 hardware)..." -ForegroundColor Cyan
-        foreach ($target in $fullTargets) {
-            ../OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
-            if (!$?) { exit 1 }
-        }
-    } else {
-        Write-Host "Skipping full targets (use -Full to build all)" -ForegroundColor Yellow
+
+    if (-not ($isMini -or $isFull)) {
+        Write-Host "Skipping full targets (use -Full to build all, -Mini for the desk hardware)" -ForegroundColor Yellow
     }
 } else {
     Write-Host "Skipping firmware builds (SkipFirmware mode)" -ForegroundColor Yellow
 }
 
 # Execute generic post-build steps
-../OGM-Common/scripts/setup/reusable/Build-Release-Postprocess.ps1 $buildParam
+lib/OGM-Common/scripts/setup/reusable/Build-Release-Postprocess.ps1 $buildParam
 if (!$?) { exit 1 }
