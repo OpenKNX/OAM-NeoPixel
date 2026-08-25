@@ -1575,7 +1575,15 @@ function Generate-EffectMappingCpp {
       $comment += " (DE: $($effect.NameDE))"
     }
 
+    # Guard the case with the same flag EffectPool.cpp uses, so a disabled effect does not
+    # leave an undefined reference behind. Solid is always present and needs no guard.
+    if ($methodName -ne "Solid") {
+      $cppLines += "#ifndef NEOPIXEL_DISABLE_$($methodName.ToUpper())"
+    }
     $cppLines += "        case PT_NEOEffectType::${enumName}: return EffectPool::get${methodName}(); $comment"
+    if ($methodName -ne "Solid") {
+      $cppLines += "#endif"
+    }
     $id++
   }
 
@@ -1610,7 +1618,13 @@ function Generate-EffectMappingCpp {
       $comment += " (DE: $($effect.NameDE))"
     }
 
+    if ($methodName -ne "Solid") {
+      $cppLines += "#ifndef NEOPIXEL_DISABLE_$($methodName.ToUpper())"
+    }
     $cppLines += "    if (effect == EffectPool::get${methodName}()) return static_cast<uint8_t>(PT_NEOEffectType::${enumName}); $comment"
+    if ($methodName -ne "Solid") {
+      $cppLines += "#endif"
+    }
     $id++
   }
 
