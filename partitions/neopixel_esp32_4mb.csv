@@ -1,0 +1,37 @@
+# NeoPixel-specific ESP32 4MB partition table
+# ---------------------------------------------------------------------------
+# Differs from lib/OGM-Common/data/partitions/esp32_4mb.csv in two points:
+#
+#   knx      64 KB -> 100 KB   knx_used is currently 69,692 B
+#                              (100 + MAIN_ParameterSize 43,678
+#                                   + MAIN_MaxKoNumber 1,851 * 14),
+#                              so 64 KB lets a large ETS project run
+#                              Memory::allocMemory dry -> fatalError during
+#                              the download. 100 KB matches KNX_FLASH_SIZE
+#                              (0x19000) on the RP targets.
+#   spiffs   1.19 MB -> 1.25 MB
+#                              paid for entirely out of the two unpartitioned
+#                              gaps the shared table left behind (64 KB at
+#                              0x290000 and 32 KB at 0x2B8000). app0 keeps its
+#                              full 2.50 MB.
+#
+# NOT an OTA-over-KNX enabler. A 4 MB chip has no room for a second app slot,
+# and without ota_1 esp_ota_get_next_update_partition() hands back the RUNNING
+# partition instead of failing. These boards are updated over USB. Enlarging
+# spiffs at the cost of app0 was considered and rejected: it would have bought
+# staging space for an apply step that cannot run here.
+#
+# CAUTION: the partition table lives at 0x8000 and is only ever written by a
+# USB factory flash, never by OTA. knx and nvs move, so the first flash with
+# this table starts with empty KNX data (ETS download required) and lost WiFi
+# credentials.
+# ---------------------------------------------------------------------------
+# Name,       Type, SubType, Offset,     Size
+# --------------------------------------------
+phy_init,     data, phy,     0x9000,     0x1000
+otadata,      data, ota,     0xE000,     0x2000
+app0,         app,  ota_0,   0x10000,    0x280000
+knx,          data, 0x99,    0x290000,   0x19000
+openknx,      data, 0x99,    0x2A9000,   0x8000
+nvs,          data, nvs,     0x2B1000,   0x10000
+spiffs,       data, spiffs,  0x2C1000,   0x13F000

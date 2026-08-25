@@ -3,11 +3,11 @@
 <KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <op:config href="NeoPixel.conf.xml" />
   <!-- Marketing-Text-Version (Allgemein-Seite). Pro Variante, in Sync mit ApplicationVersion unten halten. -->
-  <op:config name="%NEO_ProductVersion%" value="0.6" />
+  <op:config name="%NEO_ProductVersion%" value="0.7" />
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="1"
-    ApplicationVersion="0.6"
+    ApplicationVersion="0.8"
     ReplacesVersionsDownTo="0.1"
     ApplicationRevision="0"
     ProductName="OpenKNX NeoPixel"
@@ -90,9 +90,29 @@
     configTransferName="NeoPixel Effektmanager"
     KoOffset="1860">
   </op:define>
+
+  <op:define prefix="FTM" ModuleType="13" share="../lib/OFM-FileTransferModule/src/FileTransfer.share.xml" />
+
 <generate>
             <Dynamic>
-            <op:include href="../lib/OGM-Common/src/Common.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="BASE" />
+            <!-- BASE Main channel, rebuilt in place (position preserved) so composed modules can be injected
+                 below Common's own "Erweitert" content. Convention: a module whose share ships a
+                 ParameterBlock Name="ExtendedInject" is folded in via the op:include below -> the section
+                 appears iff that module is op:define'd (auto-conditional, pure XML).
+                 Unlike OAM-IP-Interface this KEEPS OpenKNXproducerGeneratedModules: NeoPixel registers
+                 ConfigTransfer (UCT), so the producer post-process completes that block, and it carries the
+                 per-module "Modul aktivieren" checkboxes (FTM = UP-0099813). -->
+            <Channel Id="%AID%_CH-BASE" Number="BASE" Name="BASE_Main" Text="OpenKNX" Icon="openknx" HelpContext="BASE-OpenKNX">
+              <!-- Allgemein (Basic) -->
+              <op:include href="../lib/OGM-Common/src/Common.share.xml" xpath="//ApplicationProgram/Dynamic/Channel/ParameterBlock[@Name='Basic']" prefix="BASE" />
+              <!-- Erweitert (Extended): Common's own content first, then the module injections -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Extended" Text="Erweitert" Icon="format-list-text" HelpContext="BASE-OpenKNX">
+                <op:include href="../lib/OGM-Common/src/Common.share.xml" xpath="//ApplicationProgram/Dynamic/Channel/ParameterBlock[@Name='Extended']/*" IsInner="true" prefix="BASE" />
+                <op:include href="../lib/OFM-FileTransferModule/src/FileTransfer.share.xml" xpath="//Dynamic/Channel/ParameterBlock/*" IsInner="true" prefix="FTM" />
+              </ParameterBlock>
+              <!-- Remaining BASE pages (Info LEDs, Module, Hilfe) in original order; Basic/Extended placed above -->
+              <op:include href="../lib/OGM-Common/src/Common.share.xml" xpath="//ApplicationProgram/Dynamic/Channel/*[not(self::ParameterBlock[@Name='Basic']) and not(self::ParameterBlock[@Name='Extended'])]" prefix="BASE" />
+            </Channel>
             <op:include href="../lib/OFM-Network/src/Network.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="NET" />
             <op:include href="../lib/OFM-ConfigTransfer/src/ConfigTransfer.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="UCT" />
             <op:include href="../lib/OFM-LogicModule/src/Logikmodul.share.xml" xpath="//ApplicationProgram/Dynamic/*" prefix="LOG" />

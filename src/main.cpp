@@ -11,8 +11,9 @@
     #include "test/test.h"
 #endif
 
+#include "FileTransferModule.h"
+
 #ifdef ARDUINO_ARCH_RP2040
-    #include "FileTransferModule.h"
     #ifndef OPENKNX_USB_EXCHANGE_IGNORE
         #include "UsbExchangeModule.h"
     #endif
@@ -41,8 +42,12 @@ bool core1_separate_stack = true;
 
 void setup()
 {
+  #ifdef FIRMWARE_REVISION
+    openknx.init(); // OGM-Common 7.5+: revision via FIRMWARE_REVISION flag, 0-arg init()
+#else
     const uint8_t firmwareRevision = 0;
     openknx.init(firmwareRevision);
+#endif
     openknx.addModule(2, openknxLightManagerModule);
 #ifdef NEOPIXEL_MODULE
     openknx.addModule(1, openknxNeoPixelModule);
@@ -58,8 +63,8 @@ void setup()
     #ifndef OPENKNX_USB_EXCHANGE_IGNORE
     openknx.addModule(8, openknxUsbExchangeModule);
     #endif
-    openknx.addModule(9, openknxFileTransferModule);
 #endif
+    openknx.addModule(9, openknxFileTransferModule);
 #ifdef NEOPIXEL_MODULE_TEST_ENV
     //    openknx.addModule(99, neoPixelModule);
 
