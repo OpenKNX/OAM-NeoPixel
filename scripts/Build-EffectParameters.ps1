@@ -175,6 +175,8 @@ $script:Config = @{
     ModuleEnd                 = "<!-- END AUTO-GENERATED: NEOEFF Module -->"
     EnumStart                 = "<!-- GENERATED_EFFECT_ENUMERATIONS_START -->"
     EnumEnd                   = "<!-- GENERATED_EFFECT_ENUMERATIONS_END -->"
+    EnumNo2DStart             = "<!-- GENERATED_EFFECT_ENUMERATIONS_NO2D_START -->"
+    EnumNo2DEnd               = "<!-- GENERATED_EFFECT_ENUMERATIONS_NO2D_END -->"
     SceneEffectEnumStart      = "<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_START -->"
     SceneEffectEnumEnd        = "<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_END -->"
     EffectPTStart             = "<!-- BEGIN AUTO-GENERATED: Effect ParameterTypes -->"
@@ -1690,6 +1692,23 @@ function Update-EffectTypeEnumerationInShareXml {
   # Write back to file
   Write-ScriptVerbose "Writing updated XML back to file"
   Set-Content -Path $ShareXmlPath -Value $newXmlContent -NoNewline -Encoding UTF8
+
+  # Second variant without the 2D effects, for hardware built with NEOPIXEL_DISABLE_2D.
+  # The list is already sorted with the 2D effects last, so dropping them keeps the order.
+  $no2dLines = @($enumXml -split "`n" | Where-Object { $_ -notmatch 'op:headerName="[A-Za-z]*2D"' })
+  $no2dXml = ($no2dLines -join "`n") -replace ' op:headerName="[^"]*"', ''
+
+  $startNo2D = $script:Config.Markers.EnumNo2DStart
+  $endNo2D = $script:Config.Markers.EnumNo2DEnd
+  if ($newXmlContent -match [regex]::Escape($startNo2D)) {
+    $patternNo2D = "(?s)($([regex]::Escape($startNo2D))).*?($([regex]::Escape($endNo2D)))"
+    $newXmlContent = $newXmlContent -replace $patternNo2D, "`$1`n$no2dXml`n                `$2"
+    Set-Content -Path $ShareXmlPath -Value $newXmlContent -NoNewline -Encoding UTF8
+    Write-Host "  * NEOEffectTypeNo2D: $($no2dLines.Count) of $(($enumXml -split "`n").Count) effects" -ForegroundColor Green
+  }
+  else {
+    Write-WarningMsg "Marker $startNo2D not found - the no-2D effect list was not generated"
+  }
 
   Write-Host "  ✓ NeoPixel.share.xml updated successfully!" -ForegroundColor Green
   Write-ScriptVerbose "Effect type enumeration update complete" "Green"
