@@ -3410,15 +3410,6 @@ void NeoPixelBusModule::configureFromETS()
         if (ledType != 99)
         {
             const ColorOrder defaultOrder = defaultColorOrderForLedType(ledType);
-            // WS2805 has a fixed RGBW1W2 wire order. Older products persisted
-            // GRBCCT here; both orders have five channels, so a channel-count
-            // check alone silently kept the red/green swap alive.
-            if ((ledType == 1 || ledType == 17) && order != ColorOrder::RGBCCT)
-            {
-                logWarningP("Strip %d: WS2805 requires RGBCCT, but ColorOrder=%s; using RGBCCT",
-                            i, getColorOrderName(order));
-                order = ColorOrder::RGBCCT;
-            }
             const uint8_t configuredChannels = ProtocolHelper::getChannelCount(order);
             const uint8_t expectedChannels = ProtocolHelper::getChannelCount(defaultOrder);
             if (configuredChannels != expectedChannels)
@@ -3433,7 +3424,8 @@ void NeoPixelBusModule::configureFromETS()
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
 
         // DEBUG: Log all parameters for this strip
-        logInfoP("Strip %d: LEDType=%d, pixels=%d (channelIndex=%d)", i, ledType, pixels, _channelIndex);
+        logInfoP("Strip %d: LEDType=%d, ColorOrder=%s, pixels=%d (channelIndex=%d)",
+                 i, ledType, getColorOrderName(order), pixels, _channelIndex);
         logInfoP("  -> Offset calculation: base=%d + (ch=%d * size=%d) = %d",
                  NEOSTRIP_ParamBlockOffset, _channelIndex, NEOSTRIP_ParamBlockSize,
                  NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize);
@@ -3811,6 +3803,10 @@ void NeoPixelBusModule::configureFromETS()
                          _gammaCorrectionEnabled ? "ON" : "OFF", _gammaValue,
                          _whiteBalanceEnabled ? "ON" : "OFF", _whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue);
             }
+
+            // ETS stores the supply voltage as an index; power reporting needs volts.
+            static constexpr uint8_t kStripVoltages[4] = {5, 12, 24, 5};
+            phys->setVoltage(kStripVoltages[(uint8_t)ParamNEOSTRIP_NEOVoltage & 0x03]);
 
             // Configure power limiting for this strip
             auto* cfg = phys->getConfig();
