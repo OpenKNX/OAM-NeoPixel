@@ -4632,6 +4632,60 @@ else {
   exit 1
 }
 
+# ============================================================================
+#  SPI LED-type list consistency check
+#
+#  The set of SPI LED types is spelled out once per UI decision in
+#  NeoPixel.Strip.templ.xml and once more in NeoPixel.script.js. The ETS
+#  parameter format has no named condition, so the repetition is unavoidable -
+#  but a copy that drifts would hide or show the wrong fields with no error.
+#  This compares the copies and warns; it never rewrites anything.
+# ============================================================================
+Write-Step "Checking SPI LED-type lists for consistency..."
+
+$spiLists = @()
+$stripTemplPath = Resolve-RepoPath "src/NeoPixel.Strip.templ.xml"
+$scriptJsPath   = Resolve-RepoPath "src/NeoPixel.script.js"
+
+if (Test-Path $stripTemplPath) {
+  $stripXml = Get-Content $stripTemplPath -Raw -Encoding UTF8
+  foreach ($m in [regex]::Matches($stripXml, '<when test="([0-9 ]{5,})"')) {
+    $values = @($m.Groups[1].Value -split '\s+' | Where-Object { $_ } | ForEach-Object { [int]$_ })
+    # Identify the SPI set by its two anchor types: APA102 (5) and SK9822 (6).
+    if (($values -contains 5) -and ($values -contains 6)) {
+      $spiLists += ,@{ Source = "Strip.templ.xml"; Values = ($values | Sort-Object) }
+    }
+  }
+}
+
+if (Test-Path $scriptJsPath) {
+  $js = Get-Content $scriptJsPath -Raw -Encoding UTF8
+  $jsBlock = [regex]::Match($js, 'var isSPI = \(([^;]+)\);', 'Singleline')
+  if ($jsBlock.Success) {
+    $values = @([regex]::Matches($jsBlock.Groups[1].Value, 'ledType === (\d+)') | ForEach-Object { [int]$_.Groups[1].Value })
+    if ($values.Count -gt 0) {
+      $spiLists += ,@{ Source = "script.js"; Values = ($values | Sort-Object) }
+    }
+  }
+}
+
+if ($spiLists.Count -lt 2) {
+  Write-WarningMsg "SPI list check: found only $($spiLists.Count) list(s) - expected at least 2. Check the patterns in this script."
+}
+else {
+  $reference = $spiLists[0].Values -join ' '
+  $mismatch  = @($spiLists | Where-Object { ($_.Values -join ' ') -ne $reference })
+  if ($mismatch.Count -eq 0) {
+    Write-Success "SPI LED-type lists consistent across $($spiLists.Count) location(s): $reference"
+  }
+  else {
+    Write-WarningMsg "SPI LED-type lists DIFFER - the UI will hide or show the wrong fields for some types:"
+    foreach ($entry in $spiLists) {
+      Write-Host "    $($entry.Source): $($entry.Values -join ' ')" -ForegroundColor Yellow
+    }
+  }
+}
+
 Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "  Multi-Hardware GPIO Template Generation Complete" -ForegroundColor Cyan
