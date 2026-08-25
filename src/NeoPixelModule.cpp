@@ -302,8 +302,14 @@ void NeoPixelBusModule::loop(bool configured)
     // Effektmanager: tick all active sequencers (no-op in local test mode — EMs are ETS-only)
     loopEffektManager();
 
-    // If global power is OFF, skip all effect processing and pixel updates
-    if (!_globalPowerOn) return;
+    // If global power is OFF, skip all effect processing and pixel updates. The data line
+    // would then stay silent, which makes some clone chips start their own demo pattern, so
+    // give the engine a tick to re-send on the strips configured for it.
+    if (!_globalPowerOn)
+    {
+        _neoPixel.loopOffRefresh();
+        return;
+    }
 
     // Process active DPT 3.007 start/stop dimming
     processActiveDimming();
@@ -3661,6 +3667,12 @@ void NeoPixelBusModule::configureFromETS()
                 // Per-strip channel swap. Was read into a module-wide field that nothing
                 // applied, so the last strip's value would have decided for all of them.
                 cfg->setChannelSwap((uint8_t)ParamNEOSTRIP_NEOSwap & 0x07);
+
+                // 0 keeps the chip profile; 1 and 2 force normal or inverted, which is the
+                // case for an inverting level shifter the profile cannot know about.
+                cfg->setSignalPolarity((uint8_t)ParamNEOSTRIP_NEOSignalPolarity & 0x03);
+                cfg->setOffRefresh((bool)ParamNEOSTRIP_NEOOffRefresh);
+                cfg->setWhiteMode((uint8_t)ParamNEOSTRIP_NEOWhiteMode & 0x01);
 
                 // Per-strip automatic brightness limiting. ETS offers these alongside the
                 // limit itself, but only the unused twin in StripConfiguration.cpp read them,

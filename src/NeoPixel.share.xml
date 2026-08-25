@@ -256,6 +256,21 @@
                   <Enumeration Text="WW and CW" Value="4" Id="%ENID%" op:headerName="WWandCW" />
                 </TypeRestriction>
               </ParameterType>
+              <!-- Signal-Polaritaet: Automatisch nimmt die Vorgabe des Chips (TM1814 & Co. sind invertiert) -->
+              <ParameterType Id="%AID%_PT-NEOSignalPolarity" Name="NEOSignalPolarity" op:headerExport="enum">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Text="Automatisch (Chip)" Value="0" Id="%ENID%" op:headerName="Auto" />
+                  <Enumeration Text="Normal"             Value="1" Id="%ENID%" op:headerName="Normal" />
+                  <Enumeration Text="Invertiert"         Value="2" Id="%ENID%" op:headerName="Inverted" />
+                </TypeRestriction>
+              </ParameterType>
+              <!-- Weiss-Berechnung fuer RGBW/RGBCCT-Streifen -->
+              <ParameterType Id="%AID%_PT-NEOWhiteMode" Name="NEOWhiteMode" op:headerExport="enum">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Text="Aus"                    Value="0" Id="%ENID%" op:headerName="Off" />
+                  <Enumeration Text="Genau (RGB reduzieren)" Value="1" Id="%ENID%" op:headerName="Accurate" />
+                </TypeRestriction>
+              </ParameterType>
               <!-- Timing -->
               <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
