@@ -10,6 +10,7 @@ release/*
 src/*.baggages
 compile_commands.json
 include/versions.h
+include/buildtime.h
 /.vscode/extensions.json
 /.vscode/settings.json
 **/*.html
