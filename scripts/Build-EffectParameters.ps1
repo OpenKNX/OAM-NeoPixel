@@ -4094,6 +4094,47 @@ try {
       $testResult = @{ Success = $true }
     }
 
+    # ── Overlapping-parameter guard ────────────────────────────────────
+    # The effect selectors deliberately put two parameters on one byte: the full list and
+    # the reduced one shown on hardware without the 2D effects. The producer reports every
+    # such pair as WARN 010, which would bury a genuine collision in the noise. Accept only
+    # the known pairs (X together with XNo2D) and name anything else.
+    if ($testResult.Output) {
+      $expectedBuckets = 0
+      $unexpectedBuckets = @()
+      $bucketMembers = @()
+      $inBucket = $false
+      foreach ($line in ($testResult.Output -split "`n")) {
+        if ($line -match 'found overlapping parameter bucket') {
+          if ($inBucket) {
+            if ($bucketMembers.Count -eq 2 -and (($bucketMembers[0] -eq "$($bucketMembers[1])No2D") -or ($bucketMembers[1] -eq "$($bucketMembers[0])No2D"))) { $expectedBuckets++ }
+            else { $unexpectedBuckets += ($bucketMembers -join ' + ') }
+          }
+          $inBucket = $true
+          $bucketMembers = @()
+        }
+        elseif ($inBucket -and $line -match 'Parameter\s+([A-Za-z0-9_]+),') { $bucketMembers += $Matches[1] }
+        elseif ($inBucket -and $line -notmatch 'WARN 010') {
+          if ($bucketMembers.Count -eq 2 -and (($bucketMembers[0] -eq "$($bucketMembers[1])No2D") -or ($bucketMembers[1] -eq "$($bucketMembers[0])No2D"))) { $expectedBuckets++ }
+          else { $unexpectedBuckets += ($bucketMembers -join ' + ') }
+          $inBucket = $false
+          $bucketMembers = @()
+        }
+      }
+      if ($inBucket) {
+        if ($bucketMembers.Count -eq 2 -and (($bucketMembers[0] -eq "$($bucketMembers[1])No2D") -or ($bucketMembers[1] -eq "$($bucketMembers[0])No2D"))) { $expectedBuckets++ }
+        else { $unexpectedBuckets += ($bucketMembers -join ' + ') }
+      }
+
+      if ($unexpectedBuckets.Count -gt 0) {
+        Write-Host "  [WARN] Overlapping parameters that are NOT an effect-selector pair - two parameters share a byte:" -ForegroundColor Yellow
+        foreach ($entry in ($unexpectedBuckets | Select-Object -Unique)) { Write-Host "    $entry" -ForegroundColor Yellow }
+      }
+      elseif ($expectedBuckets -gt 0) {
+        Write-Host "  [OK] Overlapping parameters: $expectedBuckets effect-selector pair(s), none unexpected" -ForegroundColor Green
+      }
+    }
+
     if ($testResult.Success) {
       Write-Host ""
       Write-Host ""
