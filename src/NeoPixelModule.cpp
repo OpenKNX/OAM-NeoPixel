@@ -37,6 +37,7 @@
 #include "NeoPixelFlashPersistence.h"
 #include "OpenKNX.h"
 #include "PhysicalStripConfig.h"
+#include "SerialTimingProfile.h"
 #include "colorhelper.h"
 #include "knxprod.h"
 #include <algorithm>
@@ -628,6 +629,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 #ifdef NEO_KoEmStart
     {
         int emChannel = NEO_KoCalcChannel(koNumber);
+        // NEO_KoCalcIndex is channel-relative (uses _channelIndex); point it at THIS KO's channel
+        // first, else a stale _channelIndex makes the range-check fail for every segment except the
+        // residual one -> EM control KOs for all other segments would be silently dropped.
+        if (emChannel >= 0) setChannelIndex(emChannel);
         int emKoIndex = (emChannel >= 0) ? NEO_KoCalcIndex(koNumber) : -1;
         // The EM control KOs (NEO_KoEmStart..NEO_KoEmRunState) live in the segment block.
         // Intercept ONLY those here; every other segment KO falls through to the dispatch below.
@@ -643,6 +648,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     #endif
                     return;
             }
+            // Guard: an out-of-range EM channel (invalid/stale KO index) must not index _segments[].
+            if ((size_t)emChannel >= _segments.size())
+                return;
             switch (emKoIndex)
             {
                 case NEO_KoEmStart:
@@ -1579,8 +1587,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                     if (effect == 0)
                     {
-                        // For Solid effect, also restore brightness
-                        targetSegment->setBrightness(cfg.savedBrightness);
+                        // For Solid effect, also restore brightness — scale the pre-global intent by
+                        // the live global factor, else a restore while globally dimmed overshoots to full.
+                        uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                        uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
+                        targetSegment->setMasterBrightness(eff);
+                        targetSegment->setBrightness(eff);
                     }
                     logInfoP("Segment %d: Applied saved color (R=%d G=%d B=%d W=%d) to effect %d",
                              channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, effect);
@@ -1755,7 +1767,13 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // Restore effect (including Solid effect type=0!)
                         applyEffectToSegment(targetSegment, cfg.savedEffectType);
                         _effectConfiguration->setupEffectConfiguration(targetSegment);
-                        targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
+                        // Restore the pre-global intent scaled by the live global factor (else overshoot).
+                        {
+                            uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                            uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
+                            targetSegment->setMasterBrightness(eff);
+                            targetSegment->setBrightness(eff);
+                        }
 
                         // For Solid effect (type=0), restore saved colors
                         if (cfg.savedEffectType == static_cast<uint8_t>(PT_NEOEffectType::Solid))
@@ -1772,8 +1790,14 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     }
                     else if (cfg.savedValid)
                     {
-                        // IMPORTANT: Set brightness FIRST before setPrimaryColor() to ensure pixels are visible
-                        targetSegment->setBrightness(cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness);
+                        // IMPORTANT: Set brightness FIRST before setPrimaryColor() to ensure pixels are visible.
+                        // Scale the pre-global intent by the live global factor (else restore overshoots).
+                        {
+                            uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                            uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
+                            targetSegment->setMasterBrightness(eff);
+                            targetSegment->setBrightness(eff);
+                        }
                         // savedWW is always 0 for RGB strips, contains actual value for RGBW strips
                         targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                     }
@@ -1781,7 +1805,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         if (targetSegment->getBrightness() == 0)
                         {
-                            targetSegment->setBrightness(255);
+                            // No saved brightness -> default to full, scaled by the live global factor.
+                            uint8_t eff = getGlobalBrightness(); // = 255 * global / 255
+                            targetSegment->setMasterBrightness(eff);
+                            targetSegment->setBrightness(eff);
                         }
                     }
 
@@ -1812,10 +1839,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = (primaryRGBW >> 16) & 0xFF;
                     cfg.savedB = (primaryRGBW >> 8) & 0xFF;
                     cfg.savedWW = (primaryRGBW) & 0xFF;
-                    // Save the MASTER (intent) brightness, not the render value: a power-suspended EM
-                    // is paused, so getBrightness() would be the frozen cue-scaled render (master*cue/255).
-                    // Persisting master keeps "Letzter Zustand" consistent for EM segments.
-                    cfg.savedBrightness = targetSegment->getMasterBrightness();
+                    // Do NOT snapshot getMasterBrightness() here: master already has the global factor
+                    // baked in (master = savedBrightness*global/255), while savedBrightness is the
+                    // pre-global intent kept current by the brightness pipeline. Overwriting it with the
+                    // scaled master would double-apply global on restore -> segment stuck dimmed.
                     cfg.savedValid = true;
 
                     // Update power state for flash persistence
@@ -2796,17 +2823,15 @@ int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
 // FunctionProperty: Handle ETS online functions (hardware detection)
 bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength)
 {
-    // ALWAYS log when called - even if wrong object/property
-    logDebugP("==> processFunctionProperty CALLED: ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
-    logDebugP("    Expected: ObjectIndex=%d, PropertyId=%d", NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID);
-
-    // Check if this is our hardware detection function property
+    // Not our hardware-detection object/property? Silently decline so another module can handle it
+    // (e.g. the FileTransfer server on ObjectIndex 159). Do NOT log here: FunctionProperty is hit at
+    // flood rate during an FTC upload, and a log PER FRAME stalls the blocking USB-CDC -> the loop
+    // misses its watchdog feed -> the KNeoPix reboots mid-upload (same class as the router's TP print
+    // storm). A non-matching FunctionProperty is normal dispatch, not an error.
     if (objectIndex != NEOPIXEL_FUNCTION_OBJECT_INDEX || propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
-    {
-        logErrorP("Hardware detection triggered from ETS with unexpected object/property (ObjectIndex: %d, PropertyId: %d). Expected %d/%d",
-                  objectIndex, propertyId, NEOPIXEL_FUNCTION_OBJECT_INDEX, NEOPIXEL_FUNCTION_PROPERTY_ID);
         return false;
-    }
+
+    logDebugP("==> processFunctionProperty (hardware detection): ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
 
 // Read hardware ID from compile-time define
 #ifdef DEVICE_HW_ID
@@ -3547,19 +3572,32 @@ void NeoPixelBusModule::configureFromETS()
             _totalLeds += pixels;
             _physicalStrips.push_back(phys);
 
-            // ETS "Timing" value -> target kHz. Order MUST match the NEOTiming enum
-            // (NeoPixel.share.xml) and the duplicate table in StripConfiguration.cpp. SPI: no-op.
+            // ETS "Timing": value 0 means "use the chip profile" and leaves the driver to
+            // resolve the protocol itself. Any other value is an expert bit-rate override
+            // that SCALES that profile, keeping the chip's pulse ratios.
+            // Order MUST match the NEOTiming enum (NeoPixel.share.xml) and the duplicate
+            // table in StripConfiguration.cpp. SPI strips ignore this.
             static const uint16_t timingFreqTable[16] = {
                 800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
             const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
-            const uint16_t freqKhz = timingFreqTable[timingSel];
-            // 3:7:6:4 ratio; only T1H matters on PIO (T1H_ns = 600000 / kHz)
-            const uint16_t t1h = (uint16_t)(600000UL / freqKhz);
-            const uint16_t t0h = (uint16_t)(t1h / 2);
-            const uint16_t t0l = (uint16_t)((uint32_t)t1h * 7 / 6);
-            const uint16_t t1l = (uint16_t)((uint32_t)t1h * 4 / 6);
-            if (phys->setCustomTiming(t0h, t0l, t1h, t1l, 0))
-                logInfoP("Strip %d: Timing = %u kHz (T1H=%u ns)", i, freqKhz, t1h);
+
+            if (timingSel == 0)
+            {
+                const SerialTiming::Profile prof = SerialTiming::profileFor(proto);
+                if (prof.t1h > 0)
+                    logInfoP("Strip %d: Timing = chip profile (T0H=%u ns, T1H=%u ns, latch=%u us)",
+                             i, prof.t0h, prof.t1h, (unsigned)prof.resetUs);
+            }
+            else
+            {
+                const uint16_t freqKhz = timingFreqTable[timingSel];
+                SerialTiming::Profile base = SerialTiming::profileFor(proto);
+                if (base.t1h == 0) base = SerialTiming::profileFor(LedProtocol::WS2812B);
+                const SerialTiming::Profile bent = SerialTiming::scaledTo(base, (uint32_t)freqKhz * 1000UL);
+                if (phys->setCustomTiming(bent.t0h, bent.t0l, bent.t1h, bent.t1l, bent.resetUs))
+                    logInfoP("Strip %d: Timing override = %u kHz (T0H=%u ns, T1H=%u ns)",
+                             i, freqKhz, bent.t0h, bent.t1h);
+            }
 
             // Configure color correction for this strip
             bool colorCalibMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
@@ -3618,6 +3656,25 @@ void NeoPixelBusModule::configureFromETS()
                 else if (powerMode == 0)
                 {
                     logInfoP("Strip %d: Power limit Disabled", i);
+                }
+
+                // Per-strip channel swap. Was read into a module-wide field that nothing
+                // applied, so the last strip's value would have decided for all of them.
+                cfg->setChannelSwap((uint8_t)ParamNEOSTRIP_NEOSwap & 0x07);
+
+                // Per-strip automatic brightness limiting. ETS offers these alongside the
+                // limit itself, but only the unused twin in StripConfiguration.cpp read them,
+                // so the values shown in ETS never reached the strip.
+                if (powerMode == 2 || powerMode == 3)
+                {
+                    uint8_t autoBrLimit = (uint8_t)ParamNEOSTRIP_NEOautoBrightnessLimit;
+                    uint8_t threshold = (uint8_t)ParamNEOSTRIP_NEOpowerLimitThreshold;
+                    uint8_t slewRate = (uint8_t)ParamNEOSTRIP_NEOablSlewRatePercent;
+                    cfg->setAutoBrightnessLimit(autoBrLimit);
+                    cfg->setPowerLimitThreshold(threshold);
+                    cfg->setAblSlewRate(slewRate);
+                    logInfoP("Strip %d: ABL limit %d%%, threshold %d%%, slew %d%%",
+                             i, autoBrLimit, threshold, slewRate);
                 }
             }
 
@@ -4228,19 +4285,6 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
     // Configure color correction parameters on VirtualStrip
     // (These are applied during rendering, NOT in-place!)
     // NOTE: setColorCorrection removed from VirtualStrip - color correction deactivated for now
-    /*
-    if (_virtualStrip) {
-      _virtualStrip->setColorCorrection(
-        _gammaCorrectionEnabled, _gammaValue,
-        _whiteBalanceEnabled, _whiteBalanceRed, _whiteBalanceGreen, _whiteBalanceBlue,
-        _swapMode
-      );
-      logInfoP("VirtualStrip color correction configured: Gamma=%s(%.1f), WB=%s, Swap=%d",
-               _gammaCorrectionEnabled ? "ON" : "OFF", _gammaValue,
-               _whiteBalanceEnabled ? "ON" : "OFF",
-               _swapMode);
-    }
-    */
 
     // Create segments after virtual strip is ready
     if (_numberOfSegments > 0)
@@ -4557,14 +4601,9 @@ void NeoPixelBusModule::configureStripOptions()
 // Map ETS swap parameter to swap mode
 uint8_t NeoPixelBusModule::mapSwapMode(uint8_t paramValue)
 {
-    // 3-bit parameter: 0-7 possible values
-    // 0 = No swap
-    // 1 = R<->G swap
-    // 2 = R<->B swap
-    // 3 = G<->B swap
-    // 4 = R->B->G->R rotate
-    // 5 = R->G->B->R rotate
-    // 6-7 = Reserved for future use
+    // Values follow the NEOSwap enum in NeoPixel.share.xml:
+    // 0 = none, 1 = W and B, 2 = W and G, 3 = W and R, 4 = WW and CW.
+    // Applied per strip via PhysicalStripConfig::setChannelSwap().
     return paramValue & 0x07; // Mask to ensure 3-bit value
 }
 
@@ -4906,7 +4945,7 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
             HclPixelTransform::kelvinToRGB(state.kelvin, kelvinR, kelvinG, kelvinB);
         }
 
-        logInfoP("HCL master %u: kelvin=%u brightness=%u blocked=%d kelvinRgb=(%u,%u,%u)",
+        logDebugP("HCL master %u: kelvin=%u brightness=%u blocked=%d kelvinRgb=(%u,%u,%u)",
                  static_cast<unsigned>(index + 1),
                  state.kelvin,
                  state.brightness,
@@ -6139,14 +6178,13 @@ void NeoPixelBusModule::applySegmentDefaultState(size_t segmentIndex)
     uint8_t w = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupW);
     cfg.segment->setPrimaryColor(r, g, b, w);
 
-    // Start brightness seeds the Segment (master) layer of the cascade — a full reset to ETS
-    // values, so any live dim is intentionally cleared in this mode.
+    // Start brightness seeds the pre-global intent; render then respects the live global factor
+    // (like the boot path / applyGlobalBrightness), else the segment would ignore an active global dim.
     uint8_t startupBrightness = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupBrightness);
-    cfg.segment->setMasterBrightness(startupBrightness);
-    cfg.segment->setBrightness(startupBrightness);
-    // Keep the pre-global baseline in sync (mirror the boot seed at EffectConfiguration.cpp:51) so a
-    // later global-brightness recompute / power-restore does not revert to a stale dimmed value.
-    cfg.savedBrightness = startupBrightness;
+    cfg.savedBrightness = startupBrightness; // pre-global baseline
+    uint8_t effectiveBrightness = (uint8_t)((uint16_t)startupBrightness * getGlobalBrightness() / 255);
+    cfg.segment->setMasterBrightness(effectiveBrightness);
+    cfg.segment->setBrightness(effectiveBrightness);
 
     cfg.savedEffectType = effectType;
     cfg.savedEffectValid = true;

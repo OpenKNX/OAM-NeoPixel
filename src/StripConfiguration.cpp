@@ -1,4 +1,5 @@
 #include "StripConfiguration.h"
+#include "SerialTimingProfile.h"
 #include "HardwareMappingLogic.h"
 #include "NeoPixelModule.h"
 #include "OpenKNX.h"
@@ -518,19 +519,22 @@ void StripConfiguration::configureFromETS()
             _module->_totalLeds += pixels;
             _module->_physicalStrips.push_back(phys);
 
-            // ETS "Timing" value -> target kHz. Order MUST match the NEOTiming enum
-            // (NeoPixel.share.xml) and the duplicate table in NeoPixelModule.cpp. SPI: no-op.
+            // Kept in step with the active twin in NeoPixelModule.cpp: value 0 means "use
+            // the chip profile", any other value scales that profile to the chosen bit rate.
             static const uint16_t timingFreqTable[16] = {
                 800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
             const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
-            const uint16_t freqKhz = timingFreqTable[timingSel];
-            // 3:7:6:4 ratio; only T1H matters on PIO (T1H_ns = 600000 / kHz)
-            const uint16_t t1h = (uint16_t)(600000UL / freqKhz);
-            const uint16_t t0h = (uint16_t)(t1h / 2);
-            const uint16_t t0l = (uint16_t)((uint32_t)t1h * 7 / 6);
-            const uint16_t t1l = (uint16_t)((uint32_t)t1h * 4 / 6);
-            if (phys->setCustomTiming(t0h, t0l, t1h, t1l, 0))
-                logInfoP("Strip %d: Timing = %u kHz (T1H=%u ns)", i, freqKhz, t1h);
+
+            if (timingSel != 0)
+            {
+                const uint16_t freqKhz = timingFreqTable[timingSel];
+                SerialTiming::Profile base = SerialTiming::profileFor(proto);
+                if (base.t1h == 0) base = SerialTiming::profileFor(LedProtocol::WS2812B);
+                const SerialTiming::Profile bent = SerialTiming::scaledTo(base, (uint32_t)freqKhz * 1000UL);
+                if (phys->setCustomTiming(bent.t0h, bent.t0l, bent.t1h, bent.t1l, bent.resetUs))
+                    logInfoP("Strip %d: Timing override = %u kHz (T0H=%u ns, T1H=%u ns)",
+                             i, freqKhz, bent.t0h, bent.t1h);
+            }
 
             // Configure color correction for this strip (only if Master-Checkbox is ON)
             bool colorCalibrationMaster = (bool)ParamNEOSTRIP_NEOColorCalibrationMaster;
@@ -641,20 +645,20 @@ LedProtocol StripConfiguration::mapProtocol(uint8_t p)
         case 8: return LedProtocol::SK6812;         // SK6812/WS2814 (RGBW)
         case 9: return LedProtocol::TM1814;         // TM1814
         case 10: return LedProtocol::WS2811;        // WS2812_400kHz (mapped to WS2811)
-        case 11: return LedProtocol::WS2811;        // TM1829 (mapped to WS2811)
-        case 12: return LedProtocol::WS2812B;       // UCS8903 (mapped to WS2812B)
-        case 13: return LedProtocol::WS2811;        // APA106/PL9823 (mapped to WS2811)
-        case 14: return LedProtocol::TM1814;        // TM1914 (mapped to TM1814)
-        case 15: return LedProtocol::WS2812B;       // FW1906 (mapped to WS2812B)
-        case 16: return LedProtocol::SK6812;        // UCS8904 (RGBW, mapped to SK6812)
+        case 11: return LedProtocol::TM1829;        // TM1829
+        case 12: return LedProtocol::UCS8903;       // UCS8903 (16 bit/channel)
+        case 13: return LedProtocol::APA106;        // APA106/PL9823
+        case 14: return LedProtocol::TM1914;        // TM1914
+        case 15: return LedProtocol::FW1906;        // FW1906 (6 channels)
+        case 16: return LedProtocol::UCS8904;       // UCS8904 (RGBW, 16 bit/channel)
         case 17: return LedProtocol::WS2805_RGBCCT; // WS2805_RGBCW (same as RGBCCT)
-        case 18: return LedProtocol::WS2805_RGBCCT; // SM16825 (mapped to WS2805_RGBCCT)
+        case 18: return LedProtocol::SM16825;       // SM16825 (5ch, 16 bit/channel)
         case 19: return LedProtocol::WS2811;        // WS2811_WHITE (single channel, mapped to WS2811)
         case 20: return LedProtocol::WS2812B;       // WS281x_WWA (warm/cool white, mapped to WS2812B)
         case 21: return LedProtocol::WS2801;        // WS2801
         case 22: return LedProtocol::LPD8806;       // LPD8806
-        case 23: return LedProtocol::LPD8806;       // LPD6803 (mapped to LPD8806)
-        case 24: return LedProtocol::APA102;        // P9813 (mapped to APA102)
+        case 23: return LedProtocol::LPD6803;       // LPD6803
+        case 24: return LedProtocol::P9813;         // P9813
         case 25: return LedProtocol::APA102_CLONE;  // APA102-Clone
         case 30: return LedProtocol::SK6812_RGBCCT; // SK6812 RGBCCT (5ch)
         case 31: return LedProtocol::WS2814_RGBCCT; // WS2814 RGBCCT (5ch)

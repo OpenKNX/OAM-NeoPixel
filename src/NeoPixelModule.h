@@ -196,7 +196,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     NeoPixelBusModule();
     ~NeoPixelBusModule();
 
-    const std::string name() override { return "OpenKNX NeoPixel"; }
+    const std::string name() override { return "NeoPixel"; }
     const std::string version() override { return MODULE_NeoPixel_Version; }
 
     void setup(bool configured) override;

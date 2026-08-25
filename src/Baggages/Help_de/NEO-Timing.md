@@ -1,36 +1,65 @@
-# Timing (Bitrate)
+# Timing
 
-Stellt die **Bitrate** der Datenübertragung zum LED-Streifen ein — also wie schnell die einzelnen Bits gesendet werden. Die Auswahl zeigt direkt die Frequenz in **kHz**.
+Bestimmt, welche **Bitzeiten** zum LED-Streifen gesendet werden.
 
-> **Wichtig:** Das ist **Signal-Feintuning, keine Chip-Auswahl.** Den LED-Chip wählst du oben bei **„LED Typ"**. Dieses Feld korrigiert nur die *Geschwindigkeit* des Signals.
+> **Wichtig:** Das ist **Signal-Feintuning, keine Chip-Auswahl.** Den LED-Chip wählst du oben bei **„LED Typ"**. Dieses Feld verändert nur die Geschwindigkeit des Signals.
 
-## Standard: 800 kHz
+## Standard: „800 kHz (Standard)" = Chip-Profil
 
-**WS2812B, SK6812, WS2813, WS2815** und die allermeisten 1-Wire-LEDs arbeiten mit **800 kHz**. Läuft dein Streifen sauber → **auf 800 lassen.**
+Auf diesem Wert benutzt die Firmware das **Timing-Profil des gewählten LED-Chips** — die Pulsbreiten aus dem Datenblatt, nicht einfach eine Frequenz. Für SK6812 sind das andere Werte als für WS2811 oder TM1814, auch wenn beide „800 kHz" heißen.
 
-## Wann herunter (langsamer)?
+**Läuft dein Streifen sauber → auf diesem Wert lassen.** Das ist die einzige Einstellung, bei der alle vier Flanken innerhalb der Chip-Spezifikation liegen.
 
-Niedrigere Werte geben dem Signal mehr Zeit — hilft bei:
+## Alle anderen Werte sind ein Experten-Override
 
-- **schwachem/verschliffenem Signal** (lange oder dünne Leitungen, Verluste über Pegelwandler)
+Ein anderer Wert **streckt oder staucht das Chip-Profil** auf die gewählte Bitrate. Die Pulsverhältnisse bleiben erhalten, die absoluten Zeiten wandern mit.
+
+Das hat einen Preis: bei niedrigen Werten wird auch die **1-Bit-Hochzeit** länger und verlässt irgendwann das Fenster des Chips. Bei SK6812 (Maximum 750 ns) sieht das so aus:
+
+| Einstellung | tatsächlich | 1-Bit-Hochzeit |
+|---|---|---|
+| Chip-Profil | 806 kHz | 800 ns |
+| 790 kHz | 790 kHz | 799 ns |
+| 780 kHz | 781 kHz | 840 ns |
+| 750 kHz | 750 kHz | 853 ns |
+| 640 kHz | 641 kHz | 1000 ns |
+
+In der Praxis vertragen die meisten Chips das, weil sie 0 und 1 über eine Schwelle unterscheiden — aber es ist außerhalb der Spezifikation, und du solltest wissen, dass du sie verlässt.
+
+## Wann herunter?
+
+Niedrigere Werte geben dem Signal mehr Zeit — das hilft bei:
+
+- **schwachem oder verschliffenem Signal** (lange oder dünne Leitungen, schwache Pegelwandler)
 - **langen LED-Ketten**
-- **billigen Clones**, die bei 800 kHz flackern oder Farben verdrehen
+- **billigen Clones**, die beim Chip-Profil flackern oder Farben verdrehen
 
-Der Bereich **750–790 kHz** ist bewusst in **5-kHz-Schritten** fein abgestuft — hier findest du für zickige Clones den sauberen Punkt (oft ~770–780 kHz).
+## Wann herauf?
 
-## Wann herauf (schneller)?
-
-Höhere Werte (**840–960 kHz**) nur für Chips, die **crispere/schnellere Flanken** bevorzugen — z. B. **WS2812C/D** (Onboard-LEDs), oft ~960 kHz.
+Höhere Werte (**840–960 kHz**) nur für Chips, die schnellere Flanken bevorzugen — etwa **WS2812C/D** als Onboard-LED.
 
 ## So findest du den richtigen Wert
 
-1. Mit **800 kHz** starten.
-2. Flackert es, oder sind Farben falsch (typisch bei Clones)? → in **5-kHz-Schritten herunter** (790, 785, 780, …), bis Weiß ruhig **und** Rot=Rot ist.
-3. Nach oben nur, wenn 800 zu langsam wirkt (selten).
+1. Mit dem **Chip-Profil** starten.
+2. Flackert es, oder sind Farben falsch? Schrittweise heruntergehen, bis Weiß ruhig steht **und** Rot wirklich Rot ist.
+3. Nach oben nur, wenn das Chip-Profil zu langsam wirkt — das ist selten.
 
 Mehrere Streifen dürfen unterschiedliche Werte haben.
 
+## Was wirklich anliegt, kannst du nachsehen
+
+In der Konsole zeigt
+
+```
+neo phys timing <Nr> info
+```
+
+die **tatsächlich erzeugte** Wellenform: T0H, T0L, T1H, T1L, Bitperiode, Latch-Zeit, Polarität und den Taktteiler. Nicht den eingestellten Wunsch, sondern das, was auf der Leitung liegt.
+
+Das ist wichtig, weil die Beschriftung nur ein Zielwert ist. Die Hardware kann nicht jede Frequenz exakt treffen, und einige Nachbarwerte landen auf demselben Signal — **770 und 775 kHz** ergeben dasselbe, ebenso **780 und 785 kHz**. Wenn ein Schritt nichts ändert, steht dort die Erklärung.
+
 ## Hinweise
 
-- **640/720 kHz** sind Notnägel für sehr schwache Signale — **nicht mit WS2811 (400 kHz) verwechseln**, das ist ein eigener „LED Typ", kein Timing.
-- Dieses Feld gilt **nur für 1-Wire-LEDs** (WS2812/SK6812/…). **SPI-LEDs** (APA102, SK9822, WS2801, LPD8806, LPD6803, P9813) werden über ihre eigene **Clock-Leitung** getaktet — dort erscheint stattdessen der Parameter **„SPI Clock"**, und dieses Timing-Feld wird ausgeblendet.
+- **640 und 720 kHz** sind Notnägel für sehr schwache Signale.
+- **WS2811** läuft in dieser Firmware mit **800 kHz**, wie bei WLED. Die alte 400-kHz-Betriebsart wird nicht angeboten; sie ist über die Konsole erreichbar (`neo phys timing <Nr> 400`).
+- Dieses Feld gilt **nur für 1-Wire-LEDs** (WS2812, SK6812 und verwandte). **SPI-LEDs** (APA102, SK9822, WS2801, LPD8806, LPD6803, P9813) takten über ihre eigene Clock-Leitung — dort erscheint stattdessen **„SPI Clock"**, und dieses Feld wird ausgeblendet.
