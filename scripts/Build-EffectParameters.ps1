@@ -1079,7 +1079,10 @@ function Test-Is2DEffect {
   )
 
   $baseName = if ($NameDE) { $NameDE } elseif ($NameEN) { $NameEN } else { $ClassName }
+  # A class name ending in 2D is the reliable marker: the display name may not carry it at all
+  # (TRON, Starfield Warp, Plasma Nebula, UFO Swarm), and the token check below would miss those.
   return ($baseName -match '(?<![A-Za-z0-9])2D(?![A-Za-z0-9])' -or
+    $ClassName -match '2D(Effect)?$' -or
     $ClassName -match '(?<![A-Za-z0-9])2D(?![A-Za-z0-9])')
 }
 
