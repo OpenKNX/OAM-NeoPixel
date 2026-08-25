@@ -197,6 +197,33 @@
                 <Enumeration Text="Effektmanager 16 starten" Value="215" Id="%AID%_PT-NEOSceneEffectType_EN-215"/>
               </TypeRestriction>
               </ParameterType>
+              <!-- AUTO-GENERATED: Scene Effect Enumeration without the 2D effects - DO NOT EDIT MANUALLY -->
+              <!-- Shown instead of NEOSceneEffectType on hardware built with NEOPIXEL_DISABLE_2D.
+                   Same values, so a stored scene keeps its effect across a hardware change. -->
+              <ParameterType Id="%AID%_PT-NEOSceneEffectTypeNo2D" Name="NEOSceneEffectTypeNo2D">
+              <TypeRestriction Base="Value" SizeInBit="8">
+                <!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_START -->
+                <Enumeration Text="Solid" Value="0" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-00"/>
+                <!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_END -->
+                <Enumeration Text="Effektmanager 1 starten" Value="200" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-200"/>
+                <Enumeration Text="Effektmanager 2 starten" Value="201" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-201"/>
+                <Enumeration Text="Effektmanager 3 starten" Value="202" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-202"/>
+                <Enumeration Text="Effektmanager 4 starten" Value="203" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-203"/>
+                <Enumeration Text="Effektmanager 5 starten" Value="204" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-204"/>
+                <Enumeration Text="Effektmanager 6 starten" Value="205" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-205"/>
+                <Enumeration Text="Effektmanager 7 starten" Value="206" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-206"/>
+                <Enumeration Text="Effektmanager 8 starten" Value="207" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-207"/>
+                <Enumeration Text="Effektmanager 9 starten" Value="208" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-208"/>
+                <Enumeration Text="Effektmanager 10 starten" Value="209" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-209"/>
+                <Enumeration Text="Effektmanager 11 starten" Value="210" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-210"/>
+                <Enumeration Text="Effektmanager 12 starten" Value="211" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-211"/>
+                <Enumeration Text="Effektmanager 13 starten" Value="212" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-212"/>
+                <Enumeration Text="Effektmanager 14 starten" Value="213" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-213"/>
+                <Enumeration Text="Effektmanager 15 starten" Value="214" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-214"/>
+                <Enumeration Text="Effektmanager 16 starten" Value="215" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-215"/>
+              </TypeRestriction>
+              </ParameterType>
+
               <!-- Led Types -->
               <ParameterType Id="%AID%_PT-NEOLedType" Name="NEOLedType" op:headerExport="enum">
               <TypeRestriction Base="Value" SizeInBit="8">
@@ -730,6 +757,8 @@
                 <Parameter Id="%AID%_UP-%TT%00028" Offset="4" BitOffset="0" Name="NEOGlobalStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%00029" Offset="5" BitOffset="0" Name="NEOGlobalStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
+                <!-- Same byte as 00060: the reduced list shown on hardware without the 2D effects. -->
+                <Parameter Id="%AID%_UP-%TT%00061" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffectNo2D" ParameterType="%AID%_PT-NEOEffectTypeNo2D" Text="Start-Effekt" Value="0"/>
               </Union>
               <!-- Virtual Strip Configuration -->
               <Union SizeInBit="40" op:nowarn="true">
@@ -910,6 +939,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00028_R-%TT%0002801" RefId="%AID%_UP-%TT%00028" />
               <ParameterRef Id="%AID%_UP-%TT%00029_R-%TT%0002901" RefId="%AID%_UP-%TT%00029" />
               <ParameterRef Id="%AID%_UP-%TT%00060_R-%TT%0006001" RefId="%AID%_UP-%TT%00060" />
+                <ParameterRef Id="%AID%_UP-%TT%00061_R-%TT%0006101" RefId="%AID%_UP-%TT%00061" />
               <!-- Virtual Strip Parameter References (canonical, used by logic/JS) -->
               <ParameterRef Id="%AID%_UP-%TT%00030_R-%TT%0003001" RefId="%AID%_UP-%TT%00030" />
               <ParameterRef Id="%AID%_UP-%TT%00031_R-%TT%0003101" RefId="%AID%_UP-%TT%00031" />
@@ -1281,7 +1311,15 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%00027_R-%TT%0002701" IndentLevel="2" HelpContext="%DOC%"/>
                       <ParameterRefRef RefId="%AID%_UP-%TT%00028_R-%TT%0002801" IndentLevel="2" HelpContext="%DOC%"/>
                       <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" HelpContext="%DOC%"/>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" HelpContext="%DOC%"/>
+                      <choose ParamRefId="%AID%_UP-4000018_R-400001801">
+                        <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
+                        <when test="65534">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" HelpContext="%DOC%"/>
+                        </when>
+                        <when default="true">
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" HelpContext="%DOC%"/>
+                        </when>
+                      </choose>
                     </when>
                   </choose>
                   <!-- ========================================================================================================= -->

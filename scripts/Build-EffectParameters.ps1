@@ -179,6 +179,8 @@ $script:Config = @{
     EnumNo2DEnd               = "<!-- GENERATED_EFFECT_ENUMERATIONS_NO2D_END -->"
     SceneEffectEnumStart      = "<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_START -->"
     SceneEffectEnumEnd        = "<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_END -->"
+    SceneEffectEnumNo2DStart  = "<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_START -->"
+    SceneEffectEnumNo2DEnd    = "<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_END -->"
     EffectPTStart             = "<!-- BEGIN AUTO-GENERATED: Effect ParameterTypes -->"
     EffectPTEnd               = "<!-- END AUTO-GENERATED: Effect ParameterTypes -->"
     # Scene markers (in NeoPixel.Scene.part.xml)
@@ -200,6 +202,8 @@ $script:Config = @{
     # Cue Effect enum markers (in NeoPixel.EM.share.xml)
     CueEffectEnumStart        = "<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_START -->"
     CueEffectEnumEnd          = "<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_END -->"
+    CueEffectEnumNo2DStart    = "<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_START -->"
+    CueEffectEnumNo2DEnd      = "<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_END -->"
   }
 
   # String cleaning/replacement patterns
@@ -4023,8 +4027,21 @@ try {
       }
       $enumBlock = $enumLines -join "`n"
       $emContent = $emContent -replace '(?s)(<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_START -->).*?(<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_END -->)', "`$1`n$enumBlock`n                `$2"
+      # Second variant without the 2D effects, for hardware built with NEOPIXEL_DISABLE_2D.
+      $cueNo2DLines = @()
+      foreach ($effect in $cueEffects) {
+        if (Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN) { continue }
+        $effectValue = [int]$effect.EffectID
+        $idxStr = $effectValue.ToString("00")
+        $nameDE = if ($effect.NameDE) { $effect.NameDE } elseif ($effect.Name) { $effect.Name } else { "Effect $effectValue" }
+        $nameEN = if ($effect.NameEN) { $effect.NameEN } else { $nameDE }
+        $displayName = Get-EffectDropdownText -ClassName $effect.ClassName -NameDE $nameDE -NameEN $nameEN -EffectId $effectValue
+        $cueNo2DLines += "                <Enumeration Text=`"$displayName`" Value=`"$effectValue`" Id=`"%AID%_PT-CueEffectNo2D_EN-$idxStr`"/>"
+      }
+      $cueNo2DBlock = $cueNo2DLines -join "`n"
+      $emContent = $emContent -replace '(?s)(<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_START -->).*?(<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_END -->)', "`$1`n$cueNo2DBlock`n                `$2"
       Set-Content $emSharePath -Value $emContent -Encoding UTF8 -NoNewline
-      Write-Host "  [OK] NeoPixel.EM.share.xml: PT-CueEffect enum updated ($($effects.Count) effects)" -ForegroundColor Green
+      Write-Host "  [OK] NeoPixel.EM.share.xml: PT-CueEffect enum updated ($($effects.Count) effects, No2D $($cueNo2DLines.Count))" -ForegroundColor Green
     }
 
     # ── Update PT-NEOSceneEffectType enum in NeoPixel.share.xml ────────
@@ -4045,8 +4062,21 @@ try {
       }
       $sceneEnumBlock = $sceneEnumLines -join "`n"
       $shareContent = $shareContent -replace '(?s)(<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_START -->).*?(<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_END -->)', "`$1`n$sceneEnumBlock`n                `$2"
+      # Second variant without the 2D effects; the 16 EM actions live outside the markers.
+      $sceneNo2DLines = @()
+      foreach ($effect in $sceneEffects) {
+        if (Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN) { continue }
+        $effectValue = [int]$effect.EffectID
+        $idxStr = $effectValue.ToString("00")
+        $nameDE = if ($effect.NameDE) { $effect.NameDE } elseif ($effect.Name) { $effect.Name } else { "Effect $effectValue" }
+        $nameEN = if ($effect.NameEN) { $effect.NameEN } else { $nameDE }
+        $displayName = Get-EffectDropdownText -ClassName $effect.ClassName -NameDE $nameDE -NameEN $nameEN -EffectId $effectValue
+        $sceneNo2DLines += "                <Enumeration Text=`"$displayName`" Value=`"$effectValue`" Id=`"%AID%_PT-NEOSceneEffectTypeNo2D_EN-$idxStr`"/>"
+      }
+      $sceneNo2DBlock = $sceneNo2DLines -join "`n"
+      $shareContent = $shareContent -replace '(?s)(<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_START -->).*?(<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_END -->)', "`$1`n$sceneNo2DBlock`n                `$2"
       Set-Content $sharePath -Value $shareContent -Encoding UTF8 -NoNewline
-      Write-Host "  [OK] NeoPixel.share.xml: PT-NEOSceneEffectType enum updated ($($effects.Count) effects + 16 EM actions)" -ForegroundColor Green
+      Write-Host "  [OK] NeoPixel.share.xml: PT-NEOSceneEffectType enum updated ($($effects.Count) effects + 16 EM actions, No2D $($sceneNo2DLines.Count))" -ForegroundColor Green
     }
 
     # ============================================================

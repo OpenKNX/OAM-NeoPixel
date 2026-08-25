@@ -11,6 +11,8 @@
         <op:param name="%CUE_OFF%" value="20"  increment="48" />
         <op:param name="%CUE_NR%"  value="1"   increment="1"  asLetter="false"/>
         <op:param name="%CUE_TPP%" value="1000" increment="500" />
+        <!-- Own lane: the CUE_PPP stride of 18 is fully used, 900..909 is free. -->
+        <op:param name="%CUE_NO2D%" value="900" increment="1" />
         <!-- CUE_LBL entfernt: Cue-Baum-Titel zeigt jetzt JS-frei direkt auf den rohen Cue-Namen (CUE_PPP+16) -->
     </op:part>
 

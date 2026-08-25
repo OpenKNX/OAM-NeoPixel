@@ -12,6 +12,8 @@
                             <!-- Generic Slot Approach: 10 generic Parameters + aliased ParameterRefs per effect -->
                             <!-- Byte %MO%+0: Effect Type (1 byte) — effects plus 'Effektmanager N starten' (200..215) -->
                             <Parameter Id="%AID%_UP-%TT%%CC%%PPP+0%" Offset="%MO%" BitOffset="0" Name="NEO%C%Scene%SN%EffectType" ParameterType="%AID%_PT-NEOSceneEffectType" Text="Effekt" Value="0"/>
+                            <!-- Same byte as PPP+0: the reduced list shown on hardware without the 2D effects. -->
+                            <Parameter Id="%AID%_UP-%TT%%CC%%PPP+19%" Offset="%MO%" BitOffset="0" Name="NEO%C%Scene%SN%EffectTypeNo2D" ParameterType="%AID%_PT-NEOSceneEffectTypeNo2D" Text="Effekt" Value="0"/>
 
                             <!-- Byte %MO%+1..3: Primary Color RGB (3 bytes) -->
                             <Parameter Id="%AID%_UP-%TT%%CC%%PPP+1%" Offset="%MO+1%" BitOffset="0" Name="NEO%C%Scene%SN%PrimaryColor" ParameterType="%AID%_PT-ColorRGB" Text="Primärfarbe RGB" Value="#FFFFFF"/>
@@ -47,6 +49,7 @@
                         <ParameterRefs>
                             <!-- Scene %SZ% ParameterRefs (fixed params) -->
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" RefId="%AID%_UP-%TT%%CC%%PPP+0%" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+19%_R-%TT%%CC%%PPP+19%01" RefId="%AID%_UP-%TT%%CC%%PPP+19%" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+1%_R-%TT%%CC%%PPP+1%01" RefId="%AID%_UP-%TT%%CC%%PPP+1%" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+2%_R-%TT%%CC%%PPP+2%01" RefId="%AID%_UP-%TT%%CC%%PPP+2%" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+3%_R-%TT%%CC%%PPP+3%01" RefId="%AID%_UP-%TT%%CC%%PPP+3%" />
@@ -80,7 +83,15 @@
                                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Szene %SZ%" UIHint="Headline" />
 
                                 <!-- Effect Type -->
-                                <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene"/>
+                                <choose ParamRefId="%AID%_UP-4000018_R-400001801">
+                                  <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
+                                  <when test="65534">
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+19%_R-%TT%%CC%%PPP+19%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene"/>
+                                  </when>
+                                  <when default="true">
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene"/>
+                                  </when>
+                                </choose>
 
                                 <!-- Hinweis, wenn diese Szene einen Effektmanager startet (Werte 200-215) -->
                                 <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">

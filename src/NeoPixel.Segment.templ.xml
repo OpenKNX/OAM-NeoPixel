@@ -42,6 +42,8 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%244" Offset="10" BitOffset="5" Name="NEO%C%SegmentTopology" ParameterType="%AID%_PT-LedTopology" Text="Topologie" Value="0"/>
                 <!-- Byte 11: 8b -->
                 <Parameter Id="%AID%_UP-%TT%%CC%057" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectType" ParameterType="%AID%_PT-NEOEffectType" Text="Effekt" Value="0"/>
+  <!-- Same byte as 057: the reduced list shown on hardware without the 2D effects. -->
+  <Parameter Id="%AID%_UP-%TT%%CC%058" Offset="11" BitOffset="0" Name="NEO%C%NEOEffectTypeNo2D" ParameterType="%AID%_PT-NEOEffectTypeNo2D" Text="Effekt" Value="0"/>
                 <!-- Bytes 12-23: Reserved (replaced by dynamic effect parameters) -->
                 <!-- Byte 12: Matrix width (columns, 1-255; 0 = no matrix / 1D) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%245" Offset="12" BitOffset="0" Name="NEO%C%MatrixWidth"  ParameterType="%AID%_PT-MatrixDimension" Text="Matrix: Breite (Spalten)" Value="8"/>
@@ -105,6 +107,7 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%055_R-%TT%%CC%05501" RefId="%AID%_UP-%TT%%CC%055" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%056_R-%TT%%CC%05601" RefId="%AID%_UP-%TT%%CC%056" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" RefId="%AID%_UP-%TT%%CC%057" />
+  <ParameterRef Id="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" RefId="%AID%_UP-%TT%%CC%058" />
               <!-- Read-only (ausgegraute) Variante des Effekt-Typs fuer die Segmente-Uebersichtstabelle, wenn ein EM zugewiesen ist -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05702" RefId="%AID%_UP-%TT%%CC%057" Access="Read" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
@@ -474,7 +477,15 @@
                     <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-Einstellungen" UIHint="Headline" />
                     <!-- Effect Type -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="NEO-Effekt-Typ"/>
+                    <choose ParamRefId="%AID%_UP-4000018_R-400001801">
+                      <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
+                      <when test="65534">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" IndentLevel="1" HelpContext="NEO-Effekt-Typ"/>
+                      </when>
+                      <when default="true">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="NEO-Effekt-Typ"/>
+                      </when>
+                    </choose>
                     <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
                       <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                       <!-- Dynamic choose/when blocks for effect-specific parameters -->

@@ -4686,6 +4686,90 @@ else {
   }
 }
 
+# ====================================================================
+# Effect selector by hardware
+# ====================================================================
+# Hardware whose firmware is built with NEOPIXEL_DISABLE_2D cannot render the 2D effects.
+# ETS offers those devices the reduced effect list instead; the <when test="..."> next to
+# each marker carries their DEVICE_HW_IDs. A hardware counts as reduced only when EVERY
+# release environment for it sets the flag - a mixed hardware keeps the full list.
+
+$no2dMarker = "GENERATED_NO2D_HARDWARE_TEST"
+$customIniPath = "platformio.custom.ini"
+
+if (Test-Path $customIniPath) {
+  # Split the ini into blocks and remember, per hardware section, whether every
+  # release environment referencing it drops the 2D effects.
+  $sectionSeen = @{}
+  $sectionAllDisable = @{}
+  $blocks = @()
+  $currentBlock = @()
+  foreach ($line in (Get-Content $customIniPath -Encoding UTF8)) {
+    if ($line -match '^\s*\[') {
+      if ($currentBlock.Count -gt 0) { $blocks += , $currentBlock }
+      $currentBlock = @($line)
+    }
+    elseif ($currentBlock.Count -gt 0) { $currentBlock += $line }
+  }
+  if ($currentBlock.Count -gt 0) { $blocks += , $currentBlock }
+
+  foreach ($block in $blocks) {
+    if ($block[0] -notmatch '^\s*\[env:release_') { continue }
+    $blockText = $block -join "`n"
+    $dropsThe2D = $blockText -match 'NEOPIXEL_DISABLE_2D'
+    foreach ($hit in [regex]::Matches($blockText, 'neopixel_oknxhw_[A-Za-z0-9_]+')) {
+      $section = $hit.Value
+      $sectionSeen[$section] = $true
+      if (-not $sectionAllDisable.ContainsKey($section)) { $sectionAllDisable[$section] = $true }
+      if (-not $dropsThe2D) { $sectionAllDisable[$section] = $false }
+    }
+  }
+
+  $no2dIds = @()
+  $no2dNames = @()
+  foreach ($hwConfig in $hardwareConfigs) {
+    $section = $hwConfig.Name
+    if ($sectionSeen.ContainsKey($section) -and $sectionAllDisable[$section] -and [int]$hwConfig.DeviceIdBit -gt 0) {
+      $no2dIds += [int]$hwConfig.DeviceIdBit
+      $no2dNames += $hwConfig.DeviceName
+    }
+  }
+
+  # 65534 is a value no hardware carries: with nothing to reduce the branch never matches
+  # and every device keeps the full effect list.
+  $testValue = if ($no2dIds.Count -gt 0) { (($no2dIds | Sort-Object) -join ' ') } else { "65534" }
+
+  $selectorTargets = @(
+    "src/NeoPixel.Segment.templ.xml",
+    "src/NeoPixel.Scene.part.xml",
+    "src/NeoPixel.Cue.part.xml",
+    "src/NeoPixel.share.xml"
+  )
+  $markerPattern = "($([regex]::Escape($no2dMarker))[^>]*-->\s*\r?\n\s*<when test=)`"[^`"]*`""
+  $patchedFiles = 0
+  $patchedSites = 0
+  foreach ($target in $selectorTargets) {
+    if (-not (Test-Path $target)) { continue }
+    $content = Get-Content $target -Raw -Encoding UTF8
+    $siteCount = ([regex]::Matches($content, $markerPattern)).Count
+    if ($siteCount -eq 0) { continue }
+    $updated = $content -replace $markerPattern, "`$1`"$testValue`""
+    if ($updated -ne $content) { Set-Content $target -Value $updated -Encoding UTF8 -NoNewline }
+    $patchedFiles++
+    $patchedSites += $siteCount
+  }
+
+  if ($patchedSites -eq 0) {
+    Write-WarningMsg "Marker $no2dMarker not found - the effect list is not gated on hardware"
+  }
+  elseif ($no2dIds.Count -eq 0) {
+    Write-Success "Effect selector: no hardware is built without the 2D effects, all $patchedSites site(s) keep the full list"
+  }
+  else {
+    Write-Success "Effect selector: reduced list on $($no2dIds.Count) hardware ($($no2dNames -join ', ')) at $patchedSites site(s) in $patchedFiles file(s)"
+  }
+}
+
 Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "  Multi-Hardware GPIO Template Generation Complete" -ForegroundColor Cyan

@@ -80,6 +80,17 @@
                 <!-- GENERATED_CUE_EFFECT_ENUMERATIONS_END -->
               </TypeRestriction>
             </ParameterType>
+            <!-- AUTO-GENERATED: Cue Effect Enumeration without the 2D effects - DO NOT EDIT MANUALLY -->
+            <!-- Shown instead of CueEffect on hardware built with NEOPIXEL_DISABLE_2D.
+                 Same values, so a stored cue keeps its effect across a hardware change. -->
+            <ParameterType Id="%AID%_PT-CueEffectNo2D" Name="CueEffectNo2D">
+              <TypeRestriction Base="Value" SizeInBit="8" UIHint="DropDown">
+                <!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_START -->
+                <Enumeration Text="Solid" Value="0" Id="%AID%_PT-CueEffectNo2D_EN-00"/>
+                <!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_END -->
+              </TypeRestriction>
+            </ParameterType>
+
             <!-- Cue shared types — also used in NeoPixel.Cue.part.xml -->
             <ParameterType Id="%AID%_PT-CueParam" Name="CueParam">
               <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255"/>

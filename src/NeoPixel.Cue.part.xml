@@ -22,6 +22,8 @@
             <!-- ParameterTypes are declared in NeoPixel.EM.share.xml -->
             <Parameters>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+0%"  Offset="%CUE_OFF%"    BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Effect"     ParameterType="%AID%_PT-CueEffect"    Text="Effekt"            Value="0"/>
+              <!-- Same byte as CUE_PPP+0: the reduced list shown on hardware without the 2D effects. -->
+              <Parameter Id="%AID%_UP-%TT%%CC%%CUE_NO2D%" Offset="%CUE_OFF%"    BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%EffectNo2D" ParameterType="%AID%_PT-CueEffectNo2D" Text="Effekt"            Value="0"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+1%"  Offset="%CUE_OFF+1%"  BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Param0"     ParameterType="%AID%_PT-CueParam"     Text="Parameter 0"       Value="0" op:nowarn="true"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+2%"  Offset="%CUE_OFF+2%"  BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Param1"     ParameterType="%AID%_PT-CueParam"     Text="Parameter 1"       Value="0" op:nowarn="true"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+3%"  Offset="%CUE_OFF+3%"  BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Param2"     ParameterType="%AID%_PT-CueParam"     Text="Parameter 2"       Value="0" op:nowarn="true"/>
@@ -45,6 +47,7 @@
             </Parameters>
             <ParameterRefs>
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01"  RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%"  />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_NO2D%_R-%TT%%CC%%CUE_NO2D%01" RefId="%AID%_UP-%TT%%CC%%CUE_NO2D%" />
               <!-- BEGIN AUTO-GENERATED: Cue Effect ParameterRefs -->
 
               <!-- END AUTO-GENERATED: Cue Effect ParameterRefs -->
@@ -75,7 +78,15 @@
                     <!-- Cue-Name -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" IndentLevel="1" HelpContext="NEO-Cue-Name"/>
                     <!-- Effekt Dropdown -->
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01"   IndentLevel="1" HelpContext="NEO-Cue-Effekt"/>
+                    <choose ParamRefId="%AID%_UP-4000018_R-400001801">
+                      <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
+                      <when test="65534">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_NO2D%_R-%TT%%CC%%CUE_NO2D%01" IndentLevel="1" HelpContext="NEO-Cue-Effekt"/>
+                      </when>
+                      <when default="true">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01" IndentLevel="1" HelpContext="NEO-Cue-Effekt"/>
+                      </when>
+                    </choose>
                     <!-- Farbe / Helligkeit / Timing -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+11%_R-%TT%%CC%%CUE_PPP+11%01" IndentLevel="1" HelpContext="NEO-Cue-Farbe"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+12%_R-%TT%%CC%%CUE_PPP+12%01" IndentLevel="1" HelpContext="NEO-Cue-Weiss"/>
@@ -95,7 +106,15 @@
                 <when test=">=%CUE_NR%">
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Cue %CUE_NR%" Cell="%CUE_NR%,1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" Cell="%CUE_NR%,2" HelpContext="NEO-Cue-Name"/>
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01"   Cell="%CUE_NR%,3" HelpContext="NEO-Cue-Effekt"/>
+                  <choose ParamRefId="%AID%_UP-4000018_R-400001801">
+                    <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
+                    <when test="65534">
+                      <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_NO2D%_R-%TT%%CC%%CUE_NO2D%01" Cell="%CUE_NR%,3" HelpContext="NEO-Cue-Effekt"/>
+                    </when>
+                    <when default="true">
+                      <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01" Cell="%CUE_NR%,3" HelpContext="NEO-Cue-Effekt"/>
+                    </when>
+                  </choose>
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+14%_R-%TT%%CC%%CUE_PPP+14%01" Cell="%CUE_NR%,4" HelpContext="NEO-Cue-Dauer"/>
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+15%_R-%TT%%CC%%CUE_PPP+15%01" Cell="%CUE_NR%,5" HelpContext="NEO-Cue-Uebergang"/>
                 </when>
