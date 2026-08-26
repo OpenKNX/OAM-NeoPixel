@@ -2653,6 +2653,63 @@ function Generate-EffectTypeHelpTable {
   }
 }
 
+function Generate-EffectFlagList {
+  <#
+    .SYNOPSIS
+        Fill the effect-flag list in platformio.custom.ini.
+    .DESCRIPTION
+        The list used to be maintained by hand and had drifted: it named four flags that
+        no longer exist (CONFETTI, GARAGEDOOR, METEOR, TWINKLE) and left out nineteen that
+        do. The flag name is derived exactly as the EffectTypeMapping.h guards derive it.
+  #>
+  param([array]$Effects)
+
+  $iniPath = Resolve-RepoPath "platformio.custom.ini"
+  if (-not (Test-Path $iniPath)) { return $null }
+
+  $groups = Get-EffectPoolGroups
+  $standard = @(); $extended = @(); $twoD = @()
+
+  foreach ($effect in ($Effects | Sort-Object { [int]$_.EffectID })) {
+    $methodName = $effect.ClassName -replace 'Effect', ''
+    if ($methodName -eq "Solid") { continue }
+    $nameDE = if ($effect.NameDE) { $effect.NameDE } else { $effect.Name }
+    $entry = ";   -D {0,-34} ; {1}" -f "NEOPIXEL_DISABLE_$($methodName.ToUpper())", $nameDE
+
+    if (Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN) { $twoD += $entry }
+    elseif ($groups[$effect.ClassName] -eq 'extended') { $extended += $entry }
+    else { $standard += $entry }
+  }
+
+  $out = @()
+  $out += "; All $($Effects.Count) effects are built in unless a flag below leaves one out."
+  $out += "; Solid is the fallback for an unknown selection and cannot be disabled."
+  $out += ";"
+  $out += "; --- Leave out every 2D effect at once ($($twoD.Count) effects) ---"
+  $out += "; Only worth it where the device drives plain strips; ETS then hides them too."
+  $out += ";  -D NEOPIXEL_DISABLE_2D"
+  $out += ";"
+  $out += "; --- Leave out the extended effects at once ($($extended.Count) effects) ---"
+  $out += ";  -D NEOPIXEL_MINIMAL_EFFECTS"
+  $out += ";"
+  $out += "; --- Or name single effects ---"
+  $out += "; Always available ($($standard.Count)):"
+  $out += $standard
+  $out += "; Extended ($($extended.Count)), all covered by NEOPIXEL_MINIMAL_EFFECTS:"
+  $out += $extended
+  $out += "; 2D ($($twoD.Count)), all covered by NEOPIXEL_DISABLE_2D:"
+  $out += $twoD
+
+  $body = ($out -join "`n")
+  $content = Get-Content $iniPath -Raw -Encoding UTF8
+  $pattern = '(?s)(; BEGIN AUTO-GENERATED: Effect Flags - DO NOT EDIT MANUALLY).*?(; END AUTO-GENERATED: Effect Flags)'
+  if ($content -notmatch $pattern) { return $null }
+  $updated = $content -replace $pattern, "`$1`n$body`n`$2"
+  Set-Content -Path $iniPath -Value $updated -Encoding UTF8 -NoNewline
+
+  return @{ Standard = $standard.Count; Extended = $extended.Count; TwoD = $twoD.Count }
+}
+
 function Generate-SceneHelpFiles {
   param([array]$Effects)
 
@@ -4142,6 +4199,15 @@ $effectIdRefFile = Generate-EffectIdReferenceHelp -Effects $effects
 $effectsWithoutDesc = $helpFilesInfo.EffectsWithoutDescription
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Help files generated ($effectIdRefFile updated)" -ForegroundColor White
+
+$effectFlagInfo = Generate-EffectFlagList -Effects $effects
+if ($effectFlagInfo) {
+  Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+  Write-Host "platformio.custom.ini flag list: $($effectFlagInfo.Standard) + $($effectFlagInfo.Extended) + $($effectFlagInfo.TwoD) = $($effectFlagInfo.Standard + $effectFlagInfo.Extended + $effectFlagInfo.TwoD) flags" -ForegroundColor White
+}
+else {
+  Write-Host "  [WARN] platformio.custom.ini: marker not found, the flag list was not generated" -ForegroundColor Yellow
+}
 
 $effectTableInfo = Generate-EffectTypeHelpTable -Effects $effects
 if ($effectTableInfo) {
