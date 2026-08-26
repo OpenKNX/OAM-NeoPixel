@@ -2487,6 +2487,172 @@ function Generate-EffectIdReferenceHelp {
   return $fileName
 }
 
+function Get-EffectDescriptionDE {
+  <#
+    .SYNOPSIS
+        Read the German half of EFFECT_DESC_DE_EN() from an effect header.
+  #>
+  param([string]$ClassName)
+
+  $effectsDir = Resolve-RepoPath "lib/OFM-NeoPixel/src/effects"
+  if (-not (Test-Path $effectsDir)) { return "" }
+
+  # The file name does not follow the class name everywhere (SolidEffect lives in
+  # EffectSolid.h), so locate the header by the class it declares.
+  if (-not $script:EffectHeaderByClass) {
+    $script:EffectHeaderByClass = @{}
+    foreach ($file in (Get-ChildItem -Path $effectsDir -Filter "*.h" -File)) {
+      $text = Get-Content $file.FullName -Raw -Encoding UTF8
+      foreach ($hit in [regex]::Matches($text, 'class\s+([A-Za-z0-9_]+)\s*:')) {
+        if (-not $script:EffectHeaderByClass.ContainsKey($hit.Groups[1].Value)) {
+          $script:EffectHeaderByClass[$hit.Groups[1].Value] = $file.FullName
+        }
+      }
+    }
+  }
+
+  if ($script:EffectHeaderByClass.ContainsKey($ClassName)) {
+    $content = Get-Content $script:EffectHeaderByClass[$ClassName] -Raw -Encoding UTF8
+    # C++ splits long texts into adjacent string literals - join them before use.
+    if ($content -match '(?s)EFFECT_DESC_DE_EN\s*\(\s*((?:"(?:[^"\\]|\\.)*"\s*)+)') {
+      $joined = ""
+      foreach ($piece in [regex]::Matches($Matches[1], '"((?:[^"\\]|\\.)*)"')) {
+        $joined += $piece.Groups[1].Value
+      }
+      return ($joined -replace '\\"', '"').Trim().TrimEnd('.')
+    }
+    # Eleven effects still return a plain English string instead of EFFECT_DESC_DE_EN.
+    # Use it so no row stays empty; the caller reports them.
+    if ($content -match '(?s)getDescription\s*\([^)]*\)[^{]*\{\s*return\s+((?:"(?:[^"\\]|\\.)*"\s*)+)') {
+      $joined = ""
+      foreach ($piece in [regex]::Matches($Matches[1], '"((?:[^"\\]|\\.)*)"')) {
+        $joined += $piece.Groups[1].Value
+      }
+      return ($joined -replace '\\"', '"').Trim().TrimEnd('.')
+    }
+  }
+  return ""
+}
+
+function Test-HasGermanDescription {
+  param([string]$ClassName)
+  if (-not $script:EffectHeaderByClass) { [void](Get-EffectDescriptionDE -ClassName $ClassName) }
+  if (-not $script:EffectHeaderByClass.ContainsKey($ClassName)) { return $false }
+  $content = Get-Content $script:EffectHeaderByClass[$ClassName] -Raw -Encoding UTF8
+  return ($content -match 'EFFECT_DESC_DE_EN')
+}
+
+function Get-EffectPoolGroups {
+  <#
+    .SYNOPSIS
+        Map each effect class to 'standard' or 'extended' by whether EffectPool.cpp
+        includes it inside the NEOPIXEL_MINIMAL_EFFECTS guard.
+  #>
+  $poolPath = Resolve-RepoPath "lib/OFM-NeoPixel/src/effects/EffectPool.cpp"
+  $groups = @{}
+  if (-not (Test-Path $poolPath)) { return $groups }
+
+  $depth = 0
+  $inMinimal = $false
+  $minimalDepth = 0
+  foreach ($line in (Get-Content $poolPath -Encoding UTF8)) {
+    if ($line -match '^\s*#\s*if') {
+      $depth++
+      if ($line -match 'NEOPIXEL_MINIMAL_EFFECTS' -and -not $inMinimal) {
+        $inMinimal = $true
+        $minimalDepth = $depth
+      }
+    }
+    elseif ($line -match '^\s*#\s*endif') {
+      if ($inMinimal -and $depth -eq $minimalDepth) { $inMinimal = $false }
+      $depth--
+    }
+    elseif ($line -match '#\s*include\s+"([A-Za-z0-9_]+)\.h"') {
+      $groups[$Matches[1]] = if ($inMinimal) { 'extended' } else { 'standard' }
+    }
+  }
+  return $groups
+}
+
+function Generate-EffectTypeHelpTable {
+  <#
+    .SYNOPSIS
+        Fill the effect table in NEO-Effekt-Typ.md from the effect headers.
+    .DESCRIPTION
+        The table used to be maintained by hand and had drifted badly: wrong IDs from an
+        older numbering, effects that no longer exist, and five that were missing.
+  #>
+  param([array]$Effects)
+
+  $helpDir = Resolve-RepoPath $script:Config.HelpDir
+  $filePath = Join-Path $helpDir "NEO-Effekt-Typ.md"
+  if (-not (Test-Path $filePath)) { return $null }
+
+  $groups = Get-EffectPoolGroups
+  $rows = @{ standard = @(); extended = @(); twoD = @() }
+  $missingDesc = @()
+
+  foreach ($effect in ($Effects | Sort-Object { [int]$_.EffectID })) {
+    $nameDE = if ($effect.NameDE) { $effect.NameDE } else { $effect.Name }
+    $desc = Get-EffectDescriptionDE -ClassName $effect.ClassName
+    if (-not (Test-HasGermanDescription -ClassName $effect.ClassName)) { $missingDesc += $nameDE }
+    $row = "{0,2} | {1,-21} | {2}" -f [int]$effect.EffectID, $nameDE, $desc
+
+    if (Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN) {
+      $rows.twoD += $row
+    }
+    elseif ($groups[$effect.ClassName] -eq 'extended') { $rows.extended += $row }
+    else { $rows.standard += $row }
+  }
+
+  $header = "ID | Name                  | Beschreibung"
+  $rule = "---+-----------------------+--------------------------------------------------------"
+
+  $out = @()
+  $out += "## Verfügbare Effekte"
+  $out += ""
+  $out += "### Standard-Effekte (immer verfügbar)"
+  $out += ""
+  $out += '```'
+  $out += $header
+  $out += $rule
+  $out += $rows.standard
+  $out += '```'
+  $out += ""
+  $out += "### Erweiterte Effekte (deaktivierbar mit ``NEOPIXEL_MINIMAL_EFFECTS``)"
+  $out += ""
+  $out += '```'
+  $out += $header
+  $out += $rule
+  $out += $rows.extended
+  $out += '```'
+  $out += ""
+  $out += "### 2D-Effekte (erfordern Segment mit Matrix-Geometrie)"
+  $out += ""
+  $out += '```'
+  $out += $header
+  $out += $rule
+  $out += $rows.twoD
+  $out += '```'
+  $out += ""
+  $maxId = ($Effects | ForEach-Object { [int]$_.EffectID } | Measure-Object -Maximum).Maximum
+  $out += "**Gesamt: $($Effects.Count) Effekte (ID 0-$maxId)**"
+
+  $body = ($out -join "`n")
+  $content = Get-Content $filePath -Raw -Encoding UTF8
+  $pattern = '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Table - DO NOT EDIT MANUALLY -->).*?(<!-- END AUTO-GENERATED: Effect Table -->)'
+  if ($content -notmatch $pattern) { return $null }
+  $updated = $content -replace $pattern, "`$1`n$body`n`$2"
+  Set-Content -Path $filePath -Value $updated -Encoding UTF8 -NoNewline
+
+  return @{
+    Standard    = $rows.standard.Count
+    Extended    = $rows.extended.Count
+    TwoD        = $rows.twoD.Count
+    MissingDesc = $missingDesc
+  }
+}
+
 function Generate-SceneHelpFiles {
   param([array]$Effects)
 
@@ -3976,6 +4142,18 @@ $effectIdRefFile = Generate-EffectIdReferenceHelp -Effects $effects
 $effectsWithoutDesc = $helpFilesInfo.EffectsWithoutDescription
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Help files generated ($effectIdRefFile updated)" -ForegroundColor White
+
+$effectTableInfo = Generate-EffectTypeHelpTable -Effects $effects
+if ($effectTableInfo) {
+  Write-Host "  [OK] " -NoNewline -ForegroundColor Green
+  Write-Host "NEO-Effekt-Typ.md table: $($effectTableInfo.Standard) standard, $($effectTableInfo.Extended) extended, $($effectTableInfo.TwoD) 2D" -ForegroundColor White
+  if ($effectTableInfo.MissingDesc.Count -gt 0) {
+    Write-Host "  [WARN] Only an English description (no EFFECT_DESC_DE_EN) for: $($effectTableInfo.MissingDesc -join ', ')" -ForegroundColor Yellow
+  }
+}
+else {
+  Write-Host "  [WARN] NEO-Effekt-Typ.md: marker not found, the effect table was not generated" -ForegroundColor Yellow
+}
 
 # 6b. Scene Help Files (Markdown)
 Write-Host "  ▸ Generating scene help files..." -ForegroundColor Gray
