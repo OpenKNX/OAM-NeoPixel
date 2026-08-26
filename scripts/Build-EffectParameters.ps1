@@ -2056,56 +2056,9 @@ function Test-OpenKNXproducer {
     if ($stderrContent) { $outputParts += $stderrContent }
     $capturedOutput = $outputParts -join "`n"
 
-    # Show captured output. The effect selectors deliberately put two parameters on one
-    # byte, which the producer reports as WARN 010 - 337 blocks that would bury everything
-    # else. Fold the known pairs (X together with XNo2D) into one line; anything else stays
-    # visible. The unfiltered text is still returned for the guard at the call site.
+    # Show captured output
     if ($capturedOutput) {
-      $displayLines = @()
-      $foldedPairs = 0
-      $blockLines = @()
-      $blockMembers = @()
-      $inBlock = $false
-
-      $flushBlock = {
-        param($lines, $members)
-        if ($members.Count -eq 2 -and (($members[0] -eq "$($members[1])No2D") -or ($members[1] -eq "$($members[0])No2D"))) {
-          $script:__foldedPairs++
-        }
-        else { $script:__displayLines += $lines }
-      }
-      $script:__displayLines = @()
-      $script:__foldedPairs = 0
-
-      foreach ($line in ($capturedOutput -split "`n")) {
-        if ($line -match 'found overlapping parameter bucket') {
-          if ($inBlock) { & $flushBlock $blockLines $blockMembers }
-          $inBlock = $true
-          $blockLines = @($line)
-          $blockMembers = @()
-        }
-        elseif ($inBlock -and $line -match 'WARN 010:\s+Parameter\s+([A-Za-z0-9_]+),') {
-          $blockLines += $line
-          $blockMembers += $Matches[1]
-        }
-        elseif ($inBlock) {
-          & $flushBlock $blockLines $blockMembers
-          $inBlock = $false
-          $blockLines = @()
-          $blockMembers = @()
-          $script:__displayLines += $line
-        }
-        else { $script:__displayLines += $line }
-      }
-      if ($inBlock) { & $flushBlock $blockLines $blockMembers }
-
-      $displayLines = $script:__displayLines
-      $foldedPairs = $script:__foldedPairs
-
-      Write-Host ($displayLines -join "`n")
-      if ($foldedPairs -gt 0) {
-        Write-Host "  --> WARN 010: $foldedPairs expected effect-selector overlaps folded away (full list: openknxproducer create ...)" -ForegroundColor DarkGray
-      }
+      Write-Host $capturedOutput
     }
 
     Pop-Location
