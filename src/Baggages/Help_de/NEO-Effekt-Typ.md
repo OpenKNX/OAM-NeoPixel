@@ -10,12 +10,12 @@ Wählt den Animationseffekt für das Segment aus.
 ```
 ID | Name                  | Beschreibung
 ---+-----------------------+--------------------------------------------------------
- 0 | Solid                 | Static solid color
- 1 | Wipe                  | Color wipe animation from start to end
- 2 | Rainbow               | Full spectrum rainbow cycle
- 3 | Pride2015             | Rainbow colors with dynamic brightness waves
- 4 | Juggle                | Multiple colored dots bouncing and fading
- 5 | BPM                   | Beats per minute - pulsing colored waves
+ 0 | Solid                 | Statische Farbe ohne Animation
+ 1 | Wipe                  | Farbe läuft vom Anfang bis zum Ende über den Streifen
+ 2 | Rainbow               | Regenbogen über das gesamte Farbspektrum
+ 3 | Pride2015             | Regenbogenfarben mit wandernden Helligkeitswellen
+ 4 | Juggle                | Mehrere farbige Punkte pendeln hin und her und blenden aus
+ 5 | BPM                   | Pulsierende Farbwellen im eingestellten Takt (BPM)
  6 | Cylon                 | Klassischer KITT/Cylon-Effekt mit hin- und herspringendem Lichtauge und verblassendem Schweif. Unterstützt 1D-Streifen und 2D-Matrizen. Mode 1 erzeugt zwei gespiegelte Augen aus der Mitte (Tor)
  7 | Test                  | Kanaltest: RGBW (4 Kanäle) oder RGB+CCT (5 Kanäle)
 19 | Laufschrift           | Horizontale Laufschrift auf LED-Matrix (Font 5×7/4×6/3×5, Umlaute & Ç)
@@ -26,16 +26,16 @@ ID | Name                  | Beschreibung
 ```
 ID | Name                  | Beschreibung
 ---+-----------------------+--------------------------------------------------------
- 8 | Fire                  | Realistic fire simulation with flickering
- 9 | Theater Chase         | Movie theater chase light effect
+ 8 | Fire                  | Realistische Feuersimulation mit Flackern
+ 9 | Theater Chase         | Laufende Punktmuster wie bei einer Marquee-Lichterkette
 10 | Sparkle               | Zufällige Funkeln: Sparkle, Twinkle oder Confetti je nach Modus
 11 | Breathing             | Sanftes Ein-/Ausatmen mit wählbarer Wellenform (weich, Halt, Puls, scharfer Puls)
-12 | Strobe                | Fast on/off flashing strobe light
+12 | Strobe                | Schnelles Blitzen wie ein Stroboskop
 13 | Comet                 | Bewegter Punkt mit Schweif: Comet, Meteor oder Sinelon je nach Modus
 14 | Noise                 | Sanftes Rauschen entlang Streifen oder als 2D-Feld (inoise8-inspiriert)
-15 | Palette               | Fixed 16-color palettes with optional blending + scroll
+15 | Palette               | Feste 16-Farben-Paletten, wahlweise weich überblendet und scrollend
 16 | Blitz                 | Zufällige Blitzeinschläge mit kurzen Lichtblitzen und Abklingeffekt. Simuliert realistische Gewitterblitze mit einstellbarer Häufigkeit, Breite und Helligkeit
-17 | Gradient              | Linear HSV gradient across the strip
+17 | Gradient              | Linearer HSV-Farbverlauf über den Streifen
 18 | Kerze                 | Realistischer Kerzenflacker-Effekt. Bei Zonen=1 flackern alle LEDs gemeinsam, höhere Werte erzeugen mehrere unabhängige Flammen
 ```
 
