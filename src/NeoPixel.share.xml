@@ -756,9 +756,9 @@
                 <Parameter Id="%AID%_UP-%TT%00027" Offset="3" BitOffset="0" Name="NEOGlobalStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe B" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%00028" Offset="4" BitOffset="0" Name="NEOGlobalStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%00029" Offset="5" BitOffset="0" Name="NEOGlobalStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0" op:nowarn="true"/>
                 <!-- Same byte as 00060: the reduced list shown on hardware without the 2D effects. -->
-                <Parameter Id="%AID%_UP-%TT%00061" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffectNo2D" ParameterType="%AID%_PT-NEOEffectTypeNo2D" Text="Start-Effekt" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%00061" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffectNo2D" ParameterType="%AID%_PT-NEOEffectTypeNo2D" Text="Start-Effekt" Value="0" op:nowarn="true"/>
               </Union>
               <!-- Virtual Strip Configuration -->
               <Union SizeInBit="40" op:nowarn="true">
