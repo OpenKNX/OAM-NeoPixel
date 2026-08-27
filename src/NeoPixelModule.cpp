@@ -4492,6 +4492,10 @@ void NeoPixelBusModule::configurePowerManagement()
             }
         }
 
+        // Hand the raw ETS value to the manager: it splits it per protocol, so a
+        // 4-channel and a 5-channel strip on the same device are each measured right.
+        powerManager->setCurrentPerLedMa(currentPerLed);
+
         if (currentPerLed > 0 && mode != PowerLimitMode::PER_LED)
         {
             // User specified custom current per LED
