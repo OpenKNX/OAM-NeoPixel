@@ -688,6 +688,10 @@ ColorOrder StripConfiguration::mapColorOrder(uint8_t c)
         case 9: return ColorOrder::GRBCCT;  // GRBCCT (5-channel, likely standard)
         case 10: return ColorOrder::RGBCTW; // RGBCTW (5-channel, CW first)
         case 11: return ColorOrder::GRBCTW; // GRBCTW (5-channel, CW first)
+        // Rahmenformat des TM1814 (W zuerst) - im Treiber vorhanden, in ETS bisher nicht.
+        case 12: return ColorOrder::WRGB;
+        // Marker: nicht ueberschreiben, der Aufrufer setzt die Chip-Vorgabe ein.
+        case 13: return ColorOrder::NONE;
         default: return ColorOrder::GRB;    // Default to WS2812/SK6812 standard
     }
 }

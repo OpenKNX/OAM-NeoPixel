@@ -5,6 +5,8 @@ var CO_GRB = 0, CO_RGB = 1, CO_BRG = 2, CO_RBG = 3, CO_BGR = 4, CO_GBR = 5;
 var CO_RGBW = 6, CO_GRBW = 7;
 // 5-channel RGBCCT
 var CO_RGBCCT = 8, CO_GRBCCT = 9, CO_RGBCTW = 10, CO_GRBCTW = 11;
+// 12 = WRGB (TM1814-Rahmenformat), 13 = Chip-Vorgabe: der Treiber setzt die native Reihenfolge
+var CO_WRGB = 12, CO_CHIPDEFAULT = 13;
 
 // Helper function for safe integer parsing with default value
 function toInt(v, def) {
@@ -60,7 +62,7 @@ function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
 
   // ---- 1-Wire RGBW Protocols (4-channel) ----
   map[8]  = CO_GRBW;   // SK6812/WS2814 (RGBW) - GRBW standard
-  map[9]  = CO_GRBW;   // TM1814 - GRBW
+  map[9]  = CO_WRGB;   // TM1814 - Datenblatt-Rahmenformat ist W R G B, nicht GRBW
   map[14] = CO_GRBW;   // TM1914 - GRBW
   map[15] = CO_GRBW;   // FW1906 - GRBW
   map[16] = CO_RGBW;   // UCS8904 - RGBW

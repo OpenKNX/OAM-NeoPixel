@@ -3274,6 +3274,10 @@ void NeoPixelBusModule::configureFromETS()
 
         // Get color order from ETS setting for all protocols
         ColorOrder order = StripConfiguration::mapColorOrder((uint8_t)ParamNEOSTRIP_NEOColourOrder);
+        // "Chip-Vorgabe": the driver knows the native order per protocol - TM1814 for
+        // example ships W first. Without this ETS always overwrites it.
+        if (order == ColorOrder::NONE)
+            order = ProtocolHelper::getColorOrder(proto);
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
         const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
