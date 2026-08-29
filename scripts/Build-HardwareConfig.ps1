@@ -3069,6 +3069,31 @@ if ($Clean) {
     Write-Host "    ✓ $headerFileName - Emptied with placeholder" -ForegroundColor Green
   }
 
+
+  # Reset the effect selector back to its unconfigured value. The generator writes the
+  # real DEVICE_HW_IDs in here; leaving them behind would freeze one machine's hardware
+  # set into the repository, and 65534 is an id no hardware carries, so the branch never
+  # fires and every device keeps the full effect list until a build fills it in again.
+  $selectorReset = 0
+  foreach ($target in @(
+      "src/NeoPixel.Segment.templ.xml",
+      "src/NeoPixel.Scene.part.xml",
+      "src/NeoPixel.Cue.part.xml",
+      "src/NeoPixel.share.xml")) {
+    $full = Resolve-RepoPath $target
+    if (-not (Test-Path $full)) { continue }
+    $content = Get-Content $full -Raw -Encoding UTF8
+    $pattern = "(GENERATED_NO2D_HARDWARE_TEST[^>]*-->\s*\r?\n\s*<when test=)`"[^`"]*`""
+    $updated = $content -replace $pattern, "`$1`"65534`""
+    if ($updated -ne $content) {
+      Set-Content -Path $full -Value $updated -Encoding UTF8 -NoNewline
+      $selectorReset++
+    }
+  }
+  if ($selectorReset -gt 0) {
+    Write-Host "    [OK] effect selector hardware ids reset in $selectorReset file(s)" -ForegroundColor Green
+  }
+
   Write-Host ""
   Write-Success "All marker blocks cleaned successfully!"
   Write-Host ""
