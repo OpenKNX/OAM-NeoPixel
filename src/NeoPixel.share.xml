@@ -1317,7 +1317,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" HelpContext="%DOC%"/>
                       <choose ParamRefId="%AID%_UP-4000018_R-400001801">
                         <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
-                        <when test="4912 4913">
+                        <when test="65534">
                           <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" HelpContext="%DOC%"/>
                         </when>
                         <when default="true">
