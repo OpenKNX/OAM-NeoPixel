@@ -5,7 +5,7 @@ a3b2153 ec/v1dev lib/OFM-FileTransferModule https://github.com/OpenKNX/OFM-FileT
 f970400 v1dev lib/OFM-FunctionBlocks https://github.com/OpenKNX/OFM-FunctionBlocks.git
 e2907e0 v1dev lib/OFM-LightManager https://github.com/OpenKNX/OFM-LightManager
 45e2159 v1 lib/OFM-LogicModule https://github.com/OpenKNX/OFM-LogicModule.git
-f24c60b v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
+5d41004 v1dev lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
 3052857 v1dev lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 55119fc v1dev lib/OFM-UsbExchange https://github.com/OpenKNX/OFM-UsbExchange.git
 420d94c ec/v1dev-ec lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
