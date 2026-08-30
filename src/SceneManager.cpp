@@ -268,7 +268,11 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
         cfg.savedCW = primaryCW;
         cfg.savedBrightness = brightness;
         cfg.savedEffectType = effectType;
-        cfg.savedEffectValid = (effectType > 0);
+        // Solid uses the valid effect ID 0.  Preserve it as a selected effect
+        // so recalling a Solid scene survives the same restore paths as an
+        // animated scene.
+        cfg.savedEffectValid = true;
+        cfg.savedLastWasEffect = true;
         cfg.savedValid = true;
     }
 

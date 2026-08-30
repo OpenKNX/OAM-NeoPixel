@@ -1575,7 +1575,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         _effectConfiguration->setupEffectConfiguration(targetSegment);
                         SegmentConfig& cfgFx = _segments[channel];
                         cfgFx.savedEffectType = next;
-                        cfgFx.savedEffectValid = (next > 0); // mirror the absolute NEO_KoFx handler
+                        // Solid is the valid effect ID 0, not the absence of an
+                        // effect.  Keep it restorable just like every animated
+                        // effect selected through this KO.
+                        cfgFx.savedEffectValid = true;
+                        cfgFx.savedLastWasEffect = true;
 
                         // Effektkette: a master propagates the stepped effect to its slaves (like NEO_KoFx).
                         if (cfgFx.syncMode == 1) sendSyncTelegram((size_t)channel);
@@ -1663,7 +1667,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 }
                 // Auto-update will render the change on next cycle
                 cfg.savedEffectType = effect;
-                cfg.savedEffectValid = (effect > 0);
+                // Effect 0 is Solid.  It has a real Effect instance and must
+                // not be treated as an invalid/no-effect state, otherwise a
+                // later restore or effect-chain handoff loses the selection.
+                cfg.savedEffectValid = true;
+                cfg.savedLastWasEffect = true;
                 // Note: Effect-specific parameters are now stored in ETS, no need to snapshot
 
                 // Effektkette: Master sends sync telegram to all slaves
