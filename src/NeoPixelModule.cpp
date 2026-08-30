@@ -3620,6 +3620,14 @@ void NeoPixelBusModule::configureFromETS()
 
         if (phys)
         {
+            // The ETS voltage is part of the strip's power model; applying it
+            // here (the active configuration path) keeps current limiting and
+            // monitoring independent of the legacy StripConfiguration copy.
+            const uint8_t voltageParam = (uint8_t)ParamNEOSTRIP_NEOVoltage;
+            const uint8_t voltage = voltageParam == 1 ? 12 : voltageParam == 2 ? 24 : 5;
+            phys->setVoltage(voltage);
+            logInfoP("Strip %d: Supply voltage set to %u V", i, voltage);
+
             _totalLeds += pixels;
             _physicalStrips.push_back(phys);
 
