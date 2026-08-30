@@ -1152,7 +1152,21 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     uint8_t r = cfg.savedR;
                     uint8_t g = cfg.savedG;
                     uint8_t b = cfg.savedB;
-                    targetSegment->setPrimaryColor(r, g, b, white);
+                    if (_virtualStrip && _virtualStrip->hasDualWhiteChannel())
+                    {
+                        // A generic white command represents neutral white on an
+                        // RGBCCT strip.  Set both channels explicitly so an old
+                        // CW value cannot remain active from a previous command.
+                        const uint8_t ww = white / 2;
+                        const uint8_t cw = white - ww;
+                        targetSegment->setPrimaryColor(r, g, b, ww, cw);
+                        cfg.savedWW = ww;
+                        cfg.savedCW = cw;
+                    }
+                    else
+                    {
+                        targetSegment->setPrimaryColor(r, g, b, white);
+                    }
                     logInfoP("Segment %d: Updated primary color (White=%d)", channel, white);
                 }
 
@@ -1172,28 +1186,46 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
             case NEO_KoCCT:
             {
-                uint16_t cct = ko.value(DPT_Value_Temp);
+                // The ETS object is DPST-7-600 (unsigned Kelvin), not a
+                // two-byte floating-point temperature value.
+                uint16_t cct = ko.value(Dpt(7, 600));
                 logInfoP("Segment %d CCT: %dK", channel, cct);
 
                 SegmentConfig& cfg = _segments[channel];
 
-                // Apply color temperature to segment - convert Kelvin to RGB
-                uint8_t r, g, b;
-                ColorHelper::kelvinToRGB(cct, r, g, b);
-                targetSegment->setPrimaryColor(r, g, b, 0);
+                uint8_t r = 0;
+                uint8_t g = 0;
+                uint8_t b = 0;
+                uint8_t ww = 0;
+                uint8_t cw = 0;
+                if (_virtualStrip && _virtualStrip->hasDualWhiteChannel())
+                {
+                    // A true RGBCCT strip expresses colour temperature with
+                    // its warm and cool dies.  Their sum remains 255; segment
+                    // brightness controls the resulting light level.
+                    ProtocolHelper::kelvinToWWCW(cct, ww, cw);
+                }
+                else
+                {
+                    // RGB and RGBW strips cannot represent independent warm
+                    // and cool white channels.
+                    ColorHelper::kelvinToRGB(cct, r, g, b);
+                }
+                targetSegment->setPrimaryColor(r, g, b, ww, cw);
 
                 // Save color for effect restore
                 cfg.savedR = r;
                 cfg.savedG = g;
                 cfg.savedB = b;
-                cfg.savedWW = 0;
+                cfg.savedWW = ww;
+                cfg.savedCW = cw;
                 cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
 
                 // Send status feedback
                 _channelIndex = channel;
-                bool changed = KoNEO_CCTState.valueNoSendCompare(cct, DPT_Value_Temp);
+                bool changed = KoNEO_CCTState.valueNoSendCompare(cct, Dpt(7, 600));
                 if (changed) KoNEO_CCTState.objectWritten();
                 _channelIndex = oldChannelIndex;
                 break;
