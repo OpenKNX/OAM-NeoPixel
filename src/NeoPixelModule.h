@@ -40,7 +40,6 @@ static constexpr uint8_t NEO_WARN_UNKNOWN_EFFECT = 3;  // Pulsing Yellow: Unknow
 // Forward declarations
 class EffectConfiguration;
 class ColorManagement;
-class StripConfiguration;
 class SegmentController;
 class SceneManager;
 
@@ -73,7 +72,6 @@ class NeoPixelBusModule : public OpenKNX::Module
 {
     friend class EffectConfiguration;
     friend class ColorManagement;
-    friend class StripConfiguration;
     friend class SegmentController;
     friend class SceneManager;
 
@@ -269,7 +267,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint32_t correctColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0) const;
 
     // Static helper functions (public for testing)
-    // Note: mapProtocol() and mapColorOrder() are in StripConfiguration class
+    // ETS enum mapping lives in StripConfiguration's static helpers.
     static bool isSpiProtocol(LedProtocol protocol);
     static const char* getColorOrderName(ColorOrder order);
     static const char* getProtocolName(LedProtocol protocol);
