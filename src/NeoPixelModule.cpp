@@ -1610,24 +1610,28 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // This must happen AFTER applyEffectToSegment to avoid the clear wiping our color
 
                 // Determine which color to use
-                bool hasPendingColor = (cfg.pendingSolidR > 0 || cfg.pendingSolidG > 0 || cfg.pendingSolidB > 0 || cfg.pendingSolidWW > 0);
+                bool hasPendingColor = (cfg.pendingSolidR > 0 || cfg.pendingSolidG > 0 || cfg.pendingSolidB > 0 ||
+                                        cfg.pendingSolidWW > 0 || cfg.pendingSolidCW > 0);
 
                 if (hasPendingColor)
                 {
                     // User set colors during the previous effect - use those
-                    targetSegment->setPrimaryColor(cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidWW);
-                    logInfoP("Segment %d: Applied pending color (R=%d G=%d B=%d W=%d) to effect %d",
-                             channel, cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB, cfg.pendingSolidWW, effect);
+                    targetSegment->setPrimaryColor(cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB,
+                                                   cfg.pendingSolidWW, cfg.pendingSolidCW);
+                    logInfoP("Segment %d: Applied pending color (R=%d G=%d B=%d WW=%d CW=%d) to effect %d",
+                             channel, cfg.pendingSolidR, cfg.pendingSolidG, cfg.pendingSolidB,
+                             cfg.pendingSolidWW, cfg.pendingSolidCW, effect);
                     // Clear pending after applying
                     cfg.pendingSolidR = 0;
                     cfg.pendingSolidG = 0;
                     cfg.pendingSolidB = 0;
                     cfg.pendingSolidWW = 0;
+                    cfg.pendingSolidCW = 0;
                 }
                 else if (cfg.savedValid)
                 {
                     // No pending colors - use the saved color
-                    targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
+                    targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
                     if (effect == 0)
                     {
                         // For Solid effect, also restore brightness — scale the pre-global intent by
@@ -1637,8 +1641,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         targetSegment->setMasterBrightness(eff);
                         targetSegment->setBrightness(eff);
                     }
-                    logInfoP("Segment %d: Applied saved color (R=%d G=%d B=%d W=%d) to effect %d",
-                             channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, effect);
+                    logInfoP("Segment %d: Applied saved color (R=%d G=%d B=%d WW=%d CW=%d) to effect %d",
+                             channel, cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW, effect);
                 }
                 else
                 {
@@ -1978,12 +1982,20 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t ww = ko.value(DPT_Value_1_Ucount); // 5.010
                 // logDebugP("Segment %d Warm White: %d", channel, ww);
 
-                // Store warm white in primaryWW, preserve cool white (5-channel RGBCCT)
-                uint8_t r = targetSegment->getConfig().r();
-                uint8_t g = targetSegment->getConfig().g();
-                uint8_t b = targetSegment->getConfig().b();
-                uint8_t cw = targetSegment->getConfig().cw();
-                targetSegment->setPrimaryColor(r, g, b, ww, cw);
+                // This KO selects warm white directly. Clear RGB and cool white
+                // so stale values cannot turn a direct WW command into a mix.
+                targetSegment->setPrimaryColor(0, 0, 0, ww, 0);
+
+                // Keep the Solid restore state in sync with the live colour.
+                SegmentConfig& cfg = _segments[channel];
+                cfg.savedR = cfg.pendingSolidR = 0;
+                cfg.savedG = cfg.pendingSolidG = 0;
+                cfg.savedB = cfg.pendingSolidB = 0;
+                cfg.savedWW = cfg.pendingSolidWW = ww;
+                cfg.savedCW = cfg.pendingSolidCW = 0;
+                cfg.savedBrightness = targetSegment->getBrightness();
+                cfg.savedValid = true;
+                cfg.savedLastWasEffect = false;
                 break;
             }
 
@@ -1992,12 +2004,20 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t cw = ko.value(DPT_Value_1_Ucount); // 5.010
                 // logDebugP("Segment %d Cool White: %d", channel, cw);
 
-                // Store cool white in primaryCW, preserve warm white (5-channel RGBCCT)
-                uint8_t r = targetSegment->getConfig().r();
-                uint8_t g = targetSegment->getConfig().g();
-                uint8_t b = targetSegment->getConfig().b();
-                uint8_t ww = targetSegment->getConfig().ww();
-                targetSegment->setPrimaryColor(r, g, b, ww, cw);
+                // This KO selects cool white directly. Clear RGB and warm white
+                // so stale values cannot turn a direct CW command into a mix.
+                targetSegment->setPrimaryColor(0, 0, 0, 0, cw);
+
+                // Keep the Solid restore state in sync with the live colour.
+                SegmentConfig& cfg = _segments[channel];
+                cfg.savedR = cfg.pendingSolidR = 0;
+                cfg.savedG = cfg.pendingSolidG = 0;
+                cfg.savedB = cfg.pendingSolidB = 0;
+                cfg.savedWW = cfg.pendingSolidWW = 0;
+                cfg.savedCW = cfg.pendingSolidCW = cw;
+                cfg.savedBrightness = targetSegment->getBrightness();
+                cfg.savedValid = true;
+                cfg.savedLastWasEffect = false;
                 break;
             }
 
