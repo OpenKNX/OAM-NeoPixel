@@ -318,7 +318,7 @@
               <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
                   <!-- Bitrate (kHz), 1-Wire. Anzeige nach Frequenz, Values migrations-fest (0-8 = alt).
-                       Firmware-Mapping: NeoPixelModule.cpp / StripConfiguration.cpp (timingFreqTable). -->
+                       Firmware-Mapping: NeoPixelTimingSelection.h. -->
                   <Enumeration Text="640 kHz"            Value="2"  Id="%ENID%" op:headerName="F640" />
                   <Enumeration Text="680 kHz"            Value="3"  Id="%ENID%" op:headerName="F680" />
                   <Enumeration Text="720 kHz"            Value="4"  Id="%ENID%" op:headerName="F720" />

@@ -14,15 +14,15 @@ Auf diesem Wert benutzt die Firmware das **Timing-Profil des gewählten LED-Chip
 
 Ein anderer Wert **streckt oder staucht das Chip-Profil** auf die gewählte Bitrate. Die Pulsverhältnisse bleiben erhalten, die absoluten Zeiten wandern mit.
 
-Das hat einen Preis: bei niedrigen Werten wird auch die **1-Bit-Hochzeit** länger und verlässt irgendwann das Fenster des Chips. Bei SK6812 (Maximum 750 ns) sieht das so aus:
+Das hat einen Preis: bei niedrigen Werten wird auch die **1-Bit-Hochzeit** länger und verlässt irgendwann das Fenster des Chips. Beim SK6812 erlaubt das Datenblatt 580–1000 ns; die folgenden Werte zeigen, wie schnell der Spielraum kleiner wird:
 
 | Einstellung | tatsächlich | 1-Bit-Hochzeit |
 |---|---|---|
 | Chip-Profil | 806 kHz | 800 ns |
-| 790 kHz | 790 kHz | 799 ns |
-| 780 kHz | 781 kHz | 840 ns |
-| 750 kHz | 750 kHz | 853 ns |
-| 640 kHz | 641 kHz | 1000 ns |
+| 790 kHz | 790 kHz | 816 ns |
+| 780 kHz | 780 kHz | 826 ns |
+| 750 kHz | 750 kHz | 859 ns |
+| 640 kHz | 640 kHz | 1006 ns |
 
 In der Praxis vertragen die meisten Chips das, weil sie 0 und 1 über eine Schwelle unterscheiden — aber es ist außerhalb der Spezifikation, und du solltest wissen, dass du sie verlässt.
 
@@ -61,5 +61,5 @@ Das ist wichtig, weil die Beschriftung nur ein Zielwert ist. Die Hardware kann n
 ## Hinweise
 
 - **640 und 720 kHz** sind Notnägel für sehr schwache Signale.
-- **WS2811** läuft in dieser Firmware mit **800 kHz**, wie bei WLED. Die alte 400-kHz-Betriebsart wird nicht angeboten; sie ist über die Konsole erreichbar (`neo phys timing <Nr> 400`).
+- **WS2811** läuft mit **800 kHz**. Der ETS-Typ **„WS2812_400kHz"** wählt dagegen ausdrücklich das separate 400-kHz-Profil.
 - Dieses Feld gilt **nur für 1-Wire-LEDs** (WS2812, SK6812 und verwandte). **SPI-LEDs** (APA102, SK9822, WS2801, LPD8806, LPD6803, P9813) takten über ihre eigene Clock-Leitung — dort erscheint stattdessen **„SPI Clock"**, und dieses Feld wird ausgeblendet.

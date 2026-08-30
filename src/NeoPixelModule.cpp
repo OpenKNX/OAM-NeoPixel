@@ -2,6 +2,7 @@
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
 #include "HardwareMappingLogic.h"
+#include "NeoPixelTimingSelection.h"
 #include "SceneManager.h"
 #include "SegmentController.h"
 #include "StripConfiguration.h"
@@ -3585,13 +3586,9 @@ void NeoPixelBusModule::configureFromETS()
             // ETS "Timing": value 0 means "use the chip profile" and leaves the driver to
             // resolve the protocol itself. Any other value is an expert bit-rate override
             // that SCALES that profile, keeping the chip's pulse ratios.
-            // Order MUST match the NEOTiming enum (NeoPixel.share.xml) and the duplicate
-            // table in StripConfiguration.cpp. SPI strips ignore this.
-            static const uint16_t timingFreqTable[16] = {
-                800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
             const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
 
-            if (timingSel == 0)
+            if (NeoPixelTimingSelection::isProtocolDefault(timingSel))
             {
                 const SerialTiming::Profile prof = SerialTiming::profileFor(proto);
                 if (prof.t1h > 0)
@@ -3600,7 +3597,7 @@ void NeoPixelBusModule::configureFromETS()
             }
             else
             {
-                const uint16_t freqKhz = timingFreqTable[timingSel];
+                const uint16_t freqKhz = NeoPixelTimingSelection::bitrateKhz(timingSel);
                 SerialTiming::Profile base = SerialTiming::profileFor(proto);
                 if (base.t1h == 0) base = SerialTiming::profileFor(LedProtocol::WS2812B);
                 const SerialTiming::Profile bent = SerialTiming::scaledTo(base, (uint32_t)freqKhz * 1000UL);
@@ -4377,6 +4374,7 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
         case LedProtocol::WS2813: return "WS2813";
         case LedProtocol::WS2815: return "WS2815";
         case LedProtocol::WS2811: return "WS2811";
+        case LedProtocol::WS2811_400KHZ: return "WS2811/WS2812 400kHz";
         case LedProtocol::SK6812: return "SK6812";
         case LedProtocol::SK6805: return "SK6805";
         case LedProtocol::WS2814: return "WS2814";
@@ -5362,11 +5360,10 @@ void NeoPixelBusModule::debugShowConfiguration()
             }
         }
 
-        // Timing (bitrate): ETS value -> kHz (matches the ETS Timing dropdown)
+        // Timing (bitrate): ETS value -> kHz, from the single persisted-value mapping.
         uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
-        static const uint16_t timingFreqTbl[16] = {
-            800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
-        logInfoP("  │    Timing:           value %d = %u kHz", timingSel, timingFreqTbl[timingSel]);
+        logInfoP("  │    Timing:           value %d = %u kHz", timingSel,
+                 NeoPixelTimingSelection::bitrateKhz(timingSel));
 
         // Skip First LEDs
         uint16_t skipLeds = (uint16_t)ParamNEOSTRIP_NEOSkipFirstLEDs;

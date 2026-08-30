@@ -1,5 +1,6 @@
 #include "StripConfiguration.h"
 #include "SerialTimingProfile.h"
+#include "NeoPixelTimingSelection.h"
 #include "HardwareMappingLogic.h"
 #include "NeoPixelModule.h"
 #include "OpenKNX.h"
@@ -519,15 +520,13 @@ void StripConfiguration::configureFromETS()
             _module->_totalLeds += pixels;
             _module->_physicalStrips.push_back(phys);
 
-            // Kept in step with the active twin in NeoPixelModule.cpp: value 0 means "use
-            // the chip profile", any other value scales that profile to the chosen bit rate.
-            static const uint16_t timingFreqTable[16] = {
-                800, 960, 640, 680, 720, 760, 840, 880, 920, 750, 765, 770, 775, 780, 785, 790};
+            // Value 0 means "use the chip profile"; every other ETS value is a
+            // persisted expert override from the central selection table.
             const uint8_t timingSel = (uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F;
 
-            if (timingSel != 0)
+            if (!NeoPixelTimingSelection::isProtocolDefault(timingSel))
             {
-                const uint16_t freqKhz = timingFreqTable[timingSel];
+                const uint16_t freqKhz = NeoPixelTimingSelection::bitrateKhz(timingSel);
                 SerialTiming::Profile base = SerialTiming::profileFor(proto);
                 if (base.t1h == 0) base = SerialTiming::profileFor(LedProtocol::WS2812B);
                 const SerialTiming::Profile bent = SerialTiming::scaledTo(base, (uint32_t)freqKhz * 1000UL);
@@ -644,7 +643,7 @@ LedProtocol StripConfiguration::mapProtocol(uint8_t p)
         case 7: return LedProtocol::WS2812B;        // WS281x (generic, mapped to WS2812B)
         case 8: return LedProtocol::SK6812;         // SK6812/WS2814 (RGBW)
         case 9: return LedProtocol::TM1814;         // TM1814
-        case 10: return LedProtocol::WS2811;        // WS2812_400kHz (mapped to WS2811)
+        case 10: return LedProtocol::WS2811_400KHZ; // WS2812_400kHz
         case 11: return LedProtocol::TM1829;        // TM1829
         case 12: return LedProtocol::UCS8903;       // UCS8903 (16 bit/channel)
         case 13: return LedProtocol::APA106;        // APA106/PL9823
