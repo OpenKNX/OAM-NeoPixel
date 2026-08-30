@@ -70,7 +70,7 @@ function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
   // ---- 5-Channel RGBCCT Protocols ----
   map[1]  = CO_GRBCCT; // WS2805 RGBCCT - GRBCCT standard
   map[17] = CO_GRBCCT; // WS2805_RGBCW - GRBCCT
-  map[18] = CO_GRBCCT; // SM16825 - GRBCCT
+  map[18] = CO_RGBCTW; // SM16825 - RGB + cool white + warm white
   map[30] = CO_GRBCCT; // SK6812 RGBCCT (5ch) - GRBCCT
   map[31] = CO_GRBCCT; // WS2814 RGBCCT (5ch) - GRBCCT
 
@@ -85,8 +85,8 @@ function NEO_LedTypeToRGB_Impl(input, output, context, stripKey) {
   }
 
   var ord = map[ledType];
-  // Clamp to valid 0..11 just in case
-  if (ord < 0 || ord > 11 || isNaN(ord)) ord = defaultOrder;
+  // Keep every ETS colour-order value, including WRGB and Chip-Vorgabe.
+  if (ord < 0 || ord > 13 || isNaN(ord)) ord = defaultOrder;
 
   if (hasPendingLedTypeReset) {
     output.RGBColourOrder = ord;
