@@ -37,7 +37,7 @@
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+11%" Offset="%CUE_OFF+11%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Color"      ParameterType="%AID%_PT-ColorRGB"     Text="Farbe RGB"         Value="#FFFFFF"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+12%" Offset="%CUE_OFF+14%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%W"          ParameterType="%AID%_PT-CueParam"     Text="Weißkanal W"       Value="0"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+13%" Offset="%CUE_OFF+15%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Brightness"  ParameterType="%AID%_PT-CueParam"     Text="Helligkeit"        Value="255"/>
-              <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+14%" Offset="%CUE_OFF+16%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Duration"   ParameterType="%AID%_PT-CueDuration"  Text="Dauer in Sekunden" Value="0"/>
+              <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+14%" Offset="%CUE_OFF+16%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Duration"   ParameterType="%AID%_PT-CueDuration"  Text="Dauer in Sekunden (65535 = bis Effekt fertig)" Value="0"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+15%" Offset="%CUE_OFF+18%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Fade"        ParameterType="%AID%_PT-CueFade"      Text="Übergangszeit ms"   Value="300"/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+16%" Offset="%CUE_OFF+20%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Text" ParameterType="%AID%_PT-CueText" Text="Beschreibung" Value=""/>
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+17%" Offset="%CUE_OFF+34%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%EffectText" ParameterType="%AID%_PT-CueText" Text="Effekt-Text" Value="" op:nowarn="true"/>

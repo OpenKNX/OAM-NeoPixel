@@ -147,7 +147,7 @@
                           <ParameterSeparator Id="%AID%_PS-nnn" Text="Cue"           UIHint="Headline" Cell="0,1"/>
                           <ParameterSeparator Id="%AID%_PS-nnn" Text="Name"          UIHint="Headline" Cell="0,2"/>
                           <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt"        UIHint="Headline" Cell="0,3"/>
-                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Dauer (s)"     UIHint="Headline" Cell="0,4"/>
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="Dauer (s / fertig)" UIHint="Headline" Cell="0,4"/>
                           <ParameterSeparator Id="%AID%_PS-nnn" Text="Übergang (ms)" UIHint="Headline" Cell="0,5"/>
                           <op:usePart name="Cue" xpath="//Dynamic/CueTableRow/*" />
                         </ParameterBlock>

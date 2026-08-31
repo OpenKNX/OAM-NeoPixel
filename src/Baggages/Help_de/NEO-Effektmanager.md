@@ -60,13 +60,13 @@ Jeder Cue wird im gleichnamigen Unterblock konfiguriert:
 - **Parameter 1–5** – Effektspezifische Einstellungen (z. B. Geschwindigkeit, Farbe)
 - **R / G / B / W** – Basisfarbe des Effekts (0–255 je Kanal)
 - **Helligkeit** – Maximale Helligkeit während dieser Cue (0–255)
-- **Dauer (s)** – Wie lange dieser Cue gespielt wird (0 = dauerhaft bis Stop-KO)
+- **Dauer (s)** – Wie lange diese Cue gespielt wird (0 = dauerhaft, 65535 = bis Effekt fertig)
 - **Überblendzeit (ms)** – Weiche Überblendung zum nächsten Cue
 - **Text** – Kurzbeschreibung oder Anzeigetext (max. 14 Zeichen)
 
 ## Zusammenspiel mit Segmenten
 
-Ein Effektmanager wird einem **virtuellen Segment** zugewiesen. Das Segment legt fest, welche LEDs bespielt werden. Über das Segment-KO „Effektmanager bei Start" kann beim Gerätestart automatisch ein EM gestartet werden.
+Ein Effektmanager wird einem **virtuellen Segment** zugewiesen. Das Segment legt fest, welche LEDs bespielt werden. Pro Segment kann getrennt festgelegt werden, welcher Effektmanager nach einem Geräteneustart und welcher bei einer Segment-Power-Flanke AUS → EIN frisch ab Cue 1 startet.
 
 ## Hinweis zur Effektkette
 
