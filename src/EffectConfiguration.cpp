@@ -222,6 +222,15 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment, bool loadDe
         logInfoP("Loaded default color from ETS: R=%d G=%d B=%d W=%d (0x%06X)", r, g, b, w, color);
     }
 
+    // setEffect() has to happen before the generated parameter loader can address the effect.
+    // Enter it once more after all parameters and startup colors are present so effects such as
+    // Wipe can initialise their pixels deterministically from the final configuration.
+    if (effect)
+    {
+        segment->resetEffectState();
+        effect->onEnter(segment);
+    }
+
     // Mirror effect (from segment configuration)
     bool mirrorEffect = ParamNEO_NEOSegmentMirrorEffect;
     if (mirrorEffect)

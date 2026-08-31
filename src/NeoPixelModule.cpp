@@ -1,4 +1,5 @@
 #include "NeoPixelModule.h"
+#include "EffectManagerLifecycle.h"
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
 #include "HardwareMappingLogic.h"
@@ -431,12 +432,11 @@ void NeoPixelBusModule::processAfterStartupDelay()
         auto& cfg = _segments[i];
         if (!cfg.segment) continue;
 
-        _channelIndex = static_cast<uint8_t>(i);
-        uint8_t startupEmId = static_cast<uint8_t>(ParamNEO_NEOStartupEM);
+        uint8_t startupEmId = configuredBootEm(i);
 
         if (startupEmId == EM_NONE) continue;
 
-        startEffektManager(i, startupEmId);
+        startEffektManagerFresh(i, startupEmId);
 
         if (cfg.emController.activeEmId() == startupEmId)
         {
@@ -813,7 +813,17 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             for (size_t i = 0; i < _segments.size(); i++)
             {
                 auto& cfg = _segments[i];
-                if (cfg.segment && cfg.suspendedByPower && cfg.savedPower != 0)
+                if (!cfg.segment || cfg.savedPower == 0) continue;
+
+                if (cfg.pendingPowerOnRestart)
+                {
+                    cfg.pendingPowerOnRestart = false;
+                    cfg.suspendedByPower = false;
+                    const uint8_t powerOnEm = configuredPowerOnEm(i);
+                    if (powerOnEm != EM_NONE)
+                        startEffektManagerFresh(i, powerOnEm);
+                }
+                else if (cfg.suspendedByPower)
                 {
                     cfg.suspendedByPower = false;
                     resumeEffektManager(i); // resume() also re-applies master brightness
@@ -1789,13 +1799,41 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     // Per-segment power intent is ON regardless of the global state.
                     cfg.savedPower = 1;
 
+                    // A configured Power-On EM always wins over resume/direct-state restore.
+                    // If global power is currently off, defer the fresh start so the cue timer and
+                    // Wipe position do not advance invisibly before LEDs can be rendered.
+                    const uint8_t powerOnEm = configuredPowerOnEm(channel);
+                    const EmPowerOnAction powerOnAction =
+                        decideEmPowerOnAction(powerOnEm, cfg.suspendedByPower, _globalPowerOn);
+                    if (powerOnAction == EmPowerOnAction::FreshRestart ||
+                        powerOnAction == EmPowerOnAction::DeferFreshRestart)
+                    {
+                        cfg.suspendedByPower = false;
+                        if (powerOnAction == EmPowerOnAction::FreshRestart)
+                        {
+                            cfg.pendingPowerOnRestart = false;
+                            startEffektManagerFresh(channel, powerOnEm);
+                            if (_virtualStrip) _virtualStrip->show();
+                        }
+                        else
+                        {
+                            cfg.pendingPowerOnRestart = true;
+                        }
+
+                        _channelIndex = channel;
+                        if (KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch))
+                            KoNEO_SegmentPowerState.objectWritten();
+                        break;
+                    }
+
                     // If this segment's EM was suspended by a power-off, resume it (not the
                     // direct-state restore below). But while GLOBAL power is OFF, only record the
                     // intent and keep the EM suspended — global Power-On then revives it. This stops a
                     // single segment-on from defeating the global off (EM ticking + immediate show()).
-                    if (cfg.suspendedByPower)
+                    if (powerOnAction == EmPowerOnAction::Resume ||
+                        powerOnAction == EmPowerOnAction::KeepSuspended)
                     {
-                        if (_globalPowerOn)
+                        if (powerOnAction == EmPowerOnAction::Resume)
                         {
                             cfg.suspendedByPower = false;
                             resumeEffektManager(channel); // resume() also re-applies master brightness
@@ -1832,12 +1870,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                             targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                         }
 
-                        // Resume effect and reset state (in case stopped during Power OFF)
+                        // Resume effect and reset all segment-owned runtime state (in case stopped
+                        // during Power OFF). Calling Effect::reset() alone cannot reset indexes,
+                        // direction flags or phase data stored by Segment.
                         targetSegment->resume();
-                        if (targetSegment->getEffect())
-                        {
-                            targetSegment->getEffect()->reset();
-                        }
+                        targetSegment->resetEffectState();
                     }
                     else if (cfg.savedValid)
                     {
@@ -1874,6 +1911,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 }
                 else
                 {
+                    cfg.pendingPowerOnRestart = false;
                     // Suspend a running EM so it does NOT keep ticking while this segment is off.
                     if (cfg.emController.isRunning() && !cfg.emController.isPaused())
                     {
@@ -2583,7 +2621,7 @@ bool NeoPixelBusModule::emConsoleGetEmStatus(uint8_t seg, NeoEmSegStatus& out)
     // Read startup EM from ETS parameters (channel-indexed access)
     uint8_t oldCh = _channelIndex;
     _channelIndex = seg;
-    out.startupEm = (uint8_t)ParamNEO_NEOStartupEM;
+    out.startupEm = (uint8_t)ParamNEO_NEOStartupEMAfterBoot;
     _channelIndex = oldCh;
 
     return true;
@@ -6121,7 +6159,32 @@ void NeoPixelBusModule::applyCueLongText(SegmentConfig& cfg)
         }
 }
 
+uint8_t NeoPixelBusModule::configuredBootEm(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return EM_NONE;
+    const uint8_t previousChannel = _channelIndex;
+    _channelIndex = static_cast<uint8_t>(segmentIndex);
+    const uint8_t emId = static_cast<uint8_t>(ParamNEO_NEOStartupEMAfterBoot);
+    _channelIndex = previousChannel;
+    return emId;
+}
+
+uint8_t NeoPixelBusModule::configuredPowerOnEm(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return EM_NONE;
+    const uint8_t previousChannel = _channelIndex;
+    _channelIndex = static_cast<uint8_t>(segmentIndex);
+    const uint8_t emId = static_cast<uint8_t>(ParamNEO_NEOStartupEMOnPowerOn);
+    _channelIndex = previousChannel;
+    return emId;
+}
+
 void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)
+{
+    startEffektManagerFresh(segmentIndex, emId);
+}
+
+void NeoPixelBusModule::startEffektManagerFresh(size_t segmentIndex, uint8_t emId)
 {
     if (segmentIndex >= _segments.size())
     {
@@ -6167,7 +6230,7 @@ void NeoPixelBusModule::startEffektManager(size_t segmentIndex, uint8_t emId)
     }
 
     // A normal effect KO interrupts a running EM immediately
-    cfg.emController.start(emId, cfg.segment, _emData);
+    cfg.emController.restart(emId, cfg.segment, _emData);
     sendEmStatusKOs(segmentIndex);
 
     // Suspendiert (paused) ignoriert Start bewusst -> kein Fehler-Log (oben bereits als Info vermerkt)

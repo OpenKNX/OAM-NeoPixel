@@ -114,6 +114,7 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint16_t lastCueTextKey = 0xFFFF;     ///< (emId<<8|cueNum) of the last applied long cue-text override
         uint8_t  emStopReturnMode = 0;        ///< EM-Stop-Rückkehr — 0=letzter Zustand, 1=Default, 2=Aus (from ETS)
         bool     suspendedByPower = false;    ///< EM was paused by a power-off → resume on power-on (vs. manual pause / interrupt)
+        bool     pendingPowerOnRestart = false; ///< Segment was switched on while global power was off
         bool     locked = false;              ///< segment locked via Sperre-KO → ignore all controlling KOs
 
         // Saved state for power toggle and flash persistence
@@ -455,6 +456,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void applyCueLongText(SegmentConfig& cfg); ///< Re-apply console long cue-text on a cue switch
     void loadEffektManagerFromETS();      ///< Load global EM definitions from ETS parameter blocks
     void startEffektManager(size_t segmentIndex, uint8_t emId);
+    void startEffektManagerFresh(size_t segmentIndex, uint8_t emId);
     void stopEffektManager(size_t segmentIndex);
     void pauseEffektManager(size_t segmentIndex);
     void resumeEffektManager(size_t segmentIndex);
@@ -462,6 +464,8 @@ class NeoPixelBusModule : public OpenKNX::Module
     void applySegmentDefaultState(size_t segmentIndex); ///< re-apply the segment's ETS default (effect+color+brightness)
     void sendEmStatusKOs(size_t segmentIndex);
     void sendEffectTextStatusKO(size_t segmentIndex);
+    uint8_t configuredBootEm(size_t segmentIndex);
+    uint8_t configuredPowerOnEm(size_t segmentIndex);
     void refreshHclMasterStateCache();                       // Update cached LightManager values + status KOs
     SegmentConfig createSegmentConfig(uint8_t segmentIndex); // Create segment config from ETS
 

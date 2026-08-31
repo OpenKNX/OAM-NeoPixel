@@ -2555,7 +2555,7 @@
                     <Row Id="%AID%_PB-nnn_R-17" Name="Seg16" />
                   </Rows>
                   <!-- Gesamtbreite ~140% der Standard-UI-Breite (ETS erlaubt bis 200%),
-                       damit die Dropdown-Spalten "Effekt" und vor allem "EM bei Start"
+                       damit die Dropdown-Spalten "Effekt" und vor allem "EM nach Neustart"
                        einzeilig gesetzt werden (kein Umbruch der Auswahltexte). -->
                   <Columns>
                     <Column Id="%AID%_PB-nnn_C-1" Name="Description" Width="32%" />
@@ -2570,7 +2570,7 @@
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Start LED"    UIHint="Headline" Cell="1,2" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende LED"     UIHint="Headline" Cell="1,3" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt"       UIHint="Headline" Cell="1,4" />
-                  <ParameterSeparator Id="%AID%_PS-nnn" Text="EM bei Start" UIHint="Headline" Cell="1,5" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="EM nach Neustart" UIHint="Headline" Cell="1,5" />
 
                   <!-- Segment 1 -->
                   <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
@@ -2579,7 +2579,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%01050_R-%TT%0105001" Cell="2,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%01051_R-%TT%0105101" Cell="2,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%01253_R-%TT%0125301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%01057_R-%TT%0105701" Cell="2,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%01057_R-%TT%0105702" Cell="2,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%01253_R-%TT%0125301" Cell="2,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%01253_R-%TT%0125301" Cell="2,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2590,7 +2590,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%02050_R-%TT%0205001" Cell="3,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%02051_R-%TT%0205101" Cell="3,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%02253_R-%TT%0225301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%02057_R-%TT%0205701" Cell="3,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%02057_R-%TT%0205702" Cell="3,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%02253_R-%TT%0225301" Cell="3,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%02253_R-%TT%0225301" Cell="3,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2601,7 +2601,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%03050_R-%TT%0305001" Cell="4,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%03051_R-%TT%0305101" Cell="4,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%03253_R-%TT%0325301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%03057_R-%TT%0305701" Cell="4,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%03057_R-%TT%0305702" Cell="4,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%03253_R-%TT%0325301" Cell="4,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%03253_R-%TT%0325301" Cell="4,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2612,7 +2612,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%04050_R-%TT%0405001" Cell="5,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%04051_R-%TT%0405101" Cell="5,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%04253_R-%TT%0425301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%04057_R-%TT%0405701" Cell="5,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%04057_R-%TT%0405702" Cell="5,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%04253_R-%TT%0425301" Cell="5,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%04253_R-%TT%0425301" Cell="5,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2623,7 +2623,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%05050_R-%TT%0505001" Cell="6,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%05051_R-%TT%0505101" Cell="6,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%05253_R-%TT%0525301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%05057_R-%TT%0505701" Cell="6,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%05057_R-%TT%0505702" Cell="6,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%05253_R-%TT%0525301" Cell="6,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%05253_R-%TT%0525301" Cell="6,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2634,7 +2634,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%06050_R-%TT%0605001" Cell="7,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%06051_R-%TT%0605101" Cell="7,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%06253_R-%TT%0625301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%06057_R-%TT%0605701" Cell="7,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%06057_R-%TT%0605702" Cell="7,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%06253_R-%TT%0625301" Cell="7,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%06253_R-%TT%0625301" Cell="7,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2645,7 +2645,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%07050_R-%TT%0705001" Cell="8,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%07051_R-%TT%0705101" Cell="8,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%07253_R-%TT%0725301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%07057_R-%TT%0705701" Cell="8,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%07057_R-%TT%0705702" Cell="8,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%07253_R-%TT%0725301" Cell="8,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%07253_R-%TT%0725301" Cell="8,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2656,7 +2656,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%08050_R-%TT%0805001" Cell="9,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%08051_R-%TT%0805101" Cell="9,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%08253_R-%TT%0825301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%08057_R-%TT%0805701" Cell="9,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%08057_R-%TT%0805702" Cell="9,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%08253_R-%TT%0825301" Cell="9,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%08253_R-%TT%0825301" Cell="9,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2667,7 +2667,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%09050_R-%TT%0905001" Cell="10,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%09051_R-%TT%0905101" Cell="10,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%09253_R-%TT%0925301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%09057_R-%TT%0905701" Cell="10,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%09057_R-%TT%0905702" Cell="10,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%09253_R-%TT%0925301" Cell="10,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%09253_R-%TT%0925301" Cell="10,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2678,7 +2678,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%10050_R-%TT%1005001" Cell="11,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%10051_R-%TT%1005101" Cell="11,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%10253_R-%TT%1025301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%10057_R-%TT%1005701" Cell="11,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%10057_R-%TT%1005702" Cell="11,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%10253_R-%TT%1025301" Cell="11,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%10253_R-%TT%1025301" Cell="11,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2689,7 +2689,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%11050_R-%TT%1105001" Cell="12,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%11051_R-%TT%1105101" Cell="12,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%11253_R-%TT%1125301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%11057_R-%TT%1105701" Cell="12,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%11057_R-%TT%1105702" Cell="12,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%11253_R-%TT%1125301" Cell="12,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%11253_R-%TT%1125301" Cell="12,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2700,7 +2700,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%12050_R-%TT%1205001" Cell="13,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%12051_R-%TT%1205101" Cell="13,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%12253_R-%TT%1225301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%12057_R-%TT%1205701" Cell="13,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%12057_R-%TT%1205702" Cell="13,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%12253_R-%TT%1225301" Cell="13,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%12253_R-%TT%1225301" Cell="13,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2711,7 +2711,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%13050_R-%TT%1305001" Cell="14,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%13051_R-%TT%1305101" Cell="14,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%13253_R-%TT%1325301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%13057_R-%TT%1305701" Cell="14,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%13057_R-%TT%1305702" Cell="14,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%13253_R-%TT%1325301" Cell="14,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%13253_R-%TT%1325301" Cell="14,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2722,7 +2722,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%14050_R-%TT%1405001" Cell="15,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%14051_R-%TT%1405101" Cell="15,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%14253_R-%TT%1425301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%14057_R-%TT%1405701" Cell="15,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%14057_R-%TT%1405702" Cell="15,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%14253_R-%TT%1425301" Cell="15,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%14253_R-%TT%1425301" Cell="15,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2733,7 +2733,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%15050_R-%TT%1505001" Cell="16,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%15051_R-%TT%1505101" Cell="16,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%15253_R-%TT%1525301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%15057_R-%TT%1505701" Cell="16,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%15057_R-%TT%1505702" Cell="16,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%15253_R-%TT%1525301" Cell="16,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%15253_R-%TT%1525301" Cell="16,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
 
@@ -2744,7 +2744,7 @@
                       <ParameterRefRef RefId="%AID%_UP-%TT%16050_R-%TT%1605001" Cell="17,2" HelpContext="NEO-Start-LED" />
                       <ParameterRefRef RefId="%AID%_UP-%TT%16051_R-%TT%1605101" Cell="17,3" HelpContext="NEO-Ende-LED" />
                       <choose ParamRefId="%AID%_UP-%TT%16253_R-%TT%1625301"><when test="0"><ParameterRefRef RefId="%AID%_UP-%TT%16057_R-%TT%1605701" Cell="17,4" HelpContext="NEO-Effekt-Typ" /></when><when test="!=0"><ParameterRefRef RefId="%AID%_UP-%TT%16057_R-%TT%1605702" Cell="17,4" HelpContext="NEO-Effekt-Typ" /></when></choose>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%16253_R-%TT%1625301" Cell="17,5" HelpContext="NEO-Effektmanager-bei-Start-0keiner" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%16253_R-%TT%1625301" Cell="17,5" HelpContext="NEO-Effektmanager-nach-Geraeteneustart" />
                     </when>
                   </choose>
                 </ParameterBlock>

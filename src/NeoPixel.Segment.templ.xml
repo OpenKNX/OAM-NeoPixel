@@ -62,8 +62,10 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%251" Offset="16" BitOffset="0" Name="NEO%C%VirtualTotalLength" ParameterType="%AID%_PT-EffektketteLength" Text="Effektkette: Gesamtlänge (LEDs)" Value="100"/>
                 <!-- Bytes 18-19: VirtualOffset -->
                 <Parameter Id="%AID%_UP-%TT%%CC%252" Offset="18" BitOffset="0" Name="NEO%C%VirtualOffset" ParameterType="%AID%_PT-EffektketteOffset" Text="Effektkette: Mein Offset (LEDs)" Value="0"/>
-                <!-- Byte 21, Bits 0-4: Startup Effektmanager ID (0=keiner, 1-16) -->
-                <Parameter Id="%AID%_UP-%TT%%CC%253" Offset="21" BitOffset="0" Name="NEO%C%StartupEM" ParameterType="%AID%_PT-StartupEM" Text="Effektmanager bei Start" Value="0"/>
+                <!-- Byte 21, Bits 0-4: Fresh EM after device startup (keeps the legacy offset/ID) -->
+                <Parameter Id="%AID%_UP-%TT%%CC%253" Offset="21" BitOffset="0" Name="NEO%C%StartupEMAfterBoot" ParameterType="%AID%_PT-StartupEM" Text="Effektmanager nach Geräteneustart" Value="0"/>
+                <!-- Byte 22, Bits 0-4: Fresh EM on Segment Power OFF -> ON -->
+                <Parameter Id="%AID%_UP-%TT%%CC%255" Offset="22" BitOffset="0" Name="NEO%C%StartupEMOnPowerOn" ParameterType="%AID%_PT-StartupEM" Text="Effektmanager beim Einschalten" Value="0"/>
                 <!-- Segment Startup Color Parameters (Bytes 24-27: RGB + W) -->
                 <Parameter Id="%AID%_UP-%TT%%CC%067" Offset="24" BitOffset="0" Name="NEO%C%SegmentStartupColor" ParameterType="%AID%_PT-ColorRGB" Text="Start-Farbe RGB" Value="#FFFFFF"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%070" Offset="27" BitOffset="0" Name="NEO%C%SegmentStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
@@ -135,6 +137,7 @@
 
               <!-- Scene Count ParameterRef -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%254_R-%TT%%CC%25401" RefId="%AID%_UP-%TT%%CC%254" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%255_R-%TT%%CC%25501" RefId="%AID%_UP-%TT%%CC%255" />
               <!-- Scene ParameterRefs (injected via op:part) -->
               <op:usePart name="Scene" xpath="//ParameterRefs/*" />
 
@@ -449,9 +452,10 @@
                     </ParameterBlock>
                     <!-- ===== Ende "Effektkette" | Sub-Knoten "Effekt": Effektmanager + Start-Konfiguration + Effekt-Einstellungen ===== -->
                     <ParameterBlock Id="%AID%_PB-nnn" Name="SegEffekt" Text="Effekt" Icon="neo_effekt" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
-                    <!-- Effektmanager Startup — nur sichtbar wenn Effektmanager konfiguriert -->
+                    <!-- Deterministic Effektmanager autostart rules -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301" IndentLevel="1" HelpContext="NEO-Effektmanager-bei-Start-0keiner"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301" IndentLevel="1" HelpContext="NEO-Effektmanager-nach-Geraeteneustart"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%255_R-%TT%%CC%25501" IndentLevel="1" HelpContext="NEO-Effektmanager-beim-Einschalten"/>
                     <!-- Hinweis nur sichtbar, wenn ein Effektmanager zugewiesen ist (≠ Keiner) -->
                     <choose ParamRefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301">
                       <when test="!=0">

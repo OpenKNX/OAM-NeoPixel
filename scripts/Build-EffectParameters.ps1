@@ -1869,6 +1869,9 @@ function Parse-EffectHeader {
       elseif ($paramType -eq 'PARAM_PERCENT') {
         $paramMax = $script:Config.DefaultMaxPercent
       }
+      elseif ($paramType -eq 'PARAM_BOOL') {
+        $paramMax = 1
+      }
       elseif ($paramType -eq 'PARAM_ENUM' -and $enumOptions.Count -gt 0) {
         # For ENUM, use the count of options
         $paramMax = $enumOptions.Count - 1
