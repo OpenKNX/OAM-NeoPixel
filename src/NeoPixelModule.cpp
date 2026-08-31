@@ -1926,8 +1926,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     NeoPixelManager* manager = _neoPixel.getManager();
                     if (manager)
                     {
-                        manager->syncAll();
-                        manager->showAll();
+                        // Do not transmit if a physical buffer accepted only part of
+                        // the virtual frame. The regular auto-update will retry it.
+                        if (manager->syncAll()) manager->showAll();
                     }
                 }
 
