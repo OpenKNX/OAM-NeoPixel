@@ -1,0 +1,7 @@
+# Normalize all text files to LF in the repository, regardless of each
+# contributor's core.autocrlf setting. Several build scripts (e.g.
+# Build-EffectParameters.ps1, Build-HardwareConfig.ps1) splice generated
+# blocks into existing files using bare LF; with core.autocrlf=true this
+# produced mixed CRLF/LF files that Git perpetually reported as modified
+# even though the content was identical (see git diff vs. git status).
+* text=auto eol=lf

@@ -198,8 +198,16 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment, bool loadDe
 #ifdef EFFECT_PARAMETER_MAPPING_GENERATED
         uint8_t channelIndex = _module->getChannelIndex();
         loadEffectParameters(effect, segment, segment->getConfig().effectType, channelIndex);
+        const uint8_t paramCount = effect->getParameterCount();
         logInfoP("Effect '%s' configured with %d parameter(s)",
-                 effect->getName(), effect->getParameterCount());
+                 effect->getName(), paramCount);
+        for (uint8_t i = 0; i < paramCount; i++)
+        {
+            logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i),
+                     (unsigned long)effect->getParameter(segment, i));
+        }
+        // Not a listed effect parameter, but several effects use it as HSV value.
+        logInfoP("  intensity = %d", segment->getConfig().intensity);
 #else
         logDebugP("Effect '%s' loaded (no parameters - run Build-EffectParameters.ps1 to generate)",
                   effect->getName());
