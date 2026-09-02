@@ -83,7 +83,7 @@ $script:Config = @{
   # Effect Parameter IDs (FIXED - referenced in XML comments).
   # Each effect owns a fixed-size ID range so adding a parameter cannot renumber
   # parameters of later effects during an ETS application upgrade.
-  EffectParameterStartId     = 1000
+  EffectParameterStartId     = 580
   EffectParameterIdStride    = 10
   EffectParameterStartOffset = 30
   # Reserved area in segment union that dynamic effect parameters must not overwrite
@@ -278,7 +278,12 @@ function Get-StableEffectParameterId {
     throw "Effect ID $EffectId parameter index $ParameterIndex exceeds the fixed ID stride of $stride."
   }
 
-  return $StartId + (($EffectId - 1) * $stride) + $ParameterIndex
+  $id = $StartId + (($EffectId - 1) * $stride) + $ParameterIndex
+  if ($id -gt 999) {
+    throw "Stable effect parameter ID $id exceeds the three-digit OpenKNX ID range."
+  }
+
+  return $id
 }
 
 # PS 5.1 compatible clear screen
@@ -616,7 +621,7 @@ if ($Clean) {
     # Empty Union Parameters block - keep important comments
     $pattern1 = "(?s)($([regex]::Escape($script:Config.Markers.UnionStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.UnionEnd)))"
     $replacement1 = '$1                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine +
-    '                <!-- Start ID: 600, Start Offset: 30 (FIXED - do not change!) -->' + [Environment]::NewLine +
+    "                <!-- Start ID: $($script:Config.EffectParameterStartId), Start Offset: $($script:Config.EffectParameterStartOffset) (FIXED - do not change!) -->" + [Environment]::NewLine +
     '        $3'
     $content = $content -replace $pattern1, $replacement1
 

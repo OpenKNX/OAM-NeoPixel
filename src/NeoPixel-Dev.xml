@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="../../Organization/knxprod-support/knx_project_20/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <op:config href="NeoPixel.conf.xml" />
@@ -8,7 +8,7 @@
     OpenKnxId="0xAD"
     ApplicationNumber="1"
     ApplicationVersion="0.14"
-    ReplacesVersionsDownTo="0.1"
+    ReplacesVersionsDownTo="0.14"
     ApplicationRevision="0"
     ProductName="OpenKNX NeoPixel"
     BusCurrent="30"
