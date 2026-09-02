@@ -80,8 +80,11 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 # Configuration - Central place for all magic numbers and paths
 # ====================================================================
 $script:Config = @{
-  # Effect Parameter IDs (FIXED - referenced in XML comments)
-  EffectParameterStartId     = 600
+  # Effect Parameter IDs (FIXED - referenced in XML comments).
+  # Each effect owns a fixed-size ID range so adding a parameter cannot renumber
+  # parameters of later effects during an ETS application upgrade.
+  EffectParameterStartId     = 1000
+  EffectParameterIdStride    = 10
   EffectParameterStartOffset = 30
   # Reserved area in segment union that dynamic effect parameters must not overwrite
   EffectReservedStartOffset  = 159
@@ -258,6 +261,24 @@ function Write-ScriptVerbose {
   if ($VerbosePreference -eq 'Continue') {
     Write-Host "  [VERBOSE] $Message" -ForegroundColor $Color
   }
+}
+
+function Get-StableEffectParameterId {
+  param(
+    [int]$StartId,
+    [int]$EffectId,
+    [int]$ParameterIndex
+  )
+
+  $stride = [int]$script:Config.EffectParameterIdStride
+  if ($EffectId -lt 1) {
+    throw "Effect ID $EffectId cannot own generated parameters (minimum is 1)."
+  }
+  if ($ParameterIndex -lt 0 -or $ParameterIndex -ge $stride) {
+    throw "Effect ID $EffectId parameter index $ParameterIndex exceeds the fixed ID stride of $stride."
+  }
+
+  return $StartId + (($EffectId - 1) * $stride) + $ParameterIndex
 }
 
 # PS 5.1 compatible clear screen
@@ -2236,12 +2257,13 @@ function Generate-UnionParameters {
     }
   }
 
-  $currentId = $StartId
   $currentOffset = $StartOffset
+  $generatedCount = 0
+  $highestId = $StartId - 1
 
-  Write-ScriptVerbose "Starting ID: $currentId, Starting offset: $currentOffset"
+  Write-ScriptVerbose "Starting ID: $StartId, Starting offset: $currentOffset"
 
-  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
     $xml += "                <!-- $($effect.NameDE) Effect (ID $($effect.EffectID)) Parameters -->"
     Write-ScriptVerbose "  Processing effect: $($effect.NameDE) (ID $($effect.EffectID), $($effect.Parameters.Count) params)" "DarkGray"
 
@@ -2251,8 +2273,10 @@ function Generate-UnionParameters {
       $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
       $ptId = "%AID%_PT-$($effectNameClean)$($paramNameClean)"
 
-      # Format ID with leading zeros (073, 074, etc.)
-      $paramIdNum = "{0:D3}" -f $currentId
+      # IDs are based on effect ID + parameter index. Never allocate them
+      # sequentially: adding (for example) Wipe Loop must not renumber Rainbow.
+      $paramIdValue = Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $paramIdNum = "{0:D3}" -f $paramIdValue
       $paramId = "%AID%_UP-%TT%%CC%$paramIdNum"
 
       # Name attribute: Unique per channel and effect
@@ -2276,20 +2300,21 @@ function Generate-UnionParameters {
 
       # Generate Parameter element
       $xml += "                <Parameter Id=`"$paramId`" Offset=`"$currentOffset`" BitOffset=`"$bitOffset`" Name=`"$paramName`" ParameterType=`"$ptId`" Text=`"$($param.Name) ($($effect.NameDE))`" Value=`"$paramValue`"/>"
-      Write-ScriptVerbose "    Param ID ${currentId} @ offset ${currentOffset}: $($param.Name)" "DarkGray"
+      Write-ScriptVerbose "    Param ID ${paramIdValue} @ offset ${currentOffset}: $($param.Name)" "DarkGray"
       Write-Host "      + Param ${paramIdNum}: $($param.Name) @ Offset $currentOffset ($paramByteSize byte)" -ForegroundColor DarkGray
 
-      $currentId++
+      $generatedCount++
+      if ($paramIdValue -gt $highestId) { $highestId = $paramIdValue }
       $currentOffset += $paramByteSize
     }
     $xml += ''
   }
 
-  Write-Host "    OK Generated $($currentId - $StartId) parameters" -ForegroundColor Green
+  Write-Host "    OK Generated $generatedCount parameters" -ForegroundColor Green
 
   return @{
     Xml        = ($xml -join "`n")
-    NextId     = $currentId
+    NextId     = $highestId + 1
     NextOffset = $currentOffset
   }
 }
@@ -2313,24 +2338,22 @@ function Generate-ParameterRefs {
     return ($xml -join "`n")
   }
 
-  $currentId = $StartId
-
-  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
     $xml += "              <!-- $($effect.NameDE) Effect ParameterRefs -->"
 
     foreach ($param in $effect.Parameters) {
-      $paramIdNum = "{0:D3}" -f $currentId
+      $paramIdValue = Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $paramIdNum = "{0:D3}" -f $paramIdValue
       # Default-Override am Ref noetig: die Effekt-Params liegen in einer Union, das
       # Union-Byte kann nur EINEN Default tragen -> ohne Value= zeigt ETS 0/min.
       # (gleiches Muster wie Szene/Cue, siehe Generate-SceneEffectParameterRefs)
       $defaultValue = if ($param.Type -eq 'PARAM_STRING') { '' } else { $param.Default }
       $xml += "              <ParameterRef Id=`"%AID%_UP-%TT%%CC%${paramIdNum}_R-%TT%%CC%${paramIdNum}01`" RefId=`"%AID%_UP-%TT%%CC%$paramIdNum`" Value=`"$defaultValue`" />"
-
-      $currentId++
     }
   }
 
-  Write-Host "    OK Generated $($currentId - $StartId) parameter refs" -ForegroundColor Green
+  $generatedCount = ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum
+  Write-Host "    OK Generated $generatedCount parameter refs" -ForegroundColor Green
 
   return ($xml -join "`n")
 }
@@ -2357,17 +2380,15 @@ function Generate-DynamicChoose {
   # Headline NUR innerhalb der <when> (= nur Effekte mit Params), sonst bleibt sie bei Solid & Co. leer stehen
   $xml += '                    <choose ParamRefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701">'
 
-  $currentId = $StartId
-
-  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
     $xml += "                      <when test=`"$($effect.EffectID)`">"
     $xml += "                        <!-- $($effect.NameDE) Effect Parameters -->"
     $xml += '                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
 
     foreach ($param in $effect.Parameters) {
-      $paramIdNum = "{0:D3}" -f $currentId
+      $paramIdValue = Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $paramIdNum = "{0:D3}" -f $paramIdValue
       $xml += "                        <ParameterRefRef RefId=`"%AID%_UP-%TT%%CC%${paramIdNum}_R-%TT%%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"%DOC%`"/>"
-      $currentId++
     }
 
     $xml += '                      </when>'
@@ -2517,7 +2538,7 @@ function Generate-EffectIdReferenceHelp {
   $content += "Format pro Zeile: ID - DE - EN"
   $content += ""
 
-  foreach ($effect in ($Effects | Sort-Object EffectID)) {
+  foreach ($effect in ($Effects | Sort-Object { [int]$_.EffectID })) {
     $nameDE = if ($effect.NameDE) { $effect.NameDE } else { $effect.Name }
     $nameEN = if ($effect.NameEN) { $effect.NameEN } else { $nameDE }
     $content += "- $($effect.EffectID) - $nameDE - $nameEN"
@@ -2977,36 +2998,28 @@ function Validate-GeneratedXml {
     }
   }
 
-  # 5. Check that generated IDs are EXACTLY in expected range (no gaps, no overflow into buffer zone)
-  # Expected: IDs 73-175 (103 parameters total)
-  # Buffer Zone: IDs 176-193 MUST remain empty for future effects
-  # Manual Parameters: IDs 194+ (HCL, ResetColor, etc.)
+  # 5. Check the stable effect/parameter ID mapping. Gaps between the fixed
+  # per-effect ranges are intentional and keep later effects migration-safe.
   $generatedParamCount = ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum
-  $expectedMaxId = $StartId + $generatedParamCount - 1
-    
-  # Get all generated IDs in the effect parameter range
-  $generatedIds = $paramIds | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $StartId } | Sort-Object
-    
-  # Check for IDs BELOW the start
-  foreach ($id in $generatedIds) {
-    if ($id -lt $StartId) {
-      $warnings += "WARNUNG: Parameter ID $id liegt UNTER dem Start-Bereich ($StartId)!"
+  $expectedGeneratedIds = @()
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 }) {
+    foreach ($param in $effect.Parameters) {
+      $expectedGeneratedIds += Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
     }
   }
-    
-  # Check for IDs in the BUFFER ZONE (should be empty!)
-  $bufferZoneStart = $expectedMaxId + 1
-  $bufferZoneEnd = 193  # Hard-coded buffer zone limit
-  foreach ($id in $generatedIds) {
-    if ($id -ge $bufferZoneStart -and $id -le $bufferZoneEnd) {
-      $errors += "FEHLER: Parameter ID $id liegt in der BUFFER ZONE ($bufferZoneStart-$bufferZoneEnd)! Diese Range muss für zukünftige Effekte FREI bleiben!"
-    }
-  }
-    
-  # Check for gaps in the generated range
-  for ($expectedId = $StartId; $expectedId -le $expectedMaxId; $expectedId++) {
+  $expectedGeneratedIds = @($expectedGeneratedIds | Sort-Object -Unique)
+  $expectedMaxId = ($expectedGeneratedIds | Measure-Object -Maximum).Maximum
+  $generatedIds = @($paramIds | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $StartId -and $_ -le $expectedMaxId } | Sort-Object -Unique)
+
+  foreach ($expectedId in $expectedGeneratedIds) {
     if ($generatedIds -notcontains $expectedId) {
-      $warnings += "WARNUNG: Fehlende Parameter ID: $expectedId (erwartet in Range $StartId-$expectedMaxId)"
+      $errors += "Missing stable effect Parameter ID: $expectedId"
+    }
+  }
+
+  foreach ($generatedId in $generatedIds) {
+    if ($expectedGeneratedIds -notcontains $generatedId) {
+      $errors += "Unexpected generated effect Parameter ID: $generatedId"
     }
   }
 
@@ -3038,7 +3051,7 @@ function Validate-GeneratedXml {
     $uniqueRefs = ($refIds | Select-Object -Unique).Count
 
     Write-Host "    OK All validations passed!" -ForegroundColor Green
-    Write-Host "       - $generatedParamCount parameters generated (ID $StartId-$expectedMaxId)" -ForegroundColor DarkGray
+    Write-Host "       - $generatedParamCount parameters generated (stable IDs through $expectedMaxId)" -ForegroundColor DarkGray
     Write-Host "       - $uniqueParams unique parameter definitions" -ForegroundColor DarkGray
     Write-Host "       - $uniqueRefs unique parameter refs" -ForegroundColor DarkGray
     Write-Host "       - $($offsets.Count) offset locations used" -ForegroundColor DarkGray
@@ -3151,7 +3164,7 @@ $DynamicContent                    $endMarker
       Write-Host "    OK Template saved successfully" -ForegroundColor Green
 
       # Validate the result
-      $validationResult = Validate-GeneratedXml -TemplatePath $TemplatePath -Effects $Effects -StartId ($NextId - ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum) -StartOffset ($NextOffset - ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum)
+      $validationResult = Validate-GeneratedXml -TemplatePath $TemplatePath -Effects $Effects -StartId $StartId -StartOffset $StartOffset
 
       if ($validationResult) {
         # Remove backup after successful validation
@@ -3237,7 +3250,7 @@ function Generate-CppMapping {
   $cpp += '    switch (static_cast<PT_NEOEffectType>(effectID))'
   $cpp += '    {'
 
-  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
     # Derive enum name from ClassName
     $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
     if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }
@@ -3335,7 +3348,7 @@ function Generate-SceneEffectParameterRefs {
   }
 
   # Generate aliased ParameterRefs per effect (Text overrides for per-effect labels)
-  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
   if ($effectsWithParams.Count -gt 0) {
     $xml += ''
     $xml += '                            <!-- Aliased ParameterRefs: per-effect labels pointing to generic slots -->'
@@ -3384,7 +3397,7 @@ function Generate-SceneEffectDynamicChoose {
   $xml = @()
   $xml += ''
 
-  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
   if ($effectsWithParams.Count -eq 0) {
     $xml += '                                <!-- No scene effect parameters for dynamic UI -->'
     return ($xml -join "`n")
@@ -3438,7 +3451,7 @@ function Generate-SceneEffectPCRParameters {
 
   # Aliased ParameterRefRefs for all effects — forces ETS to refresh their UI
   # when the ParameterCalculation fires on effect type change.
-  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
   $totalAliased = 0
   foreach ($effect in $effectsWithParams) {
     $xml += "                                    <!-- $($effect.NameDE) (ID $($effect.EffectID)) -->"
@@ -3485,7 +3498,7 @@ function Get-CueTypedParamPlan {
   $plan = @()
   $k = 0
   $baseId = $script:Config.CueGenericSlotBaseId  # 1
-  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
 
   foreach ($effect in $effectsWithParams) {
     $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
@@ -3717,7 +3730,7 @@ function Generate-SceneEffectDefaultsFunction {
 
   Write-Host "    ▸ Generating Scene Effect Defaults JS function..." -ForegroundColor DarkGray
 
-  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
   $slotCount = $script:Config.SceneGenericSlotCount  # 10
 
   $lines = @()
@@ -3824,7 +3837,7 @@ function Generate-SceneEffectDefaultsJS {
 
   Write-Host "    ▸ Generating Scene Effect Defaults JS lookup table..." -ForegroundColor DarkGray
 
-  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID
+  $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
   $slotCount = $script:Config.SceneGenericSlotCount  # 10
 
   $lines = @()
@@ -3967,7 +3980,7 @@ function Generate-SceneCppMapping {
   $cpp += '    switch (static_cast<PT_NEOEffectType>(effectID))'
   $cpp += '    {'
 
-  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object EffectID) {
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
     # Derive enum name from ClassName
     $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
     if ([string]::IsNullOrEmpty($enumName)) { $enumName = $effect.ClassName }

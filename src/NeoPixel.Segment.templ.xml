@@ -75,7 +75,7 @@
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-                <!-- Start ID: 600, Start Offset: 30 (FIXED - do not change!) -->
+                <!-- Start ID: 1000, Start Offset: 30 (FIXED - do not change!) -->
         <!-- END AUTO-GENERATED: Effect Parameters Union -->
 
                  <!-- ═══════════════════════════════════════════════════════════════════════════════════
