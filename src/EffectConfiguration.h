@@ -43,6 +43,10 @@ class EffectConfiguration
     /**
      * @brief Apply an effect to a segment
      *
+     * Loads ETS parameters when the requested effect is the segment's configured base
+     * effect. Runtime-selected effects use their built-in defaults because their hidden
+     * ETS parameter blocks do not contain usable values.
+     *
      * @param segment Target segment
      * @param effectType Effect type ID (0-20+)
      */

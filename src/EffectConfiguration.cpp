@@ -156,23 +156,53 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
         // Store effect type in config for parameter loading
         segment->getConfig().effectType = effectType;
 
-        // Don't clear the segment - preserve current color!
-        // Effects that generate their own colors (Rainbow, Fire) will override anyway
-        // Effects that need a color (Wipe, Theater Chase) will use the primary color
-
-        segment->setEffect(effect);
-
-        // Check if we should reset to default color on effect change
-        // This is controlled by the ETS parameter "Bei Effektwechsel Farbe auf Standard zurücksetzen"
         uint8_t _channelIndex = _module->getChannelIndex();
+        uint8_t configuredEffectType = static_cast<uint8_t>(ParamNEO_NEONEOEffectType);
         bool resetToDefault = ParamNEO_NEOSegmentResetColorOnEffectChange;
 
-        // Load effect-specific parameters from ETS after setting the effect
-        // If resetToDefault is true, also reload the default color from ETS
-        setupEffectConfiguration(segment, resetToDefault);
+        // ETS only contains a meaningful parameter block for the segment's configured base
+        // effect. Parameters of all hidden effect blocks read as zero. This matters when an
+        // effect selected via KO is restored from flash: loading that hidden block would turn
+        // Wipe's built-in Loop default from 1 into 0, for example.
+        if (effectType == configuredEffectType)
+        {
+            segment->setEffect(effect);
+            setupEffectConfiguration(segment, resetToDefault);
+        }
+        else
+        {
+            // Runtime-selected effects have no active ETS parameter block. Start them with the
+            // defaults declared by the effect itself instead of applying hidden zero values.
+            segment->setEffect(effect, true);
 
-        logInfoP("Applied effect '%s' (ID: %d) to segment %s",
+            if (resetToDefault)
+            {
+                uint32_t color = ParamNEO_NEOSegmentStartupColor;
+                uint8_t r = (color >> 16) & 0xFF;
+                uint8_t g = (color >> 8) & 0xFF;
+                uint8_t b = color & 0xFF;
+                uint8_t w = ParamNEO_NEOSegmentStartupW;
+                segment->setPrimaryColor(r, g, b, w);
+
+                // setEffect() entered the effect before the optional ETS color reset. Enter it
+                // once more so effects that initialise their pixels see the final color.
+                segment->resetEffectState();
+                effect->onEnter(segment);
+            }
+
+            const uint8_t paramCount = effect->getParameterCount();
+            logInfoP("Effect '%s' initialized with %d built-in default parameter(s)",
+                     effect->getName(), paramCount);
+            for (uint8_t i = 0; i < paramCount; i++)
+            {
+                logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i),
+                         (unsigned long)effect->getParameter(segment, i));
+            }
+        }
+
+        logInfoP("Applied effect '%s' (ID: %d, parameters: %s) to segment %s",
                  effect->getName(), effectType,
+                 effectType == configuredEffectType ? "ETS" : "defaults",
                  resetToDefault ? "(with color reset)" : "(keeping current color)");
     }
     else

@@ -1589,7 +1589,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         logInfoP("Segment %d Effekt schalten: %d -> %d", channel, cur, next);
                         applyEffectToSegment(targetSegment, next);
-                        _effectConfiguration->setupEffectConfiguration(targetSegment);
                         SegmentConfig& cfgFx = _segments[channel];
                         cfgFx.savedEffectType = next;
                         // Solid is the valid effect ID 0, not the absence of an
@@ -1862,7 +1861,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         // Restore effect (including Solid effect type=0!)
                         applyEffectToSegment(targetSegment, cfg.savedEffectType);
-                        _effectConfiguration->setupEffectConfiguration(targetSegment);
                         // Restore the pre-global intent scaled by the live global factor (else overshoot).
                         {
                             uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
@@ -2415,6 +2413,9 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
         uint8_t oldCh = _channelIndex;
         _channelIndex = (uint8_t)segmentIndex;
         applyEffectToSegment(cfg.segment, effectId);
+        // Effect selection loads either the configured ETS parameters or built-in defaults,
+        // both of which include speed. The synchronized value is authoritative here.
+        ecfg.speed = speed;
         // Colour was set before the effect clear — re-apply it
         cfg.segment->setPrimaryColor(r, g, b, w, cw);
         cfg.segment->setBrightness(brightness);
@@ -6323,7 +6324,6 @@ void NeoPixelBusModule::applySegmentDefaultState(size_t segmentIndex)
     // Base effect + its effect-specific parameters (mirror of configureEffects()).
     uint8_t effectType = static_cast<uint8_t>(ParamNEO_NEONEOEffectType);
     applyEffectToSegment(cfg.segment, effectType);
-    setupEffectConfiguration(cfg.segment);
 
     // Default color/white (TypeColor RGB = 0x00RRGGBB) — the member wrapper above does NOT
     // load the default color, so apply it explicitly like setupEffectConfiguration(seg, true).

@@ -415,11 +415,6 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             if (effectFromFlash)
             {
                 _module->applyEffectToSegment(seg, effectType);
-                if (effectType > 0)
-                {
-                    _module->setChannelIndex(i);
-                    _module->setupEffectConfiguration(seg);
-                }
             }
             // If effect from ETS: already loaded in configureEffects(), skip re-apply
 
