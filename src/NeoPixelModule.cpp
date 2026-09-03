@@ -301,6 +301,13 @@ void NeoPixelBusModule::loop(bool configured)
         loopSyncMaster();
     }
 
+    // Do not render the ETS startup defaults before flash persistence has restored the
+    // selected "last state" brightness/effect in processAfterStartupDelay(). Otherwise
+    // those defaults are transmitted for the startup-delay window and the strip can
+    // visibly start at full brightness before changing to its saved brightness.
+    // Local console test mode remains usable without a configured KNX application.
+    if (!_localTestMode && !openknx.afterStartupDelay()) return;
+
     // Effektmanager: tick all active sequencers (no-op in local test mode — EMs are ETS-only)
     loopEffektManager();
 
