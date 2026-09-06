@@ -327,7 +327,9 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             continue;
         }
 
-        // Set channel index for ETS parameter access
+        // Parameter macros use this persistence object's channel index; the module's
+        // index is also needed by applyEffectToSegment() below.
+        _channelIndex = static_cast<uint8_t>(i);
         _module->setChannelIndex(i);
         uint8_t segmentBehavior = ParamNEO_NEOSegmentStartupBehavior;
 
@@ -524,8 +526,12 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     state.version = FLASH_FORMAT_VERSION;
     state.validFlags = 0;
 
-    // Save power state (always valid)
-    state.power = (seg->getBrightness() > 0) ? 1 : 0;
+    // Power-off retains brightness for the next power-on. Brightness alone would
+    // therefore save a switched-off segment (or globally switched-off strip) as ON.
+    // Segment power-off also stops rendering. Check that live state, since savedPower
+    // can still contain an old flash value when ETS startup settings override it.
+    const bool switchedOff = !_module->_globalPowerOn || (cfg.savedPower == 0 && seg->isPaused());
+    state.power = (!switchedOff && seg->getBrightness() > 0) ? 1 : 0;
     state.validFlags |= 0x01;
 
     // Save color (use savedR/G/B/WW/CW if valid, otherwise read from segment)

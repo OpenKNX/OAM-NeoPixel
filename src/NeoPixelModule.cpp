@@ -49,6 +49,9 @@
 #include <new>
 #include <string>
 #include <vector>
+#ifdef ARDUINO_ARCH_ESP32
+    #include <esp_system.h>
+#endif
 // #define NEOPIXEL_MODULE_TEST_ENV
 #ifdef NEOPIXEL_MODULE_TEST_ENV
     #include "test/test.h"
@@ -109,6 +112,30 @@ static uint8_t resolveHclMaster(uint8_t requestedMaster, uint8_t availableMaster
 }
 
 NeoPixelBusModule openknxNeoPixelModule;
+
+#ifdef ARDUINO_ARCH_ESP32
+static void logEsp32ResetReason()
+{
+    const esp_reset_reason_t reason = esp_reset_reason();
+    const char* name = "unknown/other";
+    switch (reason)
+    {
+        case ESP_RST_POWERON: name = "power-on"; break;
+        case ESP_RST_EXT: name = "external reset"; break;
+        case ESP_RST_SW: name = "software restart"; break;
+        case ESP_RST_PANIC: name = "panic/exception"; break;
+        case ESP_RST_INT_WDT: name = "interrupt watchdog"; break;
+        case ESP_RST_TASK_WDT: name = "task watchdog"; break;
+        case ESP_RST_WDT: name = "other watchdog"; break;
+        case ESP_RST_DEEPSLEEP: name = "deep-sleep wake"; break;
+        case ESP_RST_BROWNOUT: name = "brownout"; break;
+        case ESP_RST_SDIO: name = "SDIO reset"; break;
+        default: break;
+    }
+    logInfo("NeoPixel", "ESP32 reset reason: %d (%s), uptime: %lu ms",
+            static_cast<int>(reason), name, static_cast<unsigned long>(millis()));
+}
+#endif
 
 // ============================================================================
 // Console bridge (NeoPixelEmConsole.h): the OFM renders all neo em/cue/chain
@@ -179,6 +206,9 @@ NeoPixelBusModule::~NeoPixelBusModule()
 
 void NeoPixelBusModule::setup(bool configured)
 {
+#ifdef ARDUINO_ARCH_ESP32
+    logEsp32ResetReason();
+#endif
     // Allocate the Effektmanager data table here (heap ready), NOT as a global static
     // initializer: this ~8 KB new[] (16 EMs x ~500 B) at C++ static-init time can abort the
     // boot on low-DRAM ESP32 (e.g. ESP32-WROOM without PSRAM). new(std::nothrow) degrades
@@ -2483,6 +2513,9 @@ void NeoPixelBusModule::showHelp()
 {
     // Print the 'neo' command group header via core module
     _neoPixel.showHelp();
+#ifdef ARDUINO_ARCH_ESP32
+    openknx.console.printHelpLine("neo resetreason", "Show ESP32 reset cause and current uptime (read-only)");
+#endif
     openknx.console.printHelpLine("neo led status", "Show active NeoPixel blink codes");
     openknx.console.printHelpLine("neo led error <1-5>", "Test error blink code on STATUS LED");
     openknx.console.printHelpLine("neo led warn <1-3>", "Test warning pulsing on STATUS LED");
@@ -2497,6 +2530,13 @@ void NeoPixelBusModule::showHelp()
 // Console: process commands by delegating 'neo' prefixed commands
 bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
 {
+#ifdef ARDUINO_ARCH_ESP32
+    if (command == "neo resetreason")
+    {
+        logEsp32ResetReason();
+        return true;
+    }
+#endif
 #ifdef OPENKNX_DEBUG
     // Handle NeoPixel-specific debug commands
     if (command == "neoa")
