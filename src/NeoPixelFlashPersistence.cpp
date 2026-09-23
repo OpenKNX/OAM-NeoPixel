@@ -460,15 +460,11 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         }
     }
 
-    // Trigger hardware update
-    VirtualStrip* vstrip = _module->getVirtualStrip();
-    if (vstrip)
-    {
-        vstrip->show();
+    // Via the module helper: a direct vstrip->show() bypasses the strip arbitration.
+    _module->showVirtualStripIfIdle();
 #ifdef OPENKNX_DEBUG
-        logInfoP("Hardware update triggered (show() called)");
+    logInfoP("Hardware update triggered (show() called)");
 #endif
-    }
 
     if (_relayFlashValid && _module->_relayCount > 0)
     {

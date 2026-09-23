@@ -499,6 +499,23 @@ class NeoPixelBusModule : public OpenKNX::Module
     void setRelayOutput(uint8_t relayIndex, bool state);
     void scheduleRelayChange(uint8_t relayIndex, bool targetState);
     void processRelayTimers();
+
+    /// Push the virtual buffer to the strips, or defer it while a transfer is running:
+    /// syncToPhysical() would skip the busy strips and send only part of the frame.
+    void showVirtualStripIfIdle();
+
+    bool _virtualShowPending = false; ///< a send was deferred; loop() retries until it goes out
+
+    // LED shutdown (ETS: ParamNEO_NEOTurnOffBeforeRestart)
+    bool prepareLedShutdown(); ///< Stop effects, drop relays, blank the virtual buffer
+    void pumpLedShutdown();    ///< Non-blocking sequencer, one strip per loop() pass
+
+    static constexpr uint32_t kLedShutdownTimeoutMs = 2000; ///< Per strip: give up on a wedge
+
+    bool _turnOffBeforeRestart = false; ///< Cached at setup(); the parameter reads 0 once tables unload
+    bool _ledShutdownActive = false;
+    uint32_t _ledShutdownIndex = 0;
+    uint32_t _ledShutdownStartMs = 0;
 };
 
 extern NeoPixelBusModule openknxNeoPixelModule;

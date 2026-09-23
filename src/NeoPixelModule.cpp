@@ -231,6 +231,7 @@ void NeoPixelBusModule::setup(bool configured)
     }
     setup_test_environment(_neoPixel);
     _initialized = true;
+    _turnOffBeforeRestart = true; // no ETS parameter in the test env; keep the shutdown hooks live
     #ifdef NEOPIXEL_BLINK_CODE_TEST
     test_blink_codes(*this);
     #endif
@@ -246,6 +247,9 @@ void NeoPixelBusModule::setup(bool configured)
         // Configure strips, segments and effects from ETS parameters
         configureFromETS();
         _initialized = true;
+
+        // paramByte() returns 0 once the tables are unloaded, so the hooks cannot read it.
+        _turnOffBeforeRestart = ParamNEO_NEOTurnOffBeforeRestart;
         // Initialize all physical strips (PIO, DMA, etc.) - MUST be after configureFromETS()
         // which creates the PhysicalStrip objects, but BEFORE any show() calls
         _neoPixel.setup(configured);
@@ -256,7 +260,7 @@ void NeoPixelBusModule::setup(bool configured)
         // Now that hardware is initialized, clear LEDs if requested during configuration
         if (_clearLedsAfterSetup && _virtualStrip)
         {
-            _virtualStrip->show();
+            showVirtualStripIfIdle();
             logInfoP("LEDs cleared - will restore saved state after startup delay");
             _clearLedsAfterSetup = false;
         }
@@ -278,9 +282,20 @@ void NeoPixelBusModule::setup(bool configured)
 
 void NeoPixelBusModule::loop(bool configured)
 {
+    // Ahead of the 'configured' gate: during an ETS download this is the only path still
+    // running. Skip rendering meanwhile, or a fresh frame re-lights the strips.
+    if (_ledShutdownActive)
+    {
+        pumpLedShutdown();
+        return;
+    }
+
     // _localTestMode ('neo init') lets the loop run without an ETS download for bench tests.
     if ((!configured && !_localTestMode) || !_initialized) return;
 
+    // Ahead of the global-power branch, which returns before the render path: a Power-OFF
+    // that arrived mid-frame blanked only the virtual buffer.
+    if (_virtualShowPending) showVirtualStripIfIdle();
 
     // Check for hardware configuration mismatch and warn periodically
     if (_hwConfigMismatch)
@@ -369,53 +384,177 @@ void NeoPixelBusModule::loop(bool configured)
     }
 }
 
-void NeoPixelBusModule::processBeforeRestart()
+void NeoPixelBusModule::showVirtualStripIfIdle()
 {
-    // Check if LED shutdown is enabled in ETS
-    if (!ParamNEO_NEOTurnOffBeforeRestart)
+    if (!_virtualStrip) return;
+
+    NeoPixelManager* manager = _neoPixel.getManager();
+
+    // Phase alone is not enough: an abandoned frame leaves a strip transmitting, and
+    // loopOffRefresh() starts one outside the machine. syncToPhysical() would skip those.
+    if (manager && (manager->isFrameInFlight() || manager->isAnyBusy()))
     {
-        logInfoP("LED shutdown before restart is disabled in ETS");
+        _virtualShowPending = true; // deferred, never dropped - loop() retries
         return;
     }
 
-    // Turn off all LEDs before ETS programming or device restart
+    _virtualShowPending = false;
+    _virtualStrip->show();
+}
+
+/**
+ * @brief Stop effects, drop the relays and blank the logical buffer
+ * @return false when the ETS option is off or the module never came up
+ *
+ * Blanks the VirtualStrip only - syncAll() rebuilds the physical buffers from it. Those are
+ * cleared per strip at the point of transmission, where the driver is provably idle: every
+ * driver silently skips clear() while a transfer runs.
+ */
+bool NeoPixelBusModule::prepareLedShutdown()
+{
+    if (!_turnOffBeforeRestart)
+    {
+        logInfoP("LED shutdown before restart is disabled in ETS");
+        return false;
+    }
+
     logInfoP("Turning off all LEDs before restart/programming");
 
     // Turn off external relays for safety
-    if (_relayCount > 0)
+    for (uint8_t i = 0; i < _relayCount; ++i)
     {
-        for (uint8_t i = 0; i < _relayCount; ++i)
-        {
-            setRelayOutput(i, false);
-        }
+        setRelayOutput(i, false);
     }
 
-    if (!_initialized) return;
+    if (!_initialized) return false;
 
-    // Stop all effects and clear all LEDs
+    // Stop all effects so nothing repaints the buffers behind us
     for (auto& segConfig : _segments)
     {
         if (segConfig.segment && segConfig.segment->hasEffect())
         {
-            segConfig.segment->clearEffect(); // Remove effect (stops further updates)
+            segConfig.segment->clearEffect();
         }
     }
 
-    // Use library method to clear and show all LEDs
-    _neoPixel.clearAll();  // Clear all segments
-    _neoPixel.updateAll(); // Send to hardware
+    if (_virtualStrip) _virtualStrip->clear();
+    return true;
+}
 
-    // Wait for DMA completion before restart (max 100ms timeout)
-    if (_virtualStrip)
+void NeoPixelBusModule::processBeforeRestart()
+{
+    if (!prepareLedShutdown()) return;
+    _ledShutdownActive = false;
+
+    NeoPixelManager* manager = _neoPixel.getManager();
+    if (!manager) return;
+
+    // Blocking on purpose: the reboot follows immediately and must not cut the dark frame.
+    // Retire an in-flight frame first - showAll() would resume that one and mark the parallel
+    // strips as sent without re-transmitting them, leaving them lit through the reboot.
+    manager->flushFrame();
+
+    const uint32_t stripCount = manager->getStripCount();
+    for (uint32_t i = 0; i < stripCount; i++)
     {
-        _virtualStrip->waitForCompletion(100);
+        PhysicalStrip* strip = manager->getStrip(i);
+        if (!strip || !strip->isInitialized()) continue;
+
+        // Frame-derived deadline, so a timeout means a wedge: clear() then no-ops and the
+        // strip keeps its lit frame through the reboot.
+        if (!strip->waitForTransfer(strip->getTransferTimeoutMs()))
+            logWarningP("Strip %u did not finish - it may stay lit through the restart", (unsigned)i);
+
+        strip->clear();
     }
+
+    manager->showAll();
+    manager->flushFrame(); // showAll() only starts the frame now - the reboot must not cut it
 }
 
 void NeoPixelBusModule::processBeforeTablesUnload()
 {
-    // Let's do for now the same as processBeforeRestart
-    processBeforeRestart();
+    // An ETS download follows, not a restart: the KNX stack keeps running, so arm the
+    // sequencer instead of blocking loop() with a synchronous showAll().
+    if (!prepareLedShutdown()) return;
+
+    _ledShutdownActive = true;
+    _ledShutdownIndex = 0;
+    _ledShutdownStartMs = millis();
+}
+
+/**
+ * @brief Transmit the blanked buffers without stalling loop()
+ *
+ * One strip per pass, and only while nothing is on the wire - that preserves the arbitration
+ * showAll() enforces without its blocking waitForTransfer(). A pass costs a frame start on the
+ * asynchronous drivers; the synchronous fallbacks (PIO without DMA, ESP32 hardware SPI) still
+ * cost a full frame inside show().
+ */
+void NeoPixelBusModule::pumpLedShutdown()
+{
+    NeoPixelManager* manager = _neoPixel.getManager();
+    if (!manager)
+    {
+        _ledShutdownActive = false;
+        return;
+    }
+
+    // A frame started by the render path still owns the strip buffers. Let the manager's own
+    // state machine finish it - one step per pass, no waiting - before blanking anything.
+    if (manager->isFrameInFlight())
+    {
+        manager->showAll();
+        return;
+    }
+
+    const uint32_t stripCount = manager->getStripCount();
+
+    // Skip strips that never came up; init() keeps the device running on a partial set
+    while (_ledShutdownIndex < stripCount)
+    {
+        PhysicalStrip* candidate = manager->getStrip(_ledShutdownIndex);
+        if (candidate && candidate->isInitialized()) break;
+        _ledShutdownIndex++;
+    }
+
+    if (_ledShutdownIndex >= stripCount)
+    {
+        _ledShutdownActive = false;
+        return;
+    }
+
+    // Never overlap frames - poll again on the next pass instead of waiting here
+    for (uint32_t i = 0; i < stripCount; i++)
+    {
+        PhysicalStrip* busyCheck = manager->getStrip(i);
+        if (!busyCheck || !busyCheck->isInitialized() || !busyCheck->isBusy()) continue;
+
+        // The budget is per strip: the timer restarts on every start below, so a long chain of
+        // strips cannot trip it. Checked here and not earlier so it can only fire while a strip
+        // really is busy, and so the log names that strip - not the next one waiting to be sent.
+        if ((uint32_t)(millis() - _ledShutdownStartMs) >= kLedShutdownTimeoutMs)
+        {
+            logWarningP("LED shutdown aborted - strip %u still busy after %ums",
+                        (unsigned)i, (unsigned)kLedShutdownTimeoutMs);
+            _ledShutdownActive = false;
+        }
+        return;
+    }
+
+    PhysicalStrip* strip = manager->getStrip(_ledShutdownIndex);
+
+    // Safe here and only here: the scan above proved no transfer is running, and the PIO
+    // drivers refuse to blank a buffer while it is being sent.
+    strip->clear();
+
+    // No markFrameSent(): that records a frame as confirmed on the wire, which it is not
+    // until the transfer completes. Leaving the strip dirty keeps a later showAll() retrying.
+    if (!strip->show())
+        logWarningP("LED shutdown frame rejected by strip %u", (unsigned)_ledShutdownIndex);
+
+    _ledShutdownIndex++;
+    _ledShutdownStartMs = millis();
 }
 
 // ============================================================================
@@ -838,7 +977,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         segConfig.segment->clearAll(); // Clear RGBW pixels
                     }
                 }
-                _virtualStrip->show();
+                showVirtualStripIfIdle();
             }
         }
         else
@@ -1849,7 +1988,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         {
                             cfg.pendingPowerOnRestart = false;
                             startEffektManagerFresh(channel, powerOnEm);
-                            if (_virtualStrip) _virtualStrip->show();
+                            showVirtualStripIfIdle();
                         }
                         else
                         {
@@ -1873,7 +2012,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         {
                             cfg.suspendedByPower = false;
                             resumeEffektManager(channel); // resume() also re-applies master brightness
-                            if (_virtualStrip) _virtualStrip->show();
+                            showVirtualStripIfIdle();
                         }
                         _channelIndex = channel;
                         if (KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch))
@@ -1941,7 +2080,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     // global-off).
                     if (_globalPowerOn && _virtualStrip)
                     {
-                        _virtualStrip->show();
+                        showVirtualStripIfIdle();
                     }
                 }
                 else
@@ -2001,7 +2140,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         // Do not transmit if a physical buffer accepted only part of
                         // the virtual frame. The regular auto-update will retry it.
-                        if (manager->syncAll()) manager->showAll();
+                        // syncAll() rewrites the buffers a running transfer is reading, so
+                        // skip while one is in flight; the auto-update carries the change.
+                        if (!manager->isFrameInFlight() && manager->syncAll()) manager->showAll();
                     }
                 }
 
