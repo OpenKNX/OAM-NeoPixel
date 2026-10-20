@@ -6529,6 +6529,17 @@ void NeoPixelBusModule::applySegmentDefaultState(size_t segmentIndex)
     setChannelIndex(prevChannel);
 }
 
+uint8_t NeoPixelBusModule::effectiveStartupBehavior(size_t segmentIndex)
+{
+    uint8_t prevChannel = getChannelIndex();
+    setChannelIndex(static_cast<uint8_t>(segmentIndex));
+    // Segment: 0=Global verwenden, 1=Aus, 2=Letzter Zustand, 3=An (ETS-Werte)
+    uint8_t segmentBehavior = ParamNEO_NEOSegmentStartupBehavior;
+    uint8_t behavior = (segmentBehavior == 0) ? ParamNEO_NEOGlobalStartupBehavior : segmentBehavior - 1;
+    setChannelIndex(prevChannel);
+    return behavior > 2 ? 2 : behavior;
+}
+
 void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
 {
     // Console bring-up ('neo init') has no ETS KO table — writing KOs would fault. Covers

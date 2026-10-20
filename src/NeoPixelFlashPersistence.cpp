@@ -205,6 +205,10 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
                                               (state.effectFlags & 0x01) ? 1 : 0, (state.effectFlags & 0x02) ? 1 : 0);
 #endif
 
+        // Only "Letzter Zustand" segments take the flash state; the others keep their ETS
+        // startup state, so their saved* fields describe what they actually show.
+        if (_module->effectiveStartupBehavior(i) != 1) continue;
+
         // Store in segment config for later restoration (after startup delay)
         auto& segments = _module->getSegments();
         auto& cfg = segments[i];
@@ -310,9 +314,6 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
     logInfoP("Flash restore: Checking for segments with 'Letzter Zustand' mode...");
 #endif
 
-    // Get global startup behavior
-    uint8_t globalBehavior = ParamNEO_NEOGlobalStartupBehavior; // 0=Aus, 1=Letzter Zustand, 2=ETS-Parameterwert
-
     for (size_t i = 0; i < segments.size(); i++)
     {
         auto& cfg = segments[i];
@@ -331,18 +332,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         // index is also needed by applyEffectToSegment() below.
         _channelIndex = static_cast<uint8_t>(i);
         _module->setChannelIndex(i);
-        uint8_t segmentBehavior = ParamNEO_NEOSegmentStartupBehavior;
-
-        // Determine effective behavior
-        uint8_t effectiveBehavior;
-        if (segmentBehavior == 0)
-        {
-            effectiveBehavior = globalBehavior; // Use global
-        }
-        else
-        {
-            effectiveBehavior = segmentBehavior - 1; // 1=Aus->0, 2=Letzter->1, 3=ETS->2
-        }
+        uint8_t effectiveBehavior = _module->effectiveStartupBehavior(i);
 
         // Only restore if mode is "Letzter Zustand" (1)
         if (effectiveBehavior != 1)

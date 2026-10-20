@@ -462,6 +462,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void resumeEffektManager(size_t segmentIndex);
     void interruptEmIfRunning(size_t segmentIndex); ///< direct manual KO takes over a running EM
     void applySegmentDefaultState(size_t segmentIndex); ///< re-apply the segment's ETS default (effect+color+brightness)
+    uint8_t effectiveStartupBehavior(size_t segmentIndex); ///< 0=Aus, 1=Letzter Zustand, 2=ETS-Parameterwert (segment overrides global)
     void sendEmStatusKOs(size_t segmentIndex);
     void sendEffectTextStatusKO(size_t segmentIndex);
     uint8_t configuredBootEm(size_t segmentIndex);

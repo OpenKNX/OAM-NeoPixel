@@ -24,10 +24,6 @@ void EffectConfiguration::configureEffects()
     auto& segments = _module->getSegments();
     auto& neoPixel = _module->getNeoPixel();
 
-    // Read global startup behavior (used as default for segments)
-    _module->setChannelIndex(0);
-    uint8_t globalBehavior = ParamNEO_NEOGlobalStartupBehavior; // 0=Aus, 1=Letzter Zustand, 2=ETS-Parameterwert
-
     for (size_t i = 0; i < segments.size(); ++i)
     {
         if (segments[i].segment)
@@ -57,19 +53,7 @@ void EffectConfiguration::configureEffects()
             segments[i].savedEffectValid = true;
 
             // 2. Determine startup behavior (segment can override global)
-            uint8_t segmentBehavior = ParamNEO_NEOSegmentStartupBehavior;
-            uint8_t effectiveBehavior;
-
-            if (segmentBehavior == 0)
-            {
-                // Use global setting
-                effectiveBehavior = globalBehavior;
-            }
-            else
-            {
-                // Segment-specific setting (subtract 1: 1=Aus->0, 2=Letzter->1, 3=ETS->2)
-                effectiveBehavior = segmentBehavior - 1;
-            }
+            uint8_t effectiveBehavior = _module->effectiveStartupBehavior(i);
 
             // 3. Apply startup behavior
             const char* behaviorNames[] = {"Aus", "Letzter Zustand", "ETS-Parameterwert"};
