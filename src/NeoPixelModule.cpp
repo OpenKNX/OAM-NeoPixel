@@ -865,6 +865,12 @@ void NeoPixelBusModule::seedStatus()
         syncSegmentStatus(i, StatusMode::Seed);
     _statusSeeded = true;
 
+    // "Status nach Neustart senden": every status once, paced by processStatusQueue().
+    if (ParamNEO_NEOStatusSendOnStartup)
+    {
+        for (uint8_t scope = 0; scope < statusScopeCount(); scope++)
+            queueStatus(scope, true);
+    }
 }
 
 void NeoPixelBusModule::queueStatus(uint8_t scope, bool always)

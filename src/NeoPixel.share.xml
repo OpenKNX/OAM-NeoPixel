@@ -741,6 +741,8 @@
               <Union SizeInBit="56">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="36" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
+                <!-- Byte 36 bit 2: send the seeded status objects once after the startup delay -->
+                <Parameter Id="%AID%_UP-%TT%00011" Offset="0" BitOffset="2" Name="NEOStatusSendOnStartup" ParameterType="%AID%_PT-Boolean" Text="Status nach Neustart senden" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe R" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe G" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%00027" Offset="3" BitOffset="0" Name="NEOGlobalStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe B" Value="255"/>
@@ -923,6 +925,7 @@
 
               <!-- Global Startup Behavior Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00024_R-%TT%0002401" RefId="%AID%_UP-%TT%00024" />
+              <ParameterRef Id="%AID%_UP-%TT%00011_R-%TT%0001101" RefId="%AID%_UP-%TT%00011" />
               <ParameterRef Id="%AID%_UP-%TT%00025_R-%TT%0002501" RefId="%AID%_UP-%TT%00025" />
               <ParameterRef Id="%AID%_UP-%TT%00026_R-%TT%0002601" RefId="%AID%_UP-%TT%00026" />
               <ParameterRef Id="%AID%_UP-%TT%00027_R-%TT%0002701" RefId="%AID%_UP-%TT%00027" />
@@ -1312,6 +1315,7 @@
                       </choose>
                     </when>
                   </choose>
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00011_R-%TT%0001101" IndentLevel="1" HelpContext="%DOC%"/>
                   <!-- ========================================================================================================= -->
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="HCL / Lichtmanager" UIHint="Headline" />

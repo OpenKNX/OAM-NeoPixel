@@ -36,6 +36,7 @@ Source: [`src/NeoPixel.share.xml`](../src/NeoPixel.share.xml)
 | Local IDs | Use |
 |---|---|
 | `000..002` | Trigger description and global HCL settings |
+| `011` | Send the seeded status objects once after a restart |
 | `020..029` | Strip/segment counts, update speed, restart, and global startup settings |
 | `030..059` | Virtual-strip topology, positions, and boundaries |
 | `060..061` | Global startup effect selectors |
@@ -59,10 +60,14 @@ Source: [`src/NeoPixel.share.xml`](../src/NeoPixel.share.xml)
 Currently unused global suffixes:
 
 ```text
-003..019, 062..067, 075, 090, 099..100, 109..110, 119..129,
+003..010, 012..019, 062..067, 075, 090, 099..100, 109..110, 119..129,
 151..154, 187..193, 197..199, 207..249, 257..299, 307..349,
 357..409, 421..999
 ```
+
+`003..010` and `062..067` were used by earlier products (git history; `062` was the
+HCL strength in Release 0.1). Release still replaces versions down to 0.1, so ETS
+would carry those old values into a new parameter with the same ID: keep them free.
 
 ## Segment namespace: `40CCnnn`
 
