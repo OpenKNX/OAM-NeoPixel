@@ -520,7 +520,9 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     state.power = (!switchedOff && seg->getBrightness() > 0) ? 1 : 0;
     state.validFlags |= 0x01;
 
-    // Save color (use savedR/G/B/WW/CW if valid, otherwise read from segment)
+    // Save color: the saved state if a colour/power/scene command set it, otherwise the configured
+    // primary colour. Never the pixel buffer: it holds the rendered, brightness-scaled effect output
+    // and is blanked by prepareLedShutdown() before Common saves on restart / ETS download.
     if (cfg.savedValid)
     {
         state.r = cfg.savedR;
@@ -528,40 +530,18 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
         state.b = cfg.savedB;
         state.ww = cfg.savedWW;
         state.cw = cfg.savedCW;
-        state.validFlags |= 0x02;
     }
     else
     {
-        uint8_t r, g, b;
-        VirtualStrip* vstrip = _module->getVirtualStrip();
-        if (vstrip && vstrip->getBytesPerLed() == 5)
-        {
-            // RGBCCT (5 bytes per LED)
-            uint8_t ww, cw;
-            seg->getPixel(0, r, g, b, ww, cw);
-            state.ww = ww;
-            state.cw = cw;
-        }
-        else if (vstrip && vstrip->getBytesPerLed() == 4)
-        {
-            // RGBW (4 bytes per LED)
-            uint8_t w;
-            seg->getPixel(0, r, g, b, w);
-            state.ww = w;
-            state.cw = 0;
-        }
-        else
-        {
-            // RGB (3 bytes per LED)
-            seg->getPixel(0, r, g, b);
-            state.ww = 0;
-            state.cw = 0;
-        }
-        state.r = r;
-        state.g = g;
-        state.b = b;
-        state.validFlags |= 0x02;
+        const uint32_t primary = seg->getPrimaryColor(); // 0xRRGGBBWW
+        const uint8_t bytesPerLed = _module->getVirtualStrip() ? _module->getVirtualStrip()->getBytesPerLed() : 3;
+        state.r = (primary >> 24) & 0xFF;
+        state.g = (primary >> 16) & 0xFF;
+        state.b = (primary >> 8) & 0xFF;
+        state.ww = (bytesPerLed >= 4) ? (primary & 0xFF) : 0;
+        state.cw = (bytesPerLed == 5) ? seg->getConfig().cw() : 0;
     }
+    state.validFlags |= 0x02;
 
     // Save brightness (always valid): the pre-global intent. The render is cue-scaled under an EM,
     // global-scaled otherwise (_globalBrightness is not persisted and resets to 255 on boot) and 0
