@@ -145,6 +145,7 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t currentH = 0;   // Current Hue (0-255)
         uint8_t currentS = 255; // Current Saturation (0-255)
         uint8_t currentV = 0;   // Current Value (0-255)
+        bool hsvTracked = false; // last colour change went through H/S/V: currentH/S/V describe it
 
         // Pending solid color when effect is stopped
         // User can set these while effect is running, they're applied when effect=0
@@ -172,8 +173,15 @@ class NeoPixelBusModule : public OpenKNX::Module
         DimmingChannel activeDimming = NONE; // Which channel is currently dimming
         bool dimmingIncrease = false;        // Dimming direction (true = increase/up, false = decrease/down)
         uint8_t dimmingStepCode = 0;         // Current step code (0 = stopped, 1-7 = speed)
+        int16_t dimmingRemaining = -1;     // DPT 3.007 step still to go (0..255); -1 = until stop telegram
         uint32_t dimmingLastUpdate = 0;      // Last telegram time (millis)
         uint32_t dimmingNextStep = 0;        // Next dimming step time (millis)
+        uint32_t dimmingLastStepMs = 0;      // time of the last ramp step (step size from elapsed time)
+        uint16_t dimmingStepRest = 0;        // ramp remainder (255 * ms modulo the full ramp time)
+        int16_t dimmingWhiteWW = -1;         // RGBCCT white ramp: WW written last tick; -1 = re-derive
+        int16_t dimmingWhiteCW = -1;         // RGBCCT white ramp: CW written last tick
+        uint16_t dimmingWhiteShare = 0x4000; // RGBCCT white ramp: WW share of WW+CW (1.15 fixed point)
+        uint8_t dimmingWhiteScale = 1;       // RGBCCT white ramp: 2 when WW+CW started above 255
     };
 
     // Virtual Strip Configuration Structure

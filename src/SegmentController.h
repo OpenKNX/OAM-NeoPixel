@@ -44,7 +44,7 @@ class SegmentController
      *
      * Handles continuous dimming operations based on DPT3.007 telegrams.
      * Updates segment colors/brightness according to active dimming channel.
-     * Automatically stops dimming after timeout (2 seconds).
+     * Stops a ramp without stop telegram after the ramp time + 2 s, counted from the start telegram.
      */
     void processActiveDimming();
 

@@ -15,15 +15,21 @@ SegmentController::~SegmentController()
 {
 }
 
-// dpt3_007_delta() removed: the start-stop dim ramp is now time-based (see
-// processActiveDimming). The old exponential mapping also returned 0 for
-// stepCode 7 (integer /4 of 3) -> that channel never dimmed.
+// The start-stop dim ramp is time-based (see processActiveDimming); the step code only
+// selects "until stop" (code 1) or a finite step of 1/2^(code-1) of the range.
 
 // Process active start/stop dimming for all segments
 void SegmentController::processActiveDimming()
 {
     uint32_t now = millis();
-    const uint32_t DIMMING_TIMEOUT = 2000; // Stop if no telegram for 2 seconds
+    // Time-based ramp: a full 0..255 dim takes ~DIM_RAMP_FULL_MS, independent of the sender's
+    // step code. MDT & most pushbuttons send stepCode 1 (100%) start-stop and expect the DIMMER
+    // to define the speed.
+    // TODO: expose DIM_RAMP_FULL_MS as an ETS "Dimmzeit" parameter per segment.
+    static constexpr int32_t DIM_RAMP_FULL_MS = 3000; // 0<->255 in 3 s
+    // Safety stop when the stop telegram is lost, counted from the start telegram; a full ramp
+    // fits with margin. Hue has no end stop and halts here.
+    const uint32_t DIMMING_TIMEOUT = DIM_RAMP_FULL_MS + 2000;
 
     for (auto& segConfig : _module->_segments)
     {
@@ -43,20 +49,34 @@ void SegmentController::processActiveDimming()
         }
 
         // Check if it's time for next step
-        if (now < segConfig.dimmingNextStep) continue;
+        if ((int32_t)(now - segConfig.dimmingNextStep) < 0) continue; // wrap-safe
 
-        // Time-based start-stop ramp: a full 0..255 dim takes ~DIM_RAMP_FULL_MS,
-        // independent of the sender's step code. MDT & most pushbuttons send
-        // stepCode 1 (100%) start-stop and expect the DIMMER to define the speed.
-        // The old code applied the step percentage per 40ms tick, so stepCode 1
-        // ramped in ~0.2s -> looked like an instant off.
-        // TODO(B): expose DIM_RAMP_FULL_MS as an ETS "Dimmzeit" parameter per segment.
-        static constexpr int32_t DIM_RAMP_FULL_MS = 3000; // 0<->255 in ~3s
-        const uint32_t interval = 40; // fixed tick for a smooth ramp
+        const uint32_t interval = 40; // tick for a smooth ramp
         segConfig.dimmingNextStep = now + interval;
 
-        int16_t delta = (int16_t)(((int32_t)255 * (int32_t)interval) / DIM_RAMP_FULL_MS);
-        if (delta < 1) delta = 1; // guarantee visible progress
+        // Step size from the elapsed time, so slow loop passes do not stretch the ramp; the remainder
+        // carries over, so the steps add up to 255 per DIM_RAMP_FULL_MS.
+        const uint32_t elapsed = std::min<uint32_t>(now - segConfig.dimmingLastStepMs, DIM_RAMP_FULL_MS);
+        segConfig.dimmingLastStepMs = now;
+        const uint32_t ramp = (uint32_t)255 * elapsed + segConfig.dimmingStepRest;
+        int16_t delta = (int16_t)std::min<uint32_t>(255, ramp / DIM_RAMP_FULL_MS);
+        segConfig.dimmingStepRest = (uint16_t)(ramp % DIM_RAMP_FULL_MS);
+        if (delta < 1)
+        {
+            delta = 1; // first tick of a ramp: respond at once
+            segConfig.dimmingStepRest = 0;
+        }
+        bool stepDone = false;
+        if (segConfig.dimmingRemaining >= 0)
+        {
+            // Finite step (codes 2..7): stop once the interval is covered.
+            if (delta >= segConfig.dimmingRemaining)
+            {
+                delta = segConfig.dimmingRemaining;
+                stepDone = true;
+            }
+            segConfig.dimmingRemaining -= delta;
+        }
         if (!segConfig.dimmingIncrease) delta = -delta;
 
         // Apply dimming based on active channel
@@ -105,33 +125,48 @@ void SegmentController::processActiveDimming()
                 if (bytesPerLed == 4)
                 {
                     // 4-channel RGBW: all white channels dim the single W
-                    uint8_t w;
-                    if (seg->getPixel(0, r, g, b, w))
-                    {
-                        int16_t newW = w + delta;
-                        newW = constrain(newW, 0, 255);
-                        seg->setPrimaryColor(r, g, b, (uint8_t)newW);
-                    }
+                    // Base: the configured primary colour (pixel 0 is brightness-scaled and black when off)
+                    const EffectConfig& pc = seg->getConfig();
+                    int16_t newW = constrain((int16_t)pc.w() + delta, 0, 255);
+                    seg->setPrimaryColor(pc.r(), pc.g(), pc.b(), (uint8_t)newW);
                 }
                 else if (bytesPerLed == 5)
                 {
                     // 5-channel RGBCCT: separate WW and CW
-                    uint8_t ww, cw;
-                    if (seg->getPixel(0, r, g, b, ww, cw))
+                    const EffectConfig& pc = seg->getConfig();
+                    if (segConfig.activeDimming == NeoPixelBusModule::SegmentConfig::COOL_WHITE)
                     {
-                        if (segConfig.activeDimming == NeoPixelBusModule::SegmentConfig::COOL_WHITE)
+                        int16_t newCW = constrain((int16_t)pc.cw() + delta, 0, 255);
+                        seg->setPrimaryColor(pc.r(), pc.g(), pc.b(), pc.ww(), (uint8_t)newCW);
+                    }
+                    else if (segConfig.activeDimming == NeoPixelBusModule::SegmentConfig::WARM_WHITE)
+                    {
+                        int16_t newWW = constrain((int16_t)pc.ww() + delta, 0, 255);
+                        seg->setPrimaryColor(pc.r(), pc.g(), pc.b(), (uint8_t)newWW, pc.cw());
+                    }
+                    else
+                    {
+                        // Generic white = WW + CW (value of the W KO and the W status). The WW share and
+                        // the range are taken at the ramp start (or after another command changed WW/CW),
+                        // so rounding does not shift the colour temperature; from black the split matches
+                        // the W KO (ww = w/2). Upward the ramp ends at 255 like the W KO; a ramp that
+                        // starts above 255 runs up to the larger channel at 255.
+                        const int16_t ww = pc.ww(), cw = pc.cw(), sum = ww + cw;
+                        if (ww != segConfig.dimmingWhiteWW || cw != segConfig.dimmingWhiteCW)
                         {
-                            int16_t newCW = cw + delta;
-                            newCW = constrain(newCW, 0, 255);
-                            seg->setPrimaryColor(r, g, b, ww, (uint8_t)newCW);
+                            segConfig.dimmingWhiteShare = sum ? (uint16_t)(((uint32_t)ww << 15) / sum) : 0x4000;
+                            segConfig.dimmingWhiteScale = (sum > 255) ? 2 : 1; // 0..510 also in DIM_RAMP_FULL_MS
                         }
-                        else
-                        {
-                            // WHITE and WARM_WHITE both dim the WW channel
-                            int16_t newWW = ww + delta;
-                            newWW = constrain(newWW, 0, 255);
-                            seg->setPrimaryColor(r, g, b, (uint8_t)newWW, cw);
-                        }
+                        const int16_t scale = segConfig.dimmingWhiteScale;
+                        // Upper end: no channel clips at this share
+                        const uint32_t maxShare = std::max<uint32_t>(segConfig.dimmingWhiteShare, 0x8000u - segConfig.dimmingWhiteShare);
+                        const int16_t limit = (int16_t)std::min<uint32_t>(255u * scale, (255u * 0x8000u) / maxShare);
+                        const int16_t newSum = constrain((int16_t)(sum + delta * scale), 0, std::max<int16_t>(limit, sum));
+                        const int16_t newWW = std::min<int16_t>(255, (int16_t)(((uint32_t)newSum * segConfig.dimmingWhiteShare + 0x3FFF) >> 15));
+                        const int16_t newCW = std::min<int16_t>(255, (int16_t)(newSum - newWW));
+                        segConfig.dimmingWhiteWW = newWW;
+                        segConfig.dimmingWhiteCW = newCW;
+                        seg->setPrimaryColor(pc.r(), pc.g(), pc.b(), (uint8_t)newWW, (uint8_t)newCW);
                     }
                 }
                 break;
@@ -141,10 +176,17 @@ void SegmentController::processActiveDimming()
             case NeoPixelBusModule::SegmentConfig::SATURATION:
             case NeoPixelBusModule::SegmentConfig::VALUE:
             {
-                if (seg->getPixel(0, r, g, b))
                 {
-                    uint8_t h, s, v;
-                    ColorHelper::rgbToHSV(r, g, b, h, s, v);
+                    const EffectConfig& pc = seg->getConfig();
+                    r = pc.r();
+                    g = pc.g();
+                    b = pc.b();
+                    // Base on the stored H/S/V while it still describes the primary colour: deriving
+                    // HSV from RGB loses hue and saturation at V = 0 and stalls the hue at low V.
+                    uint8_t h = segConfig.currentH, s = segConfig.currentS, v = segConfig.currentV;
+                    uint8_t cr, cg, cb;
+                    ColorHelper::hsvToRGB(h, s, v, cr, cg, cb);
+                    if (!segConfig.hsvTracked || cr != r || cg != g || cb != b) ColorHelper::rgbToHSV(r, g, b, h, s, v);
 
                     if (segConfig.activeDimming == NeoPixelBusModule::SegmentConfig::HUE)
                     {
@@ -163,31 +205,33 @@ void SegmentController::processActiveDimming()
 
                     uint8_t newR, newG, newB;
                     ColorHelper::hsvToRGB(h, s, v, newR, newG, newB);
+                    segConfig.currentH = h;
+                    segConfig.currentS = s;
+                    segConfig.currentV = v;
+                    segConfig.hsvTracked = true;
 
                     // Preserve white channel(s) when changing RGB
                     uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
                     if (bytesPerLed == 5)
-                    {
-                        uint8_t ww, cw;
-                        seg->getPixel(0, r, g, b, ww, cw);
-                        seg->setPrimaryColor(newR, newG, newB, ww, cw);
-                    }
+                        seg->setPrimaryColor(newR, newG, newB, pc.ww(), pc.cw());
                     else if (bytesPerLed == 4)
-                    {
-                        uint8_t w;
-                        seg->getPixel(0, r, g, b, w);
-                        seg->setPrimaryColor(newR, newG, newB, w);
-                    }
+                        seg->setPrimaryColor(newR, newG, newB, pc.w());
                     else
-                    {
                         seg->setPrimaryColor(newR, newG, newB, 0);
-                    }
                 }
                 break;
             }
 
             default:
                 break;
+        }
+
+        if (stepDone)
+        {
+            segConfig.activeDimming = NeoPixelBusModule::SegmentConfig::NONE;
+            segConfig.dimmingStepCode = 0;
+            segConfig.dimmingRemaining = -1;
+            _module->queueStatus(static_cast<uint8_t>(1 + (&segConfig - _module->_segments.data())), false);
         }
     }
 }
@@ -379,12 +423,20 @@ void SegmentController::startStopDimming(uint8_t channel, uint8_t dimmingChannel
     }
     else
     {
-        // Start dimming
+        // Start dimming. KNX 3/7/2 3.3.1: step code n divides 0..100 % into 2^(n-1) intervals.
+        // Code 1 (100 %) is the usual start/stop telegram: ramp until the stop telegram or a
+        // limit. Codes 2..7 move by one interval (50 % .. 1.6 %) and stop by themselves.
         cfg.activeDimming = static_cast<NeoPixelBusModule::SegmentConfig::DimmingChannel>(dimmingChannel);
         cfg.dimmingIncrease = increase;
         cfg.dimmingStepCode = stepCode;
+        // Rounded up: 2^(n-1) steps reach the end of the range (255 >> (n-1) left 1..63 behind).
+        const int16_t intervals = (int16_t)(1 << (stepCode - 1));
+        cfg.dimmingRemaining = (stepCode == 1) ? -1 : (int16_t)((255 + intervals - 1) / intervals);
         cfg.dimmingLastUpdate = millis();
         cfg.dimmingNextStep = millis();
+        cfg.dimmingLastStepMs = millis();
+        cfg.dimmingStepRest = 0;
+        cfg.dimmingWhiteWW = -1;
         logInfoP("Segment %d: Start dimming channel=%d, increase=%d, stepCode=%d",
                  channel, dimmingChannel, increase, stepCode);
     }
@@ -394,44 +446,18 @@ void SegmentController::startStopDimming(uint8_t channel, uint8_t dimmingChannel
 
 void SegmentController::applyColorChannelDimming(Segment* seg, uint8_t colorChannel, int16_t delta)
 {
-    uint8_t r, g, b;
-    uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
+    // Base: the configured primary colour (pixel 0 is brightness-scaled and black when off)
+    const EffectConfig& pc = seg->getConfig();
+    uint8_t rgb[3] = {pc.r(), pc.g(), pc.b()};
+    rgb[colorChannel] = (uint8_t)constrain((int16_t)rgb[colorChannel] + delta, 0, 255);
 
+    const uint8_t bytesPerLed = seg->getVirtualStrip()->getBytesPerLed();
     if (bytesPerLed == 5) // RGBCCT
-    {
-        uint8_t ww, cw;
-        if (seg->getPixel(0, r, g, b, ww, cw))
-        {
-            // Update the specified color channel
-            uint8_t* channels[] = {&r, &g, &b};
-            int16_t newValue = *channels[colorChannel] + delta;
-            *channels[colorChannel] = (uint8_t)constrain(newValue, 0, 255);
-            seg->setPrimaryColor(r, g, b, ww, cw);
-        }
-    }
+        seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], pc.ww(), pc.cw());
     else if (bytesPerLed == 4) // RGBW
-    {
-        uint8_t w;
-        if (seg->getPixel(0, r, g, b, w))
-        {
-            // Update the specified color channel
-            uint8_t* channels[] = {&r, &g, &b};
-            int16_t newValue = *channels[colorChannel] + delta;
-            *channels[colorChannel] = (uint8_t)constrain(newValue, 0, 255);
-            seg->setPrimaryColor(r, g, b, w);
-        }
-    }
+        seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], pc.w());
     else // RGB
-    {
-        if (seg->getPixel(0, r, g, b))
-        {
-            // Update the specified color channel
-            uint8_t* channels[] = {&r, &g, &b};
-            int16_t newValue = *channels[colorChannel] + delta;
-            *channels[colorChannel] = (uint8_t)constrain(newValue, 0, 255);
-            seg->setPrimaryColor(r, g, b, 0);
-        }
-    }
+        seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], 0);
 }
 
 void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, uint8_t colorValue, uint8_t colorChannel, const char* channelName)

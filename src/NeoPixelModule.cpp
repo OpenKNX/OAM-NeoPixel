@@ -57,50 +57,6 @@
     #include "test/test.h"
 #endif
 
-// DPT 3.007 step code to delta mapping (exponential)
-// Standard KNX/ETS: stepCode 1 = largest (100%), 7 = smallest (~2%), 0 = stop
-static inline int16_t dpt3_007_delta(uint8_t stepCode)
-{
-    static const uint8_t factors[8] = {0, 64, 32, 16, 8, 4, 2, 1};
-    return (int16_t)((factors[stepCode & 0x07] * 255u + 32u) / 64u);
-}
-
-// Helper: Start/stop dimming for a segment channel
-static void startStopDimming(NeoPixelBusModule::SegmentConfig& config,
-                             NeoPixelBusModule::SegmentConfig::DimmingChannel channel,
-                             uint8_t rel, uint8_t segmentIndex)
-{
-    // Decode ETS values: 1-7=start decreasing, 8-9=stop, 10-16=start increasing
-    if (rel >= 1 && rel <= 16)
-    {
-        if (rel == 8 || rel == 9)
-        {
-            // Stop: stepCode 0
-            config.activeDimming = NeoPixelBusModule::SegmentConfig::NONE;
-            config.dimmingStepCode = 0;
-        }
-        else if (rel >= 10 && rel <= 16)
-        {
-            // Start/continue increasing
-            uint8_t stepCode = rel - 9; // 10→1, 11→2, ..., 16→7
-            config.activeDimming = channel;
-            config.dimmingIncrease = true;
-            config.dimmingStepCode = stepCode;
-            config.dimmingLastUpdate = millis();
-            config.dimmingNextStep = millis();
-        }
-        else
-        { // 1-7
-            // Start/continue decreasing
-            config.activeDimming = channel;
-            config.dimmingIncrease = false;
-            config.dimmingStepCode = rel; // 1→100%, 7→~2%
-            config.dimmingLastUpdate = millis();
-            config.dimmingNextStep = millis();
-        }
-    }
-}
-
 static uint8_t resolveHclMaster(uint8_t requestedMaster, uint8_t availableMasterCount)
 {
     if (requestedMaster == 0 || requestedMaster > availableMasterCount)
@@ -1476,6 +1432,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             koIndex != NEO_KoCueRel && koIndex != NEO_KoLock)
         {
             interruptEmIfRunning((size_t)channel);
+            // Colour commands outside H/S/V make the stored H/S/V stale (base for H/S/V dimming).
+            if (koIndex != NEO_KoSegmentPower && koIndex != NEO_KoFx && koIndex != NEO_KoFxRel)
+                _segments[channel].hsvTracked = koIndex == NEO_KoH || koIndex == NEO_KoS || koIndex == NEO_KoV ||
+                                                koIndex == NEO_KoHSV || koIndex == NEO_KoHRel || koIndex == NEO_KoSRel ||
+                                                koIndex == NEO_KoVRel || koIndex == NEO_KoHSVRel;
         }
 
         switch (koIndex)
@@ -2109,6 +2070,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 else
                 {
                     // Recall scene
+                    _segments[channel].hsvTracked = false;
                     bool sceneApplied = _sceneManager->recallScene(channel, sceneNumber, targetSegment);
 
                     if (sceneApplied)
@@ -2469,70 +2431,70 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoBriRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::BRIGHTNESS, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::BRIGHTNESS, rel);
                 break;
             }
 
             case NEO_KoRRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::RED, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::RED, rel);
                 break;
             }
 
             case NEO_KoGRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::GREEN, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::GREEN, rel);
                 break;
             }
 
             case NEO_KoBRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::BLUE, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::BLUE, rel);
                 break;
             }
 
             case NEO_KoWRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::WHITE, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::WHITE, rel);
                 break;
             }
 
             case NEO_KoWWRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::WARM_WHITE, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::WARM_WHITE, rel);
                 break;
             }
 
             case NEO_KoCWRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::COOL_WHITE, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::COOL_WHITE, rel);
                 break;
             }
 
             case NEO_KoHRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::HUE, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::HUE, rel);
                 break;
             }
 
             case NEO_KoSRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::SATURATION, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::SATURATION, rel);
                 break;
             }
 
             case NEO_KoVRel:
             {
                 uint8_t rel = ko.value(Dpt(5, 10));
-                startStopDimming(_segments[channel], SegmentConfig::VALUE, rel, channel);
+                _segmentController->startStopDimming(channel, SegmentConfig::VALUE, rel);
                 break;
             }
 
@@ -2582,8 +2544,15 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t currentB = targetSegment->getConfig().b();
                 uint8_t currentW = targetSegment->getConfig().w();
 
-                uint8_t currentH, currentS, currentV;
-                ColorHelper::rgbToHSV(currentR, currentG, currentB, currentH, currentS, currentV);
+                // Base on the stored H/S/V while it describes the primary colour (see processActiveDimming)
+                SegmentConfig& cfgHsv = _segments[channel];
+                uint8_t currentH = cfgHsv.currentH, currentS = cfgHsv.currentS, currentV = cfgHsv.currentV;
+                {
+                    uint8_t cr, cg, cb;
+                    ColorHelper::hsvToRGB(currentH, currentS, currentV, cr, cg, cb);
+                    if (!cfgHsv.hsvTracked || cr != currentR || cg != currentG || cb != currentB)
+                        ColorHelper::rgbToHSV(currentR, currentG, currentB, currentH, currentS, currentV);
+                }
 
                 // Apply relative changes (treating 128 as no change, <128 as decrease, >128 as increase)
                 int16_t newH = currentH + ((int16_t)hRel - 128);
@@ -2606,6 +2575,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                 // Update config and apply
                 targetSegment->setPrimaryColor(newR, newG, newB, currentW);
+                cfgHsv.currentH = (uint8_t)newH;
+                cfgHsv.currentS = (uint8_t)newS;
+                cfgHsv.currentV = (uint8_t)newV;
+                cfgHsv.hsvTracked = true;
                 break;
             }
 
