@@ -69,6 +69,9 @@ Currently unused global suffixes:
 `003..010` and `062..067` were used by earlier products (git history; `062` was the
 HCL strength in Release 0.1). Release still replaces versions down to 0.1, so ETS
 would carry those old values into a new parameter with the same ID: keep them free.
+`200..399` is computed in `Build-HardwareConfig.ps1` as
+`200 + MAX_HARDWARE_VARIANTS (50) x (relay - 1) + hardware index` for relays 1..4; the
+unused gaps inside it are reserved for further hardware variants.
 
 ## Segment namespace: `40CCnnn`
 
