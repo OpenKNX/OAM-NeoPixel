@@ -116,6 +116,8 @@ class NeoPixelBusModule : public OpenKNX::Module
         bool     suspendedByPower = false;    ///< EM was paused by a power-off → resume on power-on (vs. manual pause / interrupt)
         bool     pendingPowerOnRestart = false; ///< Segment was switched on while global power was off
         bool     locked = false;              ///< segment locked via Sperre-KO → ignore all controlling KOs
+        uint32_t statusEmKey = 0xFFFFFFFF;    ///< last EM state (emId/cue/runState) seen by sendEmStatusKOs()
+        uint16_t statusCctKelvin = 0;         ///< last CCT command in Kelvin (0 = none since boot; not persisted)
 
         // Saved state for power toggle and flash persistence
         bool savedValid = false;
@@ -506,6 +508,75 @@ class NeoPixelBusModule : public OpenKNX::Module
     void showVirtualStripIfIdle();
 
     bool _virtualShowPending = false; ///< a send was deferred; loop() retries until it goes out
+
+    // Status objects: one item routine per scope (module / segment) computes each status KO from
+    // the live state (CCT: last command) and writes it in one of three modes.
+    enum class StatusMode : uint8_t
+    {
+        Seed,     ///< startup: fill a never-written KO without a telegram, otherwise as OnChange
+        OnChange, ///< send only when the encoded value changes
+        Always    ///< send the current value
+    };
+    enum ModuleStatusItem : uint8_t
+    {
+        kModPower,
+        kModBrightness,
+        kModRelay1,
+        kModRelay2,
+        kModRelay3,
+        kModRelay4,
+        kModHclGlobal,
+        kModuleStatusCount
+    };
+    enum SegmentStatusItem : uint8_t
+    {
+        kSegPower,
+        kSegBrightness,
+        kSegFx,
+        kSegRgb,
+        kSegRgbw,
+        kSegHsv,
+        kSegHcl,
+        kSegEffectText,
+        kSegEmStatus,
+        kSegEmCue,
+        kSegEmRunState,
+        kSegCct,
+        kSegmentStatusCount
+    };
+    static constexpr uint8_t kStatusSegmentMax = 16;   ///< segment KO channels in the KO table (NEO_ChannelCount)
+    static constexpr uint32_t kStatusPaceMs = 100;     ///< one status telegram credit per 100 ms (TP: ~20-40 ms each)
+    static constexpr uint8_t kStatusBurst = 8;         ///< credits that may go out at once (TP queue: 44 low-priority frames)
+
+    bool writeStatus(GroupObject& ko, const KNXValue& value, const Dpt& type, StatusMode mode);
+    bool isSegmentLit(SegmentConfig& cfg);
+    static bool segmentShowsLight(Segment* seg); ///< any LED of the segment not black in the virtual buffer
+    bool syncModuleStatusItem(uint8_t item, StatusMode mode);
+    bool syncSegmentStatusItem(size_t segmentIndex, uint8_t item, StatusMode mode);
+    void syncModuleStatus(StatusMode mode);
+    void syncSegmentStatus(size_t segmentIndex, StatusMode mode);
+    void seedStatus();                                  ///< end of processAfterStartupDelay(): fill every status KO
+    void queueStatus(uint8_t scope, bool always);       ///< scope 0 = module, 1+n = segment n; sent paced by processStatusQueue()
+    void queueAllSegmentStatus(bool always);
+    void statusAfterCommand(uint8_t scope);           ///< after a bus command: queue OnChange, or the full status before the seed
+    void queueStatusItem(uint8_t scope, uint8_t item, bool always);
+    bool serveStatusQueue(uint16_t* queue, bool always, uint8_t& cursorScope, uint8_t& cursorItem);
+    void processStatusQueue();                          ///< loop(): status telegrams within the credit budget
+    uint8_t statusScopeCount() const;
+
+    static constexpr uint8_t kStatusScopeMax = 1 + kStatusSegmentMax;
+    bool _statusSeeded = false;                    ///< no status KO is written before seedStatus()
+    uint16_t _statusQueueAlways[kStatusScopeMax] = {}; ///< per scope, bit = item: send the value
+    uint16_t _statusQueueChange[kStatusScopeMax] = {}; ///< per scope, bit = item: send if changed
+    uint8_t _statusChangeScope = 0;                ///< round-robin cursor of the change queue
+    uint8_t _statusChangeItem = 0;
+    uint8_t _statusAlwaysScope = 0;                ///< round-robin cursor of the send-all queue
+    uint8_t _statusAlwaysItem = 0;
+    bool _statusAlwaysTurn = false;                ///< alternate the queues so neither starves
+    uint8_t _statusCredits = kStatusBurst;
+    uint32_t _statusCreditMs = 0;
+    uint16_t _hclGlobalStatusKelvin = 0;                     ///< global HCL Kelvin reported on KO 407
+    uint16_t _hclSegmentStatusKelvin[kStatusSegmentMax] = {}; ///< per-segment HCL Kelvin reported on HCLState
 
     // LED shutdown (ETS: ParamNEO_NEOTurnOffBeforeRestart)
     bool prepareLedShutdown(); ///< Stop effects, drop relays, blank the virtual buffer

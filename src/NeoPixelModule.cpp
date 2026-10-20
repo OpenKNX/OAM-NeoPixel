@@ -356,6 +356,9 @@ void NeoPixelBusModule::loop(bool configured)
     // Effektmanager: tick all active sequencers (no-op in local test mode — EMs are ETS-only)
     loopEffektManager();
 
+    // Paced status telegrams (startup send, bulk changes); also while global power is off
+    if (!_localTestMode) processStatusQueue();
+
     // If global power is OFF, skip all effect processing and pixel updates. The data line
     // would then stay silent, which makes some clone chips start their own demo pattern, so
     // give the engine a tick to re-send on the strips configured for it.
@@ -589,6 +592,7 @@ void NeoPixelBusModule::processAfterStartupDelay()
     // so it can intentionally override the static ETS base effect.
     if (_segments.empty())
     {
+        seedStatus();
         logInfoP("Startup complete - ETS configuration active");
         return;
     }
@@ -627,7 +631,352 @@ void NeoPixelBusModule::processAfterStartupDelay()
     }
     _channelIndex = previousChannel;
 
+    seedStatus();
     logInfoP("Startup complete - ETS configuration active");
+}
+
+// ============================================================================
+// Status objects
+// ============================================================================
+
+/**
+ * @brief Write one status KO in the given mode.
+ * @return true if a telegram was requested.
+ * The knx stack answers no A_GroupValue_Read for a KO that was never written (GroupObject::readEnable()).
+ */
+bool NeoPixelBusModule::writeStatus(GroupObject& ko, const KNXValue& value, const Dpt& type, StatusMode mode)
+{
+    if (mode == StatusMode::Seed && !ko.initialized())
+    {
+        ko.valueNoSend(value, type);
+        return false;
+    }
+    if (mode == StatusMode::Always)
+    {
+        if (!ko.valueNoSend(value, type)) return false;
+        ko.objectWritten();
+        return true;
+    }
+    if (!ko.valueNoSendCompare(value, type)) return false;
+    ko.objectWritten();
+    return true;
+}
+
+/**
+ * @brief Any LED of the segment is not black in the virtual buffer (what the strips show).
+ */
+bool NeoPixelBusModule::segmentShowsLight(Segment* seg)
+{
+    VirtualStrip* strip = seg ? seg->getVirtualStrip() : nullptr;
+    if (!strip) return false;
+    for (uint32_t i = seg->getStartLed(); i <= seg->getEndLed(); i++)
+    {
+        uint8_t r = 0, g = 0, b = 0, ww = 0, cw = 0;
+        if (strip->getPixel((uint16_t)i, r, g, b, ww, cw) && (r | g | b | ww | cw)) return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Segment output is on: global power on and an effect set. A paused segment is not redrawn,
+ *        so its buffer is what the LEDs show; a running segment is on while its brightness is > 0
+ *        (EM: master, the render dips to 0 in cue fades).
+ */
+bool NeoPixelBusModule::isSegmentLit(SegmentConfig& cfg)
+{
+    Segment* seg = cfg.segment;
+    if (!_globalPowerOn || !seg || !seg->getEffect()) return false;
+    if (seg->isPaused()) return segmentShowsLight(seg);
+    if (cfg.emController.isRunning()) return seg->getMasterBrightness() > 0;
+    return seg->getBrightness() > 0;
+}
+
+bool NeoPixelBusModule::syncModuleStatusItem(uint8_t item, StatusMode mode)
+{
+    if (_localTestMode) return false;
+    if (!_statusSeeded && mode != StatusMode::Seed) return false;
+
+    switch (item)
+    {
+        case kModPower:
+            return writeStatus(KoNEO_PowerState, _globalPowerOn, DPT_Switch, mode);
+        case kModBrightness:
+            // Inverse of the KO scaling (percent * 255 / 100): every percent written reads back unchanged.
+            return writeStatus(KoNEO_BrightnessState, (uint8_t)((_globalBrightness * 100 + 127) / 255), DPT_Scaling, mode);
+        case kModRelay1:
+        case kModRelay2:
+        case kModRelay3:
+        case kModRelay4:
+        {
+            const uint8_t relay = item - kModRelay1;
+            // Same guards as setRelayOutput(): a relay without a usable pin has no state.
+            if (relay >= kRelayStorageSize || relay >= _relayCount || _relayPins[relay] == 255) return false;
+            const bool state = _relayStates[relay];
+            switch (relay)
+            {
+#if defined(NEO_KoExternalRelay1State)
+                case 0: return writeStatus(KoNEO_ExternalRelay1State, state, DPT_Switch, mode);
+#endif
+#if defined(NEO_KoExternalRelay2State)
+                case 1: return writeStatus(KoNEO_ExternalRelay2State, state, DPT_Switch, mode);
+#endif
+#if defined(NEO_KoExternalRelay3State)
+                case 2: return writeStatus(KoNEO_ExternalRelay3State, state, DPT_Switch, mode);
+#endif
+#if defined(NEO_KoExternalRelay4State)
+                case 3: return writeStatus(KoNEO_ExternalRelay4State, state, DPT_Switch, mode);
+#endif
+                default: return false;
+            }
+        }
+        case kModHclGlobal:
+#ifdef NEO_KoHCLGlobalState
+            // 0 K = no HCL: the send-all reports it only as a change.
+            return writeStatus(KoNEO_HCLGlobalState, _hclGlobalStatusKelvin, Dpt(7, 600),
+                               (mode == StatusMode::Always && _hclGlobalStatusKelvin == 0) ? StatusMode::OnChange : mode);
+#else
+            return false;
+#endif
+        default:
+            return false;
+    }
+}
+
+bool NeoPixelBusModule::syncSegmentStatusItem(size_t segmentIndex, uint8_t item, StatusMode mode)
+{
+    if (_localTestMode) return false;
+    if (!_statusSeeded && mode != StatusMode::Seed) return false;
+    // KO macros beyond the configured channel table would address foreign KOs (no bounds check in knx).
+    if (segmentIndex >= _segments.size() || segmentIndex >= kStatusSegmentMax) return false;
+    SegmentConfig& cfg = _segments[segmentIndex];
+    Segment* seg = cfg.segment;
+    if (!seg) return false;
+
+    // Switched off via the power KO and dark: the primary colour is zeroed, report the off snapshot.
+    const bool colourItem = item == kSegRgb || item == kSegRgbw || item == kSegHsv;
+    const bool offSnapshot = colourItem && cfg.savedPower == 0 && seg->isPaused() && cfg.savedValid &&
+                             !segmentShowsLight(seg);
+    uint8_t r, g, b, w;
+    if (offSnapshot)
+    {
+        r = cfg.savedR;
+        g = cfg.savedG;
+        b = cfg.savedB;
+        w = cfg.savedWW;
+        if (_virtualStrip && _virtualStrip->hasDualWhiteChannel()) w = (uint8_t)std::min<uint16_t>(255, (uint16_t)w + cfg.savedCW);
+    }
+    else
+    {
+        const uint32_t primary = seg->getPrimaryColor(); // 0xRRGGBBWW
+        r = (primary >> 24) & 0xFF;
+        g = (primary >> 16) & 0xFF;
+        b = (primary >> 8) & 0xFF;
+        w = primary & 0xFF;
+        // RGBCCT: a white command is split into WW + CW; report the combined white.
+        if (_virtualStrip && _virtualStrip->hasDualWhiteChannel()) w = (uint8_t)std::min<uint16_t>(255, (uint16_t)w + seg->getConfig().cw());
+    }
+    const uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+
+    const uint8_t prevChannel = _channelIndex;
+    _channelIndex = static_cast<uint8_t>(segmentIndex);
+    bool sent = false;
+    switch (item)
+    {
+        case kSegPower:
+            sent = writeStatus(KoNEO_SegmentPowerState, isSegmentLit(cfg), DPT_Switch, mode);
+            break;
+        case kSegBrightness:
+            sent = writeStatus(KoNEO_SegmentBrightnessState, (uint8_t)((cfg.savedBrightness * 100 + 127) / 255), DPT_Scaling, mode);
+            break;
+        case kSegFx:
+            sent = writeStatus(KoNEO_FxState, getTypeFromEffect(seg->getEffect()), DPT_Value_1_Ucount, mode);
+            break;
+        case kSegRgb:
+            sent = writeStatus(KoNEO_RGBState, rgb, DPT_Colour_RGB, mode);
+            break;
+        case kSegRgbw:
+            sent = writeStatus(KoNEO_RGBWState, ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w, DPT_Colour_RGBW, mode);
+            break;
+        case kSegHsv:
+            // The HSV status object is DPT 232.600 and has always reported the resulting RGB colour.
+            sent = writeStatus(KoNEO_HSVState, rgb, DPT_Colour_RGB, mode);
+            break;
+        case kSegHcl:
+            // 0 K = no HCL: the send-all reports it only as a change.
+            sent = writeStatus(KoNEO_HCLState, _hclSegmentStatusKelvin[segmentIndex], Dpt(7, 600),
+                               (mode == StatusMode::Always && _hclSegmentStatusKelvin[segmentIndex] == 0) ? StatusMode::OnChange : mode);
+            break;
+        case kSegEffectText:
+#ifdef NEO_KoEffectTextStatus
+            // The KO carries the first 14 characters; append chunks are confirmed by sendEffectTextStatusKO().
+            sent = writeStatus(KoNEO_EffectTextStatus, seg->getConfig().effectText, DPT_String_8859_1, mode);
+#endif
+            break;
+        case kSegEmStatus:
+#ifdef NEO_KoEmStatus
+            sent = writeStatus(KoNEO_EmStatus, cfg.emController.activeEmId(), DPT_Value_1_Ucount, mode);
+#endif
+            break;
+        case kSegEmCue:
+#ifdef NEO_KoEmCueStatus
+            sent = writeStatus(KoNEO_EmCueStatus, cfg.emController.activeCueNum(), DPT_Value_1_Ucount, mode);
+#endif
+            break;
+        case kSegEmRunState:
+#ifdef NEO_KoEmRunState
+            // 0 = gestoppt, 1 = läuft, 2 = pausiert
+            sent = writeStatus(KoNEO_EmRunState, cfg.emController.runState(), DPT_Value_1_Ucount, mode);
+#endif
+            break;
+        case kSegCct:
+            // Kelvin is not derivable from the colour and not persisted: only after a CCT command.
+            if (cfg.statusCctKelvin != 0)
+                sent = writeStatus(KoNEO_CCTState, cfg.statusCctKelvin, Dpt(7, 600), mode);
+            break;
+        default:
+            break;
+    }
+    _channelIndex = prevChannel;
+    return sent;
+}
+
+void NeoPixelBusModule::syncModuleStatus(StatusMode mode)
+{
+    for (uint8_t item = 0; item < kModuleStatusCount; item++)
+        syncModuleStatusItem(item, mode);
+}
+
+void NeoPixelBusModule::syncSegmentStatus(size_t segmentIndex, StatusMode mode)
+{
+    for (uint8_t item = 0; item < kSegmentStatusCount; item++)
+        syncSegmentStatusItem(segmentIndex, item, mode);
+}
+
+uint8_t NeoPixelBusModule::statusScopeCount() const
+{
+    return 1 + static_cast<uint8_t>(std::min<size_t>(_segments.size(), kStatusSegmentMax));
+}
+
+void NeoPixelBusModule::seedStatus()
+{
+    if (_localTestMode) return;
+    syncModuleStatus(StatusMode::Seed);
+    for (size_t i = 0; i < _segments.size(); i++)
+        syncSegmentStatus(i, StatusMode::Seed);
+    _statusSeeded = true;
+
+}
+
+void NeoPixelBusModule::queueStatus(uint8_t scope, bool always)
+{
+    if (_localTestMode || scope >= statusScopeCount()) return;
+    const uint8_t itemCount = (scope == 0) ? (uint8_t)kModuleStatusCount : (uint8_t)kSegmentStatusCount;
+    const uint16_t items = (uint16_t)((1u << itemCount) - 1);
+    // Bits only: an item already handled is not re-sent unless queued again.
+    if (always)
+        _statusQueueAlways[scope] |= items;
+    else
+        _statusQueueChange[scope] |= items;
+}
+
+void NeoPixelBusModule::queueStatusItem(uint8_t scope, uint8_t item, bool always)
+{
+    if (_localTestMode || scope >= statusScopeCount() || item >= 16) return;
+    const uint16_t bit = (uint16_t)(1u << item);
+    if (always)
+        _statusQueueAlways[scope] |= bit;
+    else
+        _statusQueueChange[scope] |= bit;
+}
+
+void NeoPixelBusModule::queueAllSegmentStatus(bool always)
+{
+    for (uint8_t scope = 1; scope < statusScopeCount(); scope++)
+        queueStatus(scope, always);
+}
+
+void NeoPixelBusModule::statusAfterCommand(uint8_t scope)
+{
+    // Through the credit-limited queue: one group telegram can address many segments at once.
+    // A command during the startup delay is confirmed with the full status after the seed.
+    queueStatus(scope, !_statusSeeded);
+}
+
+void NeoPixelBusModule::processStatusQueue()
+{
+    if (!_statusSeeded) return;
+
+    // Credit budget: kStatusBurst telegrams at once, then one per kStatusPaceMs. Keeps the TP
+    // transmit queue far below its limit even when a group telegram addresses every segment.
+    const uint32_t now = millis();
+    if (_statusCredits >= kStatusBurst)
+    {
+        _statusCreditMs = now;
+    }
+    else
+    {
+        const uint32_t refill = (now - _statusCreditMs) / kStatusPaceMs;
+        if (refill > 0)
+        {
+            _statusCredits = (uint8_t)std::min<uint32_t>(kStatusBurst, _statusCredits + refill);
+            _statusCreditMs += refill * kStatusPaceMs;
+        }
+    }
+    if (_statusCredits == 0) return;
+
+    // Changes (commands, EM, global) and the startup send-all take turns per telegram, so a steady
+    // stream of changes cannot starve the send-all and the send-all delays a change by one telegram.
+    while (_statusCredits > 0)
+    {
+        const bool alwaysFirst = _statusAlwaysTurn;
+        bool sent = alwaysFirst ? serveStatusQueue(_statusQueueAlways, true, _statusAlwaysScope, _statusAlwaysItem)
+                                : serveStatusQueue(_statusQueueChange, false, _statusChangeScope, _statusChangeItem);
+        if (!sent)
+            sent = alwaysFirst ? serveStatusQueue(_statusQueueChange, false, _statusChangeScope, _statusChangeItem)
+                               : serveStatusQueue(_statusQueueAlways, true, _statusAlwaysScope, _statusAlwaysItem);
+        if (!sent) return;
+        _statusCredits--;
+        _statusAlwaysTurn = !alwaysFirst;
+    }
+}
+
+/**
+ * @brief Walk one queue (at most one lap) up to the first item that requests a telegram.
+ * @return true if a telegram was requested; unchanged OnChange items are cleared on the way.
+ */
+bool NeoPixelBusModule::serveStatusQueue(uint16_t* queue, bool always, uint8_t& cursorScope, uint8_t& cursorItem)
+{
+    const uint8_t scopes = statusScopeCount();
+    bool pending = false;
+    for (uint8_t scope = 0; scope < scopes && !pending; scope++)
+        pending = queue[scope] != 0;
+    if (!pending) return false;
+
+    const uint16_t steps = (uint16_t)scopes * (kSegmentStatusCount + 1);
+    for (uint16_t step = 0; step < steps; step++)
+    {
+        if (cursorScope >= scopes) cursorScope = 0;
+        const uint8_t scope = cursorScope;
+        const uint8_t itemCount = (scope == 0) ? (uint8_t)kModuleStatusCount : (uint8_t)kSegmentStatusCount;
+        if (cursorItem >= itemCount)
+        {
+            cursorItem = 0;
+            cursorScope = (uint8_t)(scope + 1);
+            continue;
+        }
+        const uint8_t item = cursorItem++;
+        const uint16_t bit = (uint16_t)(1u << item);
+        if ((queue[scope] & bit) == 0) continue;
+        // An item in both queues is sent once, with its value.
+        const bool sendValue = always || (_statusQueueAlways[scope] & bit) != 0;
+        _statusQueueAlways[scope] &= (uint16_t)~bit;
+        _statusQueueChange[scope] &= (uint16_t)~bit;
+
+        const StatusMode mode = sendValue ? StatusMode::Always : StatusMode::OnChange;
+        const bool sent = (scope == 0) ? syncModuleStatusItem(item, mode) : syncSegmentStatusItem(scope - 1, item, mode);
+        if (sent) return true;
+    }
+    return false;
 }
 
 // Process active start/stop dimming for all segments
@@ -654,35 +1003,8 @@ void NeoPixelBusModule::setRelayOutput(uint8_t relayIndex, bool state)
         _relayTimers[relayIndex].lastOffTime = millis();
     }
 
-// Send status feedback to KNX bus
-#if defined(NEO_KoExternalRelay1State)
-    if (relayIndex == 0)
-    {
-        bool changed = KoNEO_ExternalRelay1State.valueNoSendCompare(state, DPT_Switch);
-        if (changed) KoNEO_ExternalRelay1State.objectWritten();
-    }
-#endif
-#if defined(NEO_KoExternalRelay2State)
-    if (relayIndex == 1)
-    {
-        bool changed = KoNEO_ExternalRelay2State.valueNoSendCompare(state, DPT_Switch);
-        if (changed) KoNEO_ExternalRelay2State.objectWritten();
-    }
-#endif
-#if defined(NEO_KoExternalRelay3State)
-    if (relayIndex == 2)
-    {
-        bool changed = KoNEO_ExternalRelay3State.valueNoSendCompare(state, DPT_Switch);
-        if (changed) KoNEO_ExternalRelay3State.objectWritten();
-    }
-#endif
-#if defined(NEO_KoExternalRelay4State)
-    if (relayIndex == 3)
-    {
-        bool changed = KoNEO_ExternalRelay4State.valueNoSendCompare(state, DPT_Switch);
-        if (changed) KoNEO_ExternalRelay4State.objectWritten();
-    }
-#endif
+    // Send status feedback to KNX bus
+    queueStatus(0, false);
 
     logDebugP("Relay %d set to %s (GPIO %d)", relayIndex + 1, state ? "ON" : "OFF", pin);
 }
@@ -939,6 +1261,19 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 default:
                     break;
             }
+            // Status from the resulting state; skip own status telegrams (they come back through
+            // this handler) and the Effektkette sync of a master.
+            bool statusKo = emKoIndex == NEO_KoEmStatus || emKoIndex == NEO_KoEmCueStatus;
+    #ifdef NEO_KoEmRunState
+            statusKo = statusKo || emKoIndex == NEO_KoEmRunState;
+    #endif
+    #ifdef NEO_KoEffectTextStatus
+            statusKo = statusKo || emKoIndex == NEO_KoEffectTextStatus;
+    #endif
+    #ifdef NEO_KoSyncChain
+            statusKo = statusKo || (emKoIndex == NEO_KoSyncChain && _segments[emChannel].syncMode != 2);
+    #endif
+            if (!statusKo) statusAfterCommand(static_cast<uint8_t>(1 + emChannel));
             return; // handled
         }
     }
@@ -1007,9 +1342,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             }
         }
 
-        // Send state feedback
-        bool changed = KoNEO_PowerState.valueNoSendCompare(powerState, DPT_Switch);
-        if (changed) KoNEO_PowerState.objectWritten();
+        // Status: module now; every segment's power status follows global power (paced)
+        statusAfterCommand(0);
+        if (_statusSeeded) queueAllSegmentStatus(false); // before the seed, seedStatus() picks the final state
         return;
     }
 
@@ -1023,9 +1358,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         // Apply brightness to all segments
         applyGlobalBrightness(brightness);
 
-        // Send state feedback (send back percentage)
-        bool changed = KoNEO_BrightnessState.valueNoSendCompare(brightnessPercent, DPT_Scaling);
-        if (changed) KoNEO_BrightnessState.objectWritten();
+        // Status: module now; a segment can go dark at low global brightness (paced)
+        statusAfterCommand(0);
+        if (_statusSeeded) queueAllSegmentStatus(false); // before the seed, seedStatus() picks the final state
         return;
     }
 
@@ -1034,6 +1369,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(0, state);
+        statusAfterCommand(0);
         return;
     }
 #endif
@@ -1043,6 +1379,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(1, state);
+        statusAfterCommand(0);
         return;
     }
 #endif
@@ -1052,6 +1389,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(2, state);
+        statusAfterCommand(0);
         return;
     }
 #endif
@@ -1061,6 +1399,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     {
         bool state = ko.value(DPT_Switch);
         scheduleRelayChange(3, state);
+        statusAfterCommand(0);
         return;
     }
 #endif
@@ -1166,29 +1505,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     logInfoP("Segment %d: Updated primary color (Red=%d)", channel, red);
                 }
 
-                // Send combined RGB/RGBW status feedback
-                _channelIndex = channel;
-                uint8_t r, g, b;
-                r = cfg.pendingSolidR;
-                g = cfg.pendingSolidG;
-                b = cfg.pendingSolidB;
-                // Check if virtual strip has white channel (4 bytes per LED)
-                if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
-                {
-                    // Has white channel - send RGBW status
-                    uint8_t w = cfg.pendingSolidWW;
-                    uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-                    bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-                    if (changed) KoNEO_RGBWState.objectWritten();
-                }
-                else
-                {
-                    // No white channel - send RGB status
-                    uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b; // RGB
-                    bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-                    if (changed) KoNEO_RGBState.objectWritten();
-                }
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1223,29 +1539,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     logInfoP("Segment %d: Updated primary color (Green=%d)", channel, green);
                 }
 
-                // Send combined RGB/RGBW status feedback
-                _channelIndex = channel;
-                uint8_t r, g, b;
-                r = cfg.pendingSolidR;
-                g = cfg.pendingSolidG;
-                b = cfg.pendingSolidB;
-                // Check if virtual strip has white channel (4 bytes per LED)
-                if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
-                {
-                    // Has white channel - send RGBW status
-                    uint8_t w = cfg.pendingSolidWW;
-                    uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-                    bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-                    if (changed) KoNEO_RGBWState.objectWritten();
-                }
-                else
-                {
-                    // No white channel - send RGB status
-                    uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b; // RGB
-                    bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-                    if (changed) KoNEO_RGBState.objectWritten();
-                }
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1280,29 +1573,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     logInfoP("Segment %d: Updated primary color (Blue=%d)", channel, blue);
                 }
 
-                // Send combined RGB/RGBW status feedback
-                _channelIndex = channel;
-                uint8_t r, g, b;
-                r = cfg.pendingSolidR;
-                g = cfg.pendingSolidG;
-                b = cfg.pendingSolidB;
-                // Check if virtual strip has white channel (4 bytes per LED)
-                if (_virtualStrip && _virtualStrip->getBytesPerLed() == 4)
-                {
-                    // Has white channel - send RGBW status
-                    uint8_t w = cfg.pendingSolidWW;
-                    uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
-                    bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-                    if (changed) KoNEO_RGBWState.objectWritten();
-                }
-                else
-                {
-                    // No white channel - send RGB status
-                    uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b; // RGB
-                    bool changed = KoNEO_RGBState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-                    if (changed) KoNEO_RGBState.objectWritten();
-                }
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1352,17 +1622,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     logInfoP("Segment %d: Updated primary color (White=%d)", channel, white);
                 }
 
-                // Send RGBW status feedback (white channel update)
-                _channelIndex = channel;
-                uint8_t r, g, b;
-                r = cfg.pendingSolidR;
-                g = cfg.pendingSolidG;
-                b = cfg.pendingSolidB;
-                uint8_t w = white;
-                uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w; // RGBW
-                bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-                if (changed) KoNEO_RGBWState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1403,12 +1662,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedCW = cw;
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
-
-                // Send status feedback
-                _channelIndex = channel;
-                bool changed = KoNEO_CCTState.valueNoSendCompare(cct, Dpt(7, 600));
-                if (changed) KoNEO_CCTState.objectWritten();
-                _channelIndex = oldChannelIndex;
+                cfg.statusCctKelvin = cct; // reported by the CCT status item
                 break;
             }
 
@@ -1467,13 +1721,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.currentS = s;
                 cfg.currentV = v;
 
-                // Send HSV status feedback - convert to RGB using actual V value
-                _channelIndex = channel;
-                ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
-                uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-                bool changed = KoNEO_HSVState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-                if (changed) KoNEO_HSVState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1527,13 +1774,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.currentS = saturation;
                 cfg.currentV = v;
 
-                // Send HSV status feedback - convert to RGB using actual V value
-                _channelIndex = channel;
-                ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
-                uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-                bool changed = KoNEO_HSVState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-                if (changed) KoNEO_HSVState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1582,13 +1822,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.currentS = s;
                 cfg.currentV = value;
 
-                // Send HSV status feedback - convert to RGB using actual V value
-                _channelIndex = channel;
-                ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
-                uint32_t rgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-                bool changed = KoNEO_HSVState.valueNoSendCompare(rgb, DPT_Colour_RGB);
-                if (changed) KoNEO_HSVState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1625,12 +1858,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 targetSegment->setPrimaryColor(r, g, b, 0);
                 logInfoP("Segment %d: Updated primary color (RGB)", channel);
 
-                // Send status feedback
-                _channelIndex = channel;
-                uint32_t feedbackRgb = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-                bool changed = KoNEO_RGBState.valueNoSendCompare(feedbackRgb, DPT_Colour_RGB);
-                if (changed) KoNEO_RGBState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1674,12 +1901,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 targetSegment->setPrimaryColor(r, g, b, 0);
                 logInfoP("Segment %d: Updated primary color (HSV)", channel);
 
-                // Send status feedback
-                _channelIndex = channel;
-                uint32_t feedbackHsv = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-                bool changed = KoNEO_HSVState.valueNoSendCompare(feedbackHsv, DPT_Colour_RGB);
-                if (changed) KoNEO_HSVState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1759,11 +1980,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // Effektkette: a master propagates the stepped effect to its slaves (like NEO_KoFx).
                         if (cfgFx.syncMode == 1) sendSyncTelegram((size_t)channel);
 
-                        // Status feedback so visualisations / feedback logic track the stepped effect.
-                        _channelIndex = channel;
-                        if (KoNEO_FxState.valueNoSendCompare(next, DPT_SceneNumber))
-                            KoNEO_FxState.objectWritten();
-                        _channelIndex = oldChannelIndex;
                     }
                 }
                 break;
@@ -1859,11 +2075,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 // Effektkette: Master sends sync telegram to all slaves
                 if (cfg.syncMode == 1) sendSyncTelegram((size_t)channel);
 
-                // Send status feedback
-                _channelIndex = channel;
-                bool changed = KoNEO_FxState.valueNoSendCompare(effect, DPT_SceneNumber);
-                if (changed) KoNEO_FxState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -1991,9 +2202,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                             cfg.pendingPowerOnRestart = true;
                         }
 
-                        _channelIndex = channel;
-                        if (KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch))
-                            KoNEO_SegmentPowerState.objectWritten();
                         break;
                     }
 
@@ -2010,9 +2218,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                             resumeEffektManager(channel); // resume() also re-applies master brightness
                             showVirtualStripIfIdle();
                         }
-                        _channelIndex = channel;
-                        if (KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch))
-                            KoNEO_SegmentPowerState.objectWritten();
                         break;
                     }
 
@@ -2148,10 +2353,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     }
                 }
 
-                _channelIndex = channel;
-                bool changed = KoNEO_SegmentPowerState.valueNoSendCompare(power, DPT_Switch);
-                if (changed) KoNEO_SegmentPowerState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -2185,11 +2386,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     // No EM: master and render brightness are the same.
                     targetSegment->setBrightness(effectiveBrightness);
 
-                // Send status feedback (send back percentage)
-                _channelIndex = channel;
-                bool changed = KoNEO_SegmentBrightnessState.valueNoSendCompare(brightnessPercent, DPT_Scaling);
-                if (changed) KoNEO_SegmentBrightnessState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -2260,11 +2456,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedLastWasEffect = false;
                 }
 
-                // Send status feedback
-                _channelIndex = channel;
-                bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
-                if (changed) KoNEO_RGBWState.objectWritten();
-                _channelIndex = oldChannelIndex;
                 break;
             }
 
@@ -2468,6 +2659,16 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         // Restore channel index
         _channelIndex = oldChannelIndex;
 
+        // Status from the resulting state. Own status telegrams come back through this handler
+        // (knx class callback) and must not trigger another sync.
+        if (koIndex != NEO_KoSegmentPowerState && koIndex != NEO_KoSegmentBrightnessState &&
+            koIndex != NEO_KoCCTState && koIndex != NEO_KoFxState && koIndex != NEO_KoSceneState &&
+            koIndex != NEO_KoRGBState && koIndex != NEO_KoHSVState && koIndex != NEO_KoRGBWState &&
+            koIndex != NEO_KoHCLState)
+        {
+            statusAfterCommand(static_cast<uint8_t>(1 + channel));
+        }
+
         // Auto-update cycle will render changes
     }
 }
@@ -2643,6 +2844,7 @@ void NeoPixelBusModule::loopSyncWatchdog()
             // Timeout: turn off segment
             if (cfg.segment) cfg.segment->clearAll();
             cfg.lastSyncMs = 0; // reset so we don't keep clearing every frame
+            queueStatus(static_cast<uint8_t>(1 + (&cfg - _segments.data())), false);
             logInfoP("Effektkette slave timeout — segment turned off");
         }
     }
@@ -2670,6 +2872,12 @@ void NeoPixelBusModule::showHelp()
 // Console: process commands by delegating 'neo' prefixed commands
 bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
 {
+    // A console command can change any segment; the queue reports what actually changed.
+    if (_statusSeeded && command.rfind("neo", 0) == 0)
+    {
+        queueStatus(0, false);
+        queueAllSegmentStatus(false);
+    }
 #ifdef ARDUINO_ARCH_ESP32
     if (command == "neo resetreason")
     {
@@ -5281,21 +5489,19 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
         }
     }
 
-    static uint16_t lastGlobalKelvin = 0;
     uint16_t globalKelvin = 0;
     if (_hclTransformContext.globalHclConfig.resolvedMaster > 0)
     {
         globalKelvin = _hclTransformContext.masterStates[_hclTransformContext.globalHclConfig.resolvedMaster - 1].kelvin;
     }
 
-    if (globalKelvin != lastGlobalKelvin)
+    // Global HCL Kelvin has its own status KO (407)
+    if (globalKelvin != _hclGlobalStatusKelvin)
     {
-        KoNEO_HCLState.value(globalKelvin, Dpt(7, 600));
-        KoNEO_HCLState.objectWritten();
-        lastGlobalKelvin = globalKelvin;
+        _hclGlobalStatusKelvin = globalKelvin;
+        queueStatus(0, false);
     }
 
-    static uint16_t lastSegmentKelvin[16] = {0};
     bool anyHclActive = globalKelvin > 0;
 
     for (size_t index = 0; index < _hclTransformContext.segmentConfigs.size() && index < _segments.size(); ++index)
@@ -5319,14 +5525,10 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
             anyHclActive = anyHclActive || (segmentKelvin > 0);
         }
 
-        if (index < 16 && segmentKelvin != lastSegmentKelvin[index])
+        if (index < kStatusSegmentMax && segmentKelvin != _hclSegmentStatusKelvin[index])
         {
-            const uint8_t savedChannelIndex = _channelIndex;
-            _channelIndex = static_cast<uint8_t>(index);
-            KoNEO_HCLState.value(segmentKelvin, Dpt(7, 600));
-            KoNEO_HCLState.objectWritten();
-            _channelIndex = savedChannelIndex;
-            lastSegmentKelvin[index] = segmentKelvin;
+            _hclSegmentStatusKelvin[index] = segmentKelvin;
+            queueStatus(static_cast<uint8_t>(1 + index), false);
         }
     }
 
@@ -6316,7 +6518,7 @@ void NeoPixelBusModule::loopEffektManager()
         applyCueLongText(cfg);
 
         // Keep EM status KOs in sync with cue changes and chaining.
-        // valueNoSendCompare in sendEmStatusKOs avoids bus traffic on unchanged values.
+        // sendEmStatusKOs() queues the segment only when the EM state changed.
         sendEmStatusKOs(i);
     }
 }
@@ -6541,45 +6743,23 @@ uint8_t NeoPixelBusModule::effectiveStartupBehavior(size_t segmentIndex)
 
 void NeoPixelBusModule::sendEmStatusKOs(size_t segmentIndex)
 {
-    // Console bring-up ('neo init') has no ETS KO table — writing KOs would fault. Covers
-    // every caller (loopEffektManager/start/stop/triggerCue). _localTestMode is false on a
-    // normal ETS-configured boot, so production is unaffected.
-    if (_localTestMode) return;
-#ifdef NEO_KoEmStatus
+    // Called every loop pass: queue the segment status only when the EM state changed (start,
+    // stop, cue, pause, chaining, auto-finish). A cue change also changes colour/effect/brightness.
     if (segmentIndex >= _segments.size()) return;
     auto& cfg = _segments[segmentIndex];
-
-    uint8_t oldCh = _channelIndex;
-    _channelIndex = (uint8_t)segmentIndex;
-
-    bool changed1 = KoNEO_EmStatus.valueNoSendCompare(cfg.emController.activeEmId(), DPT_Value_1_Ucount);
-    if (changed1) KoNEO_EmStatus.objectWritten();
-
-    bool changed2 = KoNEO_EmCueStatus.valueNoSendCompare(cfg.emController.activeCueNum(), DPT_Value_1_Ucount);
-    if (changed2) KoNEO_EmCueStatus.objectWritten();
-
-    #ifdef NEO_KoEmRunState
-    // 0 = gestoppt, 1 = läuft, 2 = pausiert
-    bool changed3 = KoNEO_EmRunState.valueNoSendCompare(cfg.emController.runState(), DPT_Value_1_Ucount);
-    if (changed3) KoNEO_EmRunState.objectWritten();
-    #endif
-
-    _channelIndex = oldCh;
-#endif
+    const uint32_t key = ((uint32_t)cfg.emController.activeEmId() << 16) |
+                         ((uint32_t)cfg.emController.activeCueNum() << 8) | cfg.emController.runState();
+    if (key == cfg.statusEmKey) return;
+    cfg.statusEmKey = key;
+    queueStatus(static_cast<uint8_t>(1 + segmentIndex), false);
 }
 
 void NeoPixelBusModule::sendEffectTextStatusKO(size_t segmentIndex)
 {
 #ifdef NEO_KoEffectTextStatus
-    if (segmentIndex >= _segments.size()) return;
-    auto& cfg = _segments[segmentIndex];
-    if (!cfg.segment) return;
-
-    uint8_t oldCh = _channelIndex;
-    _channelIndex = (uint8_t)segmentIndex;
-
-    KoNEO_EffectTextStatus.value(cfg.segment->getConfig().effectText, DPT_String_8859_1);
-
-    _channelIndex = oldCh;
+    // Every text/append write is confirmed with the current text (also when the first 14
+    // characters repeat), paced like every status. Before the seed the EM hook queues the scope.
+    if (!_statusSeeded || segmentIndex >= _segments.size()) return;
+    queueStatusItem(static_cast<uint8_t>(1 + segmentIndex), kSegEffectText, true);
 #endif
 }

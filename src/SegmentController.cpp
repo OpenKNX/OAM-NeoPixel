@@ -37,6 +37,8 @@ void SegmentController::processActiveDimming()
         {
             segConfig.activeDimming = NeoPixelBusModule::SegmentConfig::NONE;
             segConfig.dimmingStepCode = 0;
+            // No stop telegram arrived: report the dimmed result
+            _module->queueStatus(static_cast<uint8_t>(1 + (&segConfig - _module->_segments.data())), false);
             continue;
         }
 
