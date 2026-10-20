@@ -71,6 +71,9 @@ class SceneManager
      */
     uint8_t getSceneCount(uint8_t channelIndex);
 
+    /// @brief true if the configured scene (1-based) starts an Effektmanager instead of a static state
+    bool isEmActionScene(uint8_t channelIndex, uint8_t sceneNumber);
+
     /**
      * @brief Store the current segment state into a scene slot (DPT 18.001 learn)
      *

@@ -355,10 +355,16 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // recallScene() (rendering master*cue/255), so without this it would resume at the ETS
                 // boot-seed brightness instead of the remembered level — the EM branch below seeds the
                 // same way. A static scene that carries its own brightness simply overrides this.
-                seg->setMasterBrightness(cfg.savedBrightness);
+                // recallScene() overwrites savedBrightness with the scene value; keep the intent the
+                // user set after the recall (e.g. dimmed).
+                const uint8_t intentBrightness = cfg.savedBrightness;
+                seg->setMasterBrightness(intentBrightness);
                 bool sceneRecalled = _module->_sceneManager->recallScene(i, cfg.savedSceneNumber, seg);
                 if (sceneRecalled)
                 {
+                    cfg.savedBrightness = intentBrightness;
+                    seg->setMasterBrightness(intentBrightness);
+                    if (!cfg.emController.isRunning()) seg->setBrightness(intentBrightness);
                     if (cfg.savedPower == 0) seg->setBrightness(0);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] RESTORED Scene %d from Flash (power=%s)",
@@ -391,7 +397,8 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             uint8_t effectType;
             bool effectFromFlash = false;
 
-            if (cfg.savedEffectValid && (cfg.savedEffectType > 0 || cfg.savedLastWasEffect))
+            // Solid is effect type 0; a colour KO after it must not drop it in favour of the ETS effect
+            if (cfg.savedEffectValid)
             {
                 // Effect was changed via KO → restore from flash
                 effectType = cfg.savedEffectType;

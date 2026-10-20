@@ -151,6 +151,13 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
     return true;
 }
 
+bool SceneManager::isEmActionScene(uint8_t channelIndex, uint8_t sceneNumber)
+{
+    if (sceneNumber < 1 || sceneNumber > getSceneCount(channelIndex)) return false;
+    uint8_t effectType = readSceneField(channelIndex, sceneNumber - 1, FIELD_EFFECT_TYPE);
+    return effectType >= EM_ACTION_BASE && effectType < EM_ACTION_BASE + EM_COUNT;
+}
+
 bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment)
 {
     if (!segment)

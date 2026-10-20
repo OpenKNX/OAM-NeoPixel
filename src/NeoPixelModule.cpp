@@ -1137,7 +1137,12 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 case NEO_KoEmStop:
                 {
                     logInfoP("Segment %d: EffektManager Stop", emChannel);
+                    const bool emWasRunning = _segments[emChannel].emController.isRunning();
                     stopEffektManager((size_t)emChannel);
+                    // A stopped EM-action scene is not replayed at boot; a static scene marker stays.
+                    if (emWasRunning && _sceneManager &&
+                        _sceneManager->isEmActionScene((uint8_t)emChannel, _segments[emChannel].savedSceneNumber))
+                        _segments[emChannel].savedSceneNumber = 0;
                     break;
                 }
     #ifdef NEO_KoEmPause
@@ -1294,7 +1299,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.suspendedByPower = false;
                     const uint8_t powerOnEm = configuredPowerOnEm(i);
                     if (powerOnEm != EM_NONE)
+                    {
                         startEffektManagerFresh(i, powerOnEm);
+                        if (cfg.emController.activeEmId() == powerOnEm) cfg.savedSceneNumber = 0;
+                    }
                 }
                 else if (cfg.suspendedByPower)
                 {
@@ -1432,6 +1440,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             koIndex != NEO_KoCueRel && koIndex != NEO_KoLock)
         {
             interruptEmIfRunning((size_t)channel);
+            // A direct visual command replaces an earlier scene ("Letzter Zustand" restores the scene first).
+            if (koIndex != NEO_KoSegmentPower) _segments[channel].savedSceneNumber = 0;
             // Colour commands outside H/S/V make the stored H/S/V stale (base for H/S/V dimming).
             if (koIndex != NEO_KoSegmentPower && koIndex != NEO_KoFx && koIndex != NEO_KoFxRel)
                 _segments[channel].hsvTracked = koIndex == NEO_KoH || koIndex == NEO_KoS || koIndex == NEO_KoV ||
@@ -1994,9 +2004,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         // For Solid effect, also restore brightness — scale the pre-global intent by
                         // the live global factor, else a restore while globally dimmed overshoots to full.
-                        uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
-                        cfg.savedBrightness = intent; // 0 is applied as full: keep the intent equal to what is shown
-                        uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
+                        // An effect command is no switch-on: an intent of 0 stays dark.
+                        uint8_t eff = (uint8_t)((uint16_t)cfg.savedBrightness * getGlobalBrightness() / 255);
                         targetSegment->setMasterBrightness(eff);
                         targetSegment->setBrightness(eff);
                     }
@@ -2117,8 +2126,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                                 targetSegment->setBrightness(255);
                             }
                             break;
-                            case 7:                                     // Rainbow Effect
-                                applyEffectToSegment(targetSegment, 1); // Rainbow effect
+                            case 7: // Wipe (effect ID 1; presets 1-6 colour it)
+                                applyEffectToSegment(targetSegment, static_cast<uint8_t>(PT_NEOEffectType::Wipe));
+                                _segments[channel].savedEffectType = static_cast<uint8_t>(PT_NEOEffectType::Wipe);
+                                _segments[channel].savedEffectValid = true;
+                                _segments[channel].savedLastWasEffect = true;
                                 targetSegment->setBrightness(200);
                                 break;
                             case 8: // Off
@@ -2163,6 +2175,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         {
                             cfg.pendingPowerOnRestart = false;
                             startEffektManagerFresh(channel, powerOnEm);
+                            if (cfg.emController.activeEmId() == powerOnEm) cfg.savedSceneNumber = 0;
                             showVirtualStripIfIdle();
                         }
                         else
@@ -2195,7 +2208,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                     // (cfg.savedPower already set to 1 above, before the suspended-EM branch)
 
-                    if (cfg.savedLastWasEffect && cfg.savedEffectValid)
+                    // A segment switched off via this KO (stopped) always restores its effect: colour KOs
+                    // received while off clear savedLastWasEffect but keep the effect.
+                    if (cfg.savedEffectValid && (cfg.savedLastWasEffect || targetSegment->isPaused()))
                     {
                         // Restore effect (including Solid effect type=0!)
                         applyEffectToSegment(targetSegment, cfg.savedEffectType);
@@ -2209,7 +2224,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         }
 
                         // For Solid effect (type=0), restore saved colors
-                        if (cfg.savedEffectType == static_cast<uint8_t>(PT_NEOEffectType::Solid))
+                        if (cfg.savedEffectType == static_cast<uint8_t>(PT_NEOEffectType::Solid) && cfg.savedValid)
                         {
                             targetSegment->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW);
                         }
@@ -2763,6 +2778,12 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
         uint8_t oldCh = _channelIndex;
         _channelIndex = (uint8_t)segmentIndex;
         applyEffectToSegment(cfg.segment, effectId);
+        if (cfg.segment->getEffect() && getTypeFromEffect(cfg.segment->getEffect()) == effectId)
+        {
+            cfg.savedEffectType = effectId;
+            cfg.savedEffectValid = true;
+            cfg.savedLastWasEffect = true;
+        }
         // Effect selection loads either the configured ETS parameters or built-in defaults,
         // both of which include speed. The synchronized value is authoritative here.
         ecfg.speed = speed;
@@ -3133,7 +3154,11 @@ bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
         }
         case NEO_EM_STOP:
         {
+            const bool emWasRunning = _segments[seg].emController.isRunning();
             stopEffektManager(seg);
+            // A stopped EM-action scene is not replayed at boot; a static scene marker stays.
+            if (emWasRunning && _sceneManager && _sceneManager->isEmActionScene((uint8_t)seg, _segments[seg].savedSceneNumber))
+                _segments[seg].savedSceneNumber = 0;
             return true;
         }
         case NEO_EM_CUE:
@@ -6487,6 +6512,9 @@ void NeoPixelBusModule::loopEffektManager()
         cfg.emController.tick(cfg.segment, _emData);
         if (wasRunning && !cfg.emController.isRunning())
         {
+            // A finished one-shot EM-action scene is not replayed at boot; a static scene marker stays.
+            if (_sceneManager && _sceneManager->isEmActionScene((uint8_t)i, cfg.savedSceneNumber))
+                cfg.savedSceneNumber = 0;
             if (cfg.emStopReturnMode == EM_STOP_OFF)
                 cfg.segment->stop();
             else if (cfg.emStopReturnMode == EM_STOP_DEFAULT)
@@ -6668,6 +6696,11 @@ void NeoPixelBusModule::interruptEmIfRunning(size_t segmentIndex)
     if (!cfg.segment || !cfg.emController.isRunning()) return;
     // Halt the EM without restoring the pre-EM state — the triggering direct KO sets the new visual.
     cfg.emController.stop(cfg.segment, EM_STOP_LEAVE);
+    // The cue's effect stays: it is the segment's effect from now on (power-on, flash restore).
+    Effect* effect = cfg.segment->getEffect();
+    cfg.savedEffectType = getTypeFromEffect(effect);
+    cfg.savedEffectValid = effect != nullptr;
+    cfg.savedLastWasEffect = cfg.savedEffectValid;
     sendEmStatusKOs(segmentIndex);
 }
 

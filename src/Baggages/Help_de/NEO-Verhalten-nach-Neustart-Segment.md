@@ -33,20 +33,19 @@ Dieses Segment wird nach einem Neustart ausgeschaltet, unabhängig von der globa
 ### Letzter Zustand
 Dieses Segment wird im zuletzt aktiven Zustand wiederhergestellt, unabhängig von der globalen Einstellung.
 
-Das System speichert vor jedem Neustart automatisch:
+Gespeichert werden:
 
-- Farbe (RGBW-Werte)
-- Helligkeit
-- Power-Status (Ein/Aus)
+- Ein/Aus, Farbe (inkl. Weißkanäle) und Helligkeit
+- der gewählte Effekt, die zuletzt abgerufene Szene und ein laufender Effektmanager
 
-**Wichtig:** Der aktive Effekt und dessen Parameter (Speed, Intensity) werden **nicht** im Flash gespeichert. Nach einem Neustart wird immer der in ETS konfigurierte Effekt verwendet. Dies stellt sicher, dass nach einer ETS-Umprogrammierung keine alten Effekt-Einstellungen die neue Konfiguration überschreiben.
+Die Parameter des in der ETS eingestellten Effekts kommen aus der ETS; ein per Objekt gewählter anderer Effekt startet mit seinen Standardwerten. Szenen und Effektmanager-Cues bringen ihre eigenen Parameter mit. Bleibt die Zahl der Segmente gleich, gilt das auch nach einem ETS-Download: Ein dort neu gewählter Effekt ist erst mit „An (ETS-Werte)“ oder einem Effekt-Befehl zu sehen, der gespeicherte Effekt startet dann mit seinen Standardwerten; ist der gespeicherte Effekt der ETS-Effekt, wirken geänderte Parameter sofort. Ändert sich die Zahl der Segmente, werden die gespeicherten Daten verworfen.
 
 **Anwendungsfall:**
 
 - Wichtige Segmente sollen immer ihren Zustand beibehalten
 - Grundbeleuchtung mit zuverlässiger Wiederherstellung
 
-**Hinweis:** Der letzte Zustand wird im Flash-Speicher gesichert und überlebt Neustarts und Stromausfälle.
+**Hinweis:** Gespeichert wird vor einem Neustart, vor einem ETS-Download und vor einem Firmware-Update über KNX, Netzwerk oder das USB-Upload-Skript (RP2040/RP2350), auf Geräten mit Save-Pin (z. B. REG2) auch bei Spannungsausfall, und periodisch oder per Objekt, wenn das in den allgemeinen Einstellungen aktiviert ist. Innerhalb von 3 Minuten nach dem letzten Speichern seit dem Gerätestart wird nicht erneut gespeichert, außer vor einem Firmware-Update über das USB-Upload-Skript. Ohne Save-Pin wird nach einem Stromausfall der zuletzt gespeicherte Zustand wiederhergestellt.
 
 ### Standard-Farbe (eigene)
 Dieses Segment startet mit einer eigenen vordefinierten Farbe und Helligkeit, unabhängig von der globalen Einstellung.
@@ -108,4 +107,4 @@ Die Segment-Einstellung hat **immer Vorrang** vor der globalen Einstellung:
 
 - **Energiesparen:** Dekorative Effekte auf "Aus" setzen und nur bei Bedarf aktivieren.
 
-- **Flash-Speicher schonen:** Der "Letzter Zustand"-Modus schreibt bei jedem Neustart in den Flash. Bei sehr häufigen Neustarts kann "Standard-Farbe" die Lebensdauer verlängern.
+- **Flash-Speicher:** Der Zustand wird unabhängig von dieser Einstellung gespeichert (vor einem Neustart, höchstens alle 3 Minuten); sie bestimmt nur, ob er beim Start angewendet wird.

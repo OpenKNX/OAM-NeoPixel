@@ -13,20 +13,19 @@ Alle LEDs werden nach einem Neustart ausgeschaltet. Die Segmente bleiben dunkel,
 - Verhindert unerwünschte Beleuchtung nach Wartungsarbeiten
 
 ### Letzter Zustand
-Die LEDs werden im zuletzt aktiven Zustand wiederhergestellt. Das System speichert vor jedem Neustart automatisch:
+Die LEDs werden im zuletzt aktiven Zustand wiederhergestellt. Gespeichert werden je Segment:
 
-- Farbe (RGBW-Werte)
-- Helligkeit
-- Power-Status (Ein/Aus)
+- Ein/Aus, Farbe (inkl. Weißkanäle) und Helligkeit
+- der gewählte Effekt, die zuletzt abgerufene Szene und ein laufender Effektmanager
 
-**Wichtig:** Der aktive Effekt und dessen Parameter (Speed, Intensity) werden **nicht** im Flash gespeichert. Nach einem Neustart wird immer der in ETS konfigurierte Effekt verwendet. Dies stellt sicher, dass nach einer ETS-Umprogrammierung keine alten Effekt-Einstellungen die neue Konfiguration überschreiben.
+Die Parameter des in der ETS eingestellten Effekts kommen aus der ETS; ein per Objekt gewählter anderer Effekt startet mit seinen Standardwerten. Szenen und Effektmanager-Cues bringen ihre eigenen Parameter mit. Bleibt die Zahl der Segmente gleich, gilt das auch nach einem ETS-Download: Ein dort neu gewählter Effekt ist erst mit „An (ETS-Werte)“ oder einem Effekt-Befehl zu sehen, der gespeicherte Effekt startet dann mit seinen Standardwerten; ist der gespeicherte Effekt der ETS-Effekt, wirken geänderte Parameter sofort. Ändert sich die Zahl der Segmente, werden die gespeicherten Daten verworfen.
 
 **Anwendungsfall:**
 
 - Nahtlose Fortsetzung nach kurzzeitigen Stromausfällen
 - Beibehaltung der Beleuchtungsstimmung nach Updates
 
-**Hinweis:** Der letzte Zustand wird im Flash-Speicher gesichert und überlebt Neustarts und Stromausfälle.
+**Hinweis:** Gespeichert wird vor einem Neustart, vor einem ETS-Download und vor einem Firmware-Update über KNX, Netzwerk oder das USB-Upload-Skript (RP2040/RP2350), auf Geräten mit Save-Pin (z. B. REG2) auch bei Spannungsausfall, und periodisch oder per Objekt, wenn das in den allgemeinen Einstellungen aktiviert ist. Innerhalb von 3 Minuten nach dem letzten Speichern seit dem Gerätestart wird nicht erneut gespeichert, außer vor einem Firmware-Update über das USB-Upload-Skript. Ohne Save-Pin wird nach einem Stromausfall der zuletzt gespeicherte Zustand wiederhergestellt.
 
 ### Standard-Farbe
 Die LEDs starten mit einer vordefinierten Farbe und Helligkeit. 
