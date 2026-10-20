@@ -563,17 +563,10 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
         state.validFlags |= 0x02;
     }
 
-    // Save brightness (always valid). For a RUNNING EM, getBrightness() is the cue-scaled render
-    // (master*cue/255); persist the MASTER intent instead, because the restore path
-    // (restoreStatesAfterStartup EM branch) feeds savedBrightness back in as the master — storing
-    // render would double-scale the EM on every reboot. For non-EM segments persist the render as
-    // before (master==render in the normal case, and scene/preset paths set render directly).
-    // For a RUNNING EM, getBrightness() is the cue-scaled render and getMasterBrightness() is the
-    // global-scaled master — persist cfg.savedBrightness, the PRE-global intent (the same baseline
-    // ColorManagement uses), so the restore feeds master back without cue- or global-double-scaling
-    // (_globalBrightness is not persisted and resets to 255 on boot). Non-EM persists the render as
-    // before (scene/preset/direct set the render layer directly).
-    state.brightness = cfg.emController.isRunning() ? cfg.savedBrightness : seg->getBrightness();
+    // Save brightness (always valid): the pre-global intent. The render is cue-scaled under an EM,
+    // global-scaled otherwise (_globalBrightness is not persisted and resets to 255 on boot) and 0
+    // for a segment that is switched off; the restore feeds the intent back as the master.
+    state.brightness = cfg.savedBrightness;
     state.validFlags |= 0x04;
 
     // NEW: Save effect state if changed via KO

@@ -1156,7 +1156,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedB = 0;
                     cfg.savedWW = 0;
                 }
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1214,7 +1213,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedWW = 0;
                 }
                 cfg.savedG = green;
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1272,7 +1270,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedWW = 0;
                 }
                 cfg.savedB = blue;
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1330,7 +1327,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedB = 0;
                 }
                 cfg.savedWW = white;
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1405,7 +1401,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = b;
                 cfg.savedWW = ww;
                 cfg.savedCW = cw;
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
 
@@ -1461,7 +1456,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     cfg.savedWW = 0;
                 }
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1522,7 +1516,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     cfg.savedWW = 0;
                 }
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1578,7 +1571,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     cfg.savedWW = 0;
                 }
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1627,7 +1619,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     cfg.savedWW = 0;
                 }
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1677,7 +1668,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     cfg.savedWW = 0;
                 }
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
 
                 // Always update primary color so running effects can use it immediately
@@ -1822,6 +1812,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // For Solid effect, also restore brightness — scale the pre-global intent by
                         // the live global factor, else a restore while globally dimmed overshoots to full.
                         uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                        cfg.savedBrightness = intent; // 0 is applied as full: keep the intent equal to what is shown
                         uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
                         targetSegment->setMasterBrightness(eff);
                         targetSegment->setBrightness(eff);
@@ -1842,8 +1833,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
                     if (effect == 0)
                     {
-                        // For Solid effect, also apply startup brightness
-                        uint8_t brightness = ParamNEO_NEOSegmentStartupBrightness;
+                        // For Solid effect, also apply the brightness intent (boot-seeded from the ETS start
+                        // brightness), scaled by the live global factor like the saved-colour branch.
+                        uint8_t brightness = (uint8_t)((uint16_t)cfg.savedBrightness * getGlobalBrightness() / 255);
+                        targetSegment->setMasterBrightness(brightness);
                         targetSegment->setBrightness(brightness);
                         logInfoP("Segment %d: No saved color, using ETS Default-Farbe (R=%d G=%d B=%d W=%d, Brightness=%d) for Solid",
                                  channel, r, g, b, w, brightness);
@@ -1957,6 +1950,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                                 logWarningP("Unknown preset %d for segment %d", sceneNumber, channel);
                                 break;
                         }
+                        // Presets 1-8 set the brightness directly; keep the brightness intent in step.
+                        if (sceneNumber >= 1 && sceneNumber <= 8)
+                            _segments[channel].savedBrightness = targetSegment->getBrightness();
                     }
                 }
                 break;
@@ -2033,6 +2029,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // Restore the pre-global intent scaled by the live global factor (else overshoot).
                         {
                             uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                            cfg.savedBrightness = intent; // 0 is applied as full: keep the intent equal to what is shown
                             uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
                             targetSegment->setMasterBrightness(eff);
                             targetSegment->setBrightness(eff);
@@ -2056,6 +2053,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                         // Scale the pre-global intent by the live global factor (else restore overshoots).
                         {
                             uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                            cfg.savedBrightness = intent; // 0 is applied as full: keep the intent equal to what is shown
                             uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
                             targetSegment->setMasterBrightness(eff);
                             targetSegment->setBrightness(eff);
@@ -2067,8 +2065,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     {
                         if (targetSegment->getBrightness() == 0)
                         {
-                            // No saved brightness -> default to full, scaled by the live global factor.
-                            uint8_t eff = getGlobalBrightness(); // = 255 * global / 255
+                            // Dark without a saved state (e.g. booted "Aus"): light at the brightness intent
+                            // (0 -> full), scaled by the live global factor.
+                            uint8_t intent = cfg.savedBrightness == 0 ? 255 : cfg.savedBrightness;
+                            cfg.savedBrightness = intent;
+                            uint8_t eff = (uint8_t)((uint16_t)intent * getGlobalBrightness() / 255);
                             targetSegment->setMasterBrightness(eff);
                             targetSegment->setBrightness(eff);
                         }
@@ -2102,6 +2103,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = (primaryRGBW >> 16) & 0xFF;
                     cfg.savedB = (primaryRGBW >> 8) & 0xFF;
                     cfg.savedWW = (primaryRGBW) & 0xFF;
+                    cfg.savedCW = targetSegment->getConfig().cw(); // RGBCCT: the 5th channel is not in primaryRGBW
                     // Do NOT snapshot getMasterBrightness() here: master already has the global factor
                     // baked in (master = savedBrightness*global/255), while savedBrightness is the
                     // pre-global intent kept current by the brightness pipeline. Overwriting it with the
@@ -2208,7 +2210,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = cfg.pendingSolidB = 0;
                 cfg.savedWW = cfg.pendingSolidWW = ww;
                 cfg.savedCW = cfg.pendingSolidCW = 0;
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
                 break;
@@ -2230,7 +2231,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 cfg.savedB = cfg.pendingSolidB = 0;
                 cfg.savedWW = cfg.pendingSolidWW = 0;
                 cfg.savedCW = cfg.pendingSolidCW = cw;
-                cfg.savedBrightness = targetSegment->getBrightness();
                 cfg.savedValid = true;
                 cfg.savedLastWasEffect = false;
                 break;
@@ -2256,7 +2256,6 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     cfg.savedG = g;
                     cfg.savedB = b;
                     cfg.savedWW = w;
-                    cfg.savedBrightness = targetSegment->getBrightness();
                     cfg.savedValid = true;
                     cfg.savedLastWasEffect = false;
                 }

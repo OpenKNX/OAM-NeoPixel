@@ -78,10 +78,10 @@ void ColorManagement::restoreOriginalBrightness()
             // Restore to savedBrightness (the desired brightness before global scaling)
             uint8_t originalBrightness = cfg.savedBrightness;
 
-            // If savedBrightness is 0, default to full brightness
-            if (originalBrightness == 0)
+            // Same fallback as applyGlobalBrightness(): a 0 intent stays dark unless the segment is lit
+            if (originalBrightness == 0 && cfg.segment->getBrightness() > 0)
             {
-                originalBrightness = 255;
+                originalBrightness = cfg.segment->getBrightness();
             }
 
             // Route through master so a running EM picks it up (see applyGlobalBrightness)

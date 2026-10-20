@@ -286,7 +286,6 @@ void SegmentController::processCctKo(uint8_t channel, GroupObject& ko)
     cfg.savedG = g;
     cfg.savedB = b;
     cfg.savedWW = 0;
-    cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
     cfg.savedLastWasEffect = false;
 
@@ -345,7 +344,6 @@ void SegmentController::processHsvKo(uint8_t channel, GroupObject& ko)
     cfg.savedR = r;
     cfg.savedG = g;
     cfg.savedB = b;
-    cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
 
     // If Solid effect is running, update immediately
@@ -499,7 +497,6 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
         }
     }
 
-    cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
 
     // If Solid effect is running, update immediately
@@ -552,7 +549,6 @@ void SegmentController::processHsvChannelKo(uint8_t channel, GroupObject& ko, ui
     cfg.savedR = r;
     cfg.savedG = g;
     cfg.savedB = b;
-    cfg.savedBrightness = targetSegment->getBrightness();
     cfg.savedValid = true;
 
     // If Solid effect is running, update immediately
