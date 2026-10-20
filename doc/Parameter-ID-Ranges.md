@@ -37,9 +37,10 @@ Source: [`src/NeoPixel.share.xml`](../src/NeoPixel.share.xml)
 |---|---|
 | `000..002` | Trigger description and global HCL settings |
 | `011` | Send the seeded status objects once after a restart |
-| `020..029` | Strip/segment counts, update speed, restart, and global startup settings |
+| `020..024` | Strip/segment counts, update speed, restart, and global startup behaviour |
+| `025..029` | Retired (former global start colour R/G/B/W and brightness), do not reuse |
 | `030..059` | Virtual-strip topology, positions, and boundaries |
-| `060..061` | Global startup effect selectors |
+| `060..061` | Retired (former global start effect selectors), do not reuse |
 | `068..074` | Power/current limits, ABL, and effect-manager enable |
 | `076..089` | Additional virtual-strip positions, boundaries, and validation flags |
 | `091..098` | Strip data-port conflict flags |

@@ -338,7 +338,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         if (effectiveBehavior != 1)
         {
 #ifdef OPENKNX_DEBUG
-            const char* behaviorNames[] = {"Aus", "Letzter Zustand", "ETS-Parameterwert"};
+            const char* behaviorNames[] = {"Aus", "Letzter Zustand", "An (ETS-Werte)"};
             logInfoP("[Segment %d] SKIPPED: Behavior is '%s', not 'Letzter Zustand'", i, behaviorNames[effectiveBehavior]);
             skippedCount++;
 #endif

@@ -2014,7 +2014,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 }
                 else
                 {
-                    // No saved color - use ETS Default-Farbe (ETS-Parameterwert)
+                    // No saved color - use the segment ETS start colour
                     uint32_t color = ParamNEO_NEOSegmentStartupColor;
                     uint8_t r = (color >> 16) & 0xFF;
                     uint8_t g = (color >> 8) & 0xFF;
@@ -4246,7 +4246,7 @@ void NeoPixelBusModule::configureFromETS()
             // Note: Startup behavior is already applied:
             //   - Mode "Aus": brightness=0
             //   - Mode "Letzter Zustand": Will be restored from flash in processAfterStartupDelay()
-            //   - Mode "ETS-Parameterwert": Active with ETS configuration
+            //   - Mode "An (ETS-Werte)": Active with ETS configuration
         }
 
         // Configure power management using OFM PowerManager
@@ -5741,23 +5741,11 @@ void NeoPixelBusModule::debugShowConfiguration()
         logInfoP("    Current/LED:    %d mA", currentPerLed);
     }
 
-    // Global Startup Behavior & Start-Farbe
+    // Global Startup Behavior (segments use their own ETS configuration for "An")
     uint8_t startupBehavior = (uint8_t)ParamNEO_NEOGlobalStartupBehavior;
-    const char* startupBehaviorNames[] = {"Aus", "Letzter Zustand", "ETS-Parameterwert"};
+    const char* startupBehaviorNames[] = {"Aus", "Letzter Zustand", "An (ETS-Werte)"};
     const char* startupBehaviorName = (startupBehavior < 3) ? startupBehaviorNames[startupBehavior] : "Unknown";
     logInfoP("  Startup Behavior: %d (%s)", startupBehavior, startupBehaviorName);
-    if (startupBehavior == 2)
-    { // ETS-Parameterwert
-        uint8_t r = (uint8_t)ParamNEO_NEOGlobalStartupR;
-        uint8_t g = (uint8_t)ParamNEO_NEOGlobalStartupG;
-        uint8_t b = (uint8_t)ParamNEO_NEOGlobalStartupB;
-        uint8_t w = (uint8_t)ParamNEO_NEOGlobalStartupW;
-        uint8_t brightness = (uint8_t)ParamNEO_NEOGlobalStartupBrightness;
-        uint8_t effect = (uint8_t)ParamNEO_NEOGlobalStartupEffect;
-        logInfoP("    Color (RGBW):   R=%d G=%d B=%d W=%d", r, g, b, w);
-        logInfoP("    Brightness:     %d", brightness);
-        logInfoP("    Effect:         %d", effect);
-    }
     logInfoP("");
 
     // Show each physical strip with ETS and actual values

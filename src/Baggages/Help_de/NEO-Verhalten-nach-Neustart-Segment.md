@@ -4,7 +4,7 @@ Diese Einstellung legt fest, welchen Zustand dieses LED-Segment nach einem Neust
 
 ## Optionen
 
-### Global verwenden (Standard)
+### Global verwenden
 Das Segment übernimmt die globale Einstellung "Verhalten nach Neustart (Global)".
 
 **Anwendungsfall:**
@@ -30,7 +30,7 @@ Dieses Segment wird nach einem Neustart ausgeschaltet, unabhängig von der globa
 - Segment 1-3: "Global verwenden" (starten im letzten Zustand)
 - Segment 4 (Party-Effekt): "Aus" (wird nur manuell aktiviert)
 
-### Letzter Zustand
+### Letzter Zustand (Standard)
 Dieses Segment wird im zuletzt aktiven Zustand wiederhergestellt, unabhängig von der globalen Einstellung.
 
 Gespeichert werden:
@@ -47,14 +47,8 @@ Die Parameter des in der ETS eingestellten Effekts kommen aus der ETS; ein per O
 
 **Hinweis:** Gespeichert wird vor einem Neustart, vor einem ETS-Download und vor einem Firmware-Update über KNX, Netzwerk oder das USB-Upload-Skript (RP2040/RP2350), auf Geräten mit Save-Pin (z. B. REG2) auch bei Spannungsausfall, und periodisch oder per Objekt, wenn das in den allgemeinen Einstellungen aktiviert ist. Innerhalb von 3 Minuten nach dem letzten Speichern seit dem Gerätestart wird nicht erneut gespeichert, außer vor einem Firmware-Update über das USB-Upload-Skript. Ohne Save-Pin wird nach einem Stromausfall der zuletzt gespeicherte Zustand wiederhergestellt.
 
-### Standard-Farbe (eigene)
-Dieses Segment startet mit einer eigenen vordefinierten Farbe und Helligkeit, unabhängig von der globalen Einstellung.
-
-Zusätzliche Parameter (nur sichtbar bei dieser Option):
-
-- **Standard-Farbe R/G/B/W:** RGB-Farbwerte (0-255) und optional Weiß-Kanal
-- **Standard-Helligkeit:** Helligkeit von 0-255
-- **Standard-Effekt:** Optional ein Effekt (z.B. Rainbow, Cylon)
+### An (ETS-Werte)
+Dieses Segment startet mit seiner ETS-Konfiguration, unabhängig von der globalen Einstellung: eingestellter Effekt, Start-Farbe RGB, Start-Farbe W und Start-Helligkeit.
 
 **Anwendungsfall:**
 
@@ -66,7 +60,7 @@ Zusätzliche Parameter (nur sichtbar bei dieser Option):
 
 - Global: "Letzter Zustand"
 - Segment 1-3: "Global verwenden" (starten im letzten Zustand)
-- Segment 4 (Status-LED): "Standard-Farbe (eigene)" → grün, 50% Helligkeit, Solid-Effekt
+- Segment 4 (Status-LED): "An (ETS-Werte)" → grün, 50 % Start-Helligkeit, Solid-Effekt
 
 ## Priorität
 
@@ -90,7 +84,7 @@ Die Segment-Einstellung hat **immer Vorrang** vor der globalen Einstellung:
 - **Segment 2 (Effekt-Bereich):** "Aus"  
   → Bleibt dunkel, wird nur manuell für Partys aktiviert
 
-- **Segment 3 (Status-Anzeige):** "Standard-Farbe (eigene)" → Blau, 30%  
+- **Segment 3 (Status-Anzeige):** "An (ETS-Werte)" → Blau, 30 %  
   → Zeigt immer System-Bereitschaft mit blauem Licht
 
 **Ergebnis nach Neustart:**
@@ -101,9 +95,9 @@ Die Segment-Einstellung hat **immer Vorrang** vor der globalen Einstellung:
 
 ## Tipps
 
-- **Standard-Einstellung belassen:** Wenn alle Segmente gleich reagieren sollen, einfach "Global verwenden" bei allen Segmenten lassen und nur die globale Einstellung ändern.
+- **Einheitlich steuern:** Wenn alle Segmente gleich reagieren sollen, bei allen Segmenten "Global verwenden" wählen und nur die globale Einstellung ändern (voreingestellt ist je Segment "Letzter Zustand").
 
-- **Sicherheitskritische Segmente:** Notbeleuchtung sollte "Standard-Farbe (eigene)" verwenden, um nach Stromausfall zuverlässig zu starten.
+- **Sicherheitskritische Segmente:** Notbeleuchtung sollte "An (ETS-Werte)" verwenden, um nach Stromausfall zuverlässig zu starten.
 
 - **Energiesparen:** Dekorative Effekte auf "Aus" setzen und nur bei Bedarf aktivieren.
 

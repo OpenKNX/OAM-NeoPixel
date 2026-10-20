@@ -1,4 +1,4 @@
-# Standard-Farbe
+# Start-Farbe RGB
 
 Definiert die RGB-Farbe, die beim Start des Segments oder beim Zurücksetzen verwendet wird.
 
@@ -14,7 +14,7 @@ Wählen Sie die gewünschte Farbe über den Farbwähler aus:
 
 Diese Farbe wird verwendet:
 
-- Beim Start des Segments (wenn "Verhalten nach Neustart" auf "Eigene Startfarbe" gesetzt ist)
+- Beim Start des Segments nach jedem Neustart; bei "Verhalten nach Neustart" = "Letzter Zustand" ersetzt die gespeicherte Farbe sie, sobald gespeicherte Daten vorliegen
 - Beim Zurücksetzen der Farbe über KO oder Effektwechsel (wenn "Bei Effektwechsel Farbe auf Standard zurücksetzen" aktiviert ist)
 - Als Primärfarbe für Effekte, die eine Grundfarbe verwenden (z.B. Wipe, Theater Chase, Solid)
 

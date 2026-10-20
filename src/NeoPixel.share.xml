@@ -505,7 +505,7 @@
                 <TypeRestriction Base="Value" SizeInBit="2">
                   <Enumeration Text="Aus" Value="0" Id="%ENID%" />
                   <Enumeration Text="Letzter Zustand" Value="1" Id="%ENID%" />
-                  <Enumeration Text="ETS-Parameterwert" Value="2" Id="%ENID%" />
+                  <Enumeration Text="An (ETS-Werte)" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <ParameterType Id="%AID%_PT-SegmentStartupBehavior" Name="SegmentStartupBehavior">
@@ -743,14 +743,6 @@
                 <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
                 <!-- Byte 36 bit 2: send the seeded status objects once after the startup delay -->
                 <Parameter Id="%AID%_UP-%TT%00011" Offset="0" BitOffset="2" Name="NEOStatusSendOnStartup" ParameterType="%AID%_PT-Boolean" Text="Status nach Neustart senden" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%00025" Offset="1" BitOffset="0" Name="NEOGlobalStartupR" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe R" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00026" Offset="2" BitOffset="0" Name="NEOGlobalStartupG" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe G" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00027" Offset="3" BitOffset="0" Name="NEOGlobalStartupB" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe B" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00028" Offset="4" BitOffset="0" Name="NEOGlobalStartupW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe W" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%00029" Offset="5" BitOffset="0" Name="NEOGlobalStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%00060" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffect" ParameterType="%AID%_PT-NEOEffectType" Text="Start-Effekt" Value="0" op:nowarn="true"/>
-                <!-- Same byte as 00060: the reduced list shown on hardware without the 2D effects. -->
-                <Parameter Id="%AID%_UP-%TT%00061" Offset="6" BitOffset="0" Name="NEOGlobalStartupEffectNo2D" ParameterType="%AID%_PT-NEOEffectTypeNo2D" Text="Start-Effekt" Value="0" op:nowarn="true"/>
               </Union>
               <!-- Virtual Strip Configuration -->
               <Union SizeInBit="40" op:nowarn="true">
@@ -926,13 +918,6 @@
               <!-- Global Startup Behavior Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00024_R-%TT%0002401" RefId="%AID%_UP-%TT%00024" />
               <ParameterRef Id="%AID%_UP-%TT%00011_R-%TT%0001101" RefId="%AID%_UP-%TT%00011" />
-              <ParameterRef Id="%AID%_UP-%TT%00025_R-%TT%0002501" RefId="%AID%_UP-%TT%00025" />
-              <ParameterRef Id="%AID%_UP-%TT%00026_R-%TT%0002601" RefId="%AID%_UP-%TT%00026" />
-              <ParameterRef Id="%AID%_UP-%TT%00027_R-%TT%0002701" RefId="%AID%_UP-%TT%00027" />
-              <ParameterRef Id="%AID%_UP-%TT%00028_R-%TT%0002801" RefId="%AID%_UP-%TT%00028" />
-              <ParameterRef Id="%AID%_UP-%TT%00029_R-%TT%0002901" RefId="%AID%_UP-%TT%00029" />
-              <ParameterRef Id="%AID%_UP-%TT%00060_R-%TT%0006001" RefId="%AID%_UP-%TT%00060" />
-                <ParameterRef Id="%AID%_UP-%TT%00061_R-%TT%0006101" RefId="%AID%_UP-%TT%00061" />
               <!-- Virtual Strip Parameter References (canonical, used by logic/JS) -->
               <ParameterRef Id="%AID%_UP-%TT%00030_R-%TT%0003001" RefId="%AID%_UP-%TT%00030" />
               <ParameterRef Id="%AID%_UP-%TT%00031_R-%TT%0003101" RefId="%AID%_UP-%TT%00031" />
@@ -1297,24 +1282,6 @@
                   <!-- Turn Off LEDs before Restart -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00023_R-%TT%0002301" IndentLevel="1" HelpContext="%DOC%"/>
                   <ParameterRefRef RefId="%AID%_UP-%TT%00024_R-%TT%0002401" IndentLevel="1" HelpContext="%DOC%"/>
-                  <choose ParamRefId="%AID%_UP-%TT%00024_R-%TT%0002401">
-                    <when test="2">
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00025_R-%TT%0002501" IndentLevel="2" HelpContext="%DOC%"/>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00026_R-%TT%0002601" IndentLevel="2" HelpContext="%DOC%"/>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00027_R-%TT%0002701" IndentLevel="2" HelpContext="%DOC%"/>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00028_R-%TT%0002801" IndentLevel="2" HelpContext="%DOC%"/>
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" HelpContext="%DOC%"/>
-                      <choose ParamRefId="%AID%_UP-4000018_R-400001801">
-                        <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
-                        <when test="65534">
-                          <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" HelpContext="%DOC%"/>
-                        </when>
-                        <when default="true">
-                          <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" HelpContext="%DOC%"/>
-                        </when>
-                      </choose>
-                    </when>
-                  </choose>
                   <ParameterRefRef RefId="%AID%_UP-%TT%00011_R-%TT%0001101" IndentLevel="1" HelpContext="%DOC%"/>
                   <!-- ========================================================================================================= -->
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />

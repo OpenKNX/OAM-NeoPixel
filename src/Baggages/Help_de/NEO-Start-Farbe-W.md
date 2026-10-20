@@ -1,21 +1,17 @@
-# Standard-Farbe W (Weiß-Kanal)
+# Start-Farbe W (Weiß-Kanal)
 
-Weißwert der Standard-Farbe für den Neustart (0-255).
+Weißwert der Start-Farbe des Segments (0-255).
 
-Dieser Parameter ist nur sichtbar wenn:
-
-- **Global:** "Verhalten nach Neustart (Global)" = "Standard-Farbe"
-- **Segment:** "Verhalten nach Neustart" = "Standard-Farbe (eigene)"
+Das Segment startet nach jedem Neustart mit der Start-Farbe RGB und diesem Weißwert. Bei „Verhalten nach Neustart“ = „Letzter Zustand“ wird sie durch die gespeicherte Farbe ersetzt, sobald gespeicherte Daten vorliegen.
 
 **Wertebereich:** 0-255
 
 - 0 = kein Weiß (nur RGB)
 - 255 = maximales Weiß
 
-**Standardwert:** 0 (kein Weiß-Kanal)
+**Standardwert:** 0
 
-**Hinweis:** 
+**Hinweis:**
 
-- Nur relevant für RGBW-LEDs (z.B. SK6812 RGBW)
-- Bei RGB-LEDs (WS2812B) hat dieser Wert keine Wirkung
-- Zusammen mit R, G und B ergibt sich die RGBW-Farbe beim Neustart
+- Nur relevant für LEDs mit Weiß-Kanal (z. B. SK6812 RGBW)
+- Bei RGB-LEDs (z. B. WS2812B) hat dieser Wert keine Wirkung

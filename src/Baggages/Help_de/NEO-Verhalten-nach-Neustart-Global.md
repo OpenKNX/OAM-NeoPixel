@@ -27,14 +27,8 @@ Die Parameter des in der ETS eingestellten Effekts kommen aus der ETS; ein per O
 
 **Hinweis:** Gespeichert wird vor einem Neustart, vor einem ETS-Download und vor einem Firmware-Update über KNX, Netzwerk oder das USB-Upload-Skript (RP2040/RP2350), auf Geräten mit Save-Pin (z. B. REG2) auch bei Spannungsausfall, und periodisch oder per Objekt, wenn das in den allgemeinen Einstellungen aktiviert ist. Innerhalb von 3 Minuten nach dem letzten Speichern seit dem Gerätestart wird nicht erneut gespeichert, außer vor einem Firmware-Update über das USB-Upload-Skript. Ohne Save-Pin wird nach einem Stromausfall der zuletzt gespeicherte Zustand wiederhergestellt.
 
-### Standard-Farbe
-Die LEDs starten mit einer vordefinierten Farbe und Helligkeit. 
-
-Zusätzliche Parameter (nur sichtbar bei dieser Option):
-
-- **Standard-Farbe R/G/B/W:** RGB-Farbwerte (0-255) und optional Weiß-Kanal
-- **Standard-Helligkeit:** Helligkeit von 0-255
-- **Standard-Effekt:** Optional ein Effekt (z.B. Rainbow, Cylon)
+### An (ETS-Werte)
+Jedes Segment startet mit seiner eigenen ETS-Konfiguration: eingestellter Effekt, Start-Farbe und Start-Helligkeit des Segments.
 
 **Anwendungsfall:**
 
@@ -46,14 +40,14 @@ Zusätzliche Parameter (nur sichtbar bei dieser Option):
 Jedes Segment kann diese globale Einstellung überschreiben. Im Segment-Parameter "Verhalten nach Neustart" kann gewählt werden:
 
 - **Global verwenden:** Nutzt diese globale Einstellung
-- **Aus/Letzter Zustand/Standard-Farbe (eigene):** Überschreibt die globale Einstellung für dieses spezifische Segment
+- **Aus / Letzter Zustand / An (ETS-Werte):** Überschreibt die globale Einstellung für dieses spezifische Segment
 
 Dies ermöglicht z.B.:
 
 - Global: "Letzter Zustand"
 - Segment 1-3: "Global verwenden" (übernehmen letzten Zustand)
 - Segment 4: "Aus" (bleibt dunkel nach Neustart, Notbeleuchtung nur bei Bedarf)
-- Segment 5: "Standard-Farbe (eigene)" (startet immer mit blauem Statuslicht)
+- Segment 5: "An (ETS-Werte)" (startet immer mit blauem Statuslicht)
 
 ## Beispiel-Szenarien
 
@@ -64,11 +58,11 @@ Dies ermöglicht z.B.:
 
 **Shop-Display:**
 
-- Global: "Standard-Farbe" (warmweiß, 80% Helligkeit)
+- Global: "An (ETS-Werte)" (je Segment z. B. warmweiß, 80 % Start-Helligkeit)
 - → Nach Öffnung am Morgen startet immer die definierte Grundbeleuchtung
 
 **Sicherheitsbeleuchtung:**
 
 - Global: "Aus"
-- Segment 1 (Notausgang): "Standard-Farbe (eigene)" mit grün
+- Segment 1 (Notausgang): "An (ETS-Werte)" mit grüner Start-Farbe
 - → Normale Bereiche dunkel, Sicherheitsbeleuchtung immer aktiv

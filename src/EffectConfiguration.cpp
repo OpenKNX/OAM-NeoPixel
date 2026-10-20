@@ -56,7 +56,7 @@ void EffectConfiguration::configureEffects()
             uint8_t effectiveBehavior = _module->effectiveStartupBehavior(i);
 
             // 3. Apply startup behavior
-            const char* behaviorNames[] = {"Aus", "Letzter Zustand", "ETS-Parameterwert"};
+            const char* behaviorNames[] = {"Aus", "Letzter Zustand", "An (ETS-Werte)"};
 
             switch (effectiveBehavior)
             {
@@ -71,7 +71,7 @@ void EffectConfiguration::configureEffects()
                     logInfoP("Segment %zu: ETS-Config geladen, Flash-Restore später (Behavior: %s)", i, behaviorNames[1]);
                     break;
 
-                case 2: // ETS-Parameterwert (DEFAULT)
+                case 2: // An (ETS-Werte)
                     // ETS configuration already loaded above - nothing more to do!
                     logInfoP("Segment %zu: ETS-Config geladen und aktiv (Behavior: %s, Effect: %d)", i, behaviorNames[2], effectType);
                     break;

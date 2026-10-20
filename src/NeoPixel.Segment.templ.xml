@@ -472,7 +472,7 @@
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Start-Konfiguration" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Initiale Farbe beim Start. Wird verwendet wenn 'Verhalten nach Neustart' = 'ETS-Parameterwert'. Kann zur Laufzeit über Segment-KO individuell überschrieben werden."/>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Farbe nach jedem Neustart; bei 'Verhalten nach Neustart' = 'Letzter Zustand' ersetzt die gespeicherte Farbe sie. Kann zur Laufzeit über Segment-KO individuell überschrieben werden."/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" IndentLevel="1" HelpContext="NEO-Start-Farbe"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" IndentLevel="1" HelpContext="%DOC%"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" IndentLevel="1" HelpContext="%DOC%"/>

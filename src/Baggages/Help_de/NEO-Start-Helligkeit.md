@@ -1,22 +1,13 @@
-# Standard-Helligkeit
+# Start-Helligkeit
 
-Helligkeit der Standard-Farbe beim Neustart (0-255).
+Helligkeit des Segments nach einem Neustart (0-255).
 
-Dieser Parameter ist nur sichtbar wenn:
-
-- **Global:** "Verhalten nach Neustart (Global)" = "Standard-Farbe"
-- **Segment:** "Verhalten nach Neustart" = "Standard-Farbe (eigene)"
+Sie gilt für jeden Effekt des Segments; die globale Helligkeit wirkt zusätzlich als Faktor. Bei „Verhalten nach Neustart“ = „Letzter Zustand“ wird sie durch die gespeicherte Helligkeit ersetzt, sobald gespeicherte Daten vorliegen. Über das Objekt „Segment Helligkeit“ kann sie zur Laufzeit geändert werden.
 
 **Wertebereich:** 0-255
 
-- 0 = aus (LEDs dunkel)
-- 128 = 50% Helligkeit
+- 0 = dunkel
+- 128 = 50 % Helligkeit
 - 255 = maximale Helligkeit
 
-**Standardwert:** 255 (volle Helligkeit)
-
-**Hinweis:** 
-
-- Diese Helligkeit wird auf die eingestellte RGBW-Farbe angewendet
-- Master-Brightness: 0% = aus, 100% = eingestellte Farbe in voller Intensität
-- Empfehlung: Bei Innenbeleuchtung oft 128 (50%) ausreichend
+**Standardwert:** 255
