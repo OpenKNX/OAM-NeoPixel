@@ -47,7 +47,7 @@ Als Ein/Aus wird gespeichert, ob das Segment sichtbar eingeschaltet war: Ein Seg
 - Wichtige Segmente sollen immer ihren Zustand beibehalten
 - Grundbeleuchtung mit zuverlässiger Wiederherstellung
 
-**Hinweis:** Gespeichert wird vor einem Neustart, vor einem ETS-Download und vor einem Firmware-Update über KNX, Netzwerk oder das USB-Upload-Skript (RP2040/RP2350), auf Geräten mit Save-Pin (z. B. REG2) auch bei Spannungsausfall, und periodisch oder per Objekt, wenn das in den allgemeinen Einstellungen aktiviert ist. Innerhalb von 3 Minuten nach dem letzten Speichern seit dem Gerätestart wird nicht erneut gespeichert, außer vor einem Firmware-Update über das USB-Upload-Skript. Ohne Save-Pin wird nach einem Stromausfall der zuletzt gespeicherte Zustand wiederhergestellt.
+**Hinweis:** Gespeichert wird vor einem Neustart, vor einem ETS-Download und vor einem Firmware-Update über KNX, Netzwerk oder das USB-Upload-Skript (RP2040/RP2350), auf Geräten mit Save-Pin (z. B. REG2) auch bei Spannungsausfall, und periodisch oder per Objekt, wenn das in den allgemeinen Einstellungen aktiviert ist. Innerhalb von 3 Minuten nach dem letzten Speichern seit dem Gerätestart wird nicht erneut gespeichert, außer vor einem Firmware-Update über das USB-Upload-Skript. Ohne Save-Pin wird nach einem Stromausfall der zuletzt gespeicherte Zustand wiederhergestellt. Die externen Relais starten unabhängig von dieser Einstellung im gespeicherten Zustand; was vor Neustart, ETS-Download und Firmware-Update für sie gespeichert wird, beschreibt die Hilfe zu „LEDs vor Upload/Neustart ausschalten“.
 
 ### An (ETS-Werte)
 Dieses Segment startet mit seiner ETS-Konfiguration, unabhängig von der globalen Einstellung: eingestellter Effekt, Start-Farbe RGB, Start-Farbe W und Start-Helligkeit.
