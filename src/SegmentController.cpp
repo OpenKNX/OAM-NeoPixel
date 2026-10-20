@@ -217,7 +217,7 @@ void SegmentController::processActiveDimming()
                     else if (bytesPerLed == 4)
                         seg->setPrimaryColor(newR, newG, newB, pc.w());
                     else
-                        seg->setPrimaryColor(newR, newG, newB, 0);
+                        seg->setPrimaryColor(newR, newG, newB, pc.w());
                 }
                 break;
             }
@@ -225,6 +225,9 @@ void SegmentController::processActiveDimming()
             default:
                 break;
         }
+        // Colour steps: saved* follows the live colour (base for Fx and the absolute colour KOs)
+        if (segConfig.activeDimming != NeoPixelBusModule::SegmentConfig::BRIGHTNESS)
+            _module->captureDirectColor((size_t)(&segConfig - _module->_segments.data()));
 
         if (stepDone)
         {
@@ -384,9 +387,6 @@ void SegmentController::processHsvKo(uint8_t channel, GroupObject& ko)
     ColorHelper::hsvToRGB(h, s, v, r, g, b);
 
     // Update pending and saved RGB
-    cfg.pendingSolidR = r;
-    cfg.pendingSolidG = g;
-    cfg.pendingSolidB = b;
     cfg.savedR = r;
     cfg.savedG = g;
     cfg.savedB = b;
@@ -456,8 +456,8 @@ void SegmentController::applyColorChannelDimming(Segment* seg, uint8_t colorChan
         seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], pc.ww(), pc.cw());
     else if (bytesPerLed == 4) // RGBW
         seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], pc.w());
-    else // RGB
-        seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], 0);
+    else // RGB: W is not shown, but kept like the absolute colour KOs do (sync byte 6)
+        seg->setPrimaryColor(rgb[0], rgb[1], rgb[2], pc.w());
 }
 
 void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, uint8_t colorValue, uint8_t colorChannel, const char* channelName)
@@ -467,13 +467,9 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
     auto& cfg = _module->_segments[channel];
     Segment* targetSegment = cfg.segment;
 
-    // Update saved and pending values based on channel
+    // Update saved values based on channel
     if (colorChannel == 0) // Red
     {
-        cfg.pendingSolidR = colorValue;
-        cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
-        cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-        cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
         cfg.savedR = colorValue;
         if (!cfg.savedValid)
         {
@@ -484,10 +480,6 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
     }
     else if (colorChannel == 1) // Green
     {
-        cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
-        cfg.pendingSolidG = colorValue;
-        cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-        cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
         cfg.savedG = colorValue;
         if (!cfg.savedValid)
         {
@@ -498,10 +490,6 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
     }
     else if (colorChannel == 2) // Blue
     {
-        cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
-        cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
-        cfg.pendingSolidB = colorValue;
-        cfg.pendingSolidWW = cfg.savedValid ? cfg.savedWW : 0;
         cfg.savedB = colorValue;
         if (!cfg.savedValid)
         {
@@ -512,10 +500,6 @@ void SegmentController::processColorChannelKo(uint8_t channel, GroupObject& ko, 
     }
     else if (colorChannel == 3) // White
     {
-        cfg.pendingSolidR = cfg.savedValid ? cfg.savedR : 0;
-        cfg.pendingSolidG = cfg.savedValid ? cfg.savedG : 0;
-        cfg.pendingSolidB = cfg.savedValid ? cfg.savedB : 0;
-        cfg.pendingSolidWW = colorValue;
         cfg.savedWW = colorValue;
         if (!cfg.savedValid)
         {
@@ -571,9 +555,6 @@ void SegmentController::processHsvChannelKo(uint8_t channel, GroupObject& ko, ui
     ColorHelper::hsvToRGB(cfg.currentH, cfg.currentS, cfg.currentV, r, g, b);
 
     // Update pending and saved RGB
-    cfg.pendingSolidR = r;
-    cfg.pendingSolidG = g;
-    cfg.pendingSolidB = b;
     cfg.savedR = r;
     cfg.savedG = g;
     cfg.savedB = b;
@@ -605,15 +586,15 @@ void SegmentController::sendColorStatusFeedback(uint8_t channel)
     _module->_channelIndex = channel;
     uint8_t _channelIndex = channel; // Local variable for KO macro expansion
 
-    uint8_t r = cfg.pendingSolidR;
-    uint8_t g = cfg.pendingSolidG;
-    uint8_t b = cfg.pendingSolidB;
+    uint8_t r = cfg.savedR;
+    uint8_t g = cfg.savedG;
+    uint8_t b = cfg.savedB;
 
     // Send appropriate status feedback based on strip type
     if (_module->_virtualStrip && _module->_virtualStrip->getBytesPerLed() == 4)
     {
         // 4-channel RGBW feedback
-        uint8_t w = cfg.pendingSolidWW;
+        uint8_t w = cfg.savedWW;
         uint32_t rgbw = ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | w;
         bool changed = KoNEO_RGBWState.valueNoSendCompare(rgbw, DPT_Colour_RGBW);
         if (changed) KoNEO_RGBWState.objectWritten();

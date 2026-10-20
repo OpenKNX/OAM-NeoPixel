@@ -251,13 +251,18 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
     _module->applyEffectToSegment(segment, effectType);
 
     // Apply primary color
-    segment->setPrimaryColor(primaryR, primaryG, primaryB, primaryWW);
-    // Note: CW channel - if supported by segment, set via extended API
-    // TODO: Add CW support to Segment::setPrimaryColor if needed
+    // CW exists only on RGBCCT strips; elsewhere the scene parameter is ignored.
+    if (!segment->getVirtualStrip() || !segment->getVirtualStrip()->hasDualWhiteChannel())
+    {
+        primaryCW = 0;
+        secondaryCW = 0;
+    }
+    segment->setPrimaryColor(primaryR, primaryG, primaryB, primaryWW, primaryCW);
 
     // Apply secondary color
     EffectConfig& config = segment->getConfig();
     config.secondaryRGBW = ((uint32_t)secondaryR << 24) | ((uint32_t)secondaryG << 16) | ((uint32_t)secondaryB << 8) | secondaryWW;
+    config.secondaryCW = secondaryCW;
 
     // Load scene-specific effect parameters (auto-generated)
 #ifdef SCENE_EFFECT_PARAMETER_MAPPING_GENERATED

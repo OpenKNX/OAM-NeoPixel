@@ -98,7 +98,7 @@ Die physischen LED-Streifen bilden die Hardwareebene der Applikation. Für jeden
 * Zeitverhalten beziehungsweise Timing-Modus
 * Spannungs- und Leistungsparameter
 
-Die Applikation unterstützt sowohl klassische RGB-Streifen als auch RGBW- und RGBCCT-Varianten. Bei RGBCCT-Streifen können Warmweiß- und Kaltweiß-Anteile getrennt angesprochen werden.
+Die Applikation unterstützt sowohl klassische RGB-Streifen als auch RGBW- und RGBCCT-Varianten. Bei RGBCCT-Streifen können Warmweiß- und Kaltweiß-Anteile getrennt angesprochen werden. Die Farbobjekte (R, G, B, RGB, H, S, V, HSV) ändern nur die Farbkanäle; der Weißanteil bleibt und wird über die Weiß-Objekte, RGBW oder die Farbtemperatur gesetzt.
 
 ## Virtueller LED-Streifen
 

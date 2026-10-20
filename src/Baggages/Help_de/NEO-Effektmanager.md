@@ -54,7 +54,7 @@ Die Laufzeit-Steuerung gehört zum **Segment** — es läuft immer nur **ein** E
 
 **Alle LEDs:** „Alle LEDs“ AUS pausiert die EM aller nicht gesperrten Segmente, EIN setzt sie fort (Segmente mit eigenem AUS bleiben aus). Ein gesperrtes Segment wird von „Alle LEDs“ nicht geschaltet und behält seinen Zustand; nach dem Entsperren übernimmt es den aktuellen Zustand von „Alle LEDs“.
 
-**Direkte Steuerung übernimmt:** Ein direktes Farb- oder Effekt-KO (Fx) auf dem Segment — oder ein Szenen-Abruf — **beendet einen laufenden EM** ohne Rückkehr und zeigt den manuellen Wert. So holst du das Segment jederzeit unter direkte Kontrolle. Auf einem ausgeschalteten Segment werden Farbe und Effekt nur übernommen und mit dem nächsten EIN sichtbar. Die Segment-Helligkeit (absolut oder relativ) dimmt einen laufenden EM, ohne ihn zu stoppen.
+**Direkte Steuerung übernimmt:** Ein direktes Farb- oder Effekt-KO (Fx) auf dem Segment — oder ein Szenen-Abruf — **beendet einen laufenden EM** ohne Rückkehr (Effekt und Farbe der aktuellen Cue bleiben) und zeigt den manuellen Wert; ein Einzelkanal-Objekt wie „Rot“ ändert nur seinen Kanal. So holst du das Segment jederzeit unter direkte Kontrolle. Auf einem ausgeschalteten Segment werden Farbe und Effekt nur übernommen und mit dem nächsten EIN sichtbar. Die Segment-Helligkeit (absolut oder relativ) dimmt einen laufenden EM, ohne ihn zu stoppen.
 
 **Festes Licht / fester Cue:** Statisches Licht über Szenen-Abruf (beendet den EM, zeigt die Szene und schaltet das Segment ein; eine Szene mit Helligkeit 0 schaltet es aus) oder die normalen Segment-KOs. Eine Cue mit **Dauer 0** hält unendlich (steht still, bis gestoppt/pausiert/weitergeschaltet wird).
 

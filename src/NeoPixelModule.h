@@ -153,14 +153,6 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t currentV = 0;   // Current Value (0-255)
         bool hsvTracked = false; // last colour change went through H/S/V: currentH/S/V describe it
 
-        // Pending solid color when effect is stopped
-        // User can set these while effect is running, they're applied when effect=0
-        uint8_t pendingSolidR = 0;
-        uint8_t pendingSolidG = 0;
-        uint8_t pendingSolidB = 0;
-        uint8_t pendingSolidWW = 0; // Warm White (or single white for RGBW)
-        uint8_t pendingSolidCW = 0; // Cool White (RGBCCT only)
-
         // DPT 3.007 Start/Stop dimming state
         enum DimmingChannel
         {
@@ -489,6 +481,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool anySegmentVisible() const;
     void segmentOff(size_t segmentIndex, bool show); ///< own power OFF: pause the EM, stop and clear the segment
     void segmentOn(size_t segmentIndex);             ///< own power ON without the power-on EM edge
+    void captureDirectColor(size_t segmentIndex);    ///< live primary colour -> saved* (no EM running)
     void segmentPowerOn(size_t segmentIndex);        ///< ON command: power-on EM on the off->on edge, else segmentOn()
     void showSegmentOutput(size_t segmentIndex);     ///< make a segment with power ON visible (resume EM or effect)
     void sceneSwitchOn(size_t segmentIndex);         ///< after a static scene/preset is applied: switch on and re-enter
