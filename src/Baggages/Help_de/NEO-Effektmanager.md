@@ -41,16 +41,22 @@ Gibt an, welcher Effektmanager nach Abschluss dieser Sequenz automatisch gestart
 
 Die Laufzeit-Steuerung gehört zum **Segment** — es läuft immer nur **ein** Effektmanager pro Segment, der Startwert wählt welcher:
 
-- **EM Start** (1 Byte): Startet einen EM. Wert 1–16 = EM-Nummer, 0 = Stop.
-- **EM Stop** (1 Bit): Stoppt den laufenden EM. Das Segment kehrt danach zu seinem **direkten Zustand** zurück (zuletzt manuell gesetzte Farbe/Effekt; aus, wenn nichts gesetzt war) — es bleibt **nicht** die letzte Cue stehen.
-- **EM Pause/Resume** (1 Bit): 1 = Pause (die aktuelle Cue wird **eingefroren** und bleibt sichtbar, läuft aber nicht weiter), 0 = Resume (an gleicher Stelle fortsetzen).
+- **EM Start** (1 Byte): Startet einen EM. Wert 1–16 = EM-Nummer, 0 = Stop. Ein Start auf einem ausgeschalteten Segment schaltet es ein.
+- **EM Stop** (1 Bit): Stoppt den laufenden EM. Das Segment nimmt danach den Zustand gemäß „Effektmanager-Stop: Rückkehr“ an — es bleibt **nicht** die letzte Cue stehen.
+- **EM Pause/Resume** (1 Bit): 1 = Pause (die aktuelle Cue wird **eingefroren** und bleibt sichtbar, läuft aber nicht weiter), 0 = Resume (an gleicher Stelle fortsetzen). Auf einem ausgeschalteten Segment wirkt Resume erst mit dem nächsten EIN; eine Pause auf einem ausgeschalteten Segment wird vom nächsten EIN aufgehoben (es setzt den EM fort).
 - **EM Status** (1 Byte): Aktive EM-Nummer (0 = keiner).
 - **Aktive Cue** (1 Byte): Aktuell gespielte Cue-Nummer (0 = keine).
 - **EM Zustand** (1 Byte): 0 = gestoppt, 1 = läuft, 2 = pausiert.
 
-**Direkte Steuerung übernimmt:** Ein direktes Farb-, Effekt- (Fx) oder Helligkeits-KO auf dem Segment — oder ein Szenen-Abruf — **stoppt einen laufenden EM** und zeigt den manuellen Wert. So holst du das Segment jederzeit unter direkte Kontrolle.
+**Ein/Aus:** „Segment Ein/Aus“ = AUS (ebenso „Segment Helligkeit“ = 0 %) **pausiert** einen laufenden EM und schaltet das Segment dunkel; Cue- und Fade-Position bleiben erhalten. EIN setzt ihn an derselben Stelle fort, auch einen manuell pausierten EM. Ein EIN auf ein bereits eingeschaltetes Segment lässt einen manuell pausierten EM pausiert; steht die Segment-Helligkeit dabei auf 0, setzt EIN ihn mit voller Helligkeit fort. Beim Ausschalten wird das Segment gelöscht: Effekte, die ihr Bild schrittweise aufbauen (z. B. Wipe), zeichnen den bereits aufgebauten Teil nicht neu. Ist „Effektmanager beim Einschalten“ gewählt, startet bei einem EIN auf ein ausgeschaltetes Segment stattdessen dieser frisch ab Cue 1.
 
-**Festes Licht / fester Cue:** Statisches Licht über Szenen-Abruf (stoppt den EM, zeigt die Szene) oder die normalen Segment-KOs. Eine Cue mit **Dauer 0** hält unendlich (steht still, bis gestoppt/pausiert/weitergeschaltet wird).
+**Start aus dem ausgeschalteten Zustand:** Startet ein EM auf einem ausgeschalteten Segment (Objekt, EM-Szene, Effektmanager nach Geräteneustart), schaltet das Ende oder der Stop dieses EM das Segment wieder aus — bei jeder Rückkehr-Einstellung. Ein EIN während des Laufs hebt das auf. Diese Herkunft wird nicht gespeichert: Nach einem Neustart mit wiederhergestelltem EM richtet sich das Segment nach dessen Ende nur nach „Effektmanager-Stop: Rückkehr“.
+
+**Alle LEDs:** „Alle LEDs“ AUS pausiert die EM aller nicht gesperrten Segmente, EIN setzt sie fort (Segmente mit eigenem AUS bleiben aus). Ein gesperrtes Segment wird von „Alle LEDs“ nicht geschaltet und behält seinen Zustand; nach dem Entsperren übernimmt es den aktuellen Zustand von „Alle LEDs“.
+
+**Direkte Steuerung übernimmt:** Ein direktes Farb- oder Effekt-KO (Fx) auf dem Segment — oder ein Szenen-Abruf — **beendet einen laufenden EM** ohne Rückkehr und zeigt den manuellen Wert. So holst du das Segment jederzeit unter direkte Kontrolle. Auf einem ausgeschalteten Segment werden Farbe und Effekt nur übernommen und mit dem nächsten EIN sichtbar. Die Segment-Helligkeit (absolut oder relativ) dimmt einen laufenden EM, ohne ihn zu stoppen.
+
+**Festes Licht / fester Cue:** Statisches Licht über Szenen-Abruf (beendet den EM, zeigt die Szene und schaltet das Segment ein; eine Szene mit Helligkeit 0 schaltet es aus) oder die normalen Segment-KOs. Eine Cue mit **Dauer 0** hält unendlich (steht still, bis gestoppt/pausiert/weitergeschaltet wird).
 
 ## Cues konfigurieren
 

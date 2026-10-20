@@ -82,19 +82,27 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
 
     uint8_t sceneIndex = sceneNumber - 1; // Convert to 0-based
 
-    // Capture current effect type — or, if an Effektmanager is running, store it as EM action
+    // Capture current effect type — or, if an Effektmanager runs visibly, store it as EM action.
+    // An off segment (or an EM paused by power) stores its live direct state at brightness 0.
     Effect* effect = segment->getEffect();
     uint8_t effectType = getTypeFromEffect(effect);
     bool emRunning = false;
+    uint8_t brightness = segment->getBrightness();
     {
         auto& segments = _module->getSegments();
-        if (channelIndex < segments.size() && segments[channelIndex].emController.isRunning())
+        if (channelIndex < segments.size())
         {
-            uint8_t emId = segments[channelIndex].emController.activeEmId();
-            if (emId >= 1 && emId <= EM_COUNT)
+            const auto& cfg = segments[channelIndex];
+            const bool visible = NeoPixelBusModule::isSegmentVisible(cfg);
+            brightness = visible ? cfg.savedBrightness : 0; // the intent, not the cue-scaled render
+            if (visible && cfg.emController.isRunning() && !cfg.suspendedByPower)
             {
-                effectType = EM_ACTION_BASE + emId - 1;
-                emRunning = true;
+                uint8_t emId = cfg.emController.activeEmId();
+                if (emId >= 1 && emId <= EM_COUNT)
+                {
+                    effectType = EM_ACTION_BASE + emId - 1;
+                    emRunning = true;
+                }
             }
         }
     }
@@ -111,7 +119,6 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
     uint8_t secondaryB = config.b2();
     uint8_t secondaryWW = config.ww2();
     uint8_t secondaryCW = config.cw2();
-    uint8_t brightness = segment->getBrightness();
 
     logInfoP("storeScene %d for segment %d: Effect=%d, Primary=(%d,%d,%d,WW=%d,CW=%d), "
              "Secondary=(%d,%d,%d,WW=%d,CW=%d), Brightness=%d",
@@ -210,11 +217,18 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
              secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW,
              brightness);
 
-    // A scene is an authoritative "set this state NOW" command. Stop any running
-    // Effektmanager on this segment first, otherwise its per-frame tick() would
-    // overwrite the static scene we are about to apply on the next loop.
+    // A scene is an authoritative "set this state NOW" command. A running Effektmanager is
+    // taken over like by a direct command (no EM-stop return), otherwise its per-frame tick()
+    // would overwrite the static scene on the next loop.
     // (The EM-action scene path above returns earlier and starts its own EM.)
-    _module->stopEffektManager(channelIndex);
+    _module->interruptEmIfRunning(channelIndex);
+
+    // Brightness 0 is a switch-off scene: colour, effect and brightness intent stay.
+    if (brightness == 0)
+    {
+        _module->segmentOff(channelIndex, true);
+        return true;
+    }
 
     // Reset config options/features to defaults before applying the new effect.
     // Without this, leftover values from the previous effect bleed through
@@ -244,9 +258,6 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
     // Apply secondary color
     EffectConfig& config = segment->getConfig();
     config.secondaryRGBW = ((uint32_t)secondaryR << 24) | ((uint32_t)secondaryG << 16) | ((uint32_t)secondaryB << 8) | secondaryWW;
-
-    // Apply brightness
-    segment->setBrightness(brightness);
 
     // Load scene-specific effect parameters (auto-generated)
 #ifdef SCENE_EFFECT_PARAMETER_MAPPING_GENERATED
@@ -281,6 +292,10 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
         cfg.savedEffectValid = true;
         cfg.savedLastWasEffect = true;
         cfg.savedValid = true;
+
+        // Scene brightness is the intent (x global); then switch on and re-enter the new effect.
+        _module->applyBrightnessIntent(channelIndex);
+        _module->sceneSwitchOn(channelIndex);
     }
 
     return true;

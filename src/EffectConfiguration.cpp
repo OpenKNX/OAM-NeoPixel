@@ -38,7 +38,7 @@ void EffectConfiguration::configureEffects()
 
             // Seed segment master brightness from ETS "Start-Helligkeit" so it applies to every
             // effect (render = master x effect/255). savedBrightness = pre-global baseline for
-            // applyGlobalBrightness. "Aus" below sets render to 0 but keeps master for later power-on.
+            // applyGlobalBrightness. "Aus" below stops the segment and keeps both for the next power-on.
             uint8_t startupBrightness = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupBrightness);
             segments[i].segment->setMasterBrightness(startupBrightness);
             segments[i].segment->setBrightness(startupBrightness);
@@ -52,6 +52,17 @@ void EffectConfiguration::configureEffects()
             segments[i].savedEffectType = effectType;
             segments[i].savedEffectValid = true;
 
+            // Seed the saved colour with the ETS start colour (the flash restore overrides it)
+            {
+                const uint32_t color = ParamNEO_NEOSegmentStartupColor;
+                segments[i].savedR = (color >> 16) & 0xFF;
+                segments[i].savedG = (color >> 8) & 0xFF;
+                segments[i].savedB = color & 0xFF;
+                segments[i].savedWW = ParamNEO_NEOSegmentStartupW;
+                segments[i].savedCW = 0;
+                segments[i].savedValid = true;
+            }
+
             // 2. Determine startup behavior (segment can override global)
             uint8_t effectiveBehavior = _module->effectiveStartupBehavior(i);
 
@@ -60,8 +71,9 @@ void EffectConfiguration::configureEffects()
 
             switch (effectiveBehavior)
             {
-                case 0: // Ausgeschaltet
-                    segments[i].segment->setBrightness(0);
+                case 0: // Ausgeschaltet: own power OFF, paused and cleared; brightness intent stays
+                    segments[i].savedPower = 0;
+                    segments[i].segment->stop();
                     logInfoP("Segment %zu: ETS-Config geladen, LEDs AUS (Behavior: %s)", i, behaviorNames[0]);
                     break;
 
@@ -72,7 +84,8 @@ void EffectConfiguration::configureEffects()
                     break;
 
                 case 2: // An (ETS-Werte)
-                    // ETS configuration already loaded above - nothing more to do!
+                    // ETS configuration already loaded above
+                    segments[i].savedPower = 1;
                     logInfoP("Segment %zu: ETS-Config geladen und aktiv (Behavior: %s, Effect: %d)", i, behaviorNames[2], effectType);
                     break;
             }

@@ -348,6 +348,18 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         // Mode is "Letzter Zustand" - try to restore from flash
         if (cfg.savedValid)
         {
+            // Own power from flash. Every restore branch ends with segmentOff() for a saved OFF
+            // (an EM is paused and resumed by the next ON).
+            const uint8_t flashPower = cfg.savedPower;
+
+            // A scene or EM start snapshots the live direct state (EM return "Letzter Zustand"):
+            // put the saved one on the segment first, not the ETS boot state.
+            if (cfg.savedSceneNumber > 0 || cfg.emController.lastEmId() != EM_NONE)
+            {
+                if (cfg.savedEffectValid) _module->applyEffectToSegment(seg, cfg.savedEffectType);
+                seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
+            }
+
             // Check if a scene was active — if so, recall it directly
             if (cfg.savedSceneNumber > 0 && _module->_sceneManager)
             {
@@ -359,13 +371,22 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // user set after the recall (e.g. dimmed).
                 const uint8_t intentBrightness = cfg.savedBrightness;
                 seg->setMasterBrightness(intentBrightness);
+                // Recall as OFF: a scene or EM start switches on, a brightness-0 scene leaves it at 0
+                // without overwriting the flash state with a snapshot of the boot state.
+                cfg.savedPower = 0;
                 bool sceneRecalled = _module->_sceneManager->recallScene(i, cfg.savedSceneNumber, seg);
-                if (sceneRecalled)
+                const bool sceneOn = cfg.savedPower != 0;
+                cfg.savedPower = flashPower;
+                cfg.emStartedFromOff = false;
+                if (sceneRecalled && sceneOn)
                 {
                     cfg.savedBrightness = intentBrightness;
                     seg->setMasterBrightness(intentBrightness);
-                    if (!cfg.emController.isRunning()) seg->setBrightness(intentBrightness);
-                    if (cfg.savedPower == 0) seg->setBrightness(0);
+                    if (cfg.emController.isRunning())
+                        cfg.emController.reapplyMasterBrightness(seg);
+                    else
+                        seg->setBrightness(intentBrightness);
+                    if (flashPower == 0) _module->segmentOff(i, false);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] RESTORED Scene %d from Flash (power=%s)",
                              i, cfg.savedSceneNumber, cfg.savedPower ? "ON" : "OFF");
@@ -373,6 +394,9 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 #endif
                     continue;
                 }
+                // Switch-off scene or refused EM start: restore the saved state below. The recall may
+                // have stopped the segment; the branches below set the power again.
+                if (sceneRecalled) seg->resume();
             }
 
             // Restore Effektmanager if one was active
@@ -386,6 +410,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // a valid value here (flash field is always written / boot-seeded).
                 seg->setMasterBrightness(cfg.savedBrightness);
                 cfg.emController.restoreState(seg, _module->_emData);
+                if (flashPower == 0) _module->segmentOff(i, false); // paused, the next ON resumes it
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED EffektManager %d from Flash", i, cfg.emController.lastEmId());
                 restoredCount++;
@@ -422,12 +447,13 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 
             // Restore brightness/power state. Drive the MASTER (intent) layer like the boot seed
             // (EffectConfiguration.cpp:48-51) so the restored brightness survives a later global-
-            // brightness recompute or EM start (render = master*cue/255). "Aus" keeps master but
-            // renders 0, so a subsequent power-on dims correctly.
-            if (cfg.savedPower == 0)
+            // brightness recompute or EM start (render = master*cue/255). "Aus" keeps the intent
+            // and stops the segment, so a subsequent power-on returns to it.
+            seg->setMasterBrightness(cfg.savedBrightness);
+            seg->setBrightness(cfg.savedBrightness);
+            if (flashPower == 0)
             {
-                seg->setMasterBrightness(cfg.savedBrightness);
-                seg->setBrightness(0);
+                _module->segmentOff(i, false);
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED from Flash: OFF (Effect=%d from %s, Color from flash)",
                          i, effectType, effectFromFlash ? "Flash" : "ETS");
@@ -435,8 +461,6 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             }
             else
             {
-                seg->setMasterBrightness(cfg.savedBrightness);
-                seg->setBrightness(cfg.savedBrightness);
 #ifdef OPENKNX_DEBUG
                 logInfoP("[Segment %d] RESTORED from Flash: ON (Effect=%d from %s, Color=R:%d,G:%d,B:%d,WW:%d,CW:%d, Brightness=%d)",
                          i, effectType, effectFromFlash ? "Flash" : "ETS",
@@ -456,6 +480,11 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 #endif
         }
     }
+
+    // "Alle LEDs" AUS received during the startup delay: the restore above may have resumed a
+    // suspended segment (EM restart, effect enter). Suspend it again before the frame goes out.
+    for (size_t i = 0; i < segments.size(); i++)
+        if (segments[i].segment && segments[i].globalSuspended) _module->globalSuspendSegment(i);
 
     // Via the module helper: a direct vstrip->show() bypasses the strip arbitration.
     _module->showVirtualStripIfIdle();
@@ -519,18 +548,17 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     state.version = FLASH_FORMAT_VERSION;
     state.validFlags = 0;
 
-    // Power-off retains brightness for the next power-on. Brightness alone would
-    // therefore save a switched-off segment (or globally switched-off strip) as ON.
-    // Segment power-off also stops rendering. Check that live state, since savedPower
-    // can still contain an old flash value when ETS startup settings override it.
-    const bool switchedOff = !_module->_globalPowerOn || (cfg.savedPower == 0 && seg->isPaused());
-    state.power = (!switchedOff && seg->getBrightness() > 0) ? 1 : 0;
+    // Power = visible: own power ON and not suspended by global power (a segment saved under global
+    // OFF restores off). The brightness intent is kept separately for the next power-on.
+    state.power = NeoPixelBusModule::isSegmentVisible(cfg) ? 1 : 0;
     state.validFlags |= 0x01;
 
-    // Save color: the saved state if a colour/power/scene command set it, otherwise the configured
-    // primary colour. Never the pixel buffer: it holds the rendered, brightness-scaled effect output
-    // and is blanked by prepareLedShutdown() before Common saves on restart / ETS download.
-    if (cfg.savedValid)
+    // Save color: the live primary colour, which follows every colour path (direct, relative,
+    // dimming, presets, scenes) and is kept while the segment is off. The saved snapshot instead
+    // while an EM runs (the primary is the cue colour). Never the pixel buffer: it holds the
+    // rendered, brightness-scaled output and is blanked by prepareLedShutdown() before Common
+    // saves on restart / ETS download.
+    if (cfg.savedValid && cfg.emController.isRunning())
     {
         state.r = cfg.savedR;
         state.g = cfg.savedG;

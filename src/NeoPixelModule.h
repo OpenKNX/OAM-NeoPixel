@@ -113,8 +113,11 @@ class NeoPixelBusModule : public OpenKNX::Module
         EffektManagerController emController; ///< per-segment EM sequencer
         uint16_t lastCueTextKey = 0xFFFF;     ///< (emId<<8|cueNum) of the last applied long cue-text override
         uint8_t  emStopReturnMode = 0;        ///< EM-Stop-Rückkehr — 0=letzter Zustand, 1=Default, 2=Aus (from ETS)
-        bool     suspendedByPower = false;    ///< EM was paused by a power-off → resume on power-on (vs. manual pause / interrupt)
-        bool     pendingPowerOnRestart = false; ///< Segment was switched on while global power was off
+        bool     suspendedByPower = false;    ///< EM paused by segment or global power-off, resumed by power-on
+        bool     pendingPowerOnRestart = false; ///< switched on while globally suspended: start the power-on EM at global ON
+        bool     globalSuspended = false;     ///< global power OFF currently suspends this segment (RAM only)
+        bool     emStartedFromOff = false;    ///< EM chain started on a switched-off segment: its stop switches off again (RAM only)
+        bool     hiddenEffectChange = false;  ///< effect/cue changed while not visible: re-enter it at the next ON
         bool     locked = false;              ///< segment locked via Sperre-KO → ignore all controlling KOs
         uint32_t statusEmKey = 0xFFFFFFFF;    ///< last EM state (emId/cue/runState) seen by sendEmStatusKOs()
         uint16_t statusCctKelvin = 0;         ///< last CCT command in Kelvin (0 = none since boot; not persisted)
@@ -471,7 +474,24 @@ class NeoPixelBusModule : public OpenKNX::Module
     void pauseEffektManager(size_t segmentIndex);
     void resumeEffektManager(size_t segmentIndex);
     void interruptEmIfRunning(size_t segmentIndex); ///< direct manual KO takes over a running EM
+    void finishEmStop(size_t segmentIndex, uint8_t mode); ///< after an EM stop/finish: return mode + segment power
     void applySegmentDefaultState(size_t segmentIndex); ///< re-apply the segment's ETS default (effect+color+brightness)
+
+    // ── Segment power model ───────────────────────────────────────────────
+    // Visible = savedPower 1 and not suspended by global power. Off (own or global) = Segment::stop().
+    static bool isSegmentVisible(const SegmentConfig& cfg) { return cfg.savedPower != 0 && !cfg.globalSuspended; }
+    bool anySegmentVisible() const;
+    void segmentOff(size_t segmentIndex, bool show); ///< own power OFF: pause the EM, stop and clear the segment
+    void segmentOn(size_t segmentIndex);             ///< own power ON without the power-on EM edge
+    void segmentPowerOn(size_t segmentIndex);        ///< ON command: power-on EM on the off->on edge, else segmentOn()
+    void showSegmentOutput(size_t segmentIndex);     ///< make a segment with power ON visible (resume EM or effect)
+    void sceneSwitchOn(size_t segmentIndex);         ///< after a static scene/preset is applied: switch on and re-enter
+    bool startPowerOnEm(size_t segmentIndex, uint8_t emId); ///< fresh start of the power-on EM; false if refused
+    void reEnterEffect(size_t segmentIndex);         ///< restart the current effect (nullptr: saved or ETS effect)
+    void applyBrightnessIntent(size_t segmentIndex); ///< master = (intent, 0 -> 255) x global; render or EM re-derive
+    void hideIfNotVisible(size_t segmentIndex);      ///< after an effect/cue change: keep a hidden segment dark
+    void globalSuspendSegment(size_t segmentIndex);  ///< global OFF step for one segment (no show)
+    void globalResumeSegment(size_t segmentIndex);   ///< global ON step for one segment
     uint8_t effectiveStartupBehavior(size_t segmentIndex); ///< 0=Aus, 1=Letzter Zustand, 2=An (ETS-Werte) (segment overrides global)
     void sendEmStatusKOs(size_t segmentIndex);
     void sendEffectTextStatusKO(size_t segmentIndex);
@@ -516,6 +536,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void showVirtualStripIfIdle();
 
     bool _virtualShowPending = false; ///< a send was deferred; loop() retries until it goes out
+    bool _renderPaused = true;        ///< loop() skipped rendering (startup delay, nothing visible under global OFF)
 
     // Status objects: one item routine per scope (module / segment) computes each status KO from
     // the live state (CCT: last command) and writes it in one of three modes.

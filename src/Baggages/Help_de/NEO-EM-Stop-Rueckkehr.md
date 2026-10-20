@@ -1,6 +1,8 @@
 # Effektmanager-Stop: Rückkehr
 
-Diese Einstellung legt fest, welchen Zustand dieses Segment annimmt, **nachdem ein Effektmanager gestoppt wurde** – sei es manuell über das KO "EM Stop", durch das Beenden einer Cue-Kette, oder weil ein anderer Effektmanager übernimmt.
+Diese Einstellung legt fest, welchen Zustand dieses Segment annimmt, **nachdem ein Effektmanager gestoppt wurde** – sei es manuell über das KO "EM Stop" oder durch das Beenden einer Cue-Kette. Startet ein anderer Effektmanager, übernimmt er direkt; die Rückkehr gilt erst, wenn der letzte Effektmanager endet.
+
+Wurde der Effektmanager auf einem **ausgeschalteten** Segment gestartet, wird das Segment nach dem Stop bzw. Ende in jedem Fall wieder **ausgeschaltet** (ein EIN während des Laufs hebt das auf). Ist das Segment beim Stop selbst ausgeschaltet oder durch „Alle LEDs“ AUS dunkel, wird der Rückkehr-Zustand übernommen und erst mit dem nächsten EIN bzw. „Alle LEDs“ EIN sichtbar.
 
 ## Optionen
 
@@ -23,7 +25,7 @@ Das Segment wird auf die **in der ETS hinterlegten Segment-Startwerte** zurückg
 - Wartungs-/Reset-Szenarien: nach jeder Show ein reproduzierbares Standardbild.
 
 ### Aus
-Das Segment wird nach dem EM-Stop **ausgeschaltet** (dunkel).
+Das Segment wird nach dem EM-Stop **ausgeschaltet** (wie „Segment Ein/Aus“ = AUS; der Status meldet AUS). Das nächste EIN zeigt den direkten Zustand von vor dem Effektmanager.
 
 **Anwendungsfall:**
 
