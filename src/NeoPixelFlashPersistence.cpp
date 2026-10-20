@@ -352,8 +352,8 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // (an EM is paused and resumed by the next ON).
             const uint8_t flashPower = cfg.savedPower;
 
-            // A scene or EM start snapshots the live direct state (EM return "Letzter Zustand"):
-            // put the saved one on the segment first, not the ETS boot state.
+            // A scene or EM start snapshots the live direct state (EM return "Letzter Zustand",
+            // Effektkette freeze): put the saved one on the segment first, not the ETS boot state.
             if (cfg.savedSceneNumber > 0 || cfg.emController.lastEmId() != EM_NONE)
             {
                 if (cfg.savedEffectValid) _module->applyEffectToSegment(seg, cfg.savedEffectType);
@@ -409,6 +409,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // must be honoured, matching the non-EM restore branch below. savedBrightness is always
                 // a valid value here (flash field is always written / boot-seeded).
                 seg->setMasterBrightness(cfg.savedBrightness);
+                _module->captureSyncFreeze(i); // Effektkette master: the state the segment returns to after the EM
                 cfg.emController.restoreState(seg, _module->_emData);
                 if (flashPower == 0) _module->segmentOff(i, false); // paused, the next ON resumes it
 #ifdef OPENKNX_DEBUG

@@ -76,4 +76,4 @@ Ein Effektmanager wird einem **virtuellen Segment** zugewiesen. Das Segment legt
 
 ## Hinweis zur Effektkette
 
-Wenn auf einem Segment die **Effektkette** aktiv ist (mehrere Geräte spielen synchron), wird die Effektkette beim Start eines Effektmanagers automatisch pausiert. Nach dem Stop des Effektmanagers wird die Effektkette wieder aufgenommen.
+Wenn auf einem Segment die **Effektkette** aktiv ist (mehrere Geräte spielen synchron), wird die Effektkette beim Start eines Effektmanagers automatisch pausiert. Nach dem Stop des Effektmanagers wird die Effektkette wieder aufgenommen. Ein Master sendet während seines EM den direkten Zustand von vor dem EM weiter (Effekt, Farbe, Geschwindigkeit); Ein/Aus und Helligkeit bleiben aktuell. Ein Slave mit eigenem EM (laufend oder pausiert) ignoriert die Telegramme des Masters.

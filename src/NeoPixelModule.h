@@ -108,6 +108,9 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t lastSyncPayload[9] = {}; ///< last payload sent by master (change detection)
         uint32_t lastSyncSentMs = 0;     ///< millis() when master last sent a sync telegram
         bool syncPayloadValid = false;   ///< lastSyncPayload contains a sent payload
+        uint8_t syncFreezePayload[9] = {}; ///< master: direct state captured at EM start, sent while the EM runs
+        bool syncFreezeValid = false;      ///< syncFreezePayload holds the state of the current EM run
+        uint8_t lastRxPower = 0xFF;        ///< slave: power bit of the last applied telegram (0xFF = unknown)
 
         // ── Effektmanager ─────────────────────────────────────────────────
         EffektManagerController emController; ///< per-segment EM sequencer
@@ -449,7 +452,10 @@ class NeoPixelBusModule : public OpenKNX::Module
     void applySegmentConfiguration(size_t segmentIndex, const SegmentConfig& config);
 
     // ── Effektkette ──────────────────────────────────────────────────────
+    static constexpr uint32_t kSyncHeartbeatMs = 3000; ///< master re-sends an unchanged payload after this time
+    static constexpr uint32_t kSyncMinGapMs = 300;     ///< master: minimum gap between change telegrams
     void composeSyncPayload(size_t segmentIndex, uint8_t* payload); ///< 9-byte master state snapshot
+    void composeLiveSyncPayload(size_t segmentIndex, uint8_t* payload); ///< bytes 1..8 from the live segment
     void sendSyncTelegram(size_t segmentIndex);
     void receiveSyncTelegram(size_t segmentIndex, const uint8_t* payload, uint8_t len);
     void loopSyncMaster(); ///< Master: detect state changes (colour/speed/brightness/power) and send sync
@@ -492,6 +498,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void hideIfNotVisible(size_t segmentIndex);      ///< after an effect/cue change: keep a hidden segment dark
     void globalSuspendSegment(size_t segmentIndex);  ///< global OFF step for one segment (no show)
     void globalResumeSegment(size_t segmentIndex);   ///< global ON step for one segment
+    void captureSyncFreeze(size_t segmentIndex);     ///< Effektkette master: freeze the direct state before an EM run
     uint8_t effectiveStartupBehavior(size_t segmentIndex); ///< 0=Aus, 1=Letzter Zustand, 2=An (ETS-Werte) (segment overrides global)
     void sendEmStatusKOs(size_t segmentIndex);
     void sendEffectTextStatusKO(size_t segmentIndex);

@@ -296,10 +296,6 @@ void NeoPixelBusModule::loop(bool configured)
 
         // Process relay timers for delayed on/off switching
         processRelayTimers();
-
-        // Effektkette: check slave watchdog timeouts + master change detection
-        loopSyncWatchdog();
-        loopSyncMaster();
     }
 
     // Do not render the ETS startup defaults before flash persistence has restored the
@@ -308,6 +304,13 @@ void NeoPixelBusModule::loop(bool configured)
     // visibly start at full brightness before changing to its saved brightness.
     // Local console test mode remains usable without a configured KNX application.
     if (!_localTestMode && !openknx.afterStartupDelay()) return;
+
+    // Effektkette: slave watchdog + master change detection / heartbeat (after the restore)
+    if (!_localTestMode)
+    {
+        loopSyncWatchdog();
+        loopSyncMaster();
+    }
 
     // Effektmanager: tick all active sequencers (no-op in local test mode — EMs are ETS-only)
     loopEffektManager();
@@ -580,6 +583,13 @@ void NeoPixelBusModule::processAfterStartupDelay()
         if (!cfg.segment) continue;
 
         uint8_t startupEmId = configuredBootEm(i);
+
+        // Effektkette slave: the watchdog counts from the end of the startup delay
+        if (cfg.syncMode == 2)
+        {
+            cfg.lastSyncMs = millis();
+            cfg.lastRxPower = 0xFF;
+        }
 
         if (startupEmId == EM_NONE) continue;
 
@@ -1120,6 +1130,20 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             // Guard: an out-of-range EM channel (invalid/stale KO index) must not index _segments[].
             if ((size_t)emChannel >= _segments.size())
                 return;
+            // Own status telegrams come back through this handler; a master's SyncChain is its own output.
+            bool statusKo = emKoIndex == NEO_KoEmStatus || emKoIndex == NEO_KoEmCueStatus;
+    #ifdef NEO_KoEmRunState
+            statusKo = statusKo || emKoIndex == NEO_KoEmRunState;
+    #endif
+    #ifdef NEO_KoEffectTextStatus
+            statusKo = statusKo || emKoIndex == NEO_KoEffectTextStatus;
+    #endif
+            bool syncKo = false;
+    #ifdef NEO_KoSyncChain
+            syncKo = emKoIndex == NEO_KoSyncChain;
+    #endif
+            // Effektkette slave: a local controlling KO overrides the master (policy "Lokal hat Vorrang")
+            if (!statusKo && !syncKo && _segments[emChannel].syncMode == 2) _segments[emChannel].localOverride = true;
             switch (emKoIndex)
             {
                 case NEO_KoEmStart:
@@ -1234,19 +1258,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 default:
                     break;
             }
-            // Status from the resulting state; skip own status telegrams (they come back through
-            // this handler) and the Effektkette sync of a master.
-            bool statusKo = emKoIndex == NEO_KoEmStatus || emKoIndex == NEO_KoEmCueStatus;
-    #ifdef NEO_KoEmRunState
-            statusKo = statusKo || emKoIndex == NEO_KoEmRunState;
-    #endif
-    #ifdef NEO_KoEffectTextStatus
-            statusKo = statusKo || emKoIndex == NEO_KoEffectTextStatus;
-    #endif
-    #ifdef NEO_KoSyncChain
-            statusKo = statusKo || (emKoIndex == NEO_KoSyncChain && _segments[emChannel].syncMode != 2);
-    #endif
-            if (!statusKo) statusAfterCommand(static_cast<uint8_t>(1 + emChannel));
+            // Status from the resulting state; skip own status telegrams and the Effektkette sync of a master.
+            if (!statusKo && !(syncKo && _segments[emChannel].syncMode != 2))
+                statusAfterCommand(static_cast<uint8_t>(1 + emChannel));
             return; // handled
         }
     }
@@ -1402,12 +1416,16 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                                      koIndex == NEO_KoRGBState || koIndex == NEO_KoHSVState || koIndex == NEO_KoRGBWState ||
                                      koIndex == NEO_KoHCLState;
 
-        // A DPT 3.007 stop telegram (step code 0, button released) carries no command: no takeover.
+        // A DPT 3.007 stop telegram (step code 0, button released) carries no command: no takeover, no override.
         const bool dpt3Stop = (koIndex == NEO_KoRRel || koIndex == NEO_KoGRel || koIndex == NEO_KoBRel ||
                                koIndex == NEO_KoWRel || koIndex == NEO_KoWWRel || koIndex == NEO_KoCWRel ||
                                koIndex == NEO_KoHRel || koIndex == NEO_KoSRel || koIndex == NEO_KoVRel ||
                                koIndex == NEO_KoFxRel || koIndex == NEO_KoBriRel || koIndex == NEO_KoCueRel) &&
                               (ko.valueRef()[0] & 0x07) == 0;
+
+        // Effektkette slave: a local controlling KO overrides the master (policy "Lokal hat Vorrang")
+        if (!segmentStatusKo && !dpt3Stop && koIndex != NEO_KoLock && _segments[channel].syncMode == 2)
+            _segments[channel].localOverride = true;
 
         // A direct manual command takes over from a running EM on this segment: halt the EM
         // (without restoring pre-EM state — the command below sets the new visual). Excluded:
@@ -2520,7 +2538,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 // ============================================================================
 
 /**
- * @brief Compose and send a 6-byte sync telegram on this segment's SyncChain KO.
+ * @brief Compose the 9-byte sync telegram of a master segment.
  *
  * Payload layout:
  *   Byte 0: Flags  (bit0 = power on/off)
@@ -2530,30 +2548,71 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
  *   Byte 4: G
  *   Byte 5: B
  *   Byte 6: W  (warm white / single white)
- *   Byte 7: Brightness
+ *   Byte 7: Brightness intent (before the global factor)
  *   Byte 8: CW (cool white, RGBCCT)
+ *
+ * While the master's own EM runs, bytes 1-6 and 8 carry the direct state frozen at the EM start
+ * (without a freeze: saved effect, else the live one, saved colour, live speed); the power bit stays live.
  */
 void NeoPixelBusModule::composeSyncPayload(size_t segmentIndex, uint8_t* payload)
 {
     auto& cfg = _segments[segmentIndex];
-    auto& seg = *cfg.segment;
-    const auto& ecfg = seg.getConfig();
+    if (cfg.emController.isRunning())
+    {
+        if (cfg.syncFreezeValid)
+        {
+            memcpy(payload, cfg.syncFreezePayload, sizeof(cfg.syncFreezePayload));
+        }
+        else
+        {
+            // No capture: the console switched the segment to master while its EM runs.
+            const auto& ecfg = cfg.segment->getConfig();
+            payload[1] = cfg.savedEffectValid ? cfg.savedEffectType : ecfg.effectType;
+            payload[2] = ecfg.speed;
+            payload[3] = cfg.savedR;
+            payload[4] = cfg.savedG;
+            payload[5] = cfg.savedB;
+            payload[6] = cfg.savedWW;
+            payload[8] = cfg.savedCW;
+        }
+    }
+    else
+    {
+        composeLiveSyncPayload(segmentIndex, payload);
+    }
+    payload[0] = isSegmentVisible(cfg) ? 0x01 : 0x00; // power
+    payload[7] = cfg.savedBrightness;
+}
 
-    payload[0] = seg.getLedState() != LedState::IDLE ? 0x01 : 0x00; // power
+void NeoPixelBusModule::composeLiveSyncPayload(size_t segmentIndex, uint8_t* payload)
+{
+    auto& cfg = _segments[segmentIndex];
+    const auto& ecfg = cfg.segment->getConfig();
+    payload[0] = isSegmentVisible(cfg) ? 0x01 : 0x00;
     payload[1] = ecfg.effectType;
     payload[2] = ecfg.speed;
     payload[3] = ecfg.r();
     payload[4] = ecfg.g();
     payload[5] = ecfg.b();
     payload[6] = ecfg.ww();
-    payload[7] = seg.getBrightness();
+    payload[7] = cfg.savedBrightness;
     payload[8] = ecfg.cw();
+}
+
+void NeoPixelBusModule::captureSyncFreeze(size_t segmentIndex)
+{
+    if (segmentIndex >= _segments.size()) return;
+    auto& cfg = _segments[segmentIndex];
+    if (cfg.syncMode != 1 || !cfg.segment) return;
+    composeLiveSyncPayload(segmentIndex, cfg.syncFreezePayload);
+    cfg.syncFreezeValid = true;
 }
 
 void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
 {
 #ifdef NEO_KoSyncChain
-    if (segmentIndex >= _segments.size()) return;
+    // KO macros beyond the configured channel table would address foreign KOs (no bounds check in knx).
+    if (segmentIndex >= _segments.size() || segmentIndex >= NEO_ChannelCount) return;
     auto& cfg = _segments[segmentIndex];
     if (cfg.syncMode != 1 || !cfg.segment) return; // only masters send
 
@@ -2586,6 +2645,9 @@ void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
 
 /**
  * @brief Apply an incoming 9-byte sync telegram to a slave segment.
+ *
+ * Effect, colour, speed and brightness first, then the power bit. Policy 0 applies the master's
+ * power as a level on every telegram, policy 1 only on a change (a local command overrides).
  */
 void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
                                             const uint8_t* payload, uint8_t len)
@@ -2594,10 +2656,14 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
     auto& cfg = _segments[segmentIndex];
     if (cfg.syncMode != 2 || !cfg.segment) return; // only slaves receive
 
-    // Check override policy: if local override is active and policy = lokal hat Vorrang → ignore
-    if (cfg.syncOverridePolicy == 1 && cfg.localOverride) return;
-
+    // Any telegram proves the master is alive, also when it is not applied.
     cfg.lastSyncMs = millis();
+
+    if (cfg.locked) return;
+    // The slave's own EM (running, paused or power-suspended) owns the segment.
+    if (cfg.emController.isRunning()) return;
+    // Policy "Lokal hat Vorrang": a local command keeps the slave until reboot.
+    if (cfg.syncOverridePolicy == 1 && cfg.localOverride) return;
 
     bool powerOn = (payload[0] & 0x01) != 0;
     uint8_t effectId = payload[1];
@@ -2605,22 +2671,13 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
     uint8_t r = payload[3], g = payload[4], b = payload[5];
     uint8_t w = payload[6], brightness = payload[7], cw = payload[8];
 
-    if (!powerOn)
-    {
-        cfg.segment->clearAll();
-        logInfoP("Effektkette [%zu]: sync power off", segmentIndex);
-        return;
-    }
-
-    // Apply colour + speed + brightness to segment config
+    // Apply colour + speed to segment config
     auto& ecfg = cfg.segment->getConfig();
     ecfg.speed = speed;
     cfg.segment->setPrimaryColor(r, g, b, w, cw);
-    cfg.segment->setBrightness(brightness);
 
     // Apply effect only when it actually changed (re-applying resets the effect each telegram)
-    bool effectChanged = (cfg.segment->getLedState() == LedState::IDLE) ||
-                         (getTypeFromEffect(cfg.segment->getEffect()) != effectId);
+    bool effectChanged = !cfg.segment->getEffect() || getTypeFromEffect(cfg.segment->getEffect()) != effectId;
     if (effectChanged)
     {
         uint8_t oldCh = _channelIndex;
@@ -2637,19 +2694,43 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
         ecfg.speed = speed;
         // Colour was set before the effect clear — re-apply it
         cfg.segment->setPrimaryColor(r, g, b, w, cw);
-        cfg.segment->setBrightness(brightness);
         _channelIndex = oldCh;
+        hideIfNotVisible(segmentIndex);
     }
 
-    logInfoP("Effektkette [%zu]: received sync effect=%d speed=%d bri=%d%s",
-             segmentIndex, effectId, speed, brightness, effectChanged ? " (effect applied)" : "");
+    // Brightness byte = master intent; the slave's own global factor applies on top.
+    const uint8_t effective = (uint8_t)((uint16_t)brightness * _globalBrightness / 255);
+    cfg.savedBrightness = brightness;
+    cfg.segment->setMasterBrightness(effective);
+    cfg.segment->setBrightness(effective);
+
+    const bool applyPower = cfg.syncOverridePolicy == 0 || cfg.lastRxPower != (powerOn ? 1 : 0);
+    cfg.lastRxPower = powerOn ? 1 : 0;
+    if (applyPower)
+    {
+        if (powerOn && (cfg.savedPower == 0 || (!cfg.globalSuspended && cfg.segment->isPaused())))
+        {
+            segmentOn(segmentIndex);
+            // segmentOn() lifts a 0 intent to full; the slave follows the master's value.
+            cfg.savedBrightness = brightness;
+            cfg.segment->setMasterBrightness(effective);
+            cfg.segment->setBrightness(effective);
+        }
+        else if (!powerOn && (cfg.savedPower != 0 || !cfg.segment->isPaused()))
+        {
+            segmentOff(segmentIndex, true);
+        }
+    }
+
+    logInfoP("Effektkette [%zu]: received sync power=%d effect=%d speed=%d bri=%d%s",
+             segmentIndex, powerOn ? 1 : 0, effectId, speed, brightness, effectChanged ? " (effect applied)" : "");
 }
 
 /**
- * @brief Called every loop() iteration — master segments detect local state changes
- *        (power, effect, speed, colour, brightness) and broadcast a sync telegram.
- *        Rate-limited to one telegram per 300 ms per segment to keep bus load low
- *        during dimming ramps.
+ * @brief Called every loop() iteration after the startup delay — master segments send a sync
+ *        telegram on a state change (power, effect, speed, colour, brightness), at most one per
+ *        kSyncMinGapMs, and repeat an unchanged payload every kSyncHeartbeatMs so a slave
+ *        watchdog only fires on a real master loss.
  */
 void NeoPixelBusModule::loopSyncMaster()
 {
@@ -2663,11 +2744,10 @@ void NeoPixelBusModule::loopSyncMaster()
         uint8_t payload[9];
         composeSyncPayload(i, payload);
 
-        if (cfg.syncPayloadValid && memcmp(payload, cfg.lastSyncPayload, sizeof(payload)) == 0)
-            continue; // nothing changed
-
-        if (cfg.syncPayloadValid && (now - cfg.lastSyncSentMs) < 300u)
-            continue; // rate limit — retry next loop
+        const bool changed = !cfg.syncPayloadValid || memcmp(payload, cfg.lastSyncPayload, sizeof(payload)) != 0;
+        const uint32_t sinceLast = now - cfg.lastSyncSentMs;
+        if (changed ? (cfg.syncPayloadValid && sinceLast < kSyncMinGapMs) : (sinceLast < kSyncHeartbeatMs))
+            continue; // rate limit / heartbeat not due — retry next loop
 
         sendSyncTelegram(i);
     }
@@ -2675,26 +2755,29 @@ void NeoPixelBusModule::loopSyncMaster()
 }
 
 /**
- * @brief Called every loop() iteration — checks if any slave has timed out waiting for sync.
+ * @brief Called every loop() iteration after the startup delay — switches a slave off when its
+ *        master stays silent longer than the configured timeout.
  */
 void NeoPixelBusModule::loopSyncWatchdog()
 {
     uint32_t now = millis();
-    for (auto& cfg : _segments)
+    for (size_t i = 0; i < _segments.size(); i++)
     {
-        if (cfg.syncMode != 2) continue;         // only slaves
-        if (cfg.syncTimeoutSteps == 0) continue; // no timeout configured
-        if (cfg.lastSyncMs == 0) continue;       // never received any sync yet
+        auto& cfg = _segments[i];
+        if (cfg.syncMode != 2 || !cfg.segment) continue; // only slaves
+        if (cfg.syncTimeoutSteps == 0) continue;         // no timeout configured
+        if (cfg.lastSyncMs == 0) continue;               // not armed (fired already)
 
         uint32_t timeoutMs = (uint32_t)cfg.syncTimeoutSteps * 10000u;
-        if (now - cfg.lastSyncMs > timeoutMs)
-        {
-            // Timeout: turn off segment
-            if (cfg.segment) cfg.segment->clearAll();
-            cfg.lastSyncMs = 0; // reset so we don't keep clearing every frame
-            queueStatus(static_cast<uint8_t>(1 + (&cfg - _segments.data())), false);
-            logInfoP("Effektkette slave timeout — segment turned off");
-        }
+        if (now - cfg.lastSyncMs <= timeoutMs) continue;
+        // Locked, own EM, or local override keeps the segment; fire once that ends.
+        if (cfg.locked || cfg.emController.isRunning() || (cfg.syncOverridePolicy == 1 && cfg.localOverride)) continue;
+
+        segmentOff(i, true);
+        cfg.lastRxPower = 0xFF; // the next telegram applies its power again
+        cfg.lastSyncMs = 0;     // reset so we don't keep clearing every frame
+        queueStatus(static_cast<uint8_t>(1 + i), false);
+        logInfoP("Effektkette slave timeout — segment turned off");
     }
 }
 
@@ -3031,9 +3114,15 @@ bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
         case NEO_CHAIN_SET:
         {
             if (arg2 < 0 || arg2 > 2) return false;
+            if (arg2 != 0 && seg >= NEO_ChannelCount)
+            {
+                openknxNeoPixelConsolePrintf("Segment %d has no Effektkette object (segments 0-%d)", (int)seg, NEO_ChannelCount - 1);
+                return false;
+            }
             auto& cfg = _segments[seg];
             cfg.syncMode = (uint8_t)arg2;
             cfg.localOverride = false;
+            cfg.lastRxPower = 0xFF; // the next telegram applies its power again
             if (arg2 != 2) cfg.lastSyncMs = 0;
             return true;
         }
@@ -3041,6 +3130,7 @@ bool NeoPixelBusModule::executeEmChainAction(uint8_t action, int arg1, int arg2)
         {
             if (arg2 != 0 && arg2 != 1) return false;
             _segments[seg].localOverride = (arg2 == 1);
+            _segments[seg].lastRxPower = 0xFF;
             return true;
         }
         case NEO_CHAIN_TRIGGER:
@@ -6463,7 +6553,9 @@ void NeoPixelBusModule::startEffektManagerFresh(size_t segmentIndex, uint8_t emI
                     (int)header.cueCount);
     }
 
+    // Effektkette master: keep sending the direct state while the EM runs.
     const bool wasRunning = cfg.emController.isRunning();
+    if (!wasRunning) captureSyncFreeze(segmentIndex);
 
     // The first cue renders and enters its effect at master x cue: master = (intent, 0 -> full)
     // x global before the restart; a refused start keeps the old master.
@@ -6551,6 +6643,7 @@ void NeoPixelBusModule::finishEmStop(size_t segmentIndex, uint8_t mode)
     auto& cfg = _segments[segmentIndex];
     if (!cfg.segment) return;
 
+    cfg.syncFreezeValid = false;
     if (mode == EM_STOP_DEFAULT) applySegmentDefaultState(segmentIndex);
 
     if (mode == EM_STOP_OFF || cfg.emStartedFromOff || cfg.savedPower == 0)
@@ -6605,9 +6698,11 @@ void NeoPixelBusModule::interruptEmIfRunning(size_t segmentIndex)
     cfg.savedEffectType = getTypeFromEffect(effect);
     cfg.savedEffectValid = effect != nullptr;
     cfg.savedLastWasEffect = cfg.savedEffectValid;
+    if (effect) cfg.segment->getConfig().effectType = cfg.savedEffectType; // a cue does not set it (sync byte 1)
     cfg.suspendedByPower = false;
     cfg.emStartedFromOff = false;
     cfg.pendingPowerOnRestart = false;
+    cfg.syncFreezeValid = false;
     // A manually paused EM froze the segment; the direct command shows on a visible segment.
     // A dark segment stays stopped: the command is recorded and shown at the next ON.
     if (isSegmentVisible(cfg) && cfg.segment->isPaused())

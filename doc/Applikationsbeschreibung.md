@@ -253,7 +253,8 @@ Nach Änderungen an Hardwareprofilen, Effektparametern oder der ETS-Struktur sol
 * die passende Firmware für die Zielhardware verwendet wird,
 * die Hardware in ETS korrekt ausgewählt ist,
 * bei Bedarf die KNXprod neu importiert wird,
-* die Applikation nach einem Versionswechsel erneut geladen wird.
+* die Applikation nach einem Versionswechsel erneut geladen wird,
+* bei einer Effektkette alle beteiligten Geräte gemeinsam aktualisiert werden: ein Master mit älterer Firmware meldet immer AUS, und ein Slave mit neuer Firmware schaltet sich danach aus; ein Slave mit älterer Firmware startet seinen Effekt bei jedem Telegramm des Masters neu.
 
 ## Änderungshistorie
 
