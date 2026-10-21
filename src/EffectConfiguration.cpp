@@ -52,16 +52,8 @@ void EffectConfiguration::configureEffects()
             segments[i].savedEffectType = effectType;
             segments[i].savedEffectValid = true;
 
-            // Seed the saved colour with the ETS start colour (the flash restore overrides it)
-            {
-                const uint32_t color = ParamNEO_NEOSegmentStartupColor;
-                segments[i].savedR = (color >> 16) & 0xFF;
-                segments[i].savedG = (color >> 8) & 0xFF;
-                segments[i].savedB = color & 0xFF;
-                segments[i].savedWW = ParamNEO_NEOSegmentStartupW;
-                segments[i].savedCW = 0;
-                segments[i].savedValid = true;
-            }
+            // Seed the saved colour with the ETS start colour applied above (the flash restore overrides it)
+            _module->captureDirectColor(i);
 
             // 2. Determine startup behavior (segment can override global)
             uint8_t effectiveBehavior = _module->effectiveStartupBehavior(i);
@@ -179,7 +171,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
                 uint8_t g = (color >> 8) & 0xFF;
                 uint8_t b = color & 0xFF;
                 uint8_t w = ParamNEO_NEOSegmentStartupW;
-                segment->setPrimaryColor(r, g, b, w);
+                NeoPixelBusModule::setPrimaryColorOneWhite(segment, r, g, b, w);
 
                 // setEffect() entered the effect before the optional ETS color reset. Enter it
                 // once more so effects that initialise their pixels see the final color.
@@ -253,7 +245,7 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment, bool loadDe
         uint8_t g = (color >> 8) & 0xFF;
         uint8_t b = color & 0xFF;
         uint8_t w = ParamNEO_NEOSegmentStartupW;
-        segment->setPrimaryColor(r, g, b, w);
+        NeoPixelBusModule::setPrimaryColorOneWhite(segment, r, g, b, w);
         logInfoP("Loaded default color from ETS: R=%d G=%d B=%d W=%d (0x%06X)", r, g, b, w, color);
     }
 

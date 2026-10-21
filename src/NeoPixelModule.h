@@ -482,6 +482,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void segmentOff(size_t segmentIndex, bool show); ///< own power OFF: pause the EM, stop and clear the segment
     void segmentOn(size_t segmentIndex);             ///< own power ON without the power-on EM edge
     void captureDirectColor(size_t segmentIndex);    ///< live primary colour -> saved* (no EM running)
+    static void setPrimaryColorOneWhite(Segment* seg, uint8_t r, uint8_t g, uint8_t b, uint8_t w); ///< one W value, split on RGBCCT
     void segmentPowerOn(size_t segmentIndex);        ///< ON command: power-on EM on the off->on edge, else segmentOn()
     void showSegmentOutput(size_t segmentIndex);     ///< make a segment with power ON visible (resume EM or effect)
     void sceneSwitchOn(size_t segmentIndex);         ///< after a static scene/preset is applied: switch on and re-enter

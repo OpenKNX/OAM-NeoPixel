@@ -2,4 +2,4 @@
 
 Kaltweiß-Anteil der Sekundärfarbe.
 
-Nur bei RGBCCT-Streifen wirksam; bei RGB- und RGBW-Streifen wird der Wert ignoriert.
+Nur wirksam, wenn die Anlage einen RGBCCT-Streifen hat; ein RGBW-Streifen zeigt Warm- und Kaltweiß dann zusammen auf seinem Weißkanal, ein RGB-Streifen ignoriert den Wert.

@@ -1486,21 +1486,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     const EffectConfig& pcW = targetSegment->getConfig();
                     const uint8_t r = pcW.r(), g = pcW.g(), b = pcW.b();
-                    if (_virtualStrip && _virtualStrip->hasDualWhiteChannel())
-                    {
-                        // A generic white command represents neutral white on an
-                        // RGBCCT strip.  Set both channels explicitly so an old
-                        // CW value cannot remain active from a previous command.
-                        const uint8_t ww = white / 2;
-                        const uint8_t cw = white - ww;
-                        targetSegment->setPrimaryColor(r, g, b, ww, cw);
-                        cfg.savedWW = ww;
-                        cfg.savedCW = cw;
-                    }
-                    else
-                    {
-                        targetSegment->setPrimaryColor(r, g, b, white);
-                    }
+                    // A generic white command is neutral white on an RGBCCT strip (WW + CW)
+                    setPrimaryColorOneWhite(targetSegment, r, g, b, white);
                     logInfoP("Segment %d: Updated primary color (White=%d)", channel, white);
                 }
 
@@ -1878,7 +1865,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     uint8_t b = color & 0xFF;
                     uint8_t w = ParamNEO_NEOSegmentStartupW;
 
-                    targetSegment->setPrimaryColor(r, g, b, w);
+                    setPrimaryColorOneWhite(targetSegment, r, g, b, w);
 
                     if (effect == 0)
                     {
@@ -2119,8 +2106,8 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t w = rgbw & 0xFF;
                 // logDebugP("Segment %d RGBW: R=%d G=%d B=%d W=%d", channel, r, g, b, w);
 
-                // Store in config and apply
-                targetSegment->setPrimaryColor(r, g, b, w);
+                // Store in config and apply (one white value, split on RGBCCT)
+                setPrimaryColorOneWhite(targetSegment, r, g, b, w);
 
                 // Persist desired static color for power-restore
                 {
@@ -2319,7 +2306,10 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 uint8_t currentR = targetSegment->getConfig().r();
                 uint8_t currentG = targetSegment->getConfig().g();
                 uint8_t currentB = targetSegment->getConfig().b();
-                uint8_t currentW = targetSegment->getConfig().w();
+                // One white value: WW + CW on RGBCCT, as the W object and the W status define it
+                const uint8_t currentWW = targetSegment->getConfig().ww(), currentCW = targetSegment->getConfig().cw();
+                const bool dualWhite = _virtualStrip && _virtualStrip->hasDualWhiteChannel();
+                uint8_t currentW = dualWhite ? (uint8_t)std::min<uint16_t>(255, (uint16_t)currentWW + currentCW) : currentWW;
 
                 // Apply relative changes (treating 128 as no change, <128 as decrease, >128 as increase)
                 int16_t newR = currentR + ((int16_t)rRel - 128);
@@ -2333,11 +2323,34 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 newB = constrain(newB, 0, 255);
                 newW = constrain(newW, 0, 255);
 
-                logInfoP("Segment %d RGBW Relative: R=%d->%d, G=%d->%d, B=%d->%d, W=%d->%d", channel,
-                         currentR, newR, currentG, newG, currentB, newB, currentW, newW);
-
-                // Update config and apply
-                targetSegment->setPrimaryColor((uint8_t)newR, (uint8_t)newG, (uint8_t)newB, (uint8_t)newW);
+                // Update config and apply. RGBCCT: the white step scales WW + CW and keeps their ratio
+                // (from black split like the W object).
+                if (dualWhite)
+                {
+                    const int16_t sum = (int16_t)currentWW + currentCW;
+                    // Upper end like the white ramp: 255, or above it as far as no channel clips
+                    const int16_t maxCh = std::max<int16_t>(currentWW, currentCW);
+                    const int16_t upper = (sum > 255) ? std::max<int16_t>(sum, (int16_t)(255 * sum / maxCh)) : 255;
+                    const int16_t newSum = constrain((int16_t)(sum + ((int16_t)wRel - 128)), 0, upper);
+                    uint8_t newWW, newCW;
+                    if (sum == 0)
+                    {
+                        newWW = (uint8_t)(newSum / 2);
+                        newCW = (uint8_t)(newSum - newSum / 2);
+                    }
+                    else
+                    {
+                        newWW = (uint8_t)std::min<int16_t>(255, (int16_t)(((int32_t)currentWW * newSum + sum / 2) / sum));
+                        newCW = (uint8_t)std::min<int16_t>(255, (int16_t)(newSum - newWW));
+                    }
+                    targetSegment->setPrimaryColor((uint8_t)newR, (uint8_t)newG, (uint8_t)newB, newWW, newCW);
+                    logInfoP("Segment %d RGBW Relative: R=%d G=%d B=%d WW=%d CW=%d", channel, newR, newG, newB, newWW, newCW);
+                }
+                else
+                {
+                    targetSegment->setPrimaryColor((uint8_t)newR, (uint8_t)newG, (uint8_t)newB, (uint8_t)newW, 0);
+                    logInfoP("Segment %d RGBW Relative: R=%d G=%d B=%d W=%d", channel, newR, newG, newB, newW);
+                }
                 break;
             }
 
@@ -2418,7 +2431,7 @@ void NeoPixelBusModule::composeSyncPayload(size_t segmentIndex, uint8_t* payload
             payload[4] = cfg.savedG;
             payload[5] = cfg.savedB;
             payload[6] = cfg.savedWW;
-            payload[8] = cfg.savedCW;
+            payload[8] = (_virtualStrip && _virtualStrip->hasDualWhiteChannel()) ? cfg.savedCW : 0; // CW only on RGBCCT
         }
     }
     else
@@ -2441,7 +2454,7 @@ void NeoPixelBusModule::composeLiveSyncPayload(size_t segmentIndex, uint8_t* pay
     payload[5] = ecfg.b();
     payload[6] = ecfg.ww();
     payload[7] = cfg.savedBrightness;
-    payload[8] = ecfg.cw();
+    payload[8] = (_virtualStrip && _virtualStrip->hasDualWhiteChannel()) ? ecfg.cw() : 0; // CW only on RGBCCT
 }
 
 void NeoPixelBusModule::captureSyncFreeze(size_t segmentIndex)
@@ -2515,6 +2528,12 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
     uint8_t speed = payload[2];
     uint8_t r = payload[3], g = payload[4], b = payload[5];
     uint8_t w = payload[6], brightness = payload[7], cw = payload[8];
+    // A slave without RGBCCT shows the master's white as one value (WW + CW, as the W status)
+    if (!(_virtualStrip && _virtualStrip->hasDualWhiteChannel()))
+    {
+        w = (uint8_t)std::min<uint16_t>(255, (uint16_t)w + cw);
+        cw = 0;
+    }
 
     // Apply colour + speed to segment config
     auto& ecfg = cfg.segment->getConfig();
@@ -6582,13 +6601,8 @@ void NeoPixelBusModule::applySegmentDefaultState(size_t segmentIndex)
     uint8_t g = (color >> 8) & 0xFF;
     uint8_t b = color & 0xFF;
     uint8_t w = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupW);
-    cfg.segment->setPrimaryColor(r, g, b, w);
-    cfg.savedR = r;
-    cfg.savedG = g;
-    cfg.savedB = b;
-    cfg.savedWW = w;
-    cfg.savedCW = cfg.segment->getConfig().cw();
-    cfg.savedValid = true;
+    setPrimaryColorOneWhite(cfg.segment, r, g, b, w);
+    captureDirectColor(segmentIndex);
 
     // Start brightness seeds the pre-global intent; render then respects the live global factor
     // (like the boot path / applyGlobalBrightness), else the segment would ignore an active global dim.
@@ -6672,6 +6686,20 @@ void NeoPixelBusModule::captureDirectColor(size_t segmentIndex)
     cfg.savedWW = primary & 0xFF;
     cfg.savedCW = cfg.segment->getConfig().cw(); // RGBCCT: the 5th channel is not in primary
     cfg.savedValid = true;
+}
+
+/**
+ * @brief Primary colour with one white value. On an RGBCCT buffer W is split like the W object
+ *        (warm half, cool rest); otherwise CW is cleared, so no earlier CW stays active.
+ */
+void NeoPixelBusModule::setPrimaryColorOneWhite(Segment* seg, uint8_t r, uint8_t g, uint8_t b, uint8_t w)
+{
+    if (!seg) return;
+    const VirtualStrip* vstrip = seg->getVirtualStrip();
+    if (vstrip && vstrip->hasDualWhiteChannel())
+        seg->setPrimaryColor(r, g, b, w / 2, w - w / 2);
+    else
+        seg->setPrimaryColor(r, g, b, w, 0);
 }
 
 /**
