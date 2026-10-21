@@ -202,12 +202,14 @@ if ($isClean) {
 # ============================================================================
 
 # Mini Build Targets (the hardware physically on the desk)
-# Purpose: fast turnaround while developing - two boards, one RP2350 and one ESP32,
-# so both families stay covered. Not a shippable set: the ETS product generated
-# from it offers only these two hardware entries (HardwareListMode 'Dynamic').
+# Purpose: fast turnaround while developing - one RP2350 and one ESP32S3 board per
+# KNeoPiX revision (V1, V1.5), so both families stay covered. Not a shippable set: the
+# ETS product generated from it offers only these hardware entries (HardwareListMode 'Dynamic').
 $miniTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V15"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
     )
 
 # Standard Build Targets (tested hardware)
@@ -217,6 +219,11 @@ $standardTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_IP"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    # OpenKNXiao KNeoPiX V1.5 (SN74LV8T245 level shifter)
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V15"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V15"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_IP"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
     # OpenKNXiao Mini
     @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
@@ -231,6 +238,9 @@ $fullTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C5_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C5_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V15" }
     
     # OpenKNXiao Mini - ESP32 Variants
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C3_MINI_V1" }
