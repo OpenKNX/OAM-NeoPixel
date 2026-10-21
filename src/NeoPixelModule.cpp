@@ -3392,12 +3392,7 @@ void NeoPixelBusModule::configureFromETS()
                     logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
                 }
 
-                pinMode(gpio, OUTPUT);
-                digitalWrite(gpio, LOW); // Default OFF for safety
-                _relayStates[i] = false;
-                logInfoP("Relay %d: Initial state OFF", i + 1);
-
-// Read output logic (invert) setting per relay
+// Read output logic (invert) setting per relay; needed before the first write below
 #if defined(ParamNEO_NEOExternalRelay1OutputLogic)
                 if (i == 0) _relayInverted[i] = (ParamNEO_NEOExternalRelay1OutputLogic != 0);
 #endif
@@ -3411,6 +3406,11 @@ void NeoPixelBusModule::configureFromETS()
                 if (i == 3) _relayInverted[i] = (ParamNEO_NEOExternalRelay4OutputLogic != 0);
 #endif
                 if (_relayInverted[i]) logInfoP("Relay %d: Output logic INVERTED (LOW = ON)", i + 1);
+
+                pinMode(gpio, OUTPUT);
+                digitalWrite(gpio, _relayInverted[i] ? HIGH : LOW); // OFF until the startup restore
+                _relayStates[i] = false;
+                logInfoP("Relay %d: Initial state OFF", i + 1);
             }
         }
     }
