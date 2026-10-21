@@ -538,6 +538,25 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     bool _virtualShowPending = false; ///< a send was deferred; loop() retries until it goes out
     bool _renderPaused = true;        ///< loop() skipped rendering (startup delay, nothing visible under global OFF)
+    bool _startupRestoreDone = false; ///< restore and boot EM after the startup delay have run
+    static constexpr uint8_t kDeferredKoMax = 128;     ///< KO updates kept during the startup delay
+    static constexpr uint8_t kDeferredKoPerLoop = 8;   ///< processed per loop() pass afterwards
+    static constexpr uint8_t kDeferredKoValueMax = 14; ///< largest NeoPixel input KO (14 bytes, DPT 16)
+    struct DeferredKo
+    {
+        uint16_t number;
+        uint8_t size;
+        uint8_t value[kDeferredKoValueMax];
+    };
+    DeferredKo _deferredKo[kDeferredKoMax] = {};       ///< in arrival order, with the received value
+    uint8_t _deferredKoHead = 0;                       ///< next entry to process
+    uint8_t _deferredKoCount = 0;                      ///< end of the queue
+    bool _deferredKoOverflow = false;
+    bool _replayingDeferred = false;                   ///< processInputKo() called from the queue
+    bool _drainGate = false;                           ///< startup backlog: no frame / sync until it is processed
+    uint8_t _drainPassesLeft = 0;                      ///< bound for the gate (passes)
+    bool deferKo(GroupObject& ko, uint16_t koNumber);  ///< queue a NeoPixel input telegram
+    void replayDeferredKos(uint8_t maxCount);          ///< process queued telegrams, oldest first
 
     // Status objects: one item routine per scope (module / segment) computes each status KO from
     // the live state (CCT: last command) and writes it in one of three modes.
@@ -588,7 +607,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void seedStatus();                                  ///< end of processAfterStartupDelay(): fill every status KO
     void queueStatus(uint8_t scope, bool always);       ///< scope 0 = module, 1+n = segment n; sent paced by processStatusQueue()
     void queueAllSegmentStatus(bool always);
-    void statusAfterCommand(uint8_t scope);           ///< after a bus command: queue OnChange, or the full status before the seed
+    void statusAfterCommand(uint8_t scope);           ///< after a bus command: queue OnChange; a queued (startup) telegram gets the full status
     void queueStatusItem(uint8_t scope, uint8_t item, bool always);
     bool serveStatusQueue(uint16_t* queue, bool always, uint8_t& cursorScope, uint8_t& cursorItem);
     void processStatusQueue();                          ///< loop(): status telegrams within the credit budget

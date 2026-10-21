@@ -98,11 +98,19 @@ void NeoPixelFlashPersistence::writeToFlash()
         relayState.signature = 0xA5;
 
         uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
-        for (uint8_t i = 0; i < maxRelays; ++i)
+        if (!_module->_startupRestoreDone && _relayFlashValid)
         {
-            if (_module->_relayStates[i])
+            // Before the restore the relays are still OFF from setup: keep the saved states
+            relayState.statesMask = _relayFlashState.statesMask;
+        }
+        else
+        {
+            for (uint8_t i = 0; i < maxRelays; ++i)
             {
-                relayState.statesMask |= static_cast<uint8_t>(1u << i);
+                if (_module->_relayStates[i])
+                {
+                    relayState.statesMask |= static_cast<uint8_t>(1u << i);
+                }
             }
         }
 
@@ -233,6 +241,26 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
             cfg.savedLastWasEffect = (state.effectFlags & 0x02) != 0;
         }
 
+        // Live state = saved state already now, so a flash save during the startup delay (save pin,
+        // restart, ETS download) writes the saved state back. The restore after the delay applies it.
+        if (cfg.segment)
+        {
+            if ((state.validFlags & 0x10) && cfg.savedEffectValid)
+            {
+                const uint8_t prevChannel = _module->getChannelIndex();
+                _module->setChannelIndex(i);
+                _module->applyEffectToSegment(cfg.segment, cfg.savedEffectType);
+                _module->setChannelIndex(prevChannel);
+            }
+            if (state.validFlags & 0x02)
+                cfg.segment->setPrimaryColor(state.r, state.g, state.b, state.ww, state.cw);
+            if (state.validFlags & 0x04)
+            {
+                cfg.segment->setMasterBrightness(cfg.savedBrightness);
+                cfg.segment->setBrightness(cfg.savedBrightness);
+            }
+        }
+
         // Restore last active scene number from reserved[0]
         cfg.savedSceneNumber = state.reserved[0];
         // Restore last active Effektmanager ID from reserved[1]
@@ -351,6 +379,8 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // Own power from flash. Every restore branch ends with segmentOff() for a saved OFF
             // (an EM is paused and resumed by the next ON).
             const uint8_t flashPower = cfg.savedPower;
+            const uint8_t globalB = _module->getGlobalBrightness();
+            auto scaled = [globalB](uint8_t intent) { return (uint8_t)((uint16_t)intent * globalB / 255); };
 
             // A scene or EM start snapshots the live direct state (EM return "Letzter Zustand",
             // Effektkette freeze): put the saved one on the segment first, not the ETS boot state.
@@ -370,7 +400,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // recallScene() overwrites savedBrightness with the scene value; keep the intent the
                 // user set after the recall (e.g. dimmed).
                 const uint8_t intentBrightness = cfg.savedBrightness;
-                seg->setMasterBrightness(intentBrightness);
+                seg->setMasterBrightness(scaled(intentBrightness));
                 // Recall as OFF: a scene or EM start switches on, a brightness-0 scene leaves it at 0
                 // without overwriting the flash state with a snapshot of the boot state.
                 cfg.savedPower = 0;
@@ -381,11 +411,11 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 if (sceneRecalled && sceneOn)
                 {
                     cfg.savedBrightness = intentBrightness;
-                    seg->setMasterBrightness(intentBrightness);
+                    seg->setMasterBrightness(scaled(intentBrightness));
                     if (cfg.emController.isRunning())
                         cfg.emController.reapplyMasterBrightness(seg);
                     else
-                        seg->setBrightness(intentBrightness);
+                        seg->setBrightness(scaled(intentBrightness));
                     if (flashPower == 0) _module->segmentOff(i, false);
 #ifdef OPENKNX_DEBUG
                     logInfoP("[Segment %d] RESTORED Scene %d from Flash (power=%s)",
@@ -408,7 +438,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // Unconditional (no >0 guard): a saved 0 is an intentional "dimmed dark" state and
                 // must be honoured, matching the non-EM restore branch below. savedBrightness is always
                 // a valid value here (flash field is always written / boot-seeded).
-                seg->setMasterBrightness(cfg.savedBrightness);
+                seg->setMasterBrightness(scaled(cfg.savedBrightness));
                 _module->captureSyncFreeze(i); // Effektkette master: the state the segment returns to after the EM
                 cfg.emController.restoreState(seg, _module->_emData);
                 if (flashPower == 0) _module->segmentOff(i, false); // paused, the next ON resumes it
@@ -450,8 +480,8 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             // (EffectConfiguration.cpp:48-51) so the restored brightness survives a later global-
             // brightness recompute or EM start (render = master*cue/255). "Aus" keeps the intent
             // and stops the segment, so a subsequent power-on returns to it.
-            seg->setMasterBrightness(cfg.savedBrightness);
-            seg->setBrightness(cfg.savedBrightness);
+            seg->setMasterBrightness(scaled(cfg.savedBrightness));
+            seg->setBrightness(scaled(cfg.savedBrightness));
             if (flashPower == 0)
             {
                 _module->segmentOff(i, false);
@@ -482,16 +512,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
         }
     }
 
-    // "Alle LEDs" AUS received during the startup delay: the restore above may have resumed a
-    // suspended segment (EM restart, effect enter). Suspend it again before the frame goes out.
-    for (size_t i = 0; i < segments.size(); i++)
-        if (segments[i].segment && segments[i].globalSuspended) _module->globalSuspendSegment(i);
-
-    // Via the module helper: a direct vstrip->show() bypasses the strip arbitration.
-    _module->showVirtualStripIfIdle();
-#ifdef OPENKNX_DEBUG
-    logInfoP("Hardware update triggered (show() called)");
-#endif
+    // loop() renders the restored state; the telegrams of the startup delay follow (replayDeferredKos).
 
     if (_relayFlashValid && _module->_relayCount > 0)
     {
@@ -601,7 +622,8 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     // reserved[0] = last active scene number (0 = no scene)
     state.reserved[0] = cfg.savedSceneNumber;
     // reserved[1] = last active Effektmanager ID (0 = none)
-    cfg.emController.saveState();
+    // Before the startup restore no EM runs yet: keep the EM loaded from flash
+    if (_module->_startupRestoreDone) cfg.emController.saveState();
     state.reserved[1] = cfg.emController.lastEmId();
     state.reserved[2] = 0;
 

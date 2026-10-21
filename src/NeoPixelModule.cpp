@@ -305,6 +305,21 @@ void NeoPixelBusModule::loop(bool configured)
     // Local console test mode remains usable without a configured KNX application.
     if (!_localTestMode && !openknx.afterStartupDelay()) return;
 
+    // Telegrams of the startup delay, a few per pass (non-blocking). While the backlog is processed
+    // (bounded number of passes) no frame, status or sync telegram goes out, so no intermediate state
+    // becomes visible; telegrams arriving later stay queued behind it to keep their order.
+    if (_deferredKoHead < _deferredKoCount)
+    {
+        replayDeferredKos(kDeferredKoPerLoop);
+        if (_drainGate && _drainPassesLeft > 0) --_drainPassesLeft;
+        if (_deferredKoHead >= _deferredKoCount || _drainPassesLeft == 0) _drainGate = false;
+        if (_drainGate) return;
+    }
+    else
+    {
+        _drainGate = false;
+    }
+
     // Effektkette: slave watchdog + master change detection / heartbeat (after the restore)
     if (!_localTestMode)
     {
@@ -360,6 +375,11 @@ void NeoPixelBusModule::loop(bool configured)
 void NeoPixelBusModule::showVirtualStripIfIdle()
 {
     if (!_virtualStrip) return;
+    if (_drainGate)
+    {
+        _virtualShowPending = true; // startup backlog in progress: shown once it is processed
+        return;
+    }
 
     NeoPixelManager* manager = _neoPixel.getManager();
 
@@ -563,6 +583,9 @@ void NeoPixelBusModule::processAfterStartupDelay()
     if (_segments.empty())
     {
         seedStatus();
+        _startupRestoreDone = true; // loop() processes the telegrams of the startup delay
+        _drainGate = _deferredKoCount > 0;
+        _drainPassesLeft = (kDeferredKoMax + kDeferredKoPerLoop - 1) / kDeferredKoPerLoop;
         logInfoP("Startup complete - ETS configuration active");
         return;
     }
@@ -571,10 +594,7 @@ void NeoPixelBusModule::processAfterStartupDelay()
     // here so the restored effect/colour/brightness become the ACTIVE state (reported by ETS
     // sync-back readback). Only acts on segments set to "Letzter Zustand"; StartupEM below is
     // evaluated afterwards and can override it (priority EM > Effekt > Solid).
-    if (_flashPersistence)
-    {
-        _flashPersistence->restoreStatesAfterStartup();
-    }
+    if (_flashPersistence) _flashPersistence->restoreStatesAfterStartup();
 
     uint8_t previousChannel = _channelIndex;
     for (size_t i = 0; i < _segments.size(); ++i)
@@ -610,7 +630,125 @@ void NeoPixelBusModule::processAfterStartupDelay()
     _channelIndex = previousChannel;
 
     seedStatus();
+    // loop() now processes the telegrams of the startup delay on top of the restored state
+    _startupRestoreDone = true;
+    _drainGate = _deferredKoCount > 0;
+    _drainPassesLeft = (kDeferredKoMax + kDeferredKoPerLoop - 1) / kDeferredKoPerLoop;
     logInfoP("Startup complete - ETS configuration active");
+}
+
+/**
+ * @brief Queue a NeoPixel input telegram with its value (startup delay, or while the queue drains).
+ * @return false if the KO is not queued (foreign KO, output, or a dimming telegram of the delay)
+ */
+bool NeoPixelBusModule::deferKo(GroupObject& ko, uint16_t koNumber)
+{
+    // NeoPixel input KOs: the module block (400..; the strip block from 500 has no inputs that are
+    // processed) and the segment blocks up to the last channel
+    const bool segmentKo = koNumber >= NEO_KoBlockOffset && koNumber < NEO_KoBlockOffset + NEO_ChannelCount * NEO_KoBlockSize;
+#ifdef NEOSTRIP_KoOffset
+    const bool moduleKo = koNumber >= NEO_KoPower && koNumber < NEOSTRIP_KoOffset;
+#else
+    const bool moduleKo = koNumber >= NEO_KoPower && koNumber < NEO_KoBlockOffset;
+#endif
+    if (!(segmentKo || moduleKo) || !ko.writeEnable()) return false;
+    const int koIndex = segmentKo ? (int)((koNumber - NEO_KoBlockOffset) % NEO_KoBlockSize) : -1;
+    const size_t channel = segmentKo ? (size_t)((koNumber - NEO_KoBlockOffset) / NEO_KoBlockSize) : 0;
+
+    // DPT 3.007 start/stop dimming has no meaning without its timing: drop it during the delay
+    if (!_startupRestoreDone &&
+        (koIndex == NEO_KoBriRel || koIndex == NEO_KoRRel || koIndex == NEO_KoGRel || koIndex == NEO_KoBRel ||
+         koIndex == NEO_KoWRel || koIndex == NEO_KoWWRel || koIndex == NEO_KoCWRel || koIndex == NEO_KoHRel ||
+         koIndex == NEO_KoSRel || koIndex == NEO_KoVRel))
+        return false;
+
+#ifdef NEO_KoSyncChain
+    // A master's own sync telegram comes back through this callback: nothing to replay
+    if (koIndex == NEO_KoSyncChain && (channel >= _segments.size() || _segments[channel].syncMode != 2)) return false;
+    // The master repeats an unchanged state every few seconds: an identical sync telegram with no
+    // telegram for this segment or the module in between has no effect when processed twice, so the
+    // older copy is dropped and the newest one queued (an overflow drop then cannot lose it).
+    if (koIndex == NEO_KoSyncChain)
+    {
+        const uint16_t blockStart = (uint16_t)(NEO_KoBlockOffset + channel * NEO_KoBlockSize);
+        const size_t size = std::min<size_t>(ko.valueSize(), kDeferredKoValueMax);
+        for (int i = (int)_deferredKoCount - 1; i >= (int)_deferredKoHead; --i)
+        {
+            const uint16_t nr = _deferredKo[i].number;
+            if (nr == koNumber)
+            {
+                if (_deferredKo[i].size == size && memcmp(_deferredKo[i].value, ko.valueRef(), size) == 0)
+                {
+                    memmove(&_deferredKo[i], &_deferredKo[i + 1], (size_t)(_deferredKoCount - i - 1) * sizeof(_deferredKo[0]));
+                    --_deferredKoCount;
+                }
+                break;
+            }
+            if (nr < NEO_KoBlockOffset || (nr >= blockStart && nr < blockStart + NEO_KoBlockSize)) break;
+        }
+    }
+#endif
+
+    // A relay is independent of the other KOs: only its newest value counts (no click sequence, and
+    // the min-off time cannot swallow the final ON when the queue is processed at once)
+#ifdef NEO_KoExternalRelay1
+    if (koNumber >= NEO_KoExternalRelay1 && koNumber < NEO_KoExternalRelay1 + kMaxExternalRelays)
+    {
+        for (uint8_t i = _deferredKoHead; i < _deferredKoCount; ++i)
+        {
+            if (_deferredKo[i].number != koNumber) continue;
+            memmove(&_deferredKo[i], &_deferredKo[i + 1], (size_t)(_deferredKoCount - i - 1) * sizeof(_deferredKo[0]));
+            --_deferredKoCount;
+            break;
+        }
+    }
+#endif
+
+    if (_deferredKoCount >= kDeferredKoMax && _deferredKoHead > 0)
+    {
+        // Compact: processed entries make room
+        memmove(&_deferredKo[0], &_deferredKo[_deferredKoHead], (size_t)(_deferredKoCount - _deferredKoHead) * sizeof(_deferredKo[0]));
+        _deferredKoCount -= _deferredKoHead;
+        _deferredKoHead = 0;
+    }
+    if (_deferredKoCount >= kDeferredKoMax)
+    {
+        // Full: the oldest entry is dropped (order of the rest is kept)
+        if (!_deferredKoOverflow) logWarningP("Startup delay: more than %d KO updates, the oldest are dropped", kDeferredKoMax);
+        _deferredKoOverflow = true;
+        memmove(&_deferredKo[0], &_deferredKo[1], (size_t)(_deferredKoCount - 1) * sizeof(_deferredKo[0]));
+        --_deferredKoCount;
+    }
+    DeferredKo& entry = _deferredKo[_deferredKoCount++];
+    entry.number = koNumber;
+    entry.size = (uint8_t)std::min<size_t>(ko.valueSize(), kDeferredKoValueMax);
+    memcpy(entry.value, ko.valueRef(), entry.size);
+    return true;
+}
+
+/**
+ * @brief Process up to maxCount queued telegrams, oldest first, each with its own value.
+ */
+void NeoPixelBusModule::replayDeferredKos(uint8_t maxCount)
+{
+    if (_deferredKoHead == 0 && _deferredKoCount > 0)
+        logInfoP("Startup delay: processing %d KO update(s) received meanwhile", _deferredKoCount);
+    _replayingDeferred = true;
+    for (uint8_t done = 0; done < maxCount && _deferredKoHead < _deferredKoCount; ++done)
+    {
+        const DeferredKo& entry = _deferredKo[_deferredKoHead++];
+        GroupObject& ko = knx.getGroupObject(entry.number);
+        if (entry.size != ko.valueSize()) continue;
+        // The GO buffer is also the knx send buffer (and may already hold a newer value):
+        // process the queued value, then put the current content back.
+        uint8_t current[kDeferredKoValueMax];
+        memcpy(current, ko.valueRef(), entry.size);
+        memcpy(ko.valueRef(), entry.value, entry.size);
+        processInputKo(ko);
+        memcpy(ko.valueRef(), current, entry.size);
+    }
+    _replayingDeferred = false;
+    if (_deferredKoHead >= _deferredKoCount) _deferredKoHead = _deferredKoCount = 0;
 }
 
 // ============================================================================
@@ -873,7 +1011,7 @@ void NeoPixelBusModule::statusAfterCommand(uint8_t scope)
 {
     // Through the credit-limited queue: one group telegram can address many segments at once.
     // A command during the startup delay is confirmed with the full status after the seed.
-    queueStatus(scope, !_statusSeeded);
+    queueStatus(scope, !_statusSeeded || _replayingDeferred);
 }
 
 void NeoPixelBusModule::processStatusQueue()
@@ -1104,6 +1242,14 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
     // Get the KO number for routing to correct channel/segment
     uint16_t koNumber = ko.asap();
 
+    // During the startup delay queue NeoPixel input telegrams: they are processed after the flash
+    // restore, the boot EM and the status seed (replayDeferredKos from loop), so the restore cannot
+    // undo them. Telegrams arriving while the queue drains line up behind it.
+    if (!_localTestMode && !_replayingDeferred && (!_startupRestoreDone || _deferredKoHead < _deferredKoCount))
+    {
+        if (deferKo(ko, koNumber) || !_startupRestoreDone) return;
+    }
+
     // ── Effektmanager KOs (NEOEM module, KoOffset=1240, BlockSize=4) ─────
 #ifdef NEO_KoEmStart
     {
@@ -1297,7 +1443,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
         // Status: module now; every segment's power status follows global power (paced)
         statusAfterCommand(0);
-        if (_statusSeeded) queueAllSegmentStatus(false); // before the seed, seedStatus() picks the final state
+        if (_statusSeeded) queueAllSegmentStatus(false); // segments changed with the global value
         return;
     }
 
@@ -1313,7 +1459,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
 
         // Status: module now; a segment can go dark at low global brightness (paced)
         statusAfterCommand(0);
-        if (_statusSeeded) queueAllSegmentStatus(false); // before the seed, seedStatus() picks the final state
+        if (_statusSeeded) queueAllSegmentStatus(false); // segments changed with the global value
         return;
     }
 
@@ -2473,6 +2619,7 @@ void NeoPixelBusModule::sendSyncTelegram(size_t segmentIndex)
     if (segmentIndex >= _segments.size() || segmentIndex >= NEO_ChannelCount) return;
     auto& cfg = _segments[segmentIndex];
     if (cfg.syncMode != 1 || !cfg.segment) return; // only masters send
+    if (_drainGate) return; // startup backlog: loopSyncMaster() sends the final state afterwards
 
     uint8_t oldCh = _channelIndex;
     _channelIndex = (uint8_t)segmentIndex;

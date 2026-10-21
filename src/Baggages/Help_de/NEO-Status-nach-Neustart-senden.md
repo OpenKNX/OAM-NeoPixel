@@ -28,7 +28,7 @@ Jedes Status-Objekt meldet den Zustand des Geräts, unabhängig davon, wodurch e
 - **Segment Helligkeit Status** meldet den aktuellen Dimmwert: die eingestellte Helligkeit des Segments selbst, 0 %, solange das Segment aus oder durch „Alle LEDs“ AUS dunkel ist. Die eingestellte Helligkeit bleibt dabei erhalten und gilt beim nächsten EIN wieder. Die globale Helligkeit wirkt als zusätzlicher Faktor und hat ein eigenes Status-Objekt. Ein Effektkette-Slave meldet die vom Master übernommene Helligkeit.
 - Ein Telegramm, das den Zustand nicht ändert, erzeugt keine Status-Rückmeldung. Ausnahme: Ein Effekt-Text oder Effekt-Text Anhängen, das der aktive Effekt übernimmt, wird immer mit dem aktuellen Text bestätigt.
 - Konsolenbefehle (`neo ...`) sind ein Diagnosewerkzeug: Ihre Wirkung erscheint nicht in jedem Fall im Status (z. B. Segment-Helligkeit über die Konsole, `neo clear`). `neo seg ...` pause/resume/stop/effect wirken direkt auf das Segment und umgehen das Ein/Aus-Modell.
-- Ein Telegramm, das während der Startverzögerung empfangen wird, wird nach der Startverzögerung mit dem vollständigen Status des betroffenen Segments (bzw. der allgemeinen Objekte) beantwortet.
+- Ein Telegramm, das während der Startverzögerung empfangen wird, wird nach der Startverzögerung ausgeführt und mit dem vollständigen Status des betroffenen Segments (bzw. der allgemeinen Objekte) beantwortet; Dimm-Telegramme (Start/Stopp) aus dieser Zeit werden verworfen.
 
 **Anwendungsfälle:**
 
