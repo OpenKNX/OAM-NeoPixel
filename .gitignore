@@ -14,3 +14,5 @@ include/buildtime.h
 /.vscode/extensions.json
 /.vscode/settings.json
 **/*.html
+include/webassets.h
+include/webassets.h
