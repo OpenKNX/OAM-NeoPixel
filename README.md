@@ -92,6 +92,7 @@ That said, the firmware is **developed and tuned on the OpenKNXiao KNeoPiX** —
 - **2D / 3D Matrix Support**: Configure any segment as a 2D or 3D LED matrix — set width, height, wiring topology (serpentine/linear rows or columns) and use 2D-native effects. Multiple panels can share a single segment or use separate segments.
 - **Effektmanager** (Cue sequencer): Per-segment, cue-based light sequences. Each cue is a snapshot (effect, colours, brightness, effect parameters) played with its own duration and fade; cues can loop and chain into another Effektmanager. Assign an Effektmanager to a segment and it drives the output via its KOs.
 - **Effektkette** (Distributed rendering): Link segments across multiple KNX devices so one effect runs seamlessly over the combined strip. One device is Master (sends), others are Slaves (render their section). Watchdog timeout and local override policy configurable per segment.
+- **WiFi** (WiFi variants only): connect to an existing WiFi, or run an own WPA2 WiFi as access point (address `10.42.0.1`). A device that knows no WiFi yet -- or has lost it and gets a Prog button press -- opens an open setup WiFi named after its host name; the setup page opens by itself, otherwise at `http://10.42.0.1/wifi`. Network scan from the console, the web page and ETS; signal history and gateway ping on `/wifi`. Details: [OFM-Network README, section "WiFi module (NETW)"](lib/OFM-Network/README.md).
 
 ## Effects
 
@@ -185,6 +186,7 @@ pwsh scripts/Build-Release.ps1 -Release
 - **Segments**: Define segment start/end positions for granular control
 - **Effects**: Assign effects to segments with speed and intensity parameters
 - **Scenes**: Configure up to 10 scenes per segment with colors, brightness, and effects
+- **WiFi** (WiFi variants): set "WiFi-Schnittstelle" to "Ja" in Netzwerk > Allgemein; the page "WiFi" sets the operating mode ("Mit vorhandenem WiFi verbinden" or "Eigenes WiFi (Access Point)") and the setup WiFi. Network name and password go to the device online with "Zugangsdaten übertragen" on that page, or are entered on `/wifi`; they are not part of the device parameters, and the ETS fields are cleared after a successful transfer
 
 ## Configuration Parameters
 
