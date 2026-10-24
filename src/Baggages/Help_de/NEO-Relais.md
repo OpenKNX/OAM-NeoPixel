@@ -21,7 +21,7 @@ Relais können zum Schalten von **230 V Wechselspannung oder anderen gefährlich
 
 Typische Einsatzfälle:
 
-- **Netzteil-Steuerung** – LED-Stromversorgung automatisch abschalten, wenn keine LEDs leuchten
+- **Netzteil-Steuerung** – LED-Stromversorgung über KNX ab- und zuschalten (z. B. per Logik, wenn keine LEDs leuchten)
 - **Lüftersteuerung** – Kühlung bei Bedarf aktivieren
 - **Begleitschaltungen** – weitere Geräte synchron zur LED-Steuerung schalten
 
@@ -47,16 +47,18 @@ Legt fest, wie viele Relais aktiv sind. Auf **Deaktiviert** werden alle Relais u
 Das Relais schaltet erst nach der eingestellten Zeit (Sekunden). Bei 0 wird sofort geschaltet.
 
 **Mindest-Auszeit**
-Verhindert, dass das Relais zu schnell wieder eingeschaltet wird – schützt z. B. Netzteile vor schnellen Ein-/Aus-Zyklen.
+Verhindert, dass das Relais zu schnell wieder eingeschaltet wird – schützt z. B. Netzteile vor schnellen Ein-/Aus-Zyklen. Ein EIN-Telegramm innerhalb der Mindest-Auszeit wird nicht verworfen, sondern ausgeführt, sobald die Mindest-Auszeit abgelaufen ist (frühestens nach der Einschaltverzögerung). Ein AUS-Telegramm in dieser Wartezeit hebt das vorgemerkte EIN wieder auf; es gilt immer das zuletzt empfangene Telegramm.
 
 ---
 
 ## Kommunikationsobjekte
 
+Die Relais schalten ausschließlich über ihr Kommunikationsobjekt. Das Gerät schaltet sie nicht selbstständig zusammen mit den LEDs.
+
 Pro aktiviertem Relais gibt es zwei KOs:
 
 - **Relais n** – Ein/Aus schalten
-- **Relais n Status** – Rückmeldung des aktuellen Zustands (wird automatisch nach jedem Schaltvorgang gesendet)
+- **Relais n Status** – Rückmeldung des tatsächlichen Schaltzustands (wird nach jedem Schaltvorgang gesendet; ein verzögertes EIN meldet erst EIN, wenn das Relais geschaltet hat)
 
 ---
 

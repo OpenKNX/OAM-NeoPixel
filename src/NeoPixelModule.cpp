@@ -416,6 +416,7 @@ bool NeoPixelBusModule::prepareLedShutdown()
     // Turn off external relays for safety
     for (uint8_t i = 0; i < _relayCount; ++i)
     {
+        _relayTimers[i].pendingChange = false; // a delayed or deferred ON must not re-close it
         setRelayOutput(i, false);
     }
 
@@ -1105,12 +1106,13 @@ void NeoPixelBusModule::setRelayOutput(uint8_t relayIndex, bool state)
     uint8_t pin = _relayPins[relayIndex];
     if (pin == 255) return;
 
+    const bool wasOn = _relayStates[relayIndex];
     _relayStates[relayIndex] = state;
     bool physicalState = _relayInverted[relayIndex] ? !state : state;
     digitalWrite(pin, physicalState ? HIGH : LOW);
 
-    // Track off-time for minimum off-time protection
-    if (!state)
+    // Minimum off-time counts from the ON->OFF transition; a repeated OFF does not restart it
+    if (!state && wasOn)
     {
         _relayTimers[relayIndex].lastOffTime = millis();
     }
@@ -1126,7 +1128,8 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
     if (relayIndex >= kRelayStorageSize) return;
     if (_relayCount == 0 || relayIndex >= _relayCount) return;
 
-    // Check minimum off-time (only when turning ON)
+    // Remaining minimum off-time; an ON is deferred until it has elapsed (only when turning ON)
+    unsigned long minOffRemainingMs = 0;
     if (targetState && !_relayStates[relayIndex])
     {
         uint16_t minOffSeconds = 0;
@@ -1153,11 +1156,7 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
             long elapsed = (long)(now - _relayTimers[relayIndex].lastOffTime);
             if (elapsed >= 0 && (unsigned long)elapsed < minOffMillis)
             {
-                // Min off-time not yet elapsed
-                unsigned long remaining = minOffMillis - (unsigned long)elapsed;
-                logInfoP("Relay %d: Ignoring ON command (min off-time %ds not elapsed, %lus remaining)",
-                         relayIndex + 1, minOffSeconds, remaining / 1000);
-                return; // Block turn-on
+                minOffRemainingMs = minOffMillis - (unsigned long)elapsed;
             }
         }
     }
@@ -1198,10 +1197,12 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
     }
 #endif
 
-    // Cancel any pending timer for this relay
+    // Cancel any pending timer for this relay: the latest command wins
     _relayTimers[relayIndex].pendingChange = false;
 
-    if (delaySeconds == 0)
+    // The ON waits for the switch delay and for the rest of the minimum off-time, whichever is longer
+    const unsigned long waitMs = std::max<unsigned long>(delaySeconds * 1000UL, minOffRemainingMs);
+    if (waitMs == 0)
     {
         // No delay - execute immediately
         setRelayOutput(relayIndex, targetState);
@@ -1211,9 +1212,13 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
         // Schedule delayed execution
         _relayTimers[relayIndex].targetState = targetState;
         _relayTimers[relayIndex].pendingChange = true;
-        _relayTimers[relayIndex].triggerTime = millis() + (delaySeconds * 1000UL);
-        logInfoP("Relay %d change to %s scheduled in %d seconds",
-                 relayIndex + 1, targetState ? "ON" : "OFF", delaySeconds);
+        _relayTimers[relayIndex].triggerTime = millis() + waitMs;
+        if (minOffRemainingMs > delaySeconds * 1000UL)
+            logInfoP("Relay %d ON deferred %lus until the min off-time has elapsed",
+                     relayIndex + 1, (minOffRemainingMs + 999) / 1000);
+        else
+            logInfoP("Relay %d change to %s scheduled in %d seconds",
+                     relayIndex + 1, targetState ? "ON" : "OFF", delaySeconds);
     }
 }
 
