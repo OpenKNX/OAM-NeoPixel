@@ -1314,87 +1314,46 @@
                 <!-- END AUTO-GENERATED: External Relay UI -->
               </ParameterBlock>
               <!-- ========================================================================================================= -->
-              <!-- Strombegrenzung (Global) -->
-              <!-- ========================================================================================================= -->
-              <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimit" Text="Strombegrenzung" Icon="flash" HelpContext="NEO-Strombegrenzung" ShowInComObjectTree="true">
-              <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung (Global)" UIHint="Headline" />
-              <ParameterSeparator Id="%AID%_PS-nnn" Text="Intelligente Strombegrenzung mit automatischer Helligkeitsreduktion (ABL) schützt Netzteil und LED-Streifen vor Überlastung. Die Helligkeit wird dynamisch an den berechneten Stromverbrauch angepasst." />
-              <!-- Combined UI Dropdown -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" HelpContext="%DOC%"/>
-              <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
-                <when test="!=0">
-                  <!-- Not Deaktiviert -->
-                  <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101"> 
-                    <!-- Check which mode -->
-                    <when test="1"> 
-                      <!-- Fester Wert (mA) -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="2" HelpContext="%DOC%"/>
-                    </when>
-                    <when test="2"> 
-                      <!-- Pro LED (automatisch) -->
-                      <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="2" HelpContext="%DOC%"/>
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Physikalisch" Text="Physikalische LED Streifen" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalische LED-Streifen:" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie hier die Anzahl der angeschlossenen LED-Streifen. Konfigurieren Sie anschließend die einzelnen Streifen in dem Sie jeweils auf den jeweiligen LED-Streifen in der Baumstruktur klicken." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Bitte stellen Sie sicher, dass Sie auch nur die Anzahl an LED-Streifen konfigurieren, die Sie tatsächlich angeschlossen haben. Andernfalls kann es zu unerwartetem Verhalten kommen." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" />
+                <!-- LED Anzahl Strips -->
+                <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="1" HelpContext="%DOC%" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <!-- ========================================================================================================= -->
+                <!-- Strombegrenzung (Global) -->
+                <!-- ========================================================================================================= -->
+                <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimit" Text="Strombegrenzung" Icon="flash" HelpContext="NEO-Strombegrenzung" ShowInComObjectTree="true">
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung (Global)" UIHint="Headline" />
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Intelligente Strombegrenzung mit automatischer Helligkeitsreduktion (ABL) schützt Netzteil und LED-Streifen vor Überlastung. Die Helligkeit wird dynamisch an den berechneten Stromverbrauch angepasst." />
+                  <!-- Combined UI Dropdown -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" HelpContext="%DOC%"/>
+                  <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
+                    <when test="!=0">
+                      <!-- Not Deaktiviert -->
+                      <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101"> 
+                        <!-- Check which mode -->
+                        <when test="1"> 
+                          <!-- Fester Wert (mA) -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="2" HelpContext="%DOC%"/>
+                        </when>
+                        <when test="2"> 
+                          <!-- Pro LED (automatisch) -->
+                          <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="2" HelpContext="%DOC%"/>
+                        </when>
+                      </choose>
+                      <!-- Common parameters when enabled -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="2" HelpContext="%DOC%"/>
+                      <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="2" HelpContext="%DOC%"/>
                     </when>
                   </choose>
-                  <!-- Common parameters when enabled -->
-                  <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="2" HelpContext="%DOC%"/>
-                  <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="2" HelpContext="%DOC%"/>
-                  <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="2" HelpContext="%DOC%"/>
-                </when>
-              </choose>
-              <ParameterSeparator Id="%AID%_PS-nnn" Text="Globale Standardwerte für alle physischen LED-Streifen. Jeder physische LED-Streifen kann individuell eingestellt und überschrieben werden: Global verwenden, Benutzerdefiniert oder Deaktiviert." UIHint="Information" />
-              </ParameterBlock>
-              <!-- ========================================================================================================= -->
-              <!-- Effektmanager (Global)                                                                                   -->
-              <!-- ========================================================================================================= -->
-              <ParameterBlock Id="%AID%_PB-nnn" Name="Effektmanager" Text="Effektmanager" Icon="effectmanager" HelpContext="NEO-Effektmanager" ShowInComObjectTree="true">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager" UIHint="Headline" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ein Effektmanager ist eine gespeicherte Sequenz aus Cues (Szenen). Er wird per KO oder ETS-Startwert auf einem Segment gestartet und kann loopen oder in einen anderen EM übergehen." />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <!-- EM-Auswahltabelle (eine Zeile pro EM: Aktiv + Beschreibung) -->
-                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
-                  <when test="!=0">
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Kanalauswahl" UIHint="Headline" />
-                    <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
-                      <Rows>
-                        <Row Id="%AID%_PB-nnn_R-0" Name="Header" />
-                        <Row Id="%AID%_PB-nnn_R-1" Name="EM1" />
-                        <Row Id="%AID%_PB-nnn_R-2" Name="EM2" />
-                        <Row Id="%AID%_PB-nnn_R-3" Name="EM3" />
-                        <Row Id="%AID%_PB-nnn_R-4" Name="EM4" />
-                        <Row Id="%AID%_PB-nnn_R-5" Name="EM5" />
-                        <Row Id="%AID%_PB-nnn_R-6" Name="EM6" />
-                        <Row Id="%AID%_PB-nnn_R-7" Name="EM7" />
-                        <Row Id="%AID%_PB-nnn_R-8" Name="EM8" />
-                        <Row Id="%AID%_PB-nnn_R-9" Name="EM9" />
-                        <Row Id="%AID%_PB-nnn_R-10" Name="EM10" />
-                        <Row Id="%AID%_PB-nnn_R-11" Name="EM11" />
-                        <Row Id="%AID%_PB-nnn_R-12" Name="EM12" />
-                        <Row Id="%AID%_PB-nnn_R-13" Name="EM13" />
-                        <Row Id="%AID%_PB-nnn_R-14" Name="EM14" />
-                        <Row Id="%AID%_PB-nnn_R-15" Name="EM15" />
-                        <Row Id="%AID%_PB-nnn_R-16" Name="EM16" />
-                      </Rows>
-                      <Columns>
-                        <Column Id="%AID%_PB-nnn_C-1" Name="Zustand" Width="30%" />
-                        <Column Id="%AID%_PB-nnn_C-2" Name="EmNr"    Width="12%" />
-                        <Column Id="%AID%_PB-nnn_C-3" Name="EmName"  Width="58%" />
-                      </Columns>
-                      <!-- Header-Zeile (UIHint=Headline = fett, wie bei den Strip-Tabellen) -->
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Zustand"      UIHint="Headline" Cell="0,1"/>
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="EM"           UIHint="Headline" Cell="0,2"/>
-                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Beschreibung" UIHint="Headline" Cell="0,3"/>
-                      <!-- Eine Zeile pro EM via Template -->
-                      <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/EmTableRow/*" type="template" prefix="NEOEM" IsInner="true" />
-                    </ParameterBlock>
-                  </when>
-                </choose>
-                <!-- EM 1-16 via template — nur wenn Anzahl > 0 -->
-                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
-                  <when test="!=0">
-                    <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOEM" IsInner="true" />
-                  </when>
-                </choose>
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Globale Standardwerte für alle physischen LED-Streifen. Jeder physische LED-Streifen kann individuell eingestellt und überschrieben werden: Global verwenden, Benutzerdefiniert oder Deaktiviert." UIHint="Information" />
+                </ParameterBlock>
+                <op:include href="NeoPixel.Strip.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOSTRIP" IsInner="true" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Reihenfolge der physikalischen LED-Streifen werden in der Einstellung des Virtuellen LED-Streifens festgelegt." UIHint="Information" />
               </ParameterBlock>
               <!-- ========================================================================================================= -->
               <!-- KO-Tree: Strombegrenzung Hauptkategorie (nur für KOs) -->
@@ -1414,18 +1373,6 @@
                 <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitPhysKOs" Text="Physikalische LED Streifen" Icon="ledstrip" Inline="true" ShowInComObjectTree="true">
                   <op:include href="NeoPixel.Strip.templ.xml" xpath="//Dynamic/PowerLimitKOsBlock/*" type="template" prefix="NEOSTRIP" IsInner="true" />
                 </ParameterBlock>
-              </ParameterBlock>
-              <!-- ========================================================================================================= -->
-              <ParameterBlock Id="%AID%_PB-nnn" Name="Physikalisch" Text="Physikalische LED Streifen" Icon="ledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Physikalische LED-Streifen:" UIHint="Headline" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie hier die Anzahl der angeschlossenen LED-Streifen. Konfigurieren Sie anschließend die einzelnen Streifen in dem Sie jeweils auf den jeweiligen LED-Streifen in der Baumstruktur klicken." />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Bitte stellen Sie sicher, dass Sie auch nur die Anzahl an LED-Streifen konfigurieren, die Sie tatsächlich angeschlossen haben. Andernfalls kann es zu unerwartetem Verhalten kommen." />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" />
-                <!-- LED Anzahl Strips -->
-                <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="1" HelpContext="%DOC%" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <op:include href="NeoPixel.Strip.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOSTRIP" IsInner="true" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Reihenfolge der physikalischen LED-Streifen werden in der Einstellung des Virtuellen LED-Streifens festgelegt." UIHint="Information" />
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Virtuell" Text="Virtueller LED Streifen" Icon="vledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
                 <!-- Allgemein (aufgeloest aus fruehrem Subknoten): globale Aktualisierungsrate -->
@@ -2712,6 +2659,59 @@
                 <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEO" IsInner="true" />
                 <!-- ========================================================================================================= -->
                 
+              </ParameterBlock>
+              <!-- ========================================================================================================= -->
+              <!-- Effektmanager (Global)                                                                                   -->
+              <!-- ========================================================================================================= -->
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Effektmanager" Text="Effektmanager" Icon="effectmanager" HelpContext="NEO-Effektmanager" ShowInComObjectTree="true">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ein Effektmanager ist eine gespeicherte Sequenz aus Cues (Szenen). Er wird per KO oder ETS-Startwert auf einem Segment gestartet und kann loopen oder in einen anderen EM übergehen." />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
+                <!-- EM-Auswahltabelle (eine Zeile pro EM: Aktiv + Beschreibung) -->
+                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
+                  <when test="!=0">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Kanalauswahl" UIHint="Headline" />
+                    <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
+                      <Rows>
+                        <Row Id="%AID%_PB-nnn_R-0" Name="Header" />
+                        <Row Id="%AID%_PB-nnn_R-1" Name="EM1" />
+                        <Row Id="%AID%_PB-nnn_R-2" Name="EM2" />
+                        <Row Id="%AID%_PB-nnn_R-3" Name="EM3" />
+                        <Row Id="%AID%_PB-nnn_R-4" Name="EM4" />
+                        <Row Id="%AID%_PB-nnn_R-5" Name="EM5" />
+                        <Row Id="%AID%_PB-nnn_R-6" Name="EM6" />
+                        <Row Id="%AID%_PB-nnn_R-7" Name="EM7" />
+                        <Row Id="%AID%_PB-nnn_R-8" Name="EM8" />
+                        <Row Id="%AID%_PB-nnn_R-9" Name="EM9" />
+                        <Row Id="%AID%_PB-nnn_R-10" Name="EM10" />
+                        <Row Id="%AID%_PB-nnn_R-11" Name="EM11" />
+                        <Row Id="%AID%_PB-nnn_R-12" Name="EM12" />
+                        <Row Id="%AID%_PB-nnn_R-13" Name="EM13" />
+                        <Row Id="%AID%_PB-nnn_R-14" Name="EM14" />
+                        <Row Id="%AID%_PB-nnn_R-15" Name="EM15" />
+                        <Row Id="%AID%_PB-nnn_R-16" Name="EM16" />
+                      </Rows>
+                      <Columns>
+                        <Column Id="%AID%_PB-nnn_C-1" Name="Zustand" Width="30%" />
+                        <Column Id="%AID%_PB-nnn_C-2" Name="EmNr"    Width="12%" />
+                        <Column Id="%AID%_PB-nnn_C-3" Name="EmName"  Width="58%" />
+                      </Columns>
+                      <!-- Header-Zeile (UIHint=Headline = fett, wie bei den Strip-Tabellen) -->
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Zustand"      UIHint="Headline" Cell="0,1"/>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="EM"           UIHint="Headline" Cell="0,2"/>
+                      <ParameterSeparator Id="%AID%_PS-nnn" Text="Beschreibung" UIHint="Headline" Cell="0,3"/>
+                      <!-- Eine Zeile pro EM via Template -->
+                      <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/EmTableRow/*" type="template" prefix="NEOEM" IsInner="true" />
+                    </ParameterBlock>
+                  </when>
+                </choose>
+                <!-- EM 1-16 via template — nur wenn Anzahl > 0 -->
+                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
+                  <when test="!=0">
+                    <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOEM" IsInner="true" />
+                  </when>
+                </choose>
               </ParameterBlock>
             </Channel>
           </Dynamic>
