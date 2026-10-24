@@ -3,7 +3,7 @@
 <KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <op:config href="NeoPixel.conf.xml" />
   <!-- Marketing-Text-Version (Allgemein-Seite). Pro Variante, in Sync mit ApplicationVersion unten halten. -->
-  <op:config name="%NEO_ProductVersion%" value="0.6" />
+  <op:config name="%NEO_ProductVersion%" value="0.11" />
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="0"
