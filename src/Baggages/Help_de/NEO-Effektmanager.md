@@ -63,7 +63,7 @@ Die Laufzeit-Steuerung gehört zum **Segment** — es läuft immer nur **ein** E
 Jeder Cue wird im gleichnamigen Unterblock konfiguriert:
 
 - **Effekt** – Welcher Lichteffekt gespielt wird (Effekt-ID aus der Effektliste)
-- **Parameter 1–5** – Effektspezifische Einstellungen (z. B. Geschwindigkeit, Farbe)
+- **Effekt-Parameter** – bis zu 10 effektspezifische Einstellungen (z. B. Geschwindigkeit, Intensität); welche erscheinen, hängt vom gewählten Effekt ab
 - **R / G / B / W** – Basisfarbe des Effekts (0–255 je Kanal)
 - **Helligkeit** – Maximale Helligkeit während dieser Cue (0–255)
 - **Dauer (s)** – Wie lange diese Cue gespielt wird (0 = dauerhaft, 65535 = bis Effekt fertig)

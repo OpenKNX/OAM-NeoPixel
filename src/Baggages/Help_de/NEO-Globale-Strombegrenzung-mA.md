@@ -1,6 +1,6 @@
 ### Globale Strombegrenzung (mA)
 
-Der maximale Strom in Milliampere (mA), der von allen LED-Kanälen zusammen verbraucht werden darf. Wird nur verwendet wenn "Strombegrenzung Typ" auf "Global" gesetzt ist.
+Der maximale Strom in Milliampere (mA), den alle Streifen mit „Global verwenden“ zusammen verbrauchen dürfen. Wird nur verwendet, wenn „Strombegrenzung“ auf „Fester Wert (mA)“ steht. Diese Streifen erhalten gemeinsam einen Faktor: bis zum „Strombegrenzung Schwellwert“ keine Reduzierung, zwischen Schwellwert und Grenze linear bis auf die „Auto-Helligkeitsbegrenzung“, oberhalb der Grenze 95 % der Grenze, höchstens aber die „Auto-Helligkeitsbegrenzung“ (bei Schwellwert 100 %: nur die Skalierung auf 95 % der Grenze).
 
 **Berechnung des Grenzwertes:**
 

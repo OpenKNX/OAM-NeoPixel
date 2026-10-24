@@ -84,7 +84,13 @@ Jeder Strip kann eigene Einstellungen haben oder globale nutzen.
 ---
 
 ## Funktionsweise:
-Kontinuierliche Überwachung des berechneten Stromverbrauchs · Automatische Reduzierung der Helligkeit bei Überschreitung · Sanfte Übergänge ohne sichtbares Flackern
+Der Stromverbrauch wird in jedem Bild aus den Pixelwerten berechnet.
+
+In allen Modi gilt dieselbe Kurve: Bis zum Schwellwert keine Reduzierung; zwischen Schwellwert und Grenze sinkt die Helligkeit linear von 100 % auf den Wert der „Auto-Helligkeitsbegrenzung“; oberhalb der Grenze wird auf 95 % der Grenze skaliert, aber nie heller als an der Grenze. Bei Schwellwert 100 % gibt es keine Übergangszone: volle Helligkeit bis zur Grenze, darüber Skalierung auf 95 % der Stromgrenze. Mit der Voreinstellung 100 % für die Auto-Helligkeitsbegrenzung wird zwischen Schwellwert und Grenze nicht reduziert.
+
+- **Global „Fester Wert (mA)“:** Alle Streifen mit „Global verwenden“ teilen sich die globale Stromgrenze und erhalten gemeinsam einen Faktor, berechnet mit dem globalen Schwellwert und der globalen Auto-Helligkeitsbegrenzung. Eine Reduzierung wirkt sofort; das Wiederansteigen folgt der „Anstiegszeit ABL“.
+- **Global „Pro LED (automatisch)“:** Jeder Streifen mit „Global verwenden“ erhält die Grenze LED-Anzahl × mA/LED und wird einzeln begrenzt, mit dem globalen Schwellwert und der globalen Auto-Helligkeitsbegrenzung.
+- **Streifen mit eigener Grenze** („Fester Wert“ oder „Pro LED“): einzeln begrenzt mit dem Schwellwert und der Auto-Helligkeitsbegrenzung des Streifens; die Begrenzung wirkt im selben Bild, ohne zeitlichen Übergang.
 
 ## Auswahlhilfe:
 
