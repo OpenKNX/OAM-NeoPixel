@@ -11,7 +11,7 @@
   <op:config name="%NET_VerifyVersion%" value="0.9" />
   <op:config name="%NEO_VerifyVersion%" value="0.5" />
   <op:config name="%FCB_VerifyVersion%" value="0.10" />
-  <op:config name="%LMG_VerifyVersion%" value="0.3" />
+  <op:config name="%LMG_VerifyVersion%" value="0.4" />
 
   <op:config name="%LOG_EnableSave%" value="0" />
   <op:config name="%NET_ServiceHTTP%" value="1" />

@@ -19,7 +19,8 @@ Der ausgewählte Lichtmanager liefert die aktuelle Farbtemperatur. NeoPixel bere
 ## Voraussetzungen
 
 - Der OFM-LightManager muss im Gerät eingebunden und aktiviert sein.
-- Die Anzahl sichtbarer Lichtmanager muss ausreichend konfiguriert sein.
+- Der gewählte Lichtmanager muss unter Lichtmanager → Kanalauswahl auf „Aktiviert“ stehen und darf nicht „Suspendiert“ sein, sonst bleibt die HCL-Anwendung ohne Wirkung.
+- Nach einem ETS-Update von einer älteren Applikation sind alle Lichtmanager deaktiviert und müssen in der Kanalauswahl wieder aktiviert werden; ihre Einstellungen bleiben erhalten.
 
 ## Empfehlung
 Verwenden Sie hier den Lichtmanager, der die zentrale Tageslicht- oder Raumlogik für mehrere Segmente bereitstellt.
