@@ -4858,6 +4858,77 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
 // Power Management Implementation
 // ============================================================================
 
+/**
+ * @brief LED current profile used to measure the strips: the ETS "Strom pro LED" split per channel
+ *        count, or the default profile of the strip type.
+ * @note Also used while global limiting is disabled, so a strip with its own limit is measured the same way.
+ */
+LedCurrentProfile NeoPixelBusModule::powerMeasureProfile(uint8_t currentPerLed, bool perLedMode) const
+{
+    LedCurrentProfile profile;
+
+    // Check if we have any RGBW (4-channel) or RGBCCT (5-channel) strips
+    bool hasRgbwStrip = false;
+    bool hasRgbcctStrip = false;
+    for (const auto& strip : _physicalStrips)
+    {
+        if (strip)
+        {
+            ColorOrder order = strip->getColorOrder();
+            // 5-channel: RGBCCT, GRBCCT, RGBCTW, GRBCTW
+            if (order == ColorOrder::RGBCCT || order == ColorOrder::GRBCCT ||
+                order == ColorOrder::RGBCTW || order == ColorOrder::GRBCTW)
+            {
+                hasRgbcctStrip = true;
+                break; // 5-channel is the maximum
+            }
+            // 4-channel: RGBW, GRBW
+            else if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
+            {
+                hasRgbwStrip = true;
+            }
+        }
+    }
+
+    if (currentPerLed > 0 && !perLedMode)
+    {
+        // User specified custom current per LED
+        // For RGB: divide by 3, RGBW: divide by 4, RGBCCT: divide by 5
+        if (hasRgbcctStrip)
+        {
+            uint8_t perChannel = currentPerLed / 5;
+            profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel, perChannel);
+        }
+        else if (hasRgbwStrip)
+        {
+            uint8_t perChannel = currentPerLed / 4;
+            profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel);
+        }
+        else
+        {
+            uint8_t perChannel = currentPerLed / 3;
+            profile = LedCurrentProfile(perChannel, perChannel, perChannel, 0);
+        }
+    }
+    else
+    {
+        // Use default profile based on strip type
+        if (hasRgbcctStrip)
+        {
+            profile = LedProfiles::SK6812_RGBCCT;
+        }
+        else if (hasRgbwStrip)
+        {
+            profile = LedProfiles::SK6812_RGBW;
+        }
+        else
+        {
+            profile = LedProfiles::WS2812B;
+        }
+    }
+    return profile;
+}
+
 void NeoPixelBusModule::configurePowerManagement()
 {
     auto mgr = _neoPixel.getManager();
@@ -4930,73 +5001,10 @@ void NeoPixelBusModule::configurePowerManagement()
         // Set brightness slew rate
         powerManager->setBrightnessSlewRate(ablSlewRate);
 
-        // Configure LED current profile based on ETS settings and detected strip type
-        LedCurrentProfile profile;
-
-        // Check if we have any RGBW (4-channel) or RGBCCT (5-channel) strips
-        bool hasRgbwStrip = false;
-        bool hasRgbcctStrip = false;
-        for (const auto& strip : _physicalStrips)
-        {
-            if (strip)
-            {
-                ColorOrder order = strip->getColorOrder();
-                // 5-channel: RGBCCT, GRBCCT, RGBCTW, GRBCTW
-                if (order == ColorOrder::RGBCCT || order == ColorOrder::GRBCCT ||
-                    order == ColorOrder::RGBCTW || order == ColorOrder::GRBCTW)
-                {
-                    hasRgbcctStrip = true;
-                    break; // 5-channel is the maximum
-                }
-                // 4-channel: RGBW, GRBW
-                else if (order == ColorOrder::RGBW || order == ColorOrder::GRBW)
-                {
-                    hasRgbwStrip = true;
-                }
-            }
-        }
-
         // Hand the raw ETS value to the manager: it splits it per protocol, so a
         // 4-channel and a 5-channel strip on the same device are each measured right.
         powerManager->setCurrentPerLedMa(currentPerLed);
-
-        if (currentPerLed > 0 && mode != PowerLimitMode::PER_LED)
-        {
-            // User specified custom current per LED
-            // For RGB: divide by 3, RGBW: divide by 4, RGBCCT: divide by 5
-            if (hasRgbcctStrip)
-            {
-                uint8_t perChannel = currentPerLed / 5;
-                profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel, perChannel);
-            }
-            else if (hasRgbwStrip)
-            {
-                uint8_t perChannel = currentPerLed / 4;
-                profile = LedCurrentProfile(perChannel, perChannel, perChannel, perChannel);
-            }
-            else
-            {
-                uint8_t perChannel = currentPerLed / 3;
-                profile = LedCurrentProfile(perChannel, perChannel, perChannel, 0);
-            }
-        }
-        else
-        {
-            // Use default profile based on strip type
-            if (hasRgbcctStrip)
-            {
-                profile = LedProfiles::SK6812_RGBCCT;
-            }
-            else if (hasRgbwStrip)
-            {
-                profile = LedProfiles::SK6812_RGBW;
-            }
-            else
-            {
-                profile = LedProfiles::WS2812B;
-            }
-        }
-
+        const LedCurrentProfile profile = powerMeasureProfile(currentPerLed, mode == PowerLimitMode::PER_LED);
         powerManager->setLedProfile(profile);
 
         // Log configuration
@@ -5022,6 +5030,10 @@ void NeoPixelBusModule::configurePowerManagement()
     }
     else
     {
+        // Strips with their own limit are still limited: measure them like with global limiting
+        const uint8_t currentPerLed = (uint8_t)ParamNEO_NEOcurrentPerLED;
+        powerManager->setCurrentPerLedMa(currentPerLed);
+        powerManager->setLedProfile(powerMeasureProfile(currentPerLed, false));
         logInfoP("Power Management: DISABLED");
     }
 }
@@ -6073,18 +6085,6 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
 
     bool isEnabled = mgr->getPowerManager()->isEnabled();
 
-    // If power management is disabled, send 0 values to ensure KOs are readable
-    if (!isEnabled)
-    {
-        queuePowerKo(KoNEO_PowerCurrentTotal, (uint32_t)0, DPT_Value_2_Ucount, powerCurrentMinDelta(0));
-        queuePowerKo(KoNEO_PowerLoadTotal, (uint8_t)0, DPT_Scaling, kPowerLoadMinDelta);
-        // logDebugP("Power management disabled - sent zero values for power KOs");
-        clearAblWarning();
-        return;
-    }
-
-    PowerLimitMode mode = mgr->getPowerManager()->getPowerLimitMode();
-
     // ABL warning: on if any frame since the last sample was limited, off after a sample interval without
     if (mgr->takePowerLimitSeen())
     {
@@ -6100,6 +6100,37 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
     {
         clearAblWarning();
     }
+
+    // Global limiting disabled: the totals report 0; strips with their own limit are still limited
+    // by the manager and report their objects
+    if (!isEnabled)
+    {
+        queuePowerKo(KoNEO_PowerCurrentTotal, (uint32_t)0, DPT_Value_2_Ucount, powerCurrentMinDelta(0));
+        queuePowerKo(KoNEO_PowerLoadTotal, (uint8_t)0, DPT_Scaling, kPowerLoadMinDelta);
+        for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
+        {
+            auto* phys = _physicalStrips[i];
+            auto* cfg = phys ? phys->getConfig() : nullptr;
+            if (!cfg) continue;
+            const uint8_t stripMode = cfg->getPowerLimitMode();
+            if (stripMode != 2 && stripMode != 3) continue; // objects exist only for an own limit
+
+            uint32_t stripCurrent = 0;
+            uint32_t stripLimit = 0;
+            uint8_t stripLoad = 0;
+            if (!mgr->getStripPowerStats(phys, stripCurrent, stripLimit, stripLoad) && !_powerKoDark) continue; // not measured yet
+
+            const uint8_t savedChannelIndex = _channelIndex;
+            _channelIndex = i;
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(stripLimit));
+            queuePowerKo(KoNEOSTRIP_PowerLoad, stripLoad, DPT_Scaling, kPowerLoadMinDelta);
+            queuePowerKo(KoNEOSTRIP_PowerWatts, phys->getPowerWatts(stripCurrent), DPT_Value_Power, kPowerWattsMinDelta);
+            _channelIndex = savedChannelIndex;
+        }
+        return;
+    }
+
+    PowerLimitMode mode = mgr->getPowerManager()->getPowerLimitMode();
 
     if (mode == PowerLimitMode::GLOBAL)
     {

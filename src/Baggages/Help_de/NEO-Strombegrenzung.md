@@ -19,7 +19,7 @@ Die benötigte Netzteilleistung berechnet sich wie folgt:
 **Beispiel:** Eingestellter Maximalstrom: 8000 mA → Berechnung: (8000 × 5) ÷ 1000 = 40 Watt → **Empfehlung: 40W + 20% Reserve = mindestens 48W Netzteil**
 
 **Hinweis:** 
-Bei aktiver Strombegrenzung wird der berechnete Stromverbrauch über die Objekte „Stromverbrauch Gesamt“, „Auslastung Gesamt“ und „Leistung Gesamt“ (sowie je Streifen) gemeldet. Die Werte werden alle 5 s geprüft und erst nach der Startverzögerung gesendet. Gesendet wird eine Änderung ab 50 mA bzw. 2 % der Stromgrenze (der größere Wert), ab 2 Prozentpunkten Auslastung oder ab 1 W Leistung sowie der Rückgang auf 0. Die Telegramme werden nacheinander über die Sendebegrenzung der Status-Objekte gesendet (nach einem kurzen Schub höchstens eines je 100 ms, gemeinsam mit den Status-Objekten); kann eine Prüfung nicht alle senden, beginnt die nächste Prüfung mit dem ersten noch nicht gesendeten Objekt. Lässt „Alle LEDs“ AUS alle Segmente dunkel, werden 0 mA, 0 % und 0 W gemeldet.
+Der berechnete Stromverbrauch wird über die Objekte „Stromverbrauch Gesamt“, „Auslastung Gesamt“ und „Leistung Gesamt“ gemeldet, solange die globale Strombegrenzung aktiv ist, und je Streifen über dessen Objekte (bei „Fester Wert“ oder „Pro LED“ am Streifen auch mit global „Deaktiviert“). Die Werte werden alle 5 s geprüft und erst nach der Startverzögerung gesendet. Gesendet wird eine Änderung ab 50 mA bzw. 2 % der Stromgrenze (der größere Wert), ab 2 Prozentpunkten Auslastung oder ab 1 W Leistung sowie der Rückgang auf 0. Die Telegramme werden nacheinander über die Sendebegrenzung der Status-Objekte gesendet (nach einem kurzen Schub höchstens eines je 100 ms, gemeinsam mit den Status-Objekten); kann eine Prüfung nicht alle senden, beginnt die nächste Prüfung mit dem ersten noch nicht gesendeten Objekt. Lässt „Alle LEDs“ AUS alle Segmente dunkel, werden 0 mA, 0 % und 0 W gemeldet.
 
 Solange die Strombegrenzung die Helligkeit reduziert, pulsiert die Status-LED orange; die Anzeige endet bei der nächsten Prüfung (alle 5 s) ohne Reduzierung. Sie hat Vorrang vor den anderen Warnungen (lila: gespeicherte Daten verworfen, gelb: unbekannter Effekt); eine solche Warnung wird danach wieder angezeigt.
 
@@ -28,11 +28,13 @@ Solange die Strombegrenzung die Helligkeit reduziert, pulsiert die Status-LED or
 ## Verfügbare Modi:
 
 ### Deaktiviert
-Strombegrenzung ist ausgeschaltet. Keine automatische Helligkeitsreduzierung.
+Global: Streifen mit „Global verwenden“ werden nicht begrenzt; Streifen mit eigener Grenze („Fester Wert“ oder „Pro LED“) werden weiter begrenzt. Am Streifen: dieser Streifen wird nicht begrenzt.
 
-**Verwendung nur wenn:** Professionelle Installation mit überdimensioniertem Netzteil ODER Spezielle Anwendungen die maximale Helligkeit erfordern ODER Kontrollierte Testumgebungen
+**Verwendung:** Global „Deaktiviert“ mit eigener Grenze je Streifen, wenn jeder Streifen ein eigenes Netzteil hat. Ein Streifen ganz ohne Begrenzung nur mit überdimensioniertem Netzteil oder in einer Testumgebung.
 
-⚠️ **Warnung:** Ohne Strombegrenzung besteht Überlastungsgefahr!
+⚠️ **Warnung:** Ein Streifen ohne Strombegrenzung kann sein Netzteil überlasten!
+
+Gemessen wird auch bei global „Deaktiviert“ mit dem globalen Wert „Strom pro LED“ (Standard 60 mA), der in der ETS nur bei „Pro LED (automatisch)“ angezeigt wird.
 
 ### Global verwenden
 Nutzt die global konfigurierten Strombegrenzungs-Einstellungen.
@@ -41,7 +43,7 @@ Nutzt die global konfigurierten Strombegrenzungs-Einstellungen.
 
 **Empfohlen für:** Mehrere Strips an einem gemeinsamen Netzteil · Einheitliche Konfiguration über alle Strips · Vereinfachte Verwaltung
 
-**Hinweis:** Dies ist die Standardeinstellung für physische LED-Streifen.
+**Hinweis:** Dies ist die Standardeinstellung für physische LED-Streifen. Steht die globale Strombegrenzung auf „Deaktiviert“, wird ein solcher Streifen nicht begrenzt.
 
 ### Benutzerdefiniert (Fester Wert)
 Ein fester Stromgrenzwert in Milliampere speziell für diesen Strip.
@@ -85,7 +87,7 @@ Jeder Strip kann eigene Einstellungen haben oder globale nutzen.
 ---
 
 ## Funktionsweise:
-Der Stromverbrauch wird bei aktiver Strombegrenzung in jedem Bild aus den Pixelwerten berechnet. Steht die Strombegrenzung auf „Deaktiviert“, wird er nur noch einmal je Sekunde für die Konsole berechnet; „Stromverbrauch Gesamt“ und „Auslastung Gesamt“ melden dann 0, die übrigen Objekte senden nicht.
+Der Stromverbrauch wird bei aktiver Strombegrenzung in jedem Bild aus den Pixelwerten berechnet. Steht die Strombegrenzung auf „Deaktiviert“, wird er nur noch einmal je Sekunde für die Konsole berechnet; „Stromverbrauch Gesamt“ und „Auslastung Gesamt“ melden dann 0. Streifen mit eigener Grenze („Fester Wert“ oder „Pro LED“) werden auch dann in jedem Bild begrenzt und melden ihre Objekte; bei einer Grenze von 0 mA wird nur gemessen. Streifen mit Taktleitung (SPI, z. B. APA102/SK9822) werden gemessen, aber nicht gedimmt.
 
 In allen Modi gilt dieselbe Kurve: Bis zum Schwellwert keine Reduzierung; zwischen Schwellwert und Grenze sinkt die Helligkeit linear von 100 % auf den Wert der „Auto-Helligkeitsbegrenzung“; oberhalb der Grenze wird auf 95 % der Grenze skaliert, aber nie heller als an der Grenze. Bei Schwellwert 100 % gibt es keine Übergangszone: volle Helligkeit bis zur Grenze, darüber Skalierung auf 95 % der Stromgrenze. Mit der Voreinstellung 100 % für die Auto-Helligkeitsbegrenzung wird zwischen Schwellwert und Grenze nicht reduziert.
 
@@ -99,4 +101,4 @@ In allen Modi gilt dieselbe Kurve: Bis zum Schwellwert keine Reduzierung; zwisch
 - **1 Netzteil pro Strip:** Global deaktiviert, pro Strip eigene Einstellungen
 - **Gemischt:** Global für Haupt-Strips, einzelne Strips mit eigenen Einstellungen
 
-**Empfehlung:** Strombegrenzung immer aktiviert lassen, außer in kontrollierten Testumgebungen. Die Strombegrenzung ist ein wichtiges Sicherheitsfeature.
+**Empfehlung:** Jeden Streifen begrenzen, global oder mit eigener Grenze; ohne Begrenzung nur in einer Testumgebung.

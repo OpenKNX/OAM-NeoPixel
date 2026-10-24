@@ -534,6 +534,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void drainPowerKos();                   // Send pending round telegrams while status credits last
     static KNXValue powerKoValue(double value, const Dpt& type);
     void clearAblWarning();        // End an active ABL warning
+    LedCurrentProfile powerMeasureProfile(uint8_t currentPerLed, bool perLedMode) const; // LED profile for power measurement
     // Power monitoring KO: sent on the first value, a drop to 0 or a change >= minDelta; one status credit each
     bool sendPowerKo(GroupObject& ko, const KNXValue& value, const Dpt& type, double minDelta);
     static double powerCurrentMinDelta(uint32_t limitMa); // max(50 mA, 2 % of the limit)
