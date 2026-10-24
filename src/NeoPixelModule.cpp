@@ -5585,9 +5585,9 @@ void NeoPixelBusModule::updateHclTransformContext()
         Segment* seg = _hclTransformContext.segments[segIdx];
         if (!seg) continue;
 
+        // Physical range: getLength() is the grouped length or the Effektkette band length
         const uint16_t startLed = seg->getStartLed();
-        const uint16_t length = seg->getLength();
-        const uint16_t endLed = startLed + length;
+        const uint32_t endLed = (uint32_t)startLed + seg->getPhysicalLength();
 
         // Mark all pixels of this segment
         for (uint16_t pixelIdx = startLed; pixelIdx < endLed && pixelIdx < totalLEDs; pixelIdx++)
