@@ -1562,6 +1562,19 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             return;
         }
 
+        // An unknown or disabled effect ID maps to Solid: ignore it before it takes over an EM,
+        // is saved or synced as that ID.
+        if (koIndex == NEO_KoFx)
+        {
+            const uint8_t fxId = ko.value(DPT_Value_1_Ucount);
+            if (getTypeFromEffect(getEffectFromType(fxId)) != fxId)
+            {
+                logWarningP("Segment %d: effect ID %d unknown - ignored", channel, fxId);
+                _channelIndex = oldChannelIndex;
+                return;
+            }
+        }
+
         // A scene number not configured on this segment (recall or learn) changes nothing: ignore it
         // before it overrides an Effektkette master.
         if (koIndex == NEO_KoScene && _sceneManager)
@@ -1958,22 +1971,22 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             case NEO_KoFxRel:
             {
                 // "Effekt schalten" (DPT 3.7), 4-bit dim control: bit3 = direction (1=next,
-                // 0=previous), bits0-2 = step (0 = stop/no-op). Steps by one effect ID through
-                // the EffectPool.
+                // 0=previous), bits0-2 = step (0 = stop/no-op). Steps to the neighbouring effect ID;
+                // IDs without an effect (unknown or disabled) are skipped.
                 uint8_t raw = ko.value(Dpt(5, 10));
                 if ((raw & 0x07) != 0)
                 {
-                    uint8_t cur = getTypeFromEffect(targetSegment->getEffect());
-                    uint8_t count = EffectPool::getEffectCount();
+                    const uint8_t cur = getTypeFromEffect(targetSegment->getEffect());
                     uint8_t next = cur;
-                    if (raw & 0x08)
+                    // Same validity rule as the Fx object: the ID must map to its own effect
+                    for (int id = (raw & 0x08) ? cur + 1 : cur - 1; id >= 0 && id <= 254; id += (raw & 0x08) ? 1 : -1)
                     {
-                        if ((uint8_t)(cur + 1) < count) next = cur + 1;
-                    } // next
-                    else
-                    {
-                        if (cur > 0) next = cur - 1;
-                    } // previous
+                        if (getTypeFromEffect(getEffectFromType((uint8_t)id)) == (uint8_t)id)
+                        {
+                            next = (uint8_t)id;
+                            break;
+                        }
+                    }
                     if (next != cur)
                     {
                         logInfoP("Segment %d Effekt schalten: %d -> %d", channel, cur, next);
