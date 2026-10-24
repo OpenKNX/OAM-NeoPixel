@@ -223,7 +223,7 @@ void NeoPixelBusModule::setup(bool configured)
 
         // Initialize HCL status KOs from the current LightManager snapshot.
         refreshHclMasterStateCache();
-        sendPowerMonitoringKOs(); // Update Power monitoring KOs
+        // Power monitoring KOs go out from loop(), after the startup delay
     }
     else
     {
@@ -345,6 +345,7 @@ void NeoPixelBusModule::loop(bool configured)
         _neoPixel.loopOffRefresh();
         _renderPaused = true;
         clearAblWarning(); // nothing is rendered, so nothing is limited
+        if (!_localTestMode && _statusSeeded) loopPowerMonitoring(true); // reports 0 while dark
         return;
     }
 
@@ -360,17 +361,20 @@ void NeoPixelBusModule::loop(bool configured)
     // Call library loop() for auto-update timer and effect processing
     _neoPixel.loop(configured);
 
-    // Send power monitoring KOs periodically (KO writes — skip without ETS config)
-    if (!_localTestMode)
+    // Power monitoring KOs (KO writes — skip without ETS config); first values after the startup
+    // restore, changes below the thresholds of sendPowerKo() are not sent
+    if (!_localTestMode && _statusSeeded) loopPowerMonitoring(false);
+}
+
+void NeoPixelBusModule::loopPowerMonitoring(bool dark)
+{
+    unsigned long now = millis();
+    if (now - _lastPowerMonitoringMs >= _powerMonitoringIntervalMs)
     {
-        unsigned long now = millis();
-        if (now - _lastPowerMonitoringMs >= _powerMonitoringIntervalMs)
-        {
-            _lastPowerMonitoringMs = now;
-            // logDebugP("Power monitoring update: Sending KOs");
-            sendPowerMonitoringKOs();
-        }
+        _lastPowerMonitoringMs = now;
+        sendPowerMonitoringKOs(dark);
     }
+    drainPowerKos();
 }
 
 void NeoPixelBusModule::showVirtualStripIfIdle()
@@ -6046,20 +6050,26 @@ void NeoPixelBusModule::clearAblWarning()
     }
 }
 
-void NeoPixelBusModule::sendPowerMonitoringKOs()
+void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
 {
     auto* mgr = _neoPixel.getManager();
     if (!mgr) return;
+
+    // A round that ran out of status credits continues at its next KO, so no KO is starved
+    _powerKoStart = (_powerKoCount > 0 && _powerKoDone < _powerKoCount)
+                        ? (uint8_t)((_powerKoStart + _powerKoDone) % _powerKoCount)
+                        : 0;
+    _powerKoCount = 0;
+    _powerKoDone = 0;
+    _powerKoDark = dark;
 
     bool isEnabled = mgr->getPowerManager()->isEnabled();
 
     // If power management is disabled, send 0 values to ensure KOs are readable
     if (!isEnabled)
     {
-        if (KoNEO_PowerCurrentTotal.valueNoSendCompare((uint32_t)0, DPT_Value_2_Ucount))
-            KoNEO_PowerCurrentTotal.objectWritten();
-        if (KoNEO_PowerLoadTotal.valueNoSendCompare((uint8_t)0, DPT_Scaling))
-            KoNEO_PowerLoadTotal.objectWritten();
+        queuePowerKo(KoNEO_PowerCurrentTotal, (uint32_t)0, DPT_Value_2_Ucount, powerCurrentMinDelta(0));
+        queuePowerKo(KoNEO_PowerLoadTotal, (uint8_t)0, DPT_Scaling, kPowerLoadMinDelta);
         // logDebugP("Power management disabled - sent zero values for power KOs");
         clearAblWarning();
         return;
@@ -6091,11 +6101,8 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
         mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
 
         // Global KOs
-        if (KoNEO_PowerCurrentTotal.valueNoSendCompare(currentMa, DPT_Value_2_Ucount))
-            KoNEO_PowerCurrentTotal.objectWritten();
-
-        if (KoNEO_PowerLoadTotal.valueNoSendCompare(loadPercent, DPT_Scaling))
-            KoNEO_PowerLoadTotal.objectWritten();
+        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+        queuePowerKo(KoNEO_PowerLoadTotal, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
 
         // Calculate total power in watts (sum of all UseGlobal strips)
         float totalWatts = 0.0f;
@@ -6114,11 +6121,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
             totalWatts += phys->getPowerWatts(stripCurrent);
         }
 
-        if (KoNEO_PowerWattsTotal.valueNoSendCompare(totalWatts, DPT_Value_Power))
-        {
-            // logDebugP("Updating KoNEO_PowerWattsTotal: %f W", totalWatts);
-            KoNEO_PowerWattsTotal.objectWritten();
-        }
+        queuePowerKo(KoNEO_PowerWattsTotal, totalWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
         // Per-strip KOs (for ALL strips, regardless of power mode)
         for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
@@ -6143,6 +6146,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
 
                 // Calculate load percentage (if limit configured)
                 uint16_t limit = cfg->getMaxCurrentMa();
+                stripLimit = limit;
                 if (limit > 0)
                     stripLoad = (uint8_t)((stripCurrent * 100) / limit);
             }
@@ -6153,23 +6157,9 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
             uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
 
-            if (KoNEOSTRIP_PowerCurrent.valueNoSendCompare(stripCurrent, DPT_Value_2_Ucount))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerCurrent for strip %u: %u mA", (unsigned)i, stripCurrent);
-                KoNEOSTRIP_PowerCurrent.objectWritten();
-            }
-
-            if (KoNEOSTRIP_PowerLoad.valueNoSendCompare(stripLoad, DPT_Scaling))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerLoad for strip %u: %u %%", (unsigned)i, stripLoad);
-                KoNEOSTRIP_PowerLoad.objectWritten();
-            }
-
-            if (KoNEOSTRIP_PowerWatts.valueNoSendCompare(stripWatts, DPT_Value_Power))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerWatts for strip %u: %f W", (unsigned)i, stripWatts);
-                KoNEOSTRIP_PowerWatts.objectWritten();
-            }
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(stripLimit));
+            queuePowerKo(KoNEOSTRIP_PowerLoad, stripLoad, DPT_Scaling, kPowerLoadMinDelta);
+            queuePowerKo(KoNEOSTRIP_PowerWatts, stripWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
             _channelIndex = savedChannelIndex;
         }
@@ -6183,16 +6173,8 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
         // Global KOs (sum of all strips)
         mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
 
-        if (KoNEO_PowerCurrentTotal.valueNoSendCompare(currentMa, DPT_Value_2_Ucount))
-        {
-            // logDebugP("Updating KoNEO_PowerCurrentTotal: %u mA", currentMa);
-            KoNEO_PowerCurrentTotal.objectWritten();
-        }
-        if (KoNEO_PowerLoadTotal.valueNoSendCompare(loadPercent, DPT_Scaling))
-        {
-            // logDebugP("Updating KoNEO_PowerLoadTotal: %u %%", loadPercent);
-            KoNEO_PowerLoadTotal.objectWritten();
-        }
+        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+        queuePowerKo(KoNEO_PowerLoadTotal, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
 
         // Calculate total power in watts (use cached values from applyPowerLimit)
         float totalWatts = 0.0f;
@@ -6218,11 +6200,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
             }
         }
 
-        if (KoNEO_PowerWattsTotal.valueNoSendCompare(totalWatts, DPT_Value_Power))
-        {
-            // logDebugP("Updating KoNEO_PowerWattsTotal: %f W", totalWatts);
-            KoNEO_PowerWattsTotal.objectWritten();
-        }
+        queuePowerKo(KoNEO_PowerWattsTotal, totalWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
         // Per-strip KOs (for ALL strips)
         for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
@@ -6244,6 +6222,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
 
                 // Fallback load calculation
                 uint16_t stripLimit = cfg->getMaxCurrentMa();
+                limitMa = stripLimit;
                 if (stripLimit > 0)
                     loadPercent = (uint8_t)((stripCurrent * 100) / stripLimit);
                 else
@@ -6261,23 +6240,9 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
             uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
 
-            if (KoNEOSTRIP_PowerCurrent.valueNoSendCompare(stripCurrent, DPT_Value_2_Ucount))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerCurrent for strip %u: %u mA", (unsigned)i, stripCurrent);
-                KoNEOSTRIP_PowerCurrent.objectWritten();
-            }
-
-            if (KoNEOSTRIP_PowerLoad.valueNoSendCompare(loadPercent, DPT_Scaling))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerLoad for strip %u: %u %%", (unsigned)i, loadPercent);
-                KoNEOSTRIP_PowerLoad.objectWritten();
-            }
-
-            if (KoNEOSTRIP_PowerWatts.valueNoSendCompare(stripWatts, DPT_Value_Power))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerWatts for strip %u: %f W", (unsigned)i, stripWatts);
-                KoNEOSTRIP_PowerWatts.objectWritten();
-            }
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+            queuePowerKo(KoNEOSTRIP_PowerLoad, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
+            queuePowerKo(KoNEOSTRIP_PowerWatts, stripWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
             _channelIndex = savedChannelIndex;
         }
@@ -6291,17 +6256,8 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
         // Global KOs (sum of all strips)
         mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
 
-        if (KoNEO_PowerCurrentTotal.valueNoSendCompare(currentMa, DPT_Value_2_Ucount))
-        {
-            // logDebugP("Updating KoNEO_PowerCurrentTotal: %u mA", currentMa);
-            KoNEO_PowerCurrentTotal.objectWritten();
-        }
-
-        if (KoNEO_PowerLoadTotal.valueNoSendCompare(loadPercent, DPT_Scaling))
-        {
-            // logDebugP("Updating KoNEO_PowerLoadTotal: %u %%", loadPercent);
-            KoNEO_PowerLoadTotal.objectWritten();
-        }
+        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+        queuePowerKo(KoNEO_PowerLoadTotal, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
 
         // Calculate total power in watts (use cached values from applyPowerLimit)
         float totalWatts = 0.0f;
@@ -6327,11 +6283,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
             }
         }
 
-        if (KoNEO_PowerWattsTotal.valueNoSendCompare(totalWatts, DPT_Value_Power))
-        {
-            // logDebugP("Updating KoNEO_PowerWattsTotal: %f W", totalWatts);
-            KoNEO_PowerWattsTotal.objectWritten();
-        }
+        queuePowerKo(KoNEO_PowerWattsTotal, totalWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
         // Per-strip KOs (for ALL strips)
         for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
@@ -6353,6 +6305,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
 
                 // Fallback load calculation
                 uint16_t stripLimit = cfg->getMaxCurrentMa();
+                limitMa = stripLimit;
                 if (stripLimit > 0)
                     loadPercent = (uint8_t)((stripCurrent * 100) / stripLimit);
                 else
@@ -6370,27 +6323,65 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
             uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
 
-            if (KoNEOSTRIP_PowerCurrent.valueNoSendCompare(stripCurrent, DPT_Value_2_Ucount))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerCurrent for strip %u: %u mA", (unsigned)i, stripCurrent);
-                KoNEOSTRIP_PowerCurrent.objectWritten();
-            }
-
-            if (KoNEOSTRIP_PowerLoad.valueNoSendCompare(loadPercent, DPT_Scaling))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerLoad for strip %u: %u %%", (unsigned)i, loadPercent);
-                KoNEOSTRIP_PowerLoad.objectWritten();
-            }
-
-            if (KoNEOSTRIP_PowerWatts.valueNoSendCompare(stripWatts, DPT_Value_Power))
-            {
-                // logDebugP("Updating KoNEOSTRIP_PowerWatts for strip %u: %f W", (unsigned)i, stripWatts);
-                KoNEOSTRIP_PowerWatts.objectWritten();
-            }
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+            queuePowerKo(KoNEOSTRIP_PowerLoad, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
+            queuePowerKo(KoNEOSTRIP_PowerWatts, stripWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
             _channelIndex = savedChannelIndex;
         }
     }
+}
+
+double NeoPixelBusModule::powerCurrentMinDelta(uint32_t limitMa)
+{
+    return std::max<double>(50.0, limitMa * 0.02);
+}
+
+void NeoPixelBusModule::queuePowerKo(GroupObject& ko, double value, const Dpt& type, double minDelta)
+{
+    if (_powerKoCount >= kPowerKoMax) return;
+    PowerKoEntry& e = _powerKos[_powerKoCount++];
+    e.ko = &ko;
+    e.value = _powerKoDark ? 0.0 : value;
+    e.type = type;
+    e.minDelta = minDelta;
+}
+
+void NeoPixelBusModule::drainPowerKos()
+{
+    if (_powerKoCount == 0) return;
+    if (_powerKoStart >= _powerKoCount) _powerKoStart = 0;
+    while (_powerKoDone < _powerKoCount)
+    {
+        if (_statusCredits == 0) return; // continues in the next loop pass
+        const PowerKoEntry& e = _powerKos[(_powerKoStart + _powerKoDone) % _powerKoCount];
+        sendPowerKo(*e.ko, powerKoValue(e.value, e.type), e.type, e.minDelta);
+        _powerKoDone++;
+    }
+}
+
+KNXValue NeoPixelBusModule::powerKoValue(double value, const Dpt& type)
+{
+    if (type.mainGroup == 14) return KNXValue((float)value);   // DPT 14.056 W
+    if (type.mainGroup == 7) return KNXValue((uint32_t)value); // DPT 7.001 mA
+    return KNXValue((uint8_t)value);                           // DPT 5.001 %
+}
+
+bool NeoPixelBusModule::sendPowerKo(GroupObject& ko, const KNXValue& value, const Dpt& type, double minDelta)
+{
+    const double next = (double)value;
+    if (ko.initialized())
+    {
+        const double last = (double)ko.value(type);
+        const double delta = next > last ? next - last : last - next;
+        if (delta == 0.0 || (delta < minDelta && next != 0.0)) return false;
+    }
+    // Shares the credit budget of the status queue; a value without credit goes out next round
+    if (_statusCredits == 0) return false;
+    if (!ko.valueNoSend(value, type)) return false;
+    ko.objectWritten();
+    _statusCredits--;
+    return true;
 }
 
 // =============================================================================

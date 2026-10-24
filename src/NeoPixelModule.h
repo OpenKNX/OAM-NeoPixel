@@ -405,6 +405,22 @@ class NeoPixelBusModule : public OpenKNX::Module
     unsigned long _lastPowerMonitoringMs = 0;   // Last time power stats were sent
     uint32_t _powerMonitoringIntervalMs = 5000; // Send power stats every 5 seconds
 
+    // Power monitoring KO round: values sampled every 5 s, sent over the next loop passes as status
+    // credits allow; an unfinished round continues at its next KO in the following round.
+    struct PowerKoEntry
+    {
+        GroupObject* ko = nullptr;
+        double value = 0.0;
+        Dpt type;
+        double minDelta = 0.0;
+    };
+    static constexpr uint8_t kPowerKoMax = 3 + 3 * NEOPIXEL_MAX_PHYSICAL_STRIPS; // totals + 3 per strip
+    PowerKoEntry _powerKos[kPowerKoMax];
+    uint8_t _powerKoCount = 0; // entries of the current round
+    uint8_t _powerKoStart = 0; // entry the round starts at (rotates across rounds)
+    uint8_t _powerKoDone = 0;  // entries handled in the current round
+    bool _powerKoDark = false; // round sampled while global OFF keeps every segment dark: report 0
+
     // Configuration & Setup
     void configureFromETS(); // reads ETS params and builds phys+virt layout
     bool executeEmChainAction(uint8_t action, int arg1, int arg2);
@@ -512,8 +528,17 @@ class NeoPixelBusModule : public OpenKNX::Module
     static uint16_t getTypicalLedCurrentMa(LedProtocol protocol);
 
     // Power Monitoring
-    void sendPowerMonitoringKOs(); // Send current/load KOs periodically
+    void loopPowerMonitoring(bool dark);   // Start a round every 5 s, send its pending telegrams
+    void sendPowerMonitoringKOs(bool dark); // Sample a power KO round (dark: report 0)
+    void queuePowerKo(GroupObject& ko, double value, const Dpt& type, double minDelta);
+    void drainPowerKos();                   // Send pending round telegrams while status credits last
+    static KNXValue powerKoValue(double value, const Dpt& type);
     void clearAblWarning();        // End an active ABL warning
+    // Power monitoring KO: sent on the first value, a drop to 0 or a change >= minDelta; one status credit each
+    bool sendPowerKo(GroupObject& ko, const KNXValue& value, const Dpt& type, double minDelta);
+    static double powerCurrentMinDelta(uint32_t limitMa); // max(50 mA, 2 % of the limit)
+    static constexpr double kPowerLoadMinDelta = 2.0;     ///< percentage points
+    static constexpr double kPowerWattsMinDelta = 1.0;    ///< W
 
     // Blink code helpers
     void setErrorBlink(uint8_t code);                          // Set error on STATUS LED (Red + errorCode) — lowest code wins

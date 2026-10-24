@@ -19,7 +19,7 @@ Die benötigte Netzteilleistung berechnet sich wie folgt:
 **Beispiel:** Eingestellter Maximalstrom: 8000 mA → Berechnung: (8000 × 5) ÷ 1000 = 40 Watt → **Empfehlung: 40W + 20% Reserve = mindestens 48W Netzteil**
 
 **Hinweis:** 
-Der berechnete Stromverbrauch wird über das KO "Stromverbrauch Gesamt" in Echtzeit übermittelt und kann zur Überwachung genutzt werden.
+Der berechnete Stromverbrauch wird über die Objekte „Stromverbrauch Gesamt“, „Auslastung Gesamt“ und „Leistung Gesamt“ (sowie je Streifen) gemeldet. Die Werte werden alle 5 s geprüft und erst nach der Startverzögerung gesendet. Gesendet wird eine Änderung ab 50 mA bzw. 2 % der Stromgrenze (der größere Wert), ab 2 Prozentpunkten Auslastung oder ab 1 W Leistung sowie der Rückgang auf 0. Die Telegramme werden nacheinander über die Sendebegrenzung der Status-Objekte gesendet (nach einem kurzen Schub höchstens eines je 100 ms, gemeinsam mit den Status-Objekten); kann eine Prüfung nicht alle senden, beginnt die nächste Prüfung mit dem ersten noch nicht gesendeten Objekt. Lässt „Alle LEDs“ AUS alle Segmente dunkel, werden 0 mA, 0 % und 0 W gemeldet.
 
 Solange die Strombegrenzung die Helligkeit reduziert, pulsiert die Status-LED orange; die Anzeige endet bei der nächsten Prüfung (alle 5 s) ohne Reduzierung. Sie hat Vorrang vor den anderen Warnungen (lila: gespeicherte Daten verworfen, gelb: unbekannter Effekt); eine solche Warnung wird danach wieder angezeigt.
 ---
