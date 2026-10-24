@@ -1,7 +1,7 @@
 # Effektkette: Modus
 
 Aus = Standalone. Master = sendet Sync-Telegramme mit seinem Zustand. Slave = empfaengt Sync und rendert seinen Ausschnitt.
-Pro Sync-Gruppe darf nur ein Master konfiguriert sein.
+Pro Sync-Gruppe darf nur ein Master konfiguriert sein. Der Master liegt immer am Bandanfang (Offset 0); „Mein Offset“ gilt nur für einen Slave.
 
 **Master:** Sendet bei jeder Änderung von Ein/Aus, Effekt, Farbe, Geschwindigkeit oder Helligkeit und wiederholt den unveränderten Zustand alle 3 s (Buslast: 1 Telegramm je 3 s und Master). Änderungen werden ab dem Ende der Startverzögerung höchstens alle 300 ms gesendet; ein Effektwechsel über die Objekte „Effekt“ und „Effekt schalten“ wird sofort gesendet. Ein/Aus ist EIN, wenn das Master-Segment eingeschaltet und nicht durch „Alle LEDs“ AUS dunkel ist. Die Helligkeit ist die eingestellte Segment-Helligkeit ohne globale Helligkeit. Während ein Effektmanager auf dem Master läuft, sendet er Effekt, Farbe und Geschwindigkeit von vor dem Effektmanager weiter.
 

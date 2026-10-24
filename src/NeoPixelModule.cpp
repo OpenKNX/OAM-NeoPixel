@@ -5181,7 +5181,8 @@ NeoPixelBusModule::SegmentConfig NeoPixelBusModule::createSegmentConfig(uint8_t 
     config.syncOverridePolicy = (uint8_t)ParamNEO_NEOSyncOverridePolicy;
     config.syncTimeoutSteps = (uint8_t)ParamNEO_NEOSyncTimeout;
     config.virtualTotalLength = (uint16_t)ParamNEO_NEOVirtualTotalLength;
-    config.virtualOffset = (uint16_t)ParamNEO_NEOVirtualOffset;
+    // "Mein Offset" is a slave parameter (hidden for a master, whose band starts at 0)
+    config.virtualOffset = (config.syncMode == 2) ? (uint16_t)ParamNEO_NEOVirtualOffset : 0;
 #else
     config.syncMode = 0;
     config.syncOverridePolicy = 0;
