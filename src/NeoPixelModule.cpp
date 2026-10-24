@@ -1960,6 +1960,14 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 const bool wasLocked = cfgL.locked;
                 cfgL.locked = lock;
                 logInfoP("Segment %d: Sperre %s", channel, lock ? "EIN" : "AUS");
+                // Locked: a running dim ramp stops at its current value (its stop telegram is gated)
+                if (lock && cfgL.activeDimming != SegmentConfig::NONE)
+                {
+                    cfgL.activeDimming = SegmentConfig::NONE;
+                    cfgL.dimmingStepCode = 0;
+                    cfgL.dimmingRemaining = -1;
+                    queueStatus(static_cast<uint8_t>(1 + channel), false); // report the dimmed result
+                }
                 // Released: catch up with the global power state skipped while locked.
                 if (wasLocked && !lock)
                 {
