@@ -119,7 +119,7 @@ class NeoPixelBusModule : public OpenKNX::Module
         bool     suspendedByPower = false;    ///< EM paused by segment or global power-off, resumed by power-on
         bool     pendingPowerOnRestart = false; ///< switched on while globally suspended: start the power-on EM at global ON
         bool     globalSuspended = false;     ///< global power OFF currently suspends this segment (RAM only)
-        bool     emStartedFromOff = false;    ///< EM chain started on a switched-off segment: its stop switches off again (RAM only)
+        bool     emStartedFromOff = false;    ///< EM chain started on a switched-off segment: its stop switches off again (flash: reserved[2] bit0)
         bool     hiddenEffectChange = false;  ///< effect/cue changed while not visible: re-enter it at the next ON
         bool     locked = false;              ///< segment locked via Sperre-KO → ignore all controlling KOs
         uint32_t statusEmKey = 0xFFFFFFFF;    ///< last EM state (emId/cue/runState) seen by sendEmStatusKOs()

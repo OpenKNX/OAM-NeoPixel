@@ -265,6 +265,8 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         cfg.savedSceneNumber = state.reserved[0];
         // Restore last active Effektmanager ID from reserved[1]
         cfg.emController.setLastEmId(state.reserved[1]);
+        // reserved[2] bit0: that EM was started on a switched-off segment (0 in older saves)
+        cfg.emStartedFromOff = state.reserved[1] != EM_NONE && (state.reserved[2] & 0x01) != 0;
 
         // Mark data as valid if ANY flag is set
         cfg.savedValid = (state.validFlags != 0);
@@ -404,10 +406,11 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
                 // Recall as OFF: a scene or EM start switches on, a brightness-0 scene leaves it at 0
                 // without overwriting the flash state with a snapshot of the boot state.
                 cfg.savedPower = 0;
+                const bool emFromOff = cfg.emStartedFromOff; // from flash; the recall as OFF sets it
                 bool sceneRecalled = _module->_sceneManager->recallScene(i, cfg.savedSceneNumber, seg);
                 const bool sceneOn = cfg.savedPower != 0;
                 cfg.savedPower = flashPower;
-                cfg.emStartedFromOff = false;
+                cfg.emStartedFromOff = emFromOff && cfg.emController.isRunning();
                 if (sceneRecalled && sceneOn)
                 {
                     cfg.savedBrightness = intentBrightness;
@@ -625,7 +628,8 @@ bool NeoPixelFlashPersistence::saveSegmentState(uint8_t segmentIndex, SegmentFla
     // Before the startup restore no EM runs yet: keep the EM loaded from flash
     if (_module->_startupRestoreDone) cfg.emController.saveState();
     state.reserved[1] = cfg.emController.lastEmId();
-    state.reserved[2] = 0;
+    // reserved[2] bit0 = the saved EM was started on a switched-off segment; its stop switches off
+    state.reserved[2] = (state.reserved[1] != EM_NONE && cfg.emStartedFromOff) ? 0x01 : 0;
 
     return true;
 }

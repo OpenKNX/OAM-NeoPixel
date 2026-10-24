@@ -53,14 +53,16 @@ class NeoPixelFlashPersistence
         // Reserved for future KO parameters (HSV, CCT, effect params):
         uint8_t reserved[3]; // reserved[0] = last active scene number (0 = no scene)
                              // reserved[1] = last active Effektmanager ID (0 = none)
-                             // reserved[2] = reserved
+                             // reserved[2] bit0 = EM of reserved[1] started on a switched-off
+                             //   segment (its stop switches off); bits 1-7 reserved
         //
         // BACKWARD COMPATIBILITY (version stays 0x01, no migration needed):
         //   These two bytes were repurposed from the original zero-initialized
         //   reserved[] pool. Saves written by older firmware had reserved[]=0,
         //   and 0 is a valid "none" sentinel for BOTH fields (scene 0 = no scene,
         //   EM_NONE == 0). Restoring an old blob therefore yields "no scene / no
-        //   EM" — correct, no data loss.
+        //   EM" — correct, no data loss. reserved[2] bit0 = 0 in old saves means
+        //   "EM not started from OFF", the behaviour of the firmware that wrote them.
         //   IMPORTANT: if the meaning of any reserved[] byte changes in a way
         //   where 0 is no longer a safe default, bump `version` and gate the
         //   read on it (see readFromFlash) before reinterpreting old blobs.
