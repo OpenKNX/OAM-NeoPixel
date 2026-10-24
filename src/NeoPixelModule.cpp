@@ -1281,6 +1281,9 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             // Guard: an out-of-range EM channel (invalid/stale KO index) must not index _segments[].
             if ((size_t)emChannel >= _segments.size())
                 return;
+            // EM Stop is a trigger: only 1 stops; a 0 carries no command (no stop, no slave override).
+            if (emKoIndex == NEO_KoEmStop && !(bool)ko.value(DPT_Switch))
+                return;
             // Own status telegrams come back through this handler; a master's SyncChain is its own output.
             bool statusKo = emKoIndex == NEO_KoEmStatus || emKoIndex == NEO_KoEmCueStatus;
     #ifdef NEO_KoEmRunState

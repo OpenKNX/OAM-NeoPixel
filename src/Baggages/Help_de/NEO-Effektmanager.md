@@ -42,7 +42,7 @@ Gibt an, welcher Effektmanager nach Abschluss dieser Sequenz automatisch gestart
 Die Laufzeit-Steuerung gehört zum **Segment** — es läuft immer nur **ein** Effektmanager pro Segment, der Startwert wählt welcher:
 
 - **EM Start** (1 Byte): Startet einen EM. Wert 1–16 = EM-Nummer, 0 = Stop. Ein Start auf einem ausgeschalteten Segment schaltet es ein.
-- **EM Stop** (1 Bit): Stoppt den laufenden EM. Das Segment nimmt danach den Zustand gemäß „Effektmanager-Stop: Rückkehr“ an — es bleibt **nicht** die letzte Cue stehen.
+- **EM Stop** (1 Bit): Der Wert 1 stoppt den laufenden EM; der Wert 0 wird ignoriert. Das Segment nimmt danach den Zustand gemäß „Effektmanager-Stop: Rückkehr“ an — es bleibt **nicht** die letzte Cue stehen.
 - **EM Pause/Resume** (1 Bit): 1 = Pause (die aktuelle Cue wird **eingefroren** und bleibt sichtbar, läuft aber nicht weiter), 0 = Resume (an gleicher Stelle fortsetzen). Auf einem ausgeschalteten Segment wirkt Resume erst mit dem nächsten EIN; eine Pause auf einem ausgeschalteten Segment wird vom nächsten EIN aufgehoben (es setzt den EM fort).
 - **EM Status** (1 Byte): Aktive EM-Nummer (0 = keiner).
 - **Aktive Cue** (1 Byte): Aktuell gespielte Cue-Nummer (0 = keine).
