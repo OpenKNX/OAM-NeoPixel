@@ -394,6 +394,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     // Blink code tracking (only the most severe error is shown)
     uint8_t _activeErrorCode = 0;                             // Currently active error blink code (0 = none)
     uint8_t _activeWarnCode = 0;                              // Currently active warning blink code (0 = none)
+    uint8_t _warnCodeBeforeAbl = 0;                           // Warning code hidden by an active ABL warning (restored when it ends)
     unsigned long _lastColorUpdateMs = 0;                     // Last color correction update timestamp
     static const unsigned long COLOR_UPDATE_INTERVAL_MS = 50; // Update color every 500ms to reduce logging overhead
 
@@ -512,6 +513,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Power Monitoring
     void sendPowerMonitoringKOs(); // Send current/load KOs periodically
+    void clearAblWarning();        // End an active ABL warning
 
     // Blink code helpers
     void setErrorBlink(uint8_t code);                          // Set error on STATUS LED (Red + errorCode) — lowest code wins

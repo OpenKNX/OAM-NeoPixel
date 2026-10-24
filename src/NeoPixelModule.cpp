@@ -344,6 +344,7 @@ void NeoPixelBusModule::loop(bool configured)
     {
         _neoPixel.loopOffRefresh();
         _renderPaused = true;
+        clearAblWarning(); // nothing is rendered, so nothing is limited
         return;
     }
 
@@ -2866,6 +2867,7 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
         {
             _activeErrorCode = 0;
             _activeWarnCode = 0;
+            _warnCodeBeforeAbl = 0;
             auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
             if (led)
             {
@@ -2886,6 +2888,7 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
             // Reset tracking so test code always applies
             _activeErrorCode = 0;
             _activeWarnCode = 0;
+            _warnCodeBeforeAbl = 0;
             setErrorBlink(code);
             return true;
         }
@@ -2900,6 +2903,7 @@ bool NeoPixelBusModule::processCommand(const std::string command, bool diagnose)
             // Reset tracking so test code always applies
             _activeErrorCode = 0;
             _activeWarnCode = 0;
+            _warnCodeBeforeAbl = 0;
             setWarningBlink(code); // color derived from code (single source: warnColorForCode)
             return true;
         }
@@ -6017,6 +6021,31 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
 // Power Monitoring Implementation
 // =============================================================================
 
+/**
+ * @brief End an active ABL warning; the warning it took over is shown again (errors stay untouched).
+ */
+void NeoPixelBusModule::clearAblWarning()
+{
+    // Drop a latch from before the pause, so resuming does not report a stale limit
+    if (auto* mgr = _neoPixel.getManager()) (void)mgr->takePowerLimitSeen();
+    if (_activeWarnCode != NEO_WARN_ABL_ACTIVE) return;
+    // The warning the ABL warning took over (if any) is shown again
+    _activeWarnCode = _warnCodeBeforeAbl;
+    _warnCodeBeforeAbl = 0;
+    logInfoP("NeoPixel warning cleared: power limiting no longer active");
+    auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
+    if (!led || _activeErrorCode != 0) return;
+    if (_activeWarnCode != 0)
+    {
+        led->color(warnColorForCode(_activeWarnCode));
+        led->pulsing();
+    }
+    else
+    {
+        led->off();
+    }
+}
+
 void NeoPixelBusModule::sendPowerMonitoringKOs()
 {
     auto* mgr = _neoPixel.getManager();
@@ -6032,21 +6061,26 @@ void NeoPixelBusModule::sendPowerMonitoringKOs()
         if (KoNEO_PowerLoadTotal.valueNoSendCompare((uint8_t)0, DPT_Scaling))
             KoNEO_PowerLoadTotal.objectWritten();
         // logDebugP("Power management disabled - sent zero values for power KOs");
+        clearAblWarning();
         return;
     }
 
     PowerLimitMode mode = mgr->getPowerManager()->getPowerLimitMode();
 
-    // Check for ABL (Auto Brightness Limiting) active warning
-    // Uses global power stats to detect when brightness is being limited
+    // ABL warning: on if any frame since the last sample was limited, off after a sample interval without
+    if (mgr->takePowerLimitSeen())
     {
-        uint32_t ablCheckCurrent, ablCheckLimit;
-        uint8_t ablCheckLoad;
-        mgr->getGlobalPowerStats(ablCheckCurrent, ablCheckLimit, ablCheckLoad);
-        if (ablCheckLoad >= 95 && _activeWarnCode == 0)
+        // ABL is the most severe warning: it takes over a boot warning, which returns when ABL ends
+        if (_activeWarnCode != NEO_WARN_ABL_ACTIVE)
         {
+            const uint8_t before = _activeWarnCode;
             setWarningBlink(NEO_WARN_ABL_ACTIVE); // pulsing Orange (color from warnColorForCode)
+            if (_activeWarnCode == NEO_WARN_ABL_ACTIVE) _warnCodeBeforeAbl = before;
         }
+    }
+    else
+    {
+        clearAblWarning();
     }
 
     if (mode == PowerLimitMode::GLOBAL)
@@ -6381,7 +6415,7 @@ static const char* warnMsgForCode(uint8_t code)
 {
     switch (code)
     {
-        case NEO_WARN_ABL_ACTIVE: return "Auto brightness limiting active (power >= 95% of limit)";
+        case NEO_WARN_ABL_ACTIVE: return "Power limiting active (brightness reduced)";
         case NEO_WARN_FLASH_DISCARDED: return "Saved state discarded (config changed) - using defaults";
         case NEO_WARN_UNKNOWN_EFFECT: return "Unknown effect type configured in ETS";
         default: return "unknown warning";
@@ -6421,7 +6455,10 @@ void NeoPixelBusModule::setWarningBlink(uint8_t code)
     // Don't touch STATUS LED if an error is already showing (errorCode Prio 2 would win,
     // but the color() call would wrongly change the error's color)
     if (_activeErrorCode != 0) return;
-    // Only show the most severe (lowest code number) warning
+    // Only show the most severe (lowest code number) warning; a warning raised during ABL shows after it
+    if (_activeWarnCode == NEO_WARN_ABL_ACTIVE && code > NEO_WARN_ABL_ACTIVE &&
+        (_warnCodeBeforeAbl == 0 || code < _warnCodeBeforeAbl))
+        _warnCodeBeforeAbl = code;
     if (_activeWarnCode != 0 && _activeWarnCode <= code) return;
     _activeWarnCode = code;
     // Always log to console first — independent of whether a STATUS LED is mapped on this hardware.
@@ -6438,6 +6475,7 @@ void NeoPixelBusModule::clearBlinkCodes()
 {
     _activeErrorCode = 0;
     _activeWarnCode = 0;
+    _warnCodeBeforeAbl = 0;
     auto* led = openknx.ledFunctions.get(OPENKNX_LEDFUNC_BASE_STATE);
     if (led)
     {

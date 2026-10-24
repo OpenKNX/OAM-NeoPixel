@@ -31,7 +31,8 @@ When multiple errors or warnings occur, only the **most severe** is displayed:
 
 - Lower code number = higher severity (code 1 wins over code 3)
 - An active error (Prio 2) suppresses all warnings (Prio 5) on the same LED
-- Codes persist until device restart
+- `NEO_WARN_ABL_ACTIVE` (code 1) takes over a shown code 2/3 warning while the limiter reduces; when it clears, the most severe code 2/3 warning raised before or during it is shown again
+- Errors and warning codes 2/3 persist until device restart (or `neo led clear`)
 
 ---
 
@@ -57,8 +58,8 @@ For the exact warning, connect a serial console.
 
 | Code | Colour | Condition | Description | Resolution |
 |------|--------|-----------|-------------|------------|
-| `NEO_WARN_ABL_ACTIVE` | Orange | **Auto Brightness Limiting** | Power consumption >= 95% of limit. Brightness is being reduced. | Increase power limit, reduce LEDs/brightness, or upgrade power supply. |
-| `NEO_WARN_FLASH_DISCARDED` | Purple | **Flash Data Discarded** | Saved states don't match current config (e.g., segment count changed). Default startup behaviour used. | Expected after ETS config changes. Clears after next save cycle. |
+| `NEO_WARN_ABL_ACTIVE` | Orange | **Auto Brightness Limiting** | The power limiter reduces the brightness (soft zone or above the limit). Cleared at the next 5 s check without reduction. | Increase power limit, reduce LEDs/brightness, or upgrade power supply. |
+| `NEO_WARN_FLASH_DISCARDED` | Purple | **Flash Data Discarded** | Saved states don't match current config (e.g., segment count changed). Default startup behaviour used. | Expected after ETS config changes. Persists until device restart. |
 | `NEO_WARN_UNKNOWN_EFFECT` | Yellow | **Unknown Effect Type** | Effect configured in ETS not recognized by firmware. | Update firmware or change effect type in ETS. |
 
 ---

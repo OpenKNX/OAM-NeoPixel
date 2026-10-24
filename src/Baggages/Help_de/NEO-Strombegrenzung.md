@@ -20,6 +20,8 @@ Die benötigte Netzteilleistung berechnet sich wie folgt:
 
 **Hinweis:** 
 Der berechnete Stromverbrauch wird über das KO "Stromverbrauch Gesamt" in Echtzeit übermittelt und kann zur Überwachung genutzt werden.
+
+Solange die Strombegrenzung die Helligkeit reduziert, pulsiert die Status-LED orange; die Anzeige endet bei der nächsten Prüfung (alle 5 s) ohne Reduzierung. Sie hat Vorrang vor den anderen Warnungen (lila: gespeicherte Daten verworfen, gelb: unbekannter Effekt); eine solche Warnung wird danach wieder angezeigt.
 ---
 
 ## Verfügbare Modi:
