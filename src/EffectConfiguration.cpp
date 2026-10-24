@@ -176,7 +176,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
                 // setEffect() entered the effect before the optional ETS color reset. Enter it
                 // once more so effects that initialise their pixels see the final color.
                 segment->resetEffectState();
-                effect->onEnter(segment);
+                segment->enterEffect();
             }
 
             const uint8_t paramCount = effect->getParameterCount();
@@ -255,7 +255,7 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment, bool loadDe
     if (effect)
     {
         segment->resetEffectState();
-        effect->onEnter(segment);
+        segment->enterEffect();
     }
 
     // Mirror effect (from segment configuration)

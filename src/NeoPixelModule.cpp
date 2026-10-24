@@ -7030,7 +7030,7 @@ void NeoPixelBusModule::reEnterEffect(size_t segmentIndex)
     if (effect)
     {
         seg->resetEffectState();
-        effect->onEnter(seg);
+        seg->enterEffect();
     }
     else if (segmentIndex < kStatusSegmentMax) // ETS parameters exist only for the KO channels
     {
