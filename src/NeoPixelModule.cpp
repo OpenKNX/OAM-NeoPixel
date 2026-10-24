@@ -5217,9 +5217,9 @@ void NeoPixelBusModule::createSegments()
     {
         SegmentConfig& config = _segments[i];
 
-        // Calculate effective start/end considering offset
-        uint16_t effectiveStart = config.startLed + config.offset;
-        uint16_t effectiveEnd = config.endLed + config.offset;
+        // The segment covers Start..End; "Offset" only rotates the pixels inside it (setOffset)
+        uint16_t effectiveStart = config.startLed;
+        uint16_t effectiveEnd = config.endLed;
 
         // Ensure bounds are within virtual strip
         if (effectiveEnd >= _virtualStrip->getLedCount())
@@ -5266,7 +5266,7 @@ void NeoPixelBusModule::applySegmentConfiguration()
                      i, config.grouping, config.spacing, config.segment->getLength());
         }
 
-        // Apply offset (shift effect start position)
+        // Apply offset: rotate the pixel mapping inside the segment with wrap-around
         if (config.offset > 0)
         {
             config.segment->setOffset(config.offset);

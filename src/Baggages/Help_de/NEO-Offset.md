@@ -1,6 +1,6 @@
 # Offset
 
-Rotiert/verschiebt die Pixel-Zuordnung innerhalb des Segments um N LEDs mit Umbruch am Ende.
+Rotiert/verschiebt die Pixel-Zuordnung innerhalb des Segments um N LEDs mit Umbruch am Ende. Der LED-Bereich des Segments (Start-LED bis Ende-LED) bleibt dabei unverändert.
 
 **Wert:** Anzahl der LEDs zum Verschieben (0-basiert)
 
