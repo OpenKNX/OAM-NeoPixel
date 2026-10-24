@@ -6931,6 +6931,9 @@ void NeoPixelBusModule::showSegmentOutput(size_t segmentIndex)
 
     if (cfg.emController.isRunning())
     {
+        // Segment or global OFF cleared the segment (stop()); a cue effect that has finished its
+        // one-shot phase (e.g. Wipe) would not paint again.
+        const bool clearedByPower = cfg.suspendedByPower;
         if (cfg.emController.isPaused())
         {
             cfg.suspendedByPower = false;
@@ -6942,8 +6945,8 @@ void NeoPixelBusModule::showSegmentOutput(size_t segmentIndex)
             if (seg->isPaused()) seg->resume();
             if (cfg.savedBrightness == 0) applyBrightnessIntent(segmentIndex);
         }
-        // A cue applied while dark was cleared: enter it again (the cue timer is not touched).
-        if (cfg.hiddenEffectChange && seg->getEffect()) reEnterEffect(segmentIndex);
+        // A cleared cue is entered again (the cue timer and fade position are not touched).
+        if ((cfg.hiddenEffectChange || clearedByPower) && seg->getEffect()) reEnterEffect(segmentIndex);
         cfg.hiddenEffectChange = false;
         return;
     }
