@@ -6025,6 +6025,14 @@ void NeoPixelBusModule::setupEffectConfiguration(Segment* segment)
 // Power Monitoring Implementation
 // =============================================================================
 
+/** @brief Load in percent of the limit, clamped to 100 (DPT 5.001 range). */
+static uint8_t loadPercentClamped(uint32_t currentMa, uint32_t limitMa)
+{
+    if (limitMa == 0) return 0;
+    const uint32_t pct = (currentMa * 100) / limitMa;
+    return (uint8_t)(pct > 100 ? 100 : pct);
+}
+
 /**
  * @brief End an active ABL warning; the warning it took over is shown again (errors stay untouched).
  */
@@ -6148,7 +6156,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
                 uint16_t limit = cfg->getMaxCurrentMa();
                 stripLimit = limit;
                 if (limit > 0)
-                    stripLoad = (uint8_t)((stripCurrent * 100) / limit);
+                    stripLoad = loadPercentClamped(stripCurrent, limit);
             }
 
             float stripWatts = phys->getPowerWatts(stripCurrent);
@@ -6224,7 +6232,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
                 uint16_t stripLimit = cfg->getMaxCurrentMa();
                 limitMa = stripLimit;
                 if (stripLimit > 0)
-                    loadPercent = (uint8_t)((stripCurrent * 100) / stripLimit);
+                    loadPercent = loadPercentClamped(stripCurrent, stripLimit);
                 else
                     loadPercent = 0;
             }
@@ -6307,7 +6315,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
                 uint16_t stripLimit = cfg->getMaxCurrentMa();
                 limitMa = stripLimit;
                 if (stripLimit > 0)
-                    loadPercent = (uint8_t)((stripCurrent * 100) / stripLimit);
+                    loadPercent = loadPercentClamped(stripCurrent, stripLimit);
                 else
                     loadPercent = 0;
             }
