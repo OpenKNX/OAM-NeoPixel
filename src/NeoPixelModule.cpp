@@ -5390,7 +5390,9 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
         state.blocked = true;
 
         const uint8_t masterNum = static_cast<uint8_t>(index + 1);
-        if (masterNum <= masterCount)
+        // A channel not active in the LightManager channel selection has no master; its
+        // getCurrentValue() is the 4000 K default, so it stays kelvin 0 / blocked here.
+        if (masterNum <= masterCount && HCL::masterManager.getMaster(masterNum) != nullptr)
         {
             const auto value = HCL::masterManager.getCurrentValue(masterNum);
             state.kelvin = value.kelvin;
@@ -5445,6 +5447,22 @@ void NeoPixelBusModule::refreshHclMasterStateCache()
             segCfg.customHclConfig.resolvedMaster =
                 resolveHclMaster(segCfg.customHclConfig.lightManagerMaster, masterCount);
         }
+    }
+
+    // Warn once per master that an HCL source references but the LightManager does not run.
+    static uint16_t warnedInactiveMasters = 0;
+    auto warnInactiveMaster = [this](uint8_t master) {
+        if (master == 0 || master > 16) return;
+        const uint16_t bit = static_cast<uint16_t>(1u << (master - 1));
+        if ((warnedInactiveMasters & bit) != 0) return;
+        if (HCL::masterManager.getMaster(master) != nullptr) return;
+        warnedInactiveMasters |= bit;
+        logWarningP("HCL: LightManager channel %u is not active (channel selection) - no HCL applied", master);
+    };
+    warnInactiveMaster(_hclTransformContext.globalHclConfig.resolvedMaster);
+    for (const NeoHclSegmentConfig& segCfg : _hclTransformContext.segmentConfigs)
+    {
+        if (segCfg.hclMode == NeoHclMode::Custom) warnInactiveMaster(segCfg.customHclConfig.resolvedMaster);
     }
 
     uint16_t globalKelvin = 0;
