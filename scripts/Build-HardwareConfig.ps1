@@ -2423,7 +2423,7 @@ function Generate-GPIOPortMappingJS {
     for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
       $hwConfig = $HardwareConfigs[$hwIdx]
       
-      # Skip hardware configs without GPIO ports (e.g., BCU_CONNECTOR variants)
+      # Skip hardware configs without GPIO ports
       if (-not $hwConfig -or -not $hwConfig.DeviceIdBit -or -not $hwConfig.DeviceName -or -not $hwConfig.GPIOPorts -or $hwConfig.GPIOPorts.Count -eq 0) {
         if ($DebugOutput) { Write-Host "  [DEBUG] Skipping hardware #$hwIdx (no GPIO ports) in JavaScript generation" -ForegroundColor DarkGray }
         continue
@@ -2447,7 +2447,7 @@ function Generate-GPIOPortMappingJS {
     for ($hwIdx = 0; $hwIdx -lt $HardwareConfigs.Count; $hwIdx++) {
       $hwConfig = $HardwareConfigs[$hwIdx]
       
-      # Skip hardware configs without GPIO ports (e.g., BCU_CONNECTOR variants)
+      # Skip hardware configs without GPIO ports
       if (-not $hwConfig -or -not $hwConfig.DeviceIdBit -or -not $hwConfig.DeviceName -or -not $hwConfig.GPIOPorts -or $hwConfig.GPIOPorts.Count -eq 0) {
         if ($DebugOutput) { Write-Host "  [DEBUG] Skipping hardware #$hwIdx (no GPIO ports) in port labels" -ForegroundColor DarkGray }
         continue

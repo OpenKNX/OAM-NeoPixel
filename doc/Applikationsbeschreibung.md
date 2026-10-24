@@ -36,7 +36,6 @@ Die Applikation wird für mehrere Hardwarefamilien bereitgestellt.
 **Von OpenKNX unterstützte Hardware** (hier wird entwickelt und getestet):
 
 * OpenKNXiao KNeoPiX und OpenKNXiao Mini auf RP2040- und RP2350-Basis — Referenzplattform, hier läuft es am rundesten
-* OpenKNX REG2 mit PiPico- und PiPico2-Varianten
 * OpenKNX UP1 GW-UART
 
 **Weitere Hardware ohne Support** (Drittanbieter):
@@ -201,7 +200,7 @@ neo phys config <id> levelshifter <none|txs0108|hct125|ahct125>
 
 | Wert | Chip | Typische Hardware | Firmware-Aktion | Was verbessert sich |
 |------|------|-------------------|-----------------|---------------------|
-| `none` | — | REG2, UP1, direkte Verbindung | Keine GPIO-Änderung | — |
+| `none` | — | UP1, direkte Verbindung | Keine GPIO-Änderung | — |
 | `txs0108` | TI TXS0108E | **KNeoPiX** (alle Varianten) | Siehe Tabelle unten | Zuverlässige Richtungserkennung, saubere Flanken |
 | `hct125` | TI 74HCT125 | QuinLED Dig-Uno V3, Dig-Quad V3, Dig-Octa | Keine GPIO-Änderung (transparenter Buffer) | Dokumentation; keine aktive Optimierung nötig |
 | `ahct125` | TI 74AHCT125 | **QuinLED Dig-Next-2** | Keine GPIO-Änderung | Dokumentation; keine aktive Optimierung nötig |

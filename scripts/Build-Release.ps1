@@ -80,7 +80,7 @@ function Show-Help {
     Write-Host "  .\Build-Release.ps1 -Mini        " -NoNewline -ForegroundColor White
     Write-Host "# Only the two boards on the desk" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
-    Write-Host "# Include untested REG2 boards and third-party hardware" -ForegroundColor DarkGray
+    Write-Host "# Include all chip variants and third-party hardware" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release -Full" -NoNewline -ForegroundColor White
     Write-Host " # Full release" -ForegroundColor DarkGray
     Write-Host ""
@@ -246,19 +246,6 @@ $fullTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C3_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C5_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C5-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C5_MINI_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
-   
-    # OpenKNX REG2 - ESP32S3 Variant (Pico form factor)
-    @{ Env = "release_OKNXHW_REG2_ESP32S3_PICO_V1"; Name = "OpenKNX-REG2-ESP32S3-Pico_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_REG2_ESP32S3_V1" }
-
-    # OpenKNX REG2 - PiPico Variants
-    @{ Env = "release_OKNXHW_REG2_PIPICO_V1"; Name = "OpenKNX-REG2-PiPico_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO_W_V1"; Name = "OpenKNX-REG2-PiPicoW_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO_W_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_V1"; Name = "OpenKNX-REG2-PiPico2_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_V1" }
-    @{ Env = "release_OKNXHW_REG2_PIPICO2_W_V1"; Name = "OpenKNX-REG2-PiPico2W_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_REG2_PIPICO2_W_V1" }
-    
-    # OpenKNX PiPico BCU Connector
-    @{ Env = "release_DEVICE_PIPICO_BCU_CONNECTOR"; Name = "OpenKNX-PiPico-BCU-Connector"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO_BCU_CONNECTOR" }
-    @{ Env = "release_DEVICE_PIPICO2_BCU_CONNECTOR"; Name = "OpenKNX-PiPico2-BCU-Connector"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_DEVICE_PIPICO2_BCU_CONNECTOR" }
 
     # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz (Gledopto: https://gledopto.com/h-pd-124.html)
     @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }

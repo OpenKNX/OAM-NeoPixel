@@ -141,12 +141,6 @@ Select your target hardware environment in `platformio.custom.ini`. The release 
 | `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_IP` | OpenKNXiao KNeoPiX V1.5 ESP32S3 (KNX IP) |
 | `release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1` | OpenKNXiao Mini RP2040 |
 | `release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1` | OpenKNXiao Mini RP2350 |
-| `release_OKNXHW_REG2_PIPICO_V1` | OpenKNX REG2 PiPico |
-| `release_OKNXHW_REG2_PIPICO_W_V1` | OpenKNX REG2 PiPico W |
-| `release_OKNXHW_REG2_PIPICO2_V1` | OpenKNX REG2 PiPico2 |
-| `release_OKNXHW_REG2_PIPICO2_W_V1` | OpenKNX REG2 PiPico2 W |
-| `release_DEVICE_PIPICO_BCU_CONNECTOR` | OpenKNX PiPico BCU Connector |
-| `release_DEVICE_PIPICO2_BCU_CONNECTOR` | OpenKNX PiPico2 BCU Connector |
 | `release_OKNXHW_UP1_GW_UART` | OpenKNX UP1 GW-UART |
 | `release_GLEDOPTO_ESP32_WLED_DIGITAL_UP` | Gledopto GL-C-309WL ESP32 |
 | `release_QUINLED_DIG2GO` | QuinLED Dig2Go |
@@ -160,9 +154,9 @@ Select your target hardware environment in `platformio.custom.ini`. The release 
 | `release_QUINLED_DIG_OCTA_32_8L_ETHERNET` | QuinLED Dig-Octa-32-8L Ethernet |
 | `release_QUINLED_DIG_NEXT2` | QuinLED Dig-Next-2 |
 
-> **Hardware support:** Only the **OpenKNX** targets (KNeoPiX, Mini, REG2, UP1, BCU Connector) are developed, tested and supported — the **KNeoPiX** is the reference platform. The **Gledopto** and **QuinLED** targets are built for convenience but are **untested and not officially supported by OpenKNX**: use them at your own risk — if they work, great; if not, there is no support. For a reliable result, use OpenKNX hardware.
+> **Hardware support:** Only the **OpenKNX** targets (KNeoPiX, Mini, UP1) are developed, tested and supported — the **KNeoPiX** is the reference platform. The **Gledopto** and **QuinLED** targets are built for convenience but are **untested and not officially supported by OpenKNX**: use them at your own risk — if they work, great; if not, there is no support. For a reliable result, use OpenKNX hardware.
 
-Additional full-build targets are available through `pwsh scripts/Build-Release.ps1 -Full`, including ESP32C3, ESP32C5 and ESP32C6 variants of the OpenKNXiao KNeoPiX (V1 and V1.5) and Mini families, plus the REG2 ESP32S3 Pico target. KNeoPiX V1.5 differs from V1 only in the level shifter (SN74LV8T245 instead of TXS0108E) and has its own hardware ID.
+Additional full-build targets are available through `pwsh scripts/Build-Release.ps1 -Full`, including ESP32C3, ESP32C5 and ESP32C6 variants of the OpenKNXiao KNeoPiX (V1 and V1.5) and Mini families. KNeoPiX V1.5 differs from V1 only in the level shifter (SN74LV8T245 instead of TXS0108E) and has its own hardware ID.
 
 ### 3. Build & Upload
 ```bash
@@ -374,8 +368,6 @@ OpenKNX NeoPixel runs on a wide range of OpenKNX-compatible controllers. The **O
 
 - OpenKNXiao KNeoPiX RP2040 and RP2350
 - OpenKNXiao Mini RP2040 and RP2350
-- OpenKNX REG2 PiPico, PiPico W, PiPico2 and PiPico2 W
-- OpenKNX PiPico BCU Connector and PiPico2 BCU Connector
 - OpenKNX UP1 GW-UART
 - Gledopto GL-C-309WL ESP32
 - QuinLED Dig2Go
@@ -388,7 +380,6 @@ OpenKNX NeoPixel runs on a wide range of OpenKNX-compatible controllers. The **O
 
 - OpenKNXiao KNeoPiX ESP32C3, ESP32C5, ESP32C6 and ESP32S3
 - OpenKNXiao Mini ESP32C3, ESP32C5, ESP32C6 and ESP32S3
-- OpenKNX REG2 ESP32S3 Pico
 
 > **Note:** The GPIO pins for LED data and clock lines can be configured in ETS for many hardware profiles. This makes the firmware adaptable to additional ESP32, RP2040 and RP2350 based boards beyond the release targets listed above, provided the selected firmware and ETS hardware profile match.
 
