@@ -2,6 +2,7 @@
 #include "NeoPixelModule.h"
 #include "OpenKNX.h"
 #include "knxprod.h"
+#include <cstring>
 
 // Include auto-generated effect parameter mappings (for loadSceneEffectParameters)
 #if defined(__has_include)
@@ -143,12 +144,37 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
         uint8_t paramCount = effect->getParameterCount();
         logInfoP("Storing effect '%s' with %d parameter(s):", effect->getName(), paramCount);
         uint16_t effectParamBase = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + SCENE_EFFECT_PARAM_OFFSET;
+        bool hasText = false;
         for (uint8_t i = 0; i < paramCount && i < 10; i++)
         {
+            uint8_t* data = knx.paramData(effectParamBase + i);
+            // A text parameter lives in the effect-text field; getParameter() returns a pointer
+            if (effect->getParameterType(i) == ParameterType::PARAM_STRING)
+            {
+                hasText = true;
+                if (data) *data = 0;
+                continue;
+            }
             uint32_t paramValue = effect->getParameter(segment, i);
             logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i), (unsigned long)paramValue);
-            uint8_t* data = knx.paramData(effectParamBase + i);
             if (data) *data = (uint8_t)(paramValue & 0xFF);
+        }
+
+        // Effect text (14 bytes, zero-padded, cut at a UTF-8 character boundary); empty without a text parameter
+        uint8_t* textData = knx.paramData(NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START +
+                                          sceneIndex * SCENE_SIZE + FIELD_EFFECT_TEXT);
+        if (textData)
+        {
+            const char* text = config.effectText;
+            size_t len = hasText ? strnlen(text, sizeof(config.effectText)) : 0;
+            if (len > EFFECT_TEXT_SIZE)
+            {
+                len = EFFECT_TEXT_SIZE;
+                while (len > 0 && (static_cast<uint8_t>(text[len]) & 0xC0) == 0x80) len--;
+            }
+            memset(textData, 0, EFFECT_TEXT_SIZE);
+            memcpy(textData, text, len);
+            if (hasText) logInfoP("  text = '%.*s'", (int)len, text);
         }
     }
 
