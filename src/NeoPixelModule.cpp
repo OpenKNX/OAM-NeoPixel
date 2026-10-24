@@ -1910,6 +1910,11 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 targetSegment->setPrimaryColor(r, g, b, targetSegment->getConfig().ww(), targetSegment->getConfig().cw());
                 logInfoP("Segment %d: Updated primary color (HSV)", channel);
 
+                // Base of the single H/S/V objects and of H/S/V dimming (hsvTracked is set above)
+                cfg.currentH = h;
+                cfg.currentS = s;
+                cfg.currentV = v;
+
                 break;
             }
 
