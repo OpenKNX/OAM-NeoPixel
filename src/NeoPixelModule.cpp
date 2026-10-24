@@ -6105,7 +6105,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
     // by the manager and report their objects
     if (!isEnabled)
     {
-        queuePowerKo(KoNEO_PowerCurrentTotal, (uint32_t)0, DPT_Value_2_Ucount, powerCurrentMinDelta(0));
+        queuePowerKo(KoNEO_PowerCurrentTotal, (uint32_t)0, DPT_UElCurrentmA, powerCurrentMinDelta(0));
         queuePowerKo(KoNEO_PowerLoadTotal, (uint8_t)0, DPT_Scaling, kPowerLoadMinDelta);
         for (size_t i = 0; i < _physicalStrips.size() && i < NEOPIXEL_MAX_PHYSICAL_STRIPS; i++)
         {
@@ -6122,7 +6122,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
 
             const uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
-            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(stripLimit));
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_UElCurrentmA, powerCurrentMinDelta(stripLimit));
             queuePowerKo(KoNEOSTRIP_PowerLoad, stripLoad, DPT_Scaling, kPowerLoadMinDelta);
             queuePowerKo(KoNEOSTRIP_PowerWatts, phys->getPowerWatts(stripCurrent), DPT_Value_Power, kPowerWattsMinDelta);
             _channelIndex = savedChannelIndex;
@@ -6140,7 +6140,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
         mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
 
         // Global KOs
-        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_UElCurrentmA, powerCurrentMinDelta(limitMa));
         queuePowerKo(KoNEO_PowerLoadTotal, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
 
         // Calculate total power in watts (sum of all UseGlobal strips)
@@ -6196,7 +6196,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
             uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
 
-            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(stripLimit));
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_UElCurrentmA, powerCurrentMinDelta(stripLimit));
             queuePowerKo(KoNEOSTRIP_PowerLoad, stripLoad, DPT_Scaling, kPowerLoadMinDelta);
             queuePowerKo(KoNEOSTRIP_PowerWatts, stripWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
@@ -6212,7 +6212,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
         // Global KOs (sum of all strips)
         mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
 
-        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_UElCurrentmA, powerCurrentMinDelta(limitMa));
         queuePowerKo(KoNEO_PowerLoadTotal, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
 
         // Calculate total power in watts (use cached values from applyPowerLimit)
@@ -6279,7 +6279,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
             uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
 
-            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_UElCurrentmA, powerCurrentMinDelta(limitMa));
             queuePowerKo(KoNEOSTRIP_PowerLoad, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
             queuePowerKo(KoNEOSTRIP_PowerWatts, stripWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
@@ -6295,7 +6295,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
         // Global KOs (sum of all strips)
         mgr->getGlobalPowerStats(currentMa, limitMa, loadPercent);
 
-        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+        queuePowerKo(KoNEO_PowerCurrentTotal, currentMa, DPT_UElCurrentmA, powerCurrentMinDelta(limitMa));
         queuePowerKo(KoNEO_PowerLoadTotal, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
 
         // Calculate total power in watts (use cached values from applyPowerLimit)
@@ -6362,7 +6362,7 @@ void NeoPixelBusModule::sendPowerMonitoringKOs(bool dark)
             uint8_t savedChannelIndex = _channelIndex;
             _channelIndex = i;
 
-            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_Value_2_Ucount, powerCurrentMinDelta(limitMa));
+            queuePowerKo(KoNEOSTRIP_PowerCurrent, stripCurrent, DPT_UElCurrentmA, powerCurrentMinDelta(limitMa));
             queuePowerKo(KoNEOSTRIP_PowerLoad, loadPercent, DPT_Scaling, kPowerLoadMinDelta);
             queuePowerKo(KoNEOSTRIP_PowerWatts, stripWatts, DPT_Value_Power, kPowerWattsMinDelta);
 
@@ -6402,7 +6402,7 @@ void NeoPixelBusModule::drainPowerKos()
 KNXValue NeoPixelBusModule::powerKoValue(double value, const Dpt& type)
 {
     if (type.mainGroup == 14) return KNXValue((float)value);   // DPT 14.056 W
-    if (type.mainGroup == 7) return KNXValue((uint32_t)value); // DPT 7.001 mA
+    if (type.mainGroup == 7) return KNXValue((uint32_t)(value > 65535.0 ? 65535.0 : value)); // DPT 7.012 mA, 2 bytes
     return KNXValue((uint8_t)value);                           // DPT 5.001 %
 }
 

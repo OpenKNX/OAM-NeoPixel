@@ -1174,7 +1174,7 @@
               <!-- Brightness Status -->
               <ComObject Id="%AID%_O-%TT%00003" Number="3"  Name="BrightnessState" Text="Helligkeit Status" FunctionText="Helligkeit Status" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Current Total -->
-              <ComObject Id="%AID%_O-%TT%00004" Number="4"  Name="PowerCurrentTotal" Text="Stromverbrauch Gesamt" FunctionText="Stromverbrauch Gesamt (mA)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00004" Number="4"  Name="PowerCurrentTotal" Text="Stromverbrauch Gesamt" FunctionText="Stromverbrauch Gesamt (mA)" ObjectSize="2 Bytes" DatapointType="DPST-7-12" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Load Total -->
               <ComObject Id="%AID%_O-%TT%00005" Number="5"  Name="PowerLoadTotal" Text="Auslastung Gesamt" FunctionText="Auslastung Gesamt (%)" ObjectSize="1 Byte" DatapointType="DPST-5-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Watts Total -->

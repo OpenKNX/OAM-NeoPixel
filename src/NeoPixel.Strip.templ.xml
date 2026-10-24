@@ -174,7 +174,7 @@
               <!-- Brightness Status -->
               <ComObject Id="%AID%_O-%TT%9%C%004" Number="%K4%"  Name="BrightnessState%C%" Text="Helligkeit Status" FunctionText="%C%: Helligkeit Status" ObjectSize="1 Byte"  DatapointType="DPST-5-1"    WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled"  TransmitFlag="Enabled"  CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Current Strip -->
-              <ComObject Id="%AID%_O-%TT%9%C%005" Number="%K5%"  Name="PowerCurrent%C%" Text="Stromverbrauch" FunctionText="%C%: Stromverbrauch (mA)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%9%C%005" Number="%K5%"  Name="PowerCurrent%C%" Text="Stromverbrauch" FunctionText="%C%: Stromverbrauch (mA)" ObjectSize="2 Bytes" DatapointType="DPST-7-12" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Load Strip -->
               <ComObject Id="%AID%_O-%TT%9%C%006" Number="%K6%"  Name="PowerLoad%C%" Text="Auslastung" FunctionText="%C%: Auslastung (%)" ObjectSize="1 Byte" DatapointType="DPST-5-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Watts Strip -->
