@@ -1562,6 +1562,19 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
             return;
         }
 
+        // A scene number not configured on this segment (recall or learn) changes nothing: ignore it
+        // before it overrides an Effektkette master.
+        if (koIndex == NEO_KoScene && _sceneManager)
+        {
+            const uint8_t sceneNumber = (uint8_t)((ko.valueRef()[0] & 0x3F) + 1);
+            if (sceneNumber > _sceneManager->getSceneCount((uint8_t)channel))
+            {
+                logInfoP("Segment %d: scene %d not configured - ignored", channel, sceneNumber);
+                _channelIndex = oldChannelIndex;
+                return;
+            }
+        }
+
         const bool segmentStatusKo = koIndex == NEO_KoSegmentPowerState || koIndex == NEO_KoSegmentBrightnessState ||
                                      koIndex == NEO_KoCCTState || koIndex == NEO_KoFxState || koIndex == NEO_KoSceneState ||
                                      koIndex == NEO_KoRGBState || koIndex == NEO_KoHSVState || koIndex == NEO_KoRGBWState ||
@@ -2075,72 +2088,18 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 else
                 {
                     // Recall scene
-                    _segments[channel].hsvTracked = false;
                     bool sceneApplied = _sceneManager->recallScene(channel, sceneNumber, targetSegment);
 
                     if (sceneApplied)
                     {
+                        _segments[channel].hsvTracked = false;
                         // Save scene number for flash persistence
                         _segments[channel].savedSceneNumber = sceneNumber;
                     }
                     else
                     {
-                        // Fallback: hardcoded presets for backward compatibility
-                        // (only used when scene number exceeds configured SceneCount)
-                        SegmentConfig& cfgS = _segments[channel];
-                        cfgS.savedSceneNumber = 0; // Clear scene number
-                        // A preset is a static state like a scene: it takes over a running EM.
-                        if (sceneNumber >= 1 && sceneNumber <= 8) interruptEmIfRunning((size_t)channel);
-                        uint8_t presetBrightness = 255; // brightness intent of presets 1-7
-                        switch (sceneNumber)
-                        {
-                            case 1: // Red
-                                targetSegment->setPrimaryColor(255, 0, 0, 0, 0);
-                                break;
-                            case 2: // Green
-                                targetSegment->setPrimaryColor(0, 255, 0, 0, 0);
-                                break;
-                            case 3: // Blue
-                                targetSegment->setPrimaryColor(0, 0, 255, 0, 0);
-                                break;
-                            case 4: // White
-                                targetSegment->setPrimaryColor(255, 255, 255, 0, 0);
-                                break;
-                            case 5: // Warm White (using color temperature)
-                            {
-                                uint8_t r, g, b;
-                                ColorHelper::kelvinToRGB(2700, r, g, b); // Warm white ~2700K
-                                targetSegment->setPrimaryColor(r, g, b, 0, 0);
-                            }
-                            break;
-                            case 6: // Cool White
-                            {
-                                uint8_t r, g, b;
-                                ColorHelper::kelvinToRGB(6500, r, g, b); // Cool white ~6500K
-                                targetSegment->setPrimaryColor(r, g, b, 0, 0);
-                            }
-                            break;
-                            case 7: // Wipe (effect ID 1; presets 1-6 colour it)
-                                applyEffectToSegment(targetSegment, static_cast<uint8_t>(PT_NEOEffectType::Wipe));
-                                cfgS.savedEffectType = static_cast<uint8_t>(PT_NEOEffectType::Wipe);
-                                cfgS.savedEffectValid = true;
-                                cfgS.savedLastWasEffect = true;
-                                presetBrightness = 200;
-                                break;
-                            case 8: // Off: switch off, colour and brightness intent stay
-                                segmentOff((size_t)channel, true);
-                                break;
-                            default:
-                                logWarningP("Unknown preset %d for segment %d", sceneNumber, channel);
-                                break;
-                        }
-                        // Presets 1-7 switch on at the preset brightness (intent x global).
-                        if (sceneNumber >= 1 && sceneNumber <= 7)
-                        {
-                            cfgS.savedBrightness = presetBrightness;
-                            applyBrightnessIntent((size_t)channel);
-                            sceneSwitchOn((size_t)channel);
-                        }
+                        // Not applied (unconfigured numbers are rejected above): the state stays
+                        logInfoP("Segment %d: scene %d not applied", channel, sceneNumber);
                     }
                 }
                 break;
