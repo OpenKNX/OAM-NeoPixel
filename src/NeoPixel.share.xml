@@ -1178,7 +1178,7 @@
               <!-- Power Load Total -->
               <ComObject Id="%AID%_O-%TT%00005" Number="5"  Name="PowerLoadTotal" Text="Auslastung Gesamt" FunctionText="Auslastung Gesamt (%)" ObjectSize="1 Byte" DatapointType="DPST-5-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Watts Total -->
-              <ComObject Id="%AID%_O-%TT%00006" Number="6"  Name="PowerWattsTotal" Text="Leistung Gesamt" FunctionText="Leistung Gesamt (W)" ObjectSize="4 Bytes" DatapointType="DPST-14-056" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%00006" Number="6"  Name="PowerWattsTotal" Text="Leistung Gesamt" FunctionText="Leistung Gesamt (W)" ObjectSize="4 Bytes" DatapointType="DPST-14-56" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- HCL Global State -->
               <ComObject Id="%AID%_O-%TT%00007" Number="7"  Name="HCLGlobalState" Text="HCL Global Zustand" FunctionText="HCL Global Zustand (K)" ObjectSize="2 Bytes" DatapointType="DPST-7-600" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- External Relay 1 -->

@@ -178,7 +178,7 @@
               <!-- Power Load Strip -->
               <ComObject Id="%AID%_O-%TT%9%C%006" Number="%K6%"  Name="PowerLoad%C%" Text="Auslastung" FunctionText="%C%: Auslastung (%)" ObjectSize="1 Byte" DatapointType="DPST-5-1" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
               <!-- Power Watts Strip -->
-              <ComObject Id="%AID%_O-%TT%9%C%007" Number="%K7%"  Name="PowerWatts%C%" Text="Leistung" FunctionText="%C%: Leistung (W)" ObjectSize="4 Bytes" DatapointType="DPST-14-056" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
+              <ComObject Id="%AID%_O-%TT%9%C%007" Number="%K7%"  Name="PowerWatts%C%" Text="Leistung" FunctionText="%C%: Leistung (W)" ObjectSize="4 Bytes" DatapointType="DPST-14-56" WriteFlag="Disabled" UpdateFlag="Disabled" ReadFlag="Enabled" TransmitFlag="Enabled" CommunicationFlag="Enabled" ReadOnInitFlag="Disabled" />
             </ComObjectTable>
             <ComObjectRefs>
               <!-- Power -->
