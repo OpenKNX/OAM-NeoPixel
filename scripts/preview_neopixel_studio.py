@@ -17,7 +17,8 @@ NETWORK_ASSETS = ROOT / 'lib/OFM-Network/web/assets'
 SCENARIOS = {
     'normal': 'RGBCCT · normal', 'rgb': 'RGB only', 'rgbw': 'RGBW',
     'locked': 'KNX locked', 'off': 'Output off', 'em': 'Effect manager running',
-    'empty': 'No segments', 'startup': 'Starting up', 'offline': 'API unavailable',
+    'empty': 'No segments', 'startup': 'Starting up', 'unconfigured': 'Not programmed in ETS',
+    'programming': 'ETS download', 'offline': 'API unavailable',
 }
 
 
@@ -72,10 +73,12 @@ class Device:
         segment['scenes'] = [scene]
         second = copy.deepcopy(segment)
         second.update(id=2, locked=True, em=False, effect=0, parameters=[])
-        self.state = dict(ready=scenario != 'startup', globalPower=scenario != 'off',
+        self.state = dict(ready=scenario not in ('startup', 'unconfigured', 'programming'),
+                          configured=scenario != 'unconfigured', programming=scenario == 'programming',
+                          globalPower=scenario != 'off',
                           completedId=self.next_id, error='',
                           channels=channels,
-                          segments=[] if scenario in ('empty', 'startup') else [segment, second])
+                          segments=[] if scenario in ('empty', 'startup', 'unconfigured', 'programming') else [segment, second])
 
     def apply(self, command):
         segment = next((s for s in self.state['segments'] if s['id'] == command.get('segment')), None)

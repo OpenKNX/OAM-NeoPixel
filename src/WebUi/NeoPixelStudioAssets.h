@@ -361,7 +361,9 @@ static const char kNeoPixelStudioJs[] = R"JS(
         const segment = current();
         if (!state.ready) {
             el('form').hidden = true;
-            status('Waiting for the device to finish startup…');
+            status(state.programming ? 'ETS download in progress. Studio will be available after the device restarts.'
+                : state.configured === false ? 'This device has not been programmed with ETS. Download the ETS application to configure its segments before using NeoPixel Studio.'
+                : 'Waiting for the device to finish startup…');
             return;
         }
         el('form').hidden = !segment;

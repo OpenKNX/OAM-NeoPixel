@@ -168,7 +168,7 @@ void NeoPixelBusModule::setup(bool configured)
 {
 #if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
     if (!_studio) _studio = new (std::nothrow) NeoPixelStudio(*this);
-    if (_studio) _studio->setup();
+    if (_studio) _studio->setup(configured);
 #endif
 #ifdef ARDUINO_ARCH_ESP32
     logEsp32ResetReason();

@@ -12,7 +12,7 @@ class NeoPixelStudio
 {
   public:
     explicit NeoPixelStudio(NeoPixelBusModule& module) : _module(module) {}
-    void setup();
+    void setup(bool configured);
     void loop();
     void restoreSaved(bool scenesOnly);
     void invalidateSaved();

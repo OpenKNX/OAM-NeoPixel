@@ -49,9 +49,11 @@ namespace
     }
 } // namespace
 
-void NeoPixelStudio::setup()
+void NeoPixelStudio::setup(bool configured)
 {
     if (_registered) return;
+    _state = configured ? "{\"ready\":false,\"configured\":true,\"segments\":[]}"
+                        : "{\"ready\":false,\"configured\":false,\"segments\":[]}";
     Writer effects;
     effects.beginArray();
     for (unsigned id = 0; id <= 254; ++id)
@@ -100,7 +102,7 @@ void NeoPixelStudio::setup()
     web.addRoute(WEB_GET, "/neopixel/api/state", [this](WebRequest& req, WebResponse& res) {
         if (!_acceptCommands.load())
         {
-            sendJson(res, 200, "{\"ready\":false,\"segments\":[]}");
+            sendJson(res, 200, "{\"ready\":false,\"programming\":true,\"segments\":[]}");
             return;
         }
         const std::string selected = req.getQueryParam("segment");
@@ -443,7 +445,7 @@ std::string NeoPixelStudio::snapshot()
 {
     const uint32_t selected = _requestedSegment.load();
     Writer json;
-    json.beginObject().field("ready", true).field("globalPower", _module._globalPowerOn);
+    json.beginObject().field("ready", true).field("configured", true).field("globalPower", _module._globalPowerOn);
     json.field("completedId", _completedId).field("error", _error);
     json.field("channels", uint32_t(_module._virtualStrip ? _module._virtualStrip->getBytesPerLed() : 3));
     json.key("segments").beginArray();

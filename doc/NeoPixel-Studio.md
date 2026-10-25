@@ -5,6 +5,10 @@ the shared OpenKNX navigation, styles and logo. It controls configured segments;
 it cannot change strip definitions, segment geometry, GPIOs, current limits or
 power-supply configuration.
 
+An unprogrammed device shows that an ETS application download is required. Startup
+and an ETS download in progress have separate status messages; controls stay hidden
+until Studio is ready.
+
 ## Controls and draft workflow
 
 - Choose any compiled-in effect and edit its numeric, enum, boolean or text parameters.
@@ -113,7 +117,8 @@ python3 scripts/preview_neopixel_studio.py
 
 Open <http://127.0.0.1:8765/neopixel>. The dependency-free server binds to loopback and
 serves production page assets with simulated API responses. Choose scenarios for
-RGB/RGBW/RGBCCT, locks, output off, effect manager, no segments, startup and API outage.
+RGB/RGBW/RGBCCT, locks, output off, effect manager, no segments, startup,
+unprogrammed devices, ETS download and API outage.
 Use `--port` or `--state-file` to override the port or simulated persistent-save file.
 Reload after editing assets. Multiple tabs share the simulated state. The preview does
 not execute LED drivers or KNX timing.
