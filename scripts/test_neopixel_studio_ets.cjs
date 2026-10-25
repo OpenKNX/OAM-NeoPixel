@@ -7,6 +7,13 @@ const assert = require('node:assert/strict');
 const source = fs.readFileSync(path.join(__dirname, '../src/NeoPixel.script.js'), 'utf8');
 const context = vm.createContext({});
 vm.runInContext(source, context);
+// The tracked ETS script has empty generated maps after -Clean. These names are
+// transport fixtures; the build-cycle regression checks generation of the real map.
+context.NEO_StudioEffectParameters = {
+    '1': ['WipeSpeed', 'WipeDirection', 'WipeLoop'],
+    '19': ['LaufschriftSpeed', 'LaufschriftGap', 'LaufschriftLoop', 'LaufschriftText', 'LaufschriftFont'],
+    '25': ['StarfieldWarpSpeed', 'StarfieldWarpDensity', 'StarfieldWarpColorMode', 'StarfieldWarpWarpPulse']
+};
 vm.runInContext(`
 var settings = {version:1, segment:1, channels:5, effect:19, parameters:[
  {name:'NEOEffectType',value:19}, {name:'SegmentStartupBrightness',value:180},
