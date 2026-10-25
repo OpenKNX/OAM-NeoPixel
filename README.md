@@ -140,6 +140,8 @@ Select your target hardware environment in `platformio.custom.ini`. The release 
 | `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V15` | OpenKNXiao KNeoPiX V1.5 RP2040 |
 | `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15` | OpenKNXiao KNeoPiX V1.5 ESP32S3 |
 | `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_IP` | OpenKNXiao KNeoPiX V1.5 ESP32S3 (KNX IP) |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_TPWIFI` | OpenKNXiao KNeoPiX V1.4 ESP32S3 (KNX TP, WiFi for web server, setup AP and OTA) |
+| `release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_TPWIFI` | OpenKNXiao KNeoPiX V1.5 ESP32S3 (KNX TP, WiFi for web server, setup AP and OTA) |
 | `release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1` | OpenKNXiao Mini RP2040 |
 | `release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1` | OpenKNXiao Mini RP2350 |
 | `release_OKNXHW_UP1_GW_UART` | OpenKNX UP1 GW-UART |
