@@ -584,11 +584,15 @@ function NEO_compareStudioSettings(device, online, progress, context) {
         }
         var equal = typeof expected === "number" ? Number(actual) === expected : String(actual).toUpperCase() === String(expected).toUpperCase();
         if (binding.name.indexOf("Color") < 0 && typeof expected === "string") equal = String(actual) === expected;
-        if (!equal) different.push(binding.name);
+        if (!equal) different.push("- " + binding.name + ": ETS = " + JSON.stringify(actual) + "; Gerät = " + JSON.stringify(expected));
     }
     progress.setProgress(100);
-    if (different.length) throw new Error("NeoPixel: ETS und Gerät unterscheiden sich bei " + different.length + " Studio-Wert(en): " + different.join(", "));
-    progress.setText("Identisch: Farben, Helligkeit, Effekt und Effektparameter stimmen mit ETS überein.");
+    if (different.length) {
+        var report = "NeoPixel Segment " + toInt(context.segment, 0) + ": " + different.length + " abweichende Studio-Wert(e).\n" + different.join("\n");
+        progress.setText(report);
+        throw new Error(report);
+    }
+    progress.setText("Identisch: Farben, Helligkeit, Effekt, Effektparameter und Szenen stimmen mit ETS überein.");
 }
 
 // BEGIN AUTO-GENERATED: Studio ETS parameter names

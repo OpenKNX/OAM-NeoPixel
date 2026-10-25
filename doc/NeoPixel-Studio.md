@@ -69,14 +69,14 @@ An ETS parameter download invalidates normal runtime persistence and all Studio 
 including an identical download. A filesystem invalidation marker prevents stale
 snapshots from being reused. A changed segment parameter hash also rejects old imports.
 
-In the segment's ETS Effect page:
+On the segment's main ETS page, below Beschreibung:
 
 1. **Gespeicherte Studio-Werte in ETS übernehmen** imports the last explicit Save:
    primary/secondary colours, brightness, effect, parameters and all scene data/count.
    Scene slot aliases and reduced effect selectors are refreshed as well.
 2. Review the imported project values and download the ETS application to the device.
 3. **ETS mit aktuellen Gerätewerten vergleichen** compares ETS with live visual settings
-   and scenes without modifying ETS, reporting differing parameter names.
+   and scenes without modifying ETS, listing each differing parameter with its ETS value and current device value.
 
 Import uses the last explicit Save; comparison uses live state. Geometry, hardware,
 current limits and effect-manager sequences are outside the import/comparison scope.
