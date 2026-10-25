@@ -27,8 +27,12 @@ namespace OpenKNX
 class NeoPixelWeb
 {
   public:
-    /** @brief Registers menu item and routes once; call before the webserver starts. */
-    void setup();
+    /**
+     * @brief Registers menu item and routes once; call before the webserver starts.
+     * @param configured false: the page only reports "not configured", nothing touches the module
+     * @param startMs millis() at the module setup, approximate start of the startup delay
+     */
+    void setup(bool configured, uint32_t startMs);
     /** @brief Loop task: executes queued commands, builds snapshots while the page polls. */
     void loop();
 
@@ -68,7 +72,8 @@ class NeoPixelWeb
         kResInvalid = 3,
         kResEmRefused = 4,
         kResSceneMissing = 5,
-        kResNoEm = 6
+        kResNoEm = 6,
+        kResDropped = 7 ///< not queued during the startup delay (DPT 3.007 dimming, KO without W flag)
     };
 
     // httpd task
@@ -78,7 +83,9 @@ class NeoPixelWeb
     void handlePixels(OpenKNX::Network::WebRequest& req, OpenKNX::Network::WebResponse& res);
     void handleControl(OpenKNX::Network::WebRequest& req, OpenKNX::Network::WebResponse& res);
     void sendBuffer(OpenKNX::Network::WebResponse& res, const std::string& buf, const char* mime);
-    static bool parseCommand(const char* body, size_t len, Command& cmd);
+    void sendUnconfigured(OpenKNX::Network::WebResponse& res);
+    /** @brief Parses one command; the body must carry "tok" equal to token (no cross-site form post). */
+    static bool parseCommand(const char* body, size_t len, Command& cmd, const char* token);
 
     // loop task
     void executeCommands();
@@ -96,6 +103,9 @@ class NeoPixelWeb
     void releaseIdle(uint32_t now);
 
     bool _routesAdded = false;
+    bool _configured = false; ///< set once in setup(), before the webserver starts
+    uint32_t _startMs = 0;
+    char _token[17] = {}; ///< control token, sent in /neo/state only (same-origin read)
     void* _lock = nullptr;  ///< SemaphoreHandle_t: guards _stateFront, _emFront, _pix*
     void* _queue = nullptr; ///< QueueHandle_t of Command
 
@@ -128,14 +138,14 @@ class NeoPixelWeb
     uint16_t _pixFrame = 0;
     uint32_t _pixCopyMs = 0;
 
-    // last executed command, reported in the next snapshot
-    uint32_t _lastCmdSeq = 0;
-    uint8_t _lastCmdSeg = 0;
-    uint8_t _lastCmdRes = 0;
+    // results of the last executed commands (seq 0 = empty slot), reported in the snapshot
+    static constexpr uint8_t kCmdRing = 8;
+    uint32_t _cmdRingSeq[kCmdRing] = {};
+    uint8_t _cmdRingRes[kCmdRing] = {};
+    uint8_t _cmdRingPos = 0;
 
-    // strip -> ETS strip channel and timing selection (filled once)
+    // strip -> ETS strip channel and timing selection (refreshed per snapshot)
     static constexpr uint8_t kMaxStrips = 16;
-    bool _stripsMapped = false;
     uint8_t _stripChannel[kMaxStrips] = {};
     uint8_t _stripTiming[kMaxStrips] = {};
 

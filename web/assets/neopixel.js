@@ -4,7 +4,7 @@
   'use strict';
   var ROOT = document.getElementById('neo');
   if (!ROOT) return;
-  ROOT.innerHTML = "<div class=\"np-head\">\n  <div><h1>NeoPixel</h1><div class=\"meta\" id=\"meta\"></div></div>\n  <div class=\"np-mode\" id=\"mode\" role=\"group\" aria-label=\"Datenquelle\">\n    <button data-m=\"live\" class=\"on\" aria-pressed=\"true\"><span class=\"np-livedot\"></span>Live</button>\n    <button data-m=\"pv\" aria-pressed=\"false\">Vorschau</button>\n  </div>\n</div>\n<div class=\"np-mocknote\" id=\"mocknote\"></div>\n<div class=\"np-pv\" id=\"pv\" hidden>\n  <div class=\"np-pv-h\"><span class=\"np-pv-tag\">Vorschau</span><b>Beispieldaten, nicht dieses Ger\u00e4t</b><span class=\"np-sp\"></span><button class=\"np-btn\" id=\"pv-back\">Zur\u00fcck zu Live</button></div>\n  <div class=\"np-pv-sel\"><span class=\"np-f\">Vorlagen (doc/examples)</span><span id=\"pv-tpl\"></span></div>\n  <div class=\"np-pv-sel\"><span class=\"np-f\">Weitere F\u00e4lle</span><span id=\"pv-more\"></span></div>\n  <div class=\"np-pv-d\" id=\"pv-d\"></div>\n</div>\n<div class=\"np-bar\" id=\"bar\"></div>\n<div class=\"np-tabs\" id=\"tabs\">\n  <button class=\"np-tab active\" data-t=\"hw\">Hardware</button>\n  <button class=\"np-tab\" data-t=\"setup\">Aufbau</button>\n  <button class=\"np-tab\" data-t=\"ctl\">Steuern</button>\n  <button class=\"np-tab\" data-t=\"segs\">Segmente</button>\n  <button class=\"np-tab\" data-t=\"em\">Effektmanager</button>\n  <button class=\"np-tab\" data-t=\"chain\">Effektkette</button>\n  <button class=\"np-tab\" data-t=\"strips\">Streifen, Strom &amp; Relais</button>\n</div>\n<div class=\"np-pvline\" id=\"pvline\" hidden></div>\n\n<section class=\"np-pane\" id=\"p-hw\"><div id=\"hw\"></div></section>\n<section class=\"np-pane\" id=\"p-setup\" hidden>\n  <div class=\"np-card\">\n    <div class=\"np-card-h\"><h3>Anordnung \u00b7 Draufsicht mit LED-Bild</h3><span id=\"lay-name\" class=\"np-pill idle\"></span><span class=\"np-sp\"></span><button class=\"np-btn\" id=\"lay-edit\">Anordnung festlegen</button></div>\n    <canvas class=\"np-stage\" id=\"plan\"></canvas>\n    <div class=\"np-cap\" id=\"plan-cap\"></div>\n  </div>\n  <div class=\"np-editor\" id=\"editor\" hidden></div>\n  <div class=\"np-note info\"><b>Die Anordnung legst du fest.</b> Die Firmware wei\u00df nicht, wo die LEDs liegen: Sie kennt nur die Reihenfolge der Streifen, die Segmente, die 2D/3D-Geometrie mit Verdrahtung und den Versatz in der Effektkette. Die Anordnung ist eine Anzeigehilfe und \u00e4ndert nichts an der LED-Ausgabe. Sie wird in diesem Browser gespeichert und l\u00e4sst sich als JSON-Datei exportieren und in einem anderen Browser importieren; Speichern auf dem Ger\u00e4t (/neo/layout.json) ist eine sp\u00e4tere Option.</div>\n  <h2>Vom Streifen zum Segment</h2>\n  <div class=\"np-pipe\" id=\"pipe\"></div>\n  <div class=\"np-note\">LED-Bild = Inhalt des virtuellen Streifens, ohne HCL, Gamma und Strombegrenzung. Ausgeschaltete LEDs erscheinen hellgrau.</div>\n</section>\n<section class=\"np-pane\" id=\"p-ctl\" hidden><div id=\"ctl\"></div></section>\n<section class=\"np-pane\" id=\"p-segs\" hidden><div class=\"np-tw\" id=\"segs\"></div></section>\n<section class=\"np-pane\" id=\"p-em\" hidden><div id=\"em\"></div></section>\n<section class=\"np-pane\" id=\"p-chain\" hidden><div id=\"chain\"></div></section>\n<section class=\"np-pane\" id=\"p-strips\" hidden><div id=\"strips\"></div></section>\n<div class=\"np-foot\" id=\"foot\"></div>";
+  ROOT.innerHTML = "<div class=\"np-head\">\n  <div><h1>NeoPixel</h1><div class=\"meta\" id=\"meta\"></div></div>\n  <div class=\"np-mode\" id=\"mode\" role=\"group\" aria-label=\"Datenquelle\">\n    <button data-m=\"live\" class=\"on\" aria-pressed=\"true\"><span class=\"np-livedot\"></span>Live</button>\n    <button data-m=\"pv\" aria-pressed=\"false\">Vorschau</button>\n  </div>\n</div>\n<div class=\"np-mocknote\" id=\"mocknote\"></div>\n<div class=\"np-pv\" id=\"pv\" hidden>\n  <div class=\"np-pv-h\"><span class=\"np-pv-tag\">Vorschau</span><b>Beispieldaten, nicht dieses Ger\u00e4t</b><span class=\"np-sp\"></span><button class=\"np-btn\" id=\"pv-back\">Zur\u00fcck zu Live</button></div>\n  <div class=\"np-pv-sel\"><span class=\"np-f\">Vorlagen (doc/examples)</span><span id=\"pv-tpl\"></span></div>\n  <div class=\"np-pv-sel\"><span class=\"np-f\">Weitere F\u00e4lle</span><span id=\"pv-more\"></span></div>\n  <div class=\"np-pv-d\" id=\"pv-d\"></div>\n</div>\n<div class=\"np-bar\" id=\"bar\"></div>\n<div class=\"np-note bad\" id=\"unconf\" hidden></div>\n<div class=\"np-tabs\" id=\"tabs\">\n  <button class=\"np-tab active\" data-t=\"hw\">Hardware</button>\n  <button class=\"np-tab\" data-t=\"setup\">Aufbau</button>\n  <button class=\"np-tab\" data-t=\"ctl\">Steuern</button>\n  <button class=\"np-tab\" data-t=\"segs\">Segmente</button>\n  <button class=\"np-tab\" data-t=\"em\">Effektmanager</button>\n  <button class=\"np-tab\" data-t=\"chain\">Effektkette</button>\n  <button class=\"np-tab\" data-t=\"strips\">Streifen, Strom &amp; Relais</button>\n</div>\n<div class=\"np-pvline\" id=\"pvline\" hidden></div>\n\n<section class=\"np-pane\" id=\"p-hw\"><div id=\"hw\"></div></section>\n<section class=\"np-pane\" id=\"p-setup\" hidden>\n  <div class=\"np-card\">\n    <div class=\"np-card-h\"><h3>Anordnung \u00b7 Draufsicht mit LED-Bild</h3><span id=\"lay-name\" class=\"np-pill idle\"></span><span class=\"np-sp\"></span><button class=\"np-btn\" id=\"lay-edit\">Anordnung festlegen</button></div>\n    <canvas class=\"np-stage\" id=\"plan\"></canvas>\n    <div class=\"np-cap\" id=\"plan-cap\"></div>\n  </div>\n  <div class=\"np-editor\" id=\"editor\" hidden></div>\n  <div class=\"np-note info\"><b>Die Anordnung legst du fest.</b> Die Firmware wei\u00df nicht, wo die LEDs liegen: Sie kennt nur die Reihenfolge der Streifen, die Segmente, die 2D/3D-Geometrie mit Verdrahtung und den Versatz in der Effektkette. Die Anordnung ist eine Anzeigehilfe und \u00e4ndert nichts an der LED-Ausgabe. Sie wird in diesem Browser gespeichert und l\u00e4sst sich als JSON-Datei exportieren und in einem anderen Browser importieren; Speichern auf dem Ger\u00e4t (/neo/layout.json) ist eine sp\u00e4tere Option.</div>\n  <h2>Vom Streifen zum Segment</h2>\n  <div class=\"np-pipe\" id=\"pipe\"></div>\n  <div class=\"np-note\">LED-Bild = Inhalt des virtuellen Streifens, ohne HCL, Gamma und Strombegrenzung. Ausgeschaltete LEDs erscheinen hellgrau.</div>\n</section>\n<section class=\"np-pane\" id=\"p-ctl\" hidden><div id=\"ctl\"></div></section>\n<section class=\"np-pane\" id=\"p-segs\" hidden><div class=\"np-tw\" id=\"segs\"></div></section>\n<section class=\"np-pane\" id=\"p-em\" hidden><div id=\"em\"></div></section>\n<section class=\"np-pane\" id=\"p-chain\" hidden><div id=\"chain\"></div></section>\n<section class=\"np-pane\" id=\"p-strips\" hidden><div id=\"strips\"></div></section>\n<div class=\"np-foot\" id=\"foot\"></div>";
   var $ = function (id) { return document.getElementById(id); };
   var qa = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var cs0 = getComputedStyle(document.documentElement);
@@ -99,7 +99,7 @@
   // strips: pm = 'global' (Global verwenden) | 'fix' (Benutzerdefiniert, Fester Wert) | 'led' (Pro LED); ch = channels
   function mkStrips(n, o) {
     var a = [];
-    for (var i = 0; i < n; i++) a.push({ name: (o.names && o.names[i]) || 'Streifen ' + (i + 1), chip: o.chip, leds: o.leds[i] || o.leds[0], port: 'Ausgang ' + (i + 1), order: o.order, ch: o.ch, drv: o.drv(i), tim: o.tim || '800 kHz · Chipprofil', pm: o.pm || 'global', lim: o.lim ? o.lim[i] || o.lim[0] : 0, perLed: o.perLed || 0, thr: 80, abl: 80, spi: o.spi || 0 });
+    for (var i = 0; i < n; i++) a.push({ name: (o.names && o.names[i]) || 'Streifen ' + (i + 1), chip: o.chip, leds: o.leds[i] || o.leds[0], port: 'Kanal ' + (i + 1), order: o.order, ch: o.ch, drv: o.drv(i), tim: o.tim || '800 kHz · Chipprofil', pm: o.pm || 'global', lim: o.lim ? o.lim[i] || o.lim[0] : 0, perLed: o.perLed || 0, thr: 80, abl: 80, spi: o.spi || 0 });
     return a;
   }
   function pio(i) { return 'PIO' + (i >> 2) + ' · SM ' + (i & 3) + ' · DMA ' + i; }
@@ -122,7 +122,7 @@
         { n: 'Sitzecke', a: 240, b: 299, geo: [0], st: 'on', bri: 71, c1: '#ff9a40', w: 60, fx: 'Solid', em: 0, ch: { m: 0 }, hcl: 0 }],
       ems: [],
       relays: [{ name: 'LED-Netzteil', st: 1, inv: 0, pin: 'D9', lock: 0, offDelay: 30, minOff: 10 }],
-      hw: { chip: 'ESP32-S3 · 240 MHz · 2 Kerne', board: 'KNeoPiX V1.5 ESP32-S3', hwid: '0x1322', ls: 'SN74LV8T245', build: 'KNX TP + WLAN', web: 1, ft: 2.6, ftMin: 2.1, ftMax: 6.9, heap: 186, heapMin: 151, heapTot: 320, rmt: [1, 1, 0, 0], temp: 41.5, up: '3 d 04:12', start: 'abgeschlossen', flash: 'gültig · 3 / 3 Segmente', err: '' },
+      hw: { chip: 'ESP32-S3 · 240 MHz · 2 Kerne', board: 'KNeoPiX V1.5 ESP32-S3', hwid: '0x1322', ls: 'SN74LV8T245', build: 'KNX TP + WLAN', web: 1, ft: 2.6, ftMin: 2.1, ftMax: 6.9, heap: 186, heapMin: 151, heapTot: 320, rmt: [1, 1, 0, 0], temp: 41.5, up: '3 d 04:12', start: 'abgeschlossen', saved: '3 / 3 Segmente', err: '' },
       chain: null,
       layout: { tpl: 'line', p: { n: 3, dens: 60, gap: 40 }, runs: [{ name: 'Dachkante links', src: 'seg', seg: 0, rev: 0 }, { name: 'Dachkante rechts', src: 'seg', seg: 1, rev: 0 }, { name: 'Sitzecke', src: 'seg', seg: 2, rev: 0 }] }
     },
@@ -134,7 +134,7 @@
       strips: mkStrips(1, { names: ['Küchenzeile'], chip: 'WS2812B', leds: [120], order: 'GRB', ch: 3, drv: pio }),
       segs: [{ n: 'Küchenzeile', a: 0, b: 119, geo: [0], st: 'on', bri: 80, c1: '#ffb46b', fx: 'Solid', em: 0, ch: { m: 0 }, hcl: 0, scenes: [{ n: 1, c: '#ffd7a8', bri: 100 }, { n: 2, c: '#ff8c40', bri: 35 }] }],
       ems: [], relays: [],
-      hw: HW2350(1, { ft: 1.1, ftMin: .9, ftMax: 3.2, heap: 402, heapMin: 388, heapTot: 520, temp: 39.0, flash: 'gültig · 1 / 1 Segment' }),
+      hw: HW2350(1, { ft: 1.1, ftMin: .9, ftMax: 3.2, heap: 402, heapMin: 388, heapTot: 520, temp: 39.0, saved: '1 / 1 Segment' }),
       chain: null,
       layout: { tpl: 'line', p: { n: 1, dens: 60, gap: 40 }, runs: [{ name: 'Küchenzeile', src: 'seg', seg: 0, rev: 0 }] }
     },
@@ -151,7 +151,7 @@
         { n: 'Rechts', a: 300, b: 479, geo: [0], st: 'on', bri: 100, c1: '#ffffff', fx: 'Solid', em: 1, cue: 1, ems: 'run', stopRet: 'Aus', ch: { m: 0 }, hcl: 0 }],
       ems: [{ id: 1, name: 'Einfahrt', st: 1, loop: 0, next: 0, stopRet: 'Aus', cues: [{ n: 'Begrüßung', fx: 'Comet', note: 'Weiß', d: 10, f: 1000 }, { n: 'Ausleuchten', fx: 'Solid', note: 'Weiß', c: '#ffffff', d: 0, f: 0 }, { n: 'Nachlauf', fx: 'Breathing', c: '#ffffff', bri: 63, d: 30, f: 3000 }] }],
       relays: [],
-      hw: HW2350(3, { ft: 1.9, ftMin: 1.4, ftMax: 4.8, heap: 371, heapMin: 352, heapTot: 520, temp: 37.6, flash: 'gültig · 3 / 3 Segmente' }),
+      hw: HW2350(3, { ft: 1.9, ftMin: 1.4, ftMax: 4.8, heap: 371, heapMin: 352, heapTot: 520, temp: 37.6, saved: '3 / 3 Segmente' }),
       chain: null,
       layout: { tpl: 'u', p: { w: 300, d: 600 }, runs: [{ name: 'Einfahrt', src: 'seg', seg: 0, rev: 0, on: 1 }, { name: 'Wand links', src: 'seg', seg: 1, rev: 0, on: 1 }, { name: 'Rückwand', src: 'none', rev: 0, on: 1 }, { name: 'Wand rechts', src: 'seg', seg: 2, rev: 0, on: 1 }] },
       sim: 1
@@ -165,7 +165,7 @@
       segs: [{ n: 'Terrasse 1', a: 0, b: 479, geo: [60, 8, 0, 2], st: 'on', bri: 100, c1: '#ff9040', w: 120, fx: 'Cylon', em: 0, ch: { m: 1, pol: 0, to: 3, total: 1440, off: 0, age: 1 }, hcl: 0, stopRet: 'Aus' }],
       ems: [{ id: 1, name: 'Abendstimmung', st: 1, loop: 1, next: 0, stopRet: 'Aus', cues: [{ n: 'Sonnenunterg.', fx: 'Gradient', bri: 86, d: 600, f: 4000 }, { n: 'Welle', fx: 'Aurora 2D', d: 600, f: 4000 }, { n: 'Glut', fx: 'Fire', bri: 71, d: 600, f: 4000 }] }],
       relays: [],
-      hw: HW2350(8, { ft: 6.8, ftMin: 5.9, ftMax: 11.4, heap: 168, heapMin: 142, heapTot: 520, temp: 43.2, up: '5 d 02:17', flash: 'gültig · 1 / 1 Segment' }),
+      hw: HW2350(8, { ft: 6.8, ftMin: 5.9, ftMax: 11.4, heap: 168, heapMin: 142, heapTot: 520, temp: 43.2, up: '5 d 02:17', saved: '1 / 1 Segment' }),
       chain: { seg: 0, total: 1440, peersLit: 1, nodes: [{ n: 'Abschnitt 1', role: 'Master', me: 1, off: 0, len: 480 }, { n: 'Abschnitt 2', role: 'Slave', off: 480, len: 480 }, { n: 'Abschnitt 3', role: 'Slave', off: 960, len: 480 }] },
       layout: { tpl: 'rows', p: { per: 8, len: 100, gap: 30, ggap: 10, leds: 60 }, edge: ['Hauswand', 'Garten'], runs: [{ name: 'Abschnitt 1', src: 'seg', seg: 0, rev: 0 }, { name: 'Abschnitt 2', src: 'chain', base: 480, rev: 0 }, { name: 'Abschnitt 3', src: 'chain', base: 960, rev: 0 }] },
       cap: 'Cylon direkt (ohne EM) über die gemeinsame Matrix 180 × 8: dieses Gerät rendert die Spalten 0–59. Abschnitt 2 und 3 sind angenommen; dieses Gerät sieht ihre LEDs nicht.'
@@ -179,7 +179,7 @@
       strips: mkStrips(1, { names: ['Panel 16x16'], chip: 'WS2812B', leds: [256], order: 'GRB', ch: 3, drv: pio }),
       segs: [{ n: 'Matrix', a: 0, b: 255, geo: [16, 16, 0, 1], st: 'on', bri: 50, c1: '#ffb46b', fx: 'Plasma Nebula', em: 0, ch: { m: 0 }, hcl: 0 }],
       ems: [], relays: [],
-      hw: HW2350(1, { ft: 2.4, ftMin: 2.0, ftMax: 4.1, heap: 389, heapMin: 371, heapTot: 520, temp: 40.1, flash: 'gültig · 1 / 1 Segment' }),
+      hw: HW2350(1, { ft: 2.4, ftMin: 2.0, ftMax: 4.1, heap: 389, heapMin: 371, heapTot: 520, temp: 40.1, saved: '1 / 1 Segment' }),
       chain: null,
       layout: { tpl: 'matrix', p: { cols: 16, rows: 16, pitch: 10 }, runs: [{ name: 'Matrix', src: 'seg', seg: 0, rev: 0 }] }
     },
@@ -192,7 +192,7 @@
       segs: [{ n: 'Würfel', a: 0, b: 511, geo: [8, 8, 8, 5], st: 'on', bri: 100, c1: '#ffb36b', w: 255, cw: 120, fx: 'Rainbow', em: 6, cue: 1, ems: 'run', cueEl: 7, ch: { m: 0 }, hcl: 3000, hclSrc: 'eigener Lichtmanager-Kanal 2' }],
       ems: [{ id: 6, name: 'Würfelshow', st: 1, loop: 1, next: 0, cues: [{ n: 'Regenbogen', fx: 'Rainbow', d: 20, f: 800 }, { n: 'Jonglieren', fx: 'Juggle', d: 25, f: 800 }, { n: 'Funkeln', fx: 'Sparkle', d: 25, f: 800 }, { n: 'Atmen', fx: 'Breathing', d: 10, f: 2000 }] }],
       relays: [{ name: 'Netzteil 5 V', st: 1, inv: 0, pin: 'D9', lock: 0 }],
-      hw: { chip: 'RP2350 · 150 MHz · 2 Kerne', board: 'KNeoPiX V1 RP2350', hwid: '0x1310', ls: 'TXS0108E', build: 'KNX TP', web: 0, ft: 18.7, ftMin: 11.0, ftMax: 24.9, heap: 96, heapMin: 71, heapTot: 520, sm: smUse(2, 12), dma: 16, dmaUsed: 2, temp: 58.2, up: '0 d 00:52', start: 'abgeschlossen', flash: 'gültig · 1 / 1 Segment', err: '' },
+      hw: { chip: 'RP2350 · 150 MHz · 2 Kerne', board: 'KNeoPiX V1 RP2350', hwid: '0x1310', ls: 'TXS0108E', build: 'KNX TP', web: 0, ft: 18.7, ftMin: 11.0, ftMax: 24.9, heap: 96, heapMin: 71, heapTot: 520, sm: smUse(2, 12), dma: 16, dmaUsed: 2, temp: 58.2, up: '0 d 00:52', start: 'abgeschlossen', saved: '1 / 1 Segment', err: '' },
       chain: null,
       layout: { tpl: 'cube', p: { n: 8, pitch: 5 }, runs: [{ name: 'Würfel', src: 'seg', seg: 0, rev: 0 }] },
       cap: 'Die Firmware hat keine eigenen 3D-Effekte: ein Effekt läuft über die LED-Reihenfolge (Ebene für Ebene, Zeilen serpentin).'
@@ -208,7 +208,7 @@
         { n: 'Tor', a: 150, b: 299, geo: [0], st: 'lock', locked: 1, bri: 100, c1: '#ff3b30', fx: 'Strobe', em: 0, ch: { m: 0 }, hcl: 0 }],
       ems: [{ id: 8, name: 'Alarm', st: 2, loop: 1, next: 0, cues: [{ n: 'Rot', fx: 'Strobe', c: '#ff0000', d: 5, f: 0 }, { n: 'Weiß', fx: 'Strobe', d: 5, f: 0 }] }],
       relays: [{ name: 'Netzteil', st: 1, inv: 0, pin: 'D9', lock: 0 }, { name: 'Netzteil Fassade', st: 0, inv: 0, pin: 'D10', lock: 12 }, { name: 'Relais 3', st: 0, inv: 1, pin: '', lock: 0, nopin: 1 }],
-      hw: { chip: 'RP2040 · 133 MHz · 2 Kerne', board: 'KNeoPiX V1 RP2040', hwid: '0x1300', ls: 'TXS0108E', build: 'KNX TP', web: 0, ft: 2.0, ftMin: 1.6, ftMax: 31.4, heap: 41, heapMin: 9, heapTot: 264, sm: smUse(1, 8), dma: 12, dmaUsed: 1, temp: 46.8, up: '0 d 03:41', start: 'abgeschlossen', flash: '1 / 2 Segmente gültig', err: '' },
+      hw: { chip: 'RP2040 · 133 MHz · 2 Kerne', board: 'KNeoPiX V1 RP2040', hwid: '0x1300', ls: 'TXS0108E', build: 'KNX TP', web: 0, ft: 2.0, ftMin: 1.6, ftMax: 31.4, heap: 41, heapMin: 9, heapTot: 264, sm: smUse(1, 8), dma: 12, dmaUsed: 1, temp: 46.8, up: '0 d 03:41', start: 'abgeschlossen', saved: '1 / 2 Segmente', err: '' },
       chain: { seg: 0, total: 450, peersLit: 0, nodes: [{ n: 'Fassade Ost', role: 'Master', off: 0, len: 150, unk: 1 }, { n: 'Fassade Mitte', role: 'Slave', me: 1, off: 150, len: 150, timeout: 1 }, { n: 'Fassade West', role: 'Slave', off: 300, len: 150, unk: 1 }] },
       layout: { tpl: 'line', p: { n: 4, dens: 30, gap: 40 }, runs: [{ name: 'Fassade Ost', src: 'chain', base: 0, rev: 0 }, { name: 'Fassade Mitte', src: 'seg', seg: 0, rev: 0 }, { name: 'Fassade West', src: 'chain', base: 300, rev: 0 }, { name: 'Tor', src: 'seg', seg: 1, rev: 0 }] },
       cap: 'Gerät aus, aber das gesperrte Tor läuft weiter: eine Sperre hat Vorrang vor Aus. Fassade Mitte ist nach dem Sync-Timeout aus; die Nachbarn kennt dieses Gerät nicht.'
@@ -224,7 +224,7 @@
     w.title = 'Zwei Streifen (SK6812 RGBW, 150 + 150 LEDs), drei Segmente. Die Dachkanten folgen der HCL-Farbtemperatur von Lichtmanager 1, die Sitzecke nicht. Relais 1 schaltet das gemeinsame Netzteil; globale Grenze 5000 mA. Gezeigt: Start-Werte nach dem Einschalten.';
     w.segs[0].bri = 100; w.segs[1].bri = 100;
     w.strips.forEach(function (s, i) { s.drv = pio(i); });
-    w.hw = HW2350(2, { ft: 1.6, ftMin: 1.2, ftMax: 3.9, heap: 377, heapMin: 360, heapTot: 520, temp: 38.2, flash: 'gültig · 3 / 3 Segmente' });
+    w.hw = HW2350(2, { ft: 1.6, ftMin: 1.2, ftMax: 3.9, heap: 377, heapMin: 360, heapTot: 520, temp: 38.2, saved: '3 / 3 Segmente' });
     SC.wintergarten = w; w.emCount = 0;
 
     // Terrasse while EM 1 runs: the band is suspended, every device renders its own 60 x 8.
@@ -247,7 +247,7 @@
     n.ems[0].st = 1;
     n.relays = [{ name: 'Netzteil', st: 0, inv: 0, pin: 'D9', lock: 0 }];
     delete n.hw.ets; n.hw.heap = 118; n.hw.heapMin = 104; n.hw.ftMin = 0; n.hw.ftMax = 0; n.hw.ft = 0; n.hw.temp = 0;
-    n.hw.up = '0 d 00:00:24'; n.hw.start = 'Startverzögerung · noch 6 s · 3 Telegramme gepuffert'; n.hw.flash = 'gültig · 2 / 2 Segmente, wird nach Startende angewendet'; n.hw.err = '';
+    n.hw.up = '0 d 00:00:24'; n.hw.start = 'Startverzögerung · noch 6 s · 3 Telegramme gepuffert'; n.hw.saved = '2 / 2 Segmente'; n.hw.err = '';
     n.cap = 'Startverzögerung: noch keine Ausgabe. Gespeicherte Zustände und gepufferte Telegramme werden erst danach angewendet.';
     SC.neustart = n;
   })();
@@ -286,12 +286,12 @@
   // ---- live device ---------------------------------------------------------------------------------
   // /neo/state is built in the device's loop task about once per second; /neo/pixels is a copy of the
   // virtual strip (logical order, before HCL, gamma and current limiting); /neo/em holds the EM definitions.
-  var LIVE = { st: null, ems: [], emSum: -1, emBusy: 0, px: null, rxAt: 0, ok: 0, err: '', sig: '', power: null, pend: {}, lastSeq: 0 };
+  var LIVE = { st: null, ems: [], emSum: -1, emBusy: 0, px: null, rxAt: 0, ok: 0, err: '', sig: '', power: null, pend: {}, lastSeq: 0, tok: '', unconf: null };
   var LSN = ['ohne', 'TXS0108E', 'SN74HCT125', 'SN74AHCT125', 'SN74LV8T245'];
   var BUILDN = ['KNX TP', 'KNX TP + WLAN', 'KNX IP (WLAN)', 'KNX IP (LAN)'];
   var ERRN = { 1: 'Hardware passt nicht zur ETS', 2: 'keine Hardware in der ETS gewählt', 3: 'GPIO doppelt belegt', 4: 'Streifen nicht angelegt', 5: 'virtueller Streifen nicht angelegt' };
   var WARNN = { 2: 'gespeicherte Daten verworfen (Konfiguration geändert)', 3: 'unbekannter Effekt in der ETS' };
-  var RESN = ['Übernommen.', 'Gesperrt: der Befehl wird ignoriert.', 'Startverzögerung läuft: der Befehl wird zurückgestellt und danach abgearbeitet.', 'Ungültiger Befehl: ignoriert.', 'EM nicht startbar (nicht aktiv, ohne Cues oder nicht verfügbar): ignoriert.', 'Szene nicht angelegt: ignoriert.', 'Kein EM läuft: ignoriert.'];
+  var RESN = ['Übernommen.', 'Gesperrt: der Befehl wird ignoriert.', 'Startverzögerung läuft: der Befehl wird zurückgestellt und danach abgearbeitet.', 'Ungültiger Befehl: ignoriert.', 'EM nicht startbar (nicht aktiv, ohne Cues oder nicht verfügbar): ignoriert.', 'Szene nicht angelegt: ignoriert.', 'Kein EM läuft: ignoriert.', 'Startverzögerung läuft: der Befehl wird verworfen (Dimmen und Objekte ohne Schreiben-Flag wirken erst danach).'];
   function isLive() { return cur === 'live'; }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function hex6(n) { return '#' + ('00000' + (n >>> 0).toString(16)).slice(-6); }
@@ -299,8 +299,8 @@
   function upStr(s) { var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return d + ' d ' + ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2) + (d || h ? '' : ':' + ('0' + x).slice(-2)); }
   function fxName(id) { var n = FX1D.concat(FX2D)[id]; return n || 'Effekt ' + id; }
   var EMPTY = { v: 1, up: 0, leds: 0, bpl: 3, bar: { pw: 1, bri: 0, fps: 0, fpsT: 0, hcl: 0, err: 0, warn: 0, warn2: 0 }, pwr: { mode: 0, lim: 0, thr: 0, abl: 0, perLed: 0, ma: 0, load: 0 },
-    hw: { chip: '', mhz: 0, cores: 0, hwid: 0, board: '', ets: 0, etsName: '', ls: 0, build: 0, ft: 0, ftMin: 0, ftMax: 0, temp: 0, heap: 0, heapMin: 0, heapTot: 0, rmtFree: 0, rmtTot: 0, start: 1, startLeft: 0, deferred: 0, flashValid: 0 },
-    emCount: 0, emSum: 0, strips: [], segs: [], relays: [], cmd: { seq: 0, seg: 0, res: 0 }, empty: 1 };
+    hw: { chip: '', mhz: 0, cores: 0, hwid: 0, board: '', ets: 0, etsName: '', ls: 0, build: 0, ft: 0, ftMin: 0, ftMax: 0, temp: 0, heap: 0, heapMin: 0, heapTot: 0, rmtFree: 0, rmtTot: 0, start: 1, startLeft: 0, deferred: 0, savedValid: 0 },
+    emCount: 0, emSum: 0, strips: [], segs: [], relays: [], cmds: [], empty: 1 };
   // Converts the device snapshot into the page model (the shape the example data uses).
   function fromState(j, ems) {
     var L = { label: 'Live', group: 'live', title: '', live: 1, emCount: j.emCount || 0 }, i, k;
@@ -309,13 +309,13 @@
     L.pw = { mode: j.pwr.mode === 1 ? 'fix' : j.pwr.mode === 2 ? 'led' : 'off', lim: j.pwr.lim, thr: j.pwr.thr, abl: j.pwr.abl, perLed: j.pwr.perLed };
     L.strips = j.strips.filter(Boolean).map(function (s) {
       var pm = ['none', 'global', 'fix', 'led'][s.pm] || 'global', lim = s.sl || (pm === 'fix' ? s.lim : pm === 'led' ? s.n * s.perLed : 0);
-      return { name: '', chip: esc(s.p), leds: s.n, port: (s.ch >= 0 ? 'Ausgang ' + (s.ch + 1) + ' · ' : '') + 'GPIO ' + s.pin + (s.spi ? ' / CLK ' + s.clk : ''), order: esc(s.order), ch: j.bpl, drv: s.spi ? 'SPI' : 'RMT',
+      return { name: '', chip: esc(s.p), leds: s.n, port: (s.ch >= 0 ? 'Kanal ' + (s.ch + 1) + ' · ' : '') + 'GPIO ' + s.pin + (s.spi ? ' / CLK ' + s.clk : ''), order: esc(s.order), ch: j.bpl, drv: s.spi ? 'SPI' : 'RMT',
         tim: s.spi ? '<span class="np-f">— SPI</span>' : s.tim + ' kHz · ' + (s.tov ? 'Override' : 'Chipprofil'), pm: pm, lim: lim, perLed: s.perLed, thr: s.thr, abl: s.abl, spi: s.spi, vs: s.vs, ma: s.ma, load: s.load };
     });
     L.segs = j.segs.map(function (s, i) {
       var c = s.ch, scenes = [];
       for (k = 1; k <= s.sc; k++) scenes.push({ n: k });
-      return { a: s.a, b: s.b, geo: s.geo[0] ? s.geo.slice(0, 4) : [0], st: !start ? 'wait' : s.lock && s.vis ? 'lock' : s.vis ? 'on' : 'off', locked: s.lock, bri: s.bri,
+      return { a: s.a, b: s.b, geo: is1D(s.geo) ? [0] : s.geo.slice(0, 4), st: !start ? 'wait' : s.lock && s.vis ? 'lock' : s.vis ? 'on' : 'off', locked: s.lock, bri: s.bri,
         c1: s.c, w: s.w, cw: layout === 'RGBCCT' ? s.cw : 0, c2: s.c2 ? hex6(s.c2) : '', fx: fxName(s.fx), fxId: s.fx,
         em: s.rs ? s.em : 0, cue: s.cue, ems: s.rs === 1 ? 'run' : s.rs === 2 ? (s.susp ? 'susp' : 'pause') : 'stop', cueEl: s.el / 1000, stopRet: s.ret === 2 ? 'Aus' : s.ret === 1 ? 'Default' : 'Letzter Zustand',
         ch: c.m ? { m: c.m, pol: c.pol, to: c.to, total: c.total, off: c.off, age: Math.max(0, c.m === 2 ? c.rx : c.tx), none: (c.m === 2 ? c.rx : c.tx) < 0, timeout: !!c.tmo, wait: !start, override: !!c.ov, pl: c.pl } : { m: 0 },
@@ -330,8 +330,8 @@
     var nv = L.segs.length;
     L.hw = { chip: w.chip ? w.chip + ' · ' + w.mhz + ' MHz · ' + w.cores + (w.cores === 1 ? ' Kern' : ' Kerne') : '—', board: esc(w.board || 'unbekannt'), hwid: hex4(w.hwid), ls: LSN[w.ls] || String(w.ls), build: BUILDN[w.build] || 'KNX', web: 1,
       ft: Math.round(w.ft / 100) / 10, ftMin: Math.round(w.ftMin / 100) / 10, ftMax: Math.round(w.ftMax / 100) / 10, heap: Math.round(w.heap / 1024), heapMin: Math.round(w.heapMin / 1024), heapTot: Math.round(w.heapTot / 1024) || 1,
-      rmt: used, temp: w.temp / 10, up: upStr(j.up), start: start ? 'abgeschlossen' : w.startLeft > 0 ? 'Startverzögerung · noch ' + Math.ceil(w.startLeft / 1000) + ' s · ' + w.deferred + ' Telegramme gepuffert' : 'Wiederherstellung läuft · ' + w.deferred + ' Telegramme gepuffert',
-      flash: !nv ? 'keine Segmente' : w.flashValid === nv ? 'gültig · ' + nv + ' / ' + nv + (nv > 1 ? ' Segmente' : ' Segment') : w.flashValid + ' / ' + nv + ' Segmente gültig',
+      rmt: used, temp: w.temp / 10, up: upStr(j.up), start: start ? 'abgeschlossen' : w.startLeft > 0 ? 'Startverzögerung · noch ca. ' + Math.ceil(w.startLeft / 1000) + ' s · ' + w.deferred + ' Telegramme gepuffert' : 'Wiederherstellung läuft · ' + w.deferred + ' Telegramme gepuffert',
+      saved: !nv ? 'keine Segmente' : (w.savedValid || 0) + ' / ' + nv + (nv > 1 ? ' Segmente' : ' Segment'),
       err: j.bar.err ? 'Fehler ' + j.bar.err + ': ' + (ERRN[j.bar.err] || '') : WARNN[j.bar.warn] || WARNN[j.bar.warn2] || '' };
     if (w.ets) L.hw.ets = w.ets === 255 ? 'eine Auswahl (keine Hardware gewählt)' : esc(w.etsName || 'unbekannt') + ' (' + hex4(w.ets) + ')';
     // Effektkette: this device knows its own part only; the rest of the band is shown as unknown
@@ -377,7 +377,8 @@
   }
 
   // ---- pixel lookup -------------------------------------------------------------------------------
-  function is2D(g) { return g[0] > 1 && g[1] > 1 && g[3] > 0 && (!(g[2] > 1) || g[3] >= 6); } // as LedGeometry::is2D (topology 0 = 1D)
+  function is1D(g) { return !(g[3] > 0) || !(g[0] > 1) || !(g[1] > 1); } // as LedGeometry::is1D: topology 0 whatever the dimensions
+  function is2D(g) { return !is1D(g) && (!(g[2] > 1) || g[3] >= 6); } // as LedGeometry::is2D
   function inv(tp, i, w, h) { // local index -> (x, y) for the firmware topologies; tiled is drawn like its column variant
     var x, y;
     if (tp === 1 || tp === 2 || tp === 5) { y = Math.floor(i / w); x = i % w; if (tp === 1 && (y & 1)) x = w - 1 - x; }
@@ -391,8 +392,8 @@
   // Segment, strip, EM and relay names exist only in the ETS (no Memory element), so the device cannot show them.
   // The page labels a segment or strip with the name of the arrangement part mapped to it (browser), else by number.
   function partName(src, idx) { var r = lay && lay.runs.filter(function (x) { return x.src === src && x[src === 'seg' ? 'seg' : 'strip'] === idx && x.on !== 0; })[0]; return r && r.name ? r.name : ''; }
-  function segLabel(i) { var n = partName('seg', i); return n ? n : 'Segment ' + (i + 1); }
-  function stripLabel(i) { var n = partName('strip', i); return n ? n : 'Streifen ' + (i + 1); }
+  function segLabel(i) { var n = partName('seg', i); return n ? esc(n) : 'Segment ' + (i + 1); } // HTML: names come from imported files
+  function stripLabel(i) { var n = partName('strip', i); return n ? esc(n) : 'Streifen ' + (i + 1); }
   function emOf(id) { return sc.ems.filter(function (e) { return e.id === id; })[0]; }
   function emOn(s) { return !!s.em && /run|pause/.test(s.ems || ''); }
   // What a segment shows now: the active cue while an EM runs, else the direct state.
@@ -619,6 +620,7 @@
     var b = [1e9, 1e9, -1e9, -1e9];
     G.areas.forEach(function (a) { b[0] = Math.min(b[0], a.x); b[1] = Math.min(b[1], a.y); b[2] = Math.max(b[2], a.x + a.w); b[3] = Math.max(b[3], a.y + a.h); });
     G.lines.forEach(function (l) { b[0] = Math.min(b[0], l.x1, l.x2); b[1] = Math.min(b[1], l.y1, l.y2); b[2] = Math.max(b[2], l.x1, l.x2); b[3] = Math.max(b[3], l.y1, l.y2); });
+    if (!(b[2] >= b[0] && b[3] >= b[1])) return { x: 0, y: 0, w: 100, h: 10 }; // nothing to place (no segment): small empty stage
     return { x: b[0], y: b[1], w: b[2] - b[0], h: b[3] - b[1] };
   }
   function sizeCanvas(cv, h) {
@@ -873,7 +875,7 @@
 
   // ---- HTML renderers -----------------------------------------------------------------------------
   function stPill(s) { if (s.st === 'on' && !s.bri) return pill('idle', 'Aus · 0 %'); var m = { on: ['ok', 'Ein'], off: ['idle', 'Aus'], pause: ['warn', 'Pausiert'], lock: ['bad', 'Gesperrt'], wait: ['idle', 'wartet auf Startende'] }[s.st]; return pill(m[0], m[1]); }
-  function geoShort(g) { return !g[0] ? '1D' : !is2D(g) ? g[0] + '×' + g[1] + '×' + g[2] + ' 3D' : g[0] + '×' + g[1] + ' 2D'; }
+  function geoShort(g) { return is1D(g) ? '1D' : is2D(g) ? g[0] + '×' + g[1] + ' 2D' : g[0] + '×' + g[1] + '×' + g[2] + ' 3D'; }
   function emText(s) {
     if (!s.em) return '<span class="np-f">—</span>';
     var e = emOf(s.em), q = e && e.cues[(s.cue || 1) - 1];
@@ -914,7 +916,7 @@
     h += row('Virtueller Streifen', fmt(tot) + ' LEDs · ' + sc.bar.layout, sc.strips.map(function (s, i) { var r = part(s.leds, 't' + (i % 8), a + '–' + (a + s.leds - 1), 'S' + (i + 1)); a += s.leds; return r; }).join(''));
     h += '<div class="np-arrow">↓ aufgeteilt in Segmente</div>';
     h += row('Segmente', sc.segs.length + (sc.segs.length > 1 ? ' Segmente' : ' Segment'), sc.segs.map(function (s, i) {
-      var g = s.geo; return part(s.b - s.a + 1, 't' + SEGT(i), '<b>' + (i + 1) + '</b> ' + segLabel(i), s.a + '–' + s.b + ' · ' + geoShort(g) + (g[0] ? ' · ' + TOPO[g[3]] : ''));
+      var g = s.geo; return part(s.b - s.a + 1, 't' + SEGT(i), '<b>' + (i + 1) + '</b> ' + segLabel(i), s.a + '–' + s.b + ' · ' + geoShort(g) + (!is1D(g) ? ' · ' + TOPO[g[3]] : ''));
     }).join(''));
     if (sc.chain) {
       var ch = sc.chain, cs = sc.segs[ch.seg];
@@ -950,7 +952,7 @@
     sc.segs.forEach(function (s, i) {
       var ch = '<span class="np-f">—</span>', lk = lookOf(s);
       if (s.ch.m) ch = (s.ch.timeout ? pill('bad', 'Slave · Timeout') : bandSuspended(s) ? (s.ch.m === 1 ? 'Master' : 'Slave') + ' ' + pill('warn', 'ausgesetzt (EM)') : (s.ch.m === 1 ? 'Master' : 'Slave')) + '<small>' + fmt(s.ch.total) + ' LEDs · Teil ' + s.ch.off + '–' + (s.ch.off + s.b - s.a) + '</small>';
-      h += '<tr><td>' + badge(SEGT(i), i + 1) + segLabel(i) + '</td><td class="np-num">' + s.a + '–' + s.b + '<small>' + (s.b - s.a + 1) + ' LEDs</small></td><td>' + geoShort(s.geo) + (s.geo[0] ? '<small>' + TOPO[s.geo[3]] + '</small>' : '') + '</td>' +
+      h += '<tr><td>' + badge(SEGT(i), i + 1) + segLabel(i) + '</td><td class="np-num">' + s.a + '–' + s.b + '<small>' + (s.b - s.a + 1) + ' LEDs</small></td><td>' + geoShort(s.geo) + (!is1D(s.geo) ? '<small>' + TOPO[s.geo[3]] + '</small>' : '') + '</td>' +
         '<td>' + stPill(s) + '</td><td class="np-num">' + s.bri + ' %</td>' +
         '<td>' + swatch(s.c1, s.w, s.cw) + (s.c2 ? swatch(s.c2) : '') + '<small>' + s.c1.toUpperCase() + (s.w ? ' + W ' + s.w : '') + (s.cw ? ' · CW ' + s.cw : '') + '</small></td>' +
         '<td>' + (emOn(s) ? lk.fx + '<small>aus Cue ' + s.cue + '</small>' : s.fx + (s.scenes ? '<small>Szenen ' + s.scenes.map(function (q) { return q.n; }).join(', ') + ' angelegt</small>' : '')) + '</td><td>' + emText(s) + '</td><td>' + ch + '</td><td>' + (s.hcl ? fmt(s.hcl) + ' K<small>' + (s.hclSrc || '') + '</small>' : '<span class="np-f">—</span>') + '</td></tr>';
@@ -1078,7 +1080,7 @@
     function chips(a, lab) { return '<span class="np-chips">' + a.map(function (u, i) { return '<span class="' + (u ? 'u' : '') + '">' + lab(i) + '</span>'; }).join('') + '</span>'; }
     var h = '<div class="np-grid"><div class="np-sub">Gerät</div>' + row('Prozessor', w.chip) +
       row('Hardware', w.ets ? pill('bad', 'passt nicht zur ETS') + ' gefunden ' + w.board + ' (' + w.hwid + ') · ETS erwartet ' + w.ets : w.board + ' <span class="np-f">' + w.hwid + ' · Pegelwandler ' + w.ls + '</span>', !!w.ets) +
-      row('Build', w.build + (w.build.indexOf('WLAN') >= 0 ? ' <span class="np-f">KNX über TP, WLAN für Webseite, Einrichtung und OTA</span>' : '')) +
+      row('Build', w.build + (w.build === 'KNX TP + WLAN' ? ' <span class="np-f">KNX über TP, WLAN für Webseite, Einrichtung und OTA</span>' : '')) +
       row('Diese Webseite', w.web ? pill('ok', 'verfügbar') + ' <span class="np-f">Build mit Webserver</span>' : pill('idle', 'nicht in diesem Build') + ' <span class="np-f">kein Webserver; die Vorschau zeigt, was die Seite anzeigen würde</span>') +
       '<div class="np-sub">Rechenzeit</div>' +
       row('Rechenzeit pro Bild (Ø seit Start)', w.ft && budget ? meter(cpu, cpu > 85 ? 'bad' : cpu > 60 ? 'warn' : '') + w.ft + ' ms von ' + budget.toFixed(1) + ' ms (' + cpu + ' %)' : '<span class="np-f">— noch kein Bild (Startphase)</span>') +
@@ -1095,7 +1097,7 @@
       '<div class="np-sub">Betrieb</div>' +
       row('Laufzeit', w.up) +
       row('Startphase', w.start === 'abgeschlossen' ? pill('ok', 'abgeschlossen') : pill('warn', 'läuft') + ' ' + w.start) +
-      row('Gespeicherter Zustand', /^gültig/.test(w.flash) ? w.flash : pill('warn', w.flash)) +
+      (w.saved ? row('Zustandsdaten', w.saved + ' <span class="np-f">Zustand aus dem Flash geladen oder Farbe/Szene seit dem Start gesetzt</span>') : '') +
       row('Fehler / Warnung', w.err ? pill('bad', w.err) : pill('ok', 'keine')) + '</div>';
     $('hw').innerHTML = h;
   }
@@ -1123,7 +1125,7 @@
       default: return true; // power, bri, dim, fx, lock
     }
   }
-  var ctlLog = [];
+  var ctlLog = [], ctlHeld = false; // ctlHeld: a dim button is pressed, the panel is not rebuilt
   function ctlRow(label, body) { return '<div class="np-ctl-r"><i>' + label + '</i><div class="np-ctl-c">' + body + '</div></div>'; }
   function cbtn(i, f, v, txt, on, extra) { return '<button class="np-cb' + (on ? ' on' : '') + '" data-seg="' + i + '" data-f="' + f + '" data-v="' + v + '"' + (extra || '') + '>' + txt + '</button>'; }
   function hex2(c) { return '#' + c.map(function (x) { return ('0' + Math.round(x).toString(16)).slice(-2); }).join(''); }
@@ -1159,7 +1161,7 @@
       h += '<div class="np-card np-ctl"><div class="np-card-h"><h3>' + badge(SEGT(i), i + 1) + segLabel(i) + '</h3>' + stPill(s) + '<span class="np-m np-num">' + s.bri + ' %</span>' + (emOn(s) ? '<span class="np-m">EM ' + s.em + ' · Cue ' + s.cue + '</span>' : '') + (s.ch.m ? '<span class="np-m">' + (s.ch.m === 1 ? 'Master' : 'Slave') + (s.ch.override ? ' · aus der Kette gelöst' : '') + '</span>' : '') + '<span class="np-sp"></span>' + swatch(lk.c1, lk.w, lk.cw) + '</div>' +
         '<canvas class="np-stage np-ctlcv" id="ctlcv-' + i + '" aria-label="LED-Bild des Segments"></canvas><div class="np-card-b">' + rows + '<div class="np-ctl-msg" id="ctl-msg-' + i + '"></div></div></div>';
     });
-    h += '<div class="np-ctl-log"><b>Letzte Befehle</b> <span class="np-f">(' + (sc.live ? 'an dieses Gerät gesendet' : 'Vorschau, nicht gesendet') + ')</span><pre id="ctl-log">' + (ctlLog.length ? ctlLog.join('\n') : '—') + '</pre></div>';
+    h += '<div class="np-ctl-log"><b>Letzte Befehle</b> <span class="np-f">(' + (sc.live ? 'an dieses Gerät gesendet' : 'Vorschau, nicht gesendet') + ')</span><pre id="ctl-log">' + (ctlLog.length ? esc(ctlLog.join('\n')) : '—') + '</pre></div>';
     $('ctl').innerHTML = h; ctlSz = [];
   }
   var ctlSz = [];
@@ -1216,21 +1218,23 @@
     }
     return note;
   }
-  // Live: one command to the device; its result arrives with the next /neo/state (cmd.seq / cmd.res).
+  // Live: one command to the device; its result arrives with a later /neo/state (cmds: [seq, result] of the last commands).
   function sendCtl(i, f, v) {
     var body = { segment: i + 1, function: f, value: v };
     ctlLog.unshift('POST /neo/control ' + JSON.stringify(body)); ctlLog.length = Math.min(ctlLog.length, 6);
     var lg = $('ctl-log'); if (lg) lg.textContent = ctlLog.join('\n');
     ctlMsg(i, 'Gesendet …');
+    body.tok = LIVE.tok; // from /neo/state; the device refuses a command without it
     fetch('/neo/control', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json().then(function (j) { return [r.status, j]; }); })
-      .then(function (a) { if (a[0] === 200 && a[1].seq) { LIVE.pend[a[1].seq] = i; LIVE.lastSeq = a[1].seq; } else ctlMsg(i, a[0] === 503 ? 'Gerät beschäftigt, bitte noch einmal.' : 'Abgelehnt: ' + (a[1].error || a[0])); })
+      .then(function (a) { if (a[0] === 200 && a[1].seq) { LIVE.pend[a[1].seq] = { i: i, f: f, v: v }; LIVE.lastSeq = a[1].seq; } else ctlMsg(i, a[0] === 503 ? 'Gerät beschäftigt, bitte noch einmal.' : (a[0] === 400 && a[1].error === 'bad command') ? 'Abgelehnt: ungültiger Befehl oder Gerät neu gestartet (neue Sitzung) – bitte noch einmal senden.' : 'Abgelehnt: ' + (a[1].error || a[0])); })
       .catch(function () { ctlMsg(i, 'Keine Verbindung zum Gerät.'); });
   }
-  function liveHint(i) { // what the device does with a command beyond the KO semantics
+  function liveHint(i, f, v) { // what the device does with a command beyond the KO semantics
     var s = sc.segs[i], t = '';
+    if (!s) return t;
     if (!sc.bar.power && s.st !== 'lock') t += ' Das Gerät ist global aus: das Segment bleibt dunkel.';
-    if (s.ch.m === 2) t += s.ch.pol === 1 ? ' Slave mit „Lokal hat Vorrang“: übernimmt keine Sync-Telegramme mehr bis zum Neustart.' : ' Slave mit „Sync übernimmt immer“: das nächste Sync-Telegramm überschreibt das wieder.';
+    if (s.ch.m === 2 && f !== 'lock' && !(f === 'dim' && +v === 0)) t += s.ch.pol === 1 ? ' Slave mit „Lokal hat Vorrang“: übernimmt keine Sync-Telegramme mehr bis zum Neustart.' : ' Slave mit „Sync übernimmt immer“: das nächste Sync-Telegramm überschreibt das wieder.';
     return t;
   }
   function ctlAfter(i, note) {
@@ -1267,18 +1271,20 @@
   (function holdDim() { // DPT 3.007: press = start, release = stop telegram
     var timer = null, seg = -1, dir = 0;
     var liveSeg = -1;
-    function stop() { if (liveSeg >= 0) { var k = liveSeg; liveSeg = -1; sendCtl(k, 'dim', 0); return; } if (timer === null) return; clearInterval(timer); timer = null; ctlLog.unshift('POST /neo/control ' + JSON.stringify({ segment: seg + 1, function: 'dim', value: 0 })); ctlLog.length = Math.min(ctlLog.length, 6); ctlAfter(seg, 'Dimmen beendet (Stopp-Telegramm).'); }
+    function stop() { ctlHeld = false; if (liveSeg >= 0) { var k = liveSeg; liveSeg = -1; sendCtl(k, 'dim', 0); return; } if (timer === null) return; clearInterval(timer); timer = null; ctlLog.unshift('POST /neo/control ' + JSON.stringify({ segment: seg + 1, function: 'dim', value: 0 })); ctlLog.length = Math.min(ctlLog.length, 6); ctlAfter(seg, 'Dimmen beendet (Stopp-Telegramm).'); }
     $('ctl').addEventListener('pointerdown', function (e) {
       var b = e.target.closest('button[data-hold]'); if (!b) return;
       e.preventDefault(); seg = +b.dataset.seg; dir = +b.dataset.v;
-      if (sc.live) { if (liveSeg >= 0) return; liveSeg = seg; sendCtl(seg, 'dim', dir); return; } // press = start, release = stop telegram
+      if (sc.live) { if (liveSeg >= 0) return; liveSeg = seg; ctlHeld = true; sendCtl(seg, 'dim', dir); return; } // press = start, release = stop telegram
       if (timer !== null) { clearInterval(timer); timer = null; }
       var note = ctlApply(seg, 'dim', dir); ctlMsg(seg, note);
       if (/ignoriert|zurückgestellt/.test(note)) { ctlAfter(seg, note); return; }
+      ctlHeld = true;
       timer = setInterval(function () { var s = sc.segs[seg]; if (s.locked) return stop(); ctlApply(seg, 'dim', dir); ctlLog.shift(); var bl = $('ctl-bri-' + seg); if (bl) bl.textContent = s.bri + ' %'; powerTick(performance.now(), curT()); renderBar(); }, 120);
     });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('ctl').addEventListener(ev, function (e) { if (e.target.closest && e.target.closest('button[data-hold]')) stop(); }); });
-    window.addEventListener('pointerup', stop); window.addEventListener('blur', stop);
+    // window: release and cancel bubble up from any element, also after the pointer left the button
+    window.addEventListener('pointerup', stop); window.addEventListener('pointercancel', stop); window.addEventListener('blur', stop);
   })();
 
   // ---- arrangement editor -------------------------------------------------------------------------
@@ -1330,7 +1336,7 @@
     lay.runs.forEach(function (r, i) {
       var off = T.walls && r.on === 0;
       h += '<tr' + (off ? ' class="np-off"' : '') + '>' + (T.walls ? '<td><label class="np-chk"><input type="checkbox" data-on="' + i + '"' + (off ? '' : ' checked') + '>' + T.names[i] + '</label></td>' : '') +
-        '<td><input data-name="' + i + '" value="' + r.name.replace(/"/g, '&quot;') + '"' + (off ? ' disabled' : '') + ' style="width:120px;padding:3px 6px;margin:0;border:1px solid ' + LINE + ';border-radius:4px"></td><td><select data-src="' + i + '"' + (off ? ' disabled' : '') + '>' + srcOptions(r) + '</select></td>' +
+        '<td><input data-name="' + i + '" value="' + esc(r.name) + '"' + (off ? ' disabled' : '') + ' style="width:120px;padding:3px 6px;margin:0;border:1px solid ' + LINE + ';border-radius:4px"></td><td><select data-src="' + i + '"' + (off ? ' disabled' : '') + '>' + srcOptions(r) + '</select></td>' +
         '<td><select data-rev="' + i + '"' + (off ? ' disabled' : '') + '><option value="0"' + (r.rev ? '' : ' selected') + '>am Anfang</option><option value="1"' + (r.rev ? ' selected' : '') + '>am Ende</option></select></td></tr>';
     });
     h += '</table></div><div class="np-note info">Nur eine Anzeigehilfe: Sie ändert nichts an der LED-Ausgabe; welche LED was zeigt, bestimmen weiterhin Segmente, Geometrie, Verdrahtung und Kette aus der ETS. ' +
@@ -1383,7 +1389,8 @@
     qa('#mode button').forEach(function (b) { var on = (b.dataset.m === 'pv') === pv; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     $('pv').hidden = !pv; $('pvline').hidden = !pv;
     qa('#pv-tpl button, #pv-more button').forEach(function (b) { b.classList.toggle('on', b.dataset.s === cur); });
-    $('meta').innerHTML = pv ? 'Vorschau mit Beispieldaten · keine Werte dieses Geräts' : 'Live-Status dieses Geräts · Aktualisierung jede Sekunde · zeigt, was eingestellt ist und was gerade läuft' + (LIVE.err ? ' · ' + pill('bad', LIVE.err) : '');
+    applyUnconf();
+    $('meta').innerHTML = pv ? 'Vorschau mit Beispieldaten · keine Werte dieses Geräts' : (LIVE.unconf ? 'Live-Status dieses Geräts · nicht konfiguriert' : 'Live-Status dieses Geräts · Aktualisierung jede Sekunde · zeigt, was eingestellt ist und was gerade läuft') + (LIVE.err ? ' · ' + pill(LIVE.ok ? 'warn' : 'bad', LIVE.err) : '');
     $('mocknote').hidden = true;
     if (pv) {
       $('pv-d').innerHTML = '<b>' + sc.label + '</b>' + (sc.src ? ' · Vorlage ' + sc.src : '') + ' · ' + sc.title + ' <span class="np-f">Hardware in diesem Beispiel: ' + sc.hw.board + ' (' + sc.hw.hwid + ').</span>';
@@ -1412,7 +1419,16 @@
     if (t === 'setup') { layoutPlan(); renderCap(); }
     if (t === 'chain') layoutChain();
     if (t === 'ctl') ctlSz = [];
+    applyUnconf();
     setHash();
+  }
+  // Unconfigured device (no ETS download): only the hint, no status bar, tabs or panels; the preview stays available.
+  function applyUnconf() {
+    var u = isLive() && !!LIVE.unconf, U = LIVE.unconf;
+    $('unconf').hidden = !u; $('bar').hidden = u; $('tabs').hidden = u;
+    qa('.np-pane').forEach(function (p) { p.hidden = u || p.id !== 'p-' + tab; });
+    if (u) $('unconf').innerHTML = '<b>Gerät nicht konfiguriert – bitte ETS-Applikation laden.</b><br>Ohne ETS-Download sind keine Streifen, Segmente und Effekte angelegt; diese Seite zeigt den Status, sobald die Applikation geladen ist. Die Vorschau mit Beispieldaten bleibt verfügbar.' +
+      '<br><span class="np-f">' + (U.board ? esc(U.board) + ' · ' : '') + 'HW-ID ' + hex4(U.hwid || 0) + ' · Laufzeit ' + upStr(U.up || 0) + '</span>';
   }
   function chips(group) { return Object.keys(SC).filter(function (k) { return SC[k].group === group; }).map(function (k) { return '<button data-s="' + k + '">' + SC[k].label + '</button>'; }).join(''); }
   $('pv-tpl').innerHTML = chips('tpl'); $('pv-more').innerHTML = chips('more');
@@ -1438,12 +1454,22 @@
   function liveSig(L) { return [L.segs.length, L.strips.length, L.bar.layout, L.emCount, L.chain ? L.chain.seg : -1, L.segs.map(function (s) { return s.a + '-' + s.b + ':' + s.geo.join('x'); }).join(',')].join('|'); }
   var ctlHtml = '';
   function onState(j) {
-    LIVE.st = j; LIVE.rxAt = performance.now(); LIVE.ok = 1; LIVE.err = '';
+    LIVE.rxAt = performance.now(); LIVE.ok = 1; LIVE.err = '';
+    if (j.unconf) { // no ETS download: hint only, nothing to show or control
+      var was = LIVE.unconf; LIVE.unconf = j; LIVE.st = null; LIVE.sig = ''; LIVE.pend = {};
+      if (isLive()) { if (!was) render(); else renderMode(); }
+      return;
+    }
+    if (LIVE.unconf) { LIVE.unconf = null; LIVE.sig = ''; }
+    if (LIVE.st && j.up < LIVE.st.up) { Object.keys(LIVE.pend).forEach(function (k) { ctlMsg(LIVE.pend[k].i, 'Gerät wurde neu gestartet, Ergebnis unbekannt.'); }); LIVE.pend = {}; } // device restarted: its command numbers start again
+    LIVE.st = j; LIVE.tok = j.tok || '';
     if (j.emSum !== LIVE.emSum && !LIVE.emBusy) fetchEm();
     var L = fromState(j, LIVE.ems), sig = liveSig(L);
     SC.live = L;
-    // command results
-    var c = j.cmd, done = Object.keys(LIVE.pend).filter(function (k) { return +k <= c.seq; });
+    // command results: each command its own; one that dropped out of the device's list is unknown
+    var res = {}, maxSeq = 0;
+    (j.cmds || []).forEach(function (c) { res[c[0]] = c[1]; if (c[0] > maxSeq) maxSeq = c[0]; });
+    var done = Object.keys(LIVE.pend).filter(function (k) { return +k <= maxSeq; });
     if (!isLive()) { done.forEach(function (k) { delete LIVE.pend[k]; }); return; }
     if (sig !== LIVE.sig) { LIVE.sig = sig; ctlHtml = ''; render(); } // configuration changed: full render, arrangement re-validated
     else {
@@ -1452,9 +1478,12 @@
       if (tab === 'chain') layoutChain();
       if (tab === 'setup') renderCap();
       var foc = document.activeElement, busy = foc && $('ctl').contains(foc) && /INPUT|SELECT/.test(foc.tagName);
-      if (!busy) { var keep = qa('.np-ctl-msg').map(function (m) { return [m.id, m.textContent]; }); renderCtl(); keep.forEach(function (m) { var el = $(m[0]); if (el) el.textContent = m[1]; }); }
+      if (!busy && !ctlHeld) { var keep = qa('.np-ctl-msg').map(function (m) { return [m.id, m.textContent]; }); renderCtl(); keep.forEach(function (m) { var el = $(m[0]); if (el) el.textContent = m[1]; }); }
     }
-    done.forEach(function (k) { var i = LIVE.pend[k]; delete LIVE.pend[k]; ctlMsg(i, +k === c.seq ? (RESN[c.res] || 'Ergebnis ' + c.res) + (c.res === 0 || c.res === 2 ? liveHint(i) : '') : 'Übernommen (ein späterer Befehl folgte).'); });
+    done.forEach(function (k) {
+      var p = LIVE.pend[k], r = res[k]; delete LIVE.pend[k];
+      ctlMsg(p.i, r === undefined ? 'Ergebnis unbekannt (zu viele Befehle in kurzer Zeit).' : (RESN[r] || 'Ergebnis ' + r) + (r === 0 || r === 2 ? liveHint(p.i, p.f, p.v) : ''));
+    });
   }
   function fetchEm() {
     LIVE.emBusy = 1;
@@ -1466,13 +1495,18 @@
   }
   function livePoll() {
     var wait = document.hidden ? 5000 : 1000;
-    fetch('/neo/state', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
-      if (j.pending || j.busy) { wait = 300; return; }
+    fetch('/neo/state', { cache: 'no-store' }).then(function (r) {
+      if (r.status === 503) return { busy: 1 };
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (j.busy) { wait = 300; LIVE.err = 'Gerät beschäftigt, erneut versuchen …'; if (isLive()) renderMode(); return; }
+      if (j.pending) { wait = 300; return; }
       onState(j);
     }).catch(function () { LIVE.ok = 0; LIVE.err = 'keine Verbindung'; if (isLive()) renderMode(); }).then(function () { setTimeout(livePoll, wait); });
   }
   function pixPoll() { // LED image while a tab with LEDs is open
-    if (!isLive() || document.hidden || !/setup|ctl|chain/.test(tab)) { setTimeout(pixPoll, 500); return; }
+    if (!isLive() || LIVE.unconf || document.hidden || !/setup|ctl|chain/.test(tab)) { setTimeout(pixPoll, 500); return; }
     fetch('/neo/pixels', { cache: 'no-store' }).then(function (r) { return r.ok ? r.arrayBuffer() : null; }).then(function (b) {
       var d = b && new Uint8Array(b);
       if (d && d.length >= 8 && d[0] === 78 && d[1] === 80 && d[2] === 1) { var n = d[4] | d[5] << 8, bpl = d[3]; if (d.length >= 8 + n * bpl) LIVE.px = { d: d, n: n, bpl: bpl }; }

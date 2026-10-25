@@ -163,6 +163,9 @@ NeoPixelBusModule::~NeoPixelBusModule()
 
 void NeoPixelBusModule::setup(bool configured)
 {
+#if defined(NEOPIXEL_WEB) && !defined(NEOPIXEL_MODULE_TEST_ENV)
+    const uint32_t setupStartMs = millis(); // Common starts the startup delay before the module setups
+#endif
 #ifdef ARDUINO_ARCH_ESP32
     logEsp32ResetReason();
 #endif
@@ -225,9 +228,6 @@ void NeoPixelBusModule::setup(bool configured)
         // Initialize HCL status KOs from the current LightManager snapshot.
         refreshHclMasterStateCache();
         // Power monitoring KOs go out from loop(), after the startup delay
-#ifdef NEOPIXEL_WEB
-        neoPixelWeb.setup(); // routes only; the webserver starts later from the network loop
-#endif
     }
     else
     {
@@ -237,6 +237,10 @@ void NeoPixelBusModule::setup(bool configured)
         //       data is sent (happens in configureFromETS() after strip creation)
         initializeGpioPins();
     }
+    #ifdef NEOPIXEL_WEB
+    // Routes also when unconfigured (the page then shows a hint); the webserver starts later from the network loop
+    neoPixelWeb.setup(configured, setupStartMs);
+    #endif
 #endif
 }
 
@@ -3688,6 +3692,7 @@ void NeoPixelBusModule::configureFromETS()
         if (strip) delete strip;
     }
     _physicalStrips.clear();
+    _physicalStripChannel.clear();
 
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
@@ -4139,6 +4144,7 @@ void NeoPixelBusModule::configureFromETS()
 
             _totalLeds += pixels;
             _physicalStrips.push_back(phys);
+            _physicalStripChannel.push_back(i);
 
             // ETS "Timing": value 0 means "use the chip profile" and leaves the driver to
             // resolve the protocol itself. Any other value is an expert bit-rate override

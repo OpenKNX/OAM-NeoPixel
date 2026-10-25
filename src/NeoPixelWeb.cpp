@@ -15,7 +15,6 @@
     #include "NeoPixelTimingSelection.h"
     #include "OpenKNX/Network/Module.h"
     #include "SceneManager.h"
-    #include "StripConfiguration.h"
     #include "buildtime.h"
     #include "test/PerformanceTracker.h"
     #include "webassets.h"
@@ -27,6 +26,11 @@
     #include <freertos/FreeRTOS.h>
     #include <freertos/queue.h>
     #include <freertos/semphr.h>
+    #if __has_include(<esp_random.h>)
+        #include <esp_random.h>
+    #else
+        #include <esp_system.h>
+    #endif
     #if __has_include("rmt/rmt_neopixel_serial.h")
         #include "rmt/rmt_neopixel_serial.h"
         #define NEOPIXEL_WEB_RMT
@@ -116,9 +120,12 @@ namespace
 // Setup / loop (loop task)
 // ============================================================================
 
-void NeoPixelWeb::setup()
+void NeoPixelWeb::setup(bool configured, uint32_t startMs)
 {
     if (_routesAdded) return;
+    _configured = configured;
+    _startMs = startMs;
+    _token[0] = '\0'; // created with the first snapshot, once RF runs and esp_random() is a hardware RNG
     _lock = (void*)xSemaphoreCreateMutex();
     _queue = (void*)xQueueCreate(kCmdQueueLen, sizeof(Command));
     if (!_lock || !_queue) return; // no page without them; retried at the next setup()
@@ -138,7 +145,7 @@ void NeoPixelWeb::setup()
 
 void NeoPixelWeb::loop()
 {
-    if (!_routesAdded) return;
+    if (!_routesAdded || !_configured) return;
     const uint32_t now = millis();
 
     executeCommands();
@@ -215,9 +222,9 @@ void NeoPixelWeb::executeCommands()
     for (uint8_t i = 0; i < kCmdPerLoop; i++)
     {
         if (xQueueReceive((QueueHandle_t)_queue, &cmd, 0) != pdTRUE) return;
-        _lastCmdRes = executeCommand(cmd);
-        _lastCmdSeq = cmd.seq;
-        _lastCmdSeg = cmd.segment;
+        _cmdRingRes[_cmdRingPos] = executeCommand(cmd);
+        _cmdRingSeq[_cmdRingPos] = cmd.seq;
+        _cmdRingPos = (uint8_t)((_cmdRingPos + 1) % kCmdRing);
         _stateDirty = true; // result in the next snapshot, not a second later
     }
 }
@@ -309,16 +316,25 @@ uint8_t NeoPixelWeb::executeCommand(const Command& cmd)
             return kResInvalid;
     }
 
-    // processInputKo() ignores a locked segment's controlling KOs and queues during the startup delay
+    // processInputKo() ignores a locked segment's controlling KOs
     if (cfg.locked && cmd.function != kFnLock) return kResLocked;
-    const uint8_t result = (!m._startupRestoreDone || m._deferredKoHead < m._deferredKoCount) ? kResDeferred : kResOk;
 
     // Like a received telegram, without one on the bus: value into the input KO, then the
     // module dispatch. ko.value() would also set WriteRequest and process it a second time in knx.loop().
-    GroupObject& ko = knx.getGroupObject((uint16_t)(NEO_KoBlockOffset + cmd.segment * NEO_KoBlockSize + index));
+    const uint16_t koNr = (uint16_t)(NEO_KoBlockOffset + cmd.segment * NEO_KoBlockSize + index);
+    GroupObject& ko = knx.getGroupObject(koNr);
+    // During the startup delay and while its queue drains processInputKo() queues the KO; deferKo() refuses
+    // DPT 3.007 dimming of the delay and KOs without W flag. The result is read from the queue itself.
+    const bool gate = !m._startupRestoreDone || m._deferredKoHead < m._deferredKoCount;
+    const uint8_t before = m._deferredKoCount;
     ko.valueNoSend(value, dpt);
     openknx.common.processInputKo(ko);
-    return result;
+    if (!gate) return kResOk;
+    // queued = newest entry is this KO and the queue changed (a full queue drops its oldest entry instead)
+    const bool queued = m._deferredKoCount > m._deferredKoHead && m._deferredKo[m._deferredKoCount - 1].number == koNr &&
+                        (m._deferredKoCount != before || before >= NeoPixelBusModule::kDeferredKoMax);
+    if (queued) return kResDeferred;
+    return m._startupRestoreDone ? kResOk : kResDropped; // draining: a refused KO was processed directly
 }
 
 // ============================================================================
@@ -342,7 +358,8 @@ void NeoPixelWeb::buildStateStep()
     }
     if (_stateStep == 1)
     {
-        if (!_stripsMapped) mapStrips();
+        if (!_token[0]) snprintf(_token, sizeof(_token), "%08lx%08lx", (unsigned long)esp_random(), (unsigned long)esp_random());
+        mapStrips();
         _stateBack.clear();
         _stateBack.reserve(_stateFront.capacity() > 2048 ? _stateFront.capacity() : 2048);
         appendHead(_stateBack);
@@ -368,27 +385,19 @@ void NeoPixelWeb::buildStateStep()
 
 void NeoPixelWeb::mapStrips()
 {
-    // Physical strips are created in ETS channel order, channels with 0 LEDs skipped. The mapping
-    // is checked against LED count and protocol; a strip that does not match stays unmapped (0xFF).
+    // Each created strip carries the ETS channel it was built from; a channel without strip
+    // (0 LEDs, refused pin, HW mismatch) has no entry. Unknown entries stay unmapped (0xFF).
     NeoPixelBusModule& m = openknxNeoPixelModule;
     memset(_stripChannel, 0xFF, sizeof(_stripChannel));
     memset(_stripTiming, 0, sizeof(_stripTiming));
-    const uint8_t channels = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
-    size_t phys = 0;
-    for (uint8_t ch = 0; ch < channels && phys < m._physicalStrips.size() && phys < kMaxStrips; ch++)
+    const size_t count = std::min(m._physicalStrips.size(), m._physicalStripChannel.size());
+    for (size_t k = 0; k < count && k < kMaxStrips; k++)
     {
-        const uint8_t _channelIndex = ch; // read by the ParamNEOSTRIP_* macros; the module's index stays untouched
-        const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
-        if (pixels == 0) continue;
-        PhysicalStrip* p = m._physicalStrips[phys];
-        if (p && p->getLedCount() == pixels && p->getProtocol() == StripConfiguration::mapProtocol((uint8_t)ParamNEOSTRIP_NEOLEDType))
-        {
-            _stripChannel[phys] = ch;
-            _stripTiming[phys] = NeoPixelTimingSelection::sanitize((uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F);
-        }
-        phys++;
+        const uint8_t _channelIndex = m._physicalStripChannel[k]; // read by the ParamNEOSTRIP_* macros; the module's index stays untouched
+        if (!m._physicalStrips[k] || _channelIndex >= NEOPIXEL_MAX_PHYSICAL_STRIPS) continue;
+        _stripChannel[k] = _channelIndex;
+        _stripTiming[k] = NeoPixelTimingSelection::sanitize((uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F);
     }
-    _stripsMapped = true;
 }
 
 void NeoPixelWeb::appendHead(std::string& j)
@@ -399,7 +408,7 @@ void NeoPixelWeb::appendHead(std::string& j)
     const uint8_t bpl = m._virtualStrip ? m._virtualStrip->getBytesPerLed() : 3;
     const uint32_t interval = m._neoPixel.getUpdateInterval();
 
-    addf(j, "{\"v\":1,\"seq\":%lu,\"up\":%lu,\"leds\":%u,\"bpl\":%u", (unsigned long)++_stateSeq, (unsigned long)(now / 1000), (unsigned)m._totalLeds, (unsigned)bpl);
+    addf(j, "{\"v\":1,\"seq\":%lu,\"up\":%lu,\"leds\":%u,\"bpl\":%u", (unsigned long)++_stateSeq, (unsigned long)uptime(), (unsigned)m._totalLeds, (unsigned)bpl);
     addf(j, ",\"bar\":{\"pw\":%u,\"bri\":%u,\"fps\":%u,\"fpsT\":%lu,\"hcl\":%u,\"err\":%u,\"warn\":%u,\"warn2\":%u}",
          m._globalPowerOn ? 1 : 0, (unsigned)((m._globalBrightness * 100 + 127) / 255),
          m._renderPaused ? 0u : (unsigned)(m._neoPixel.getActualFps() + 0.5f), (unsigned long)(interval ? 1000 / interval : 0),
@@ -461,11 +470,12 @@ void NeoPixelWeb::appendHead(std::string& j)
     uint8_t valid = 0;
     for (const auto& s : m._segments)
         if (s.savedValid) valid++;
-    const uint32_t delayMs = ParamBASE_StartupDelayTimeMS;
-    addf(j, ",\"start\":%u,\"startLeft\":%lu,\"deferred\":%u,\"flashValid\":%u}",
-         m._startupRestoreDone ? 1 : 0, (unsigned long)(openknx.afterStartupDelay() || now >= delayMs ? 0 : delayMs - now),
+    // startLeft is approximate: Common starts the delay a little before _startMs
+    const uint32_t delayMs = ParamBASE_StartupDelayTimeMS, since = now - _startMs;
+    addf(j, ",\"start\":%u,\"startLeft\":%lu,\"deferred\":%u,\"savedValid\":%u}",
+         m._startupRestoreDone ? 1 : 0, (unsigned long)(openknx.afterStartupDelay() || since >= delayMs ? 0 : delayMs - since),
          (unsigned)(m._deferredKoCount > m._deferredKoHead ? m._deferredKoCount - m._deferredKoHead : 0), (unsigned)valid);
-    addf(j, ",\"emCount\":%u,\"emSum\":%lu", (unsigned)ParamNEO_NEOEMEnabled, (unsigned long)_emSum);
+    addf(j, ",\"emCount\":%u,\"emSum\":%lu,\"tok\":\"%s\"", (unsigned)ParamNEO_NEOEMEnabled, (unsigned long)_emSum, _token);
 }
 
 void NeoPixelWeb::appendStrips(std::string& j)
@@ -600,7 +610,17 @@ void NeoPixelWeb::appendTail(std::string& j)
              (unsigned long)lockS, pendS, m._relayTimers[i].targetState ? 1 : 0);
     }
     j += ']';
-    addf(j, ",\"cmd\":{\"seq\":%lu,\"seg\":%u,\"res\":%u}", (unsigned long)_lastCmdSeq, (unsigned)_lastCmdSeg, (unsigned)_lastCmdRes);
+    // [seq, result] of the last executed commands, oldest first
+    j += ",\"cmds\":[";
+    bool first = true;
+    for (uint8_t k = 0; k < kCmdRing; k++)
+    {
+        const uint8_t at = (uint8_t)((_cmdRingPos + k) % kCmdRing);
+        if (!_cmdRingSeq[at]) continue;
+        addf(j, "%s[%lu,%u]", first ? "" : ",", (unsigned long)_cmdRingSeq[at], (unsigned)_cmdRingRes[at]);
+        first = false;
+    }
+    j += ']';
 }
 
 // ============================================================================
@@ -748,23 +768,54 @@ void NeoPixelWeb::sendBuffer(WebResponse& res, const std::string& buf, const cha
     xSemaphoreGive(lockOf(_lock));
 }
 
+void NeoPixelWeb::sendUnconfigured(WebResponse& res)
+{
+    // Static data only: without an ETS download nothing of the module is set up.
+    #ifdef DEVICE_HW_ID
+    const uint16_t hwId = DEVICE_HW_ID;
+    #else
+    const uint16_t hwId = 0;
+    #endif
+    const char* board = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(hwId));
+    std::string j;
+    addf(j, "{\"v\":1,\"unconf\":1,\"up\":%lu,\"hwid\":%u,\"board\":", (unsigned long)uptime(), (unsigned)hwId);
+    addJsonStr(j, board ? board : "", 48);
+    j += '}';
+    res.setHeader("Cache-Control", "no-store");
+    res.setContentType("application/json");
+    res.send((const uint8_t*)j.data(), (int)j.size());
+}
+
 void NeoPixelWeb::handleState(WebRequest&, WebResponse& res)
 {
+    if (!_configured) return sendUnconfigured(res);
     _stateReqMs.store(millis() | 1);
     sendBuffer(res, _stateFront, "application/json");
 }
 
 void NeoPixelWeb::handleEm(WebRequest&, WebResponse& res)
 {
+    if (!_configured)
+    {
+        res.setHeader("Cache-Control", "no-store");
+        res.setContentType("application/json");
+        res.send("{\"sum\":0,\"ems\":[]}");
+        return;
+    }
     _emReqMs.store(millis() | 1);
     sendBuffer(res, _emFront, "application/json");
 }
 
 void NeoPixelWeb::handlePixels(WebRequest&, WebResponse& res)
 {
-    _pixReqMs.store(millis() | 1);
     res.setHeader("Cache-Control", "no-store");
     res.setContentType("application/octet-stream");
+    if (!_configured)
+    {
+        res.send(""); // no LED image without a configuration
+        return;
+    }
+    _pixReqMs.store(millis() | 1);
     if (xSemaphoreTake(lockOf(_lock), pdMS_TO_TICKS(200)) != pdTRUE)
     {
         res.setStatus(503);
@@ -781,9 +832,9 @@ void NeoPixelWeb::handlePixels(WebRequest&, WebResponse& res)
     xSemaphoreGive(lockOf(_lock));
 }
 
-bool NeoPixelWeb::parseCommand(const char* body, size_t len, Command& cmd)
+bool NeoPixelWeb::parseCommand(const char* body, size_t len, Command& cmd, const char* token)
 {
-    // Flat JSON {"segment":n,"function":"name","value":n|"#rrggbb"|"#rrggbb/w"}; segment is 1-based.
+    // Flat JSON {"segment":n,"function":"name","value":n|"#rrggbb"|"#rrggbb/w","tok":"hex"}; segment is 1-based.
     char buf[kMaxBody + 1];
     if (!body || len == 0 || len > kMaxBody) return false;
     memcpy(buf, body, len);
@@ -802,7 +853,11 @@ bool NeoPixelWeb::parseCommand(const char* body, size_t len, Command& cmd)
     const char* s = field("segment");
     const char* f = field("function");
     const char* v = field("value");
+    const char* t = field("tok");
     if (!s || !f || !v || *f != '"') return false;
+    // token from /neo/state: a cross-site form post cannot read it
+    const size_t tl = token ? strlen(token) : 0;
+    if (tl == 0 || !t || *t != '"' || strncmp(t + 1, token, tl) != 0 || t[1 + tl] != '"') return false;
     char* end = nullptr;
     const long seg = strtol(s, &end, 10);
     if (end == s || seg < 1 || seg > 255) return false;
@@ -853,8 +908,14 @@ void NeoPixelWeb::handleControl(WebRequest& req, WebResponse& res)
 {
     res.setHeader("Cache-Control", "no-store");
     res.setContentType("application/json");
+    if (!_configured)
+    {
+        res.setStatus(409);
+        res.send("{\"error\":\"not configured\"}");
+        return;
+    }
     Command cmd;
-    if (!parseCommand((const char*)req.body(), req.bodyLength(), cmd))
+    if (!parseCommand((const char*)req.body(), req.bodyLength(), cmd, _token))
     {
         res.setStatus(400);
         res.send("{\"error\":\"bad command\"}");

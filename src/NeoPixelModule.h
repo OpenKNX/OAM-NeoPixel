@@ -309,6 +309,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
+    std::vector<uint8_t> _physicalStripChannel; ///< ETS strip channel of each _physicalStrips entry
     VirtualStrip* _virtualStrip = nullptr;
 
     // Virtual Strip Configuration (NEW)
