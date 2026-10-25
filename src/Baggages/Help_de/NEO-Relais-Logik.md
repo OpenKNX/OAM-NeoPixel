@@ -6,4 +6,4 @@ Legt fest, wie der GPIO-Pegel auf den Schaltzustand abgebildet wird.
 
 **invertiert (LOW = EIN):** Bei EIN liegt der Ausgang auf LOW. Nötig für Low-aktive Relaismodule (sehr häufig bei günstigen Modulen).
 
-Bei der Initialisierung der Firmware wird das Relais in beiden Fällen ausgeschaltet; nach der Startverzögerung wird der gespeicherte Zustand wiederhergestellt, sofern gültige gespeicherte Daten vorliegen. Ein Relais-Objekt, das während der Startverzögerung eintrifft, schaltet erst danach.
+Bei der Initialisierung der konfigurierten Firmware wird das Relais in beiden Fällen ausgeschaltet (ein unkonfiguriertes Gerät setzt alle Hardware-Ports auf LOW, ein invertiertes Relais zieht dann an); nach der Startverzögerung schaltet es nach seiner Einstellung „Nach Neustart“ (Aus, Ein oder der gespeicherte Zustand, sofern gültige gespeicherte Daten vorliegen). Ein Relais-Objekt, das während der Startverzögerung eintrifft, schaltet erst danach.

@@ -36,6 +36,8 @@ Bevor Sie ein Netzteil über ein Relais schalten, prüfen Sie, **woher dieses Op
 
 **Empfehlung:** Das Netzteil, das auch den Controller speist, nicht über ein Relais komplett abschalten – oder eine getrennte Versorgung bzw. KNX-Hilfsspannung für das OpenKNX-Gerät vorsehen.
 
+Für ein Relais, das dieses Gerät versorgt, **„Vor Upload/Neustart“ auf „unverändert“** lassen (Standard). Mit „Aus“ schaltet das Gerät zu Beginn eines ETS-Downloads und vor einem Neustart seine eigene Versorgung ab. Nach jedem Neustart ist das Relais mindestens bis zum Ende der Startverzögerung aus, mit Mindest-Auszeit kann ein EIN später kommen; diesen Zeitraum muss die Beschaltung überbrücken.
+
 ---
 
 ## Einstellungen in ETS
@@ -49,11 +51,17 @@ Das Relais schaltet erst nach der eingestellten Zeit (Sekunden). Bei 0 wird sofo
 **Mindest-Auszeit**
 Verhindert, dass das Relais zu schnell wieder eingeschaltet wird – schützt z. B. Netzteile vor schnellen Ein-/Aus-Zyklen. Ein EIN-Telegramm innerhalb der Mindest-Auszeit wird nicht verworfen, sondern ausgeführt, sobald die Mindest-Auszeit abgelaufen ist (frühestens nach der Einschaltverzögerung). Ein AUS-Telegramm in dieser Wartezeit hebt das vorgemerkte EIN wieder auf; es gilt immer das zuletzt empfangene Telegramm.
 
+**Vor Upload/Neustart**
+**unverändert** (Standard) lässt das Relais bis zum Neustart im aktuellen Zustand; **Aus** schaltet es zu Beginn eines ETS-Downloads und vor einem Neustart über ETS, Konsole oder Netzwerkeinstellungen aus, ebenso vor dem Neustart nach einem Firmware-Update über KNX oder Netzwerk (nicht beim USB-Upload-Skript). Beide gelten unabhängig von „LEDs vor Upload/Neustart ausschalten“.
+
+**Nach Neustart**
+Zustand nach dem Ende der Startverzögerung: **Aus**, **Ein** oder **Letzter Zustand** (Standard; der gespeicherte Zustand, ohne gültige Daten aus). Hat „Vor Upload/Neustart = Aus“ das Relais ausgeschaltet, wird der Zustand davor gespeichert, nicht dieses Ausschalten; ein per Objekt ausgeschaltetes Relais wird als AUS gespeichert. Nach jedem Neustart ist das Relais mindestens bis zum Ende der Startverzögerung aus; eine Mindest-Auszeit zählt ab dem Neustart, auch für ein EIN-Telegramm, und kann ein EIN später kommen lassen.
+
 ---
 
 ## Kommunikationsobjekte
 
-Die Relais schalten ausschließlich über ihr Kommunikationsobjekt. Das Gerät schaltet sie nicht selbstständig zusammen mit den LEDs.
+Die Relais schalten über ihr Kommunikationsobjekt. Das Gerät schaltet sie nicht selbstständig zusammen mit den LEDs; selbst schaltet es sie nur vor einem Neustart oder ETS-Download („Vor Upload/Neustart“) und nach dem Neustart („Nach Neustart“).
 
 Pro aktiviertem Relais gibt es zwei KOs:
 
