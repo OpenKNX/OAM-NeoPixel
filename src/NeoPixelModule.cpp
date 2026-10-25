@@ -2725,6 +2725,8 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
     // Any telegram proves the master is alive, also when it is not applied.
     cfg.lastSyncMs = millis();
     cfg.lastSyncRxMs = cfg.lastSyncMs | 1;
+    memcpy(cfg.lastRxPayload, payload, sizeof(cfg.lastRxPayload)); // len >= 9 checked above
+    cfg.rxPayloadValid = true;
 
     if (cfg.locked) return;
     // The slave's own EM (running, paused or power-suspended) owns the segment.

@@ -552,9 +552,10 @@ void NeoPixelWeb::appendSegment(std::string& j, size_t i)
          (unsigned)cfg.syncMode, (unsigned)cfg.syncOverridePolicy, (unsigned)cfg.syncTimeoutSteps, (unsigned)cfg.virtualTotalLength,
          (unsigned)cfg.virtualOffset, cfg.lastSyncRxMs ? (long)((now - cfg.lastSyncRxMs) / 1000) : -1L,
          cfg.lastSyncSentMs ? (long)((now - cfg.lastSyncSentMs) / 1000) : -1L, timeout ? 1 : 0, cfg.localOverride ? 1 : 0);
-    // master: payload of the last telegram (while an EM runs: the frozen pre-EM state it sends)
+    // master: payload of the last telegram (while an EM runs: the frozen pre-EM state it sends); slave: last received
     const uint8_t* pl = cfg.syncFreezeValid && cfg.emController.isRunning() ? cfg.syncFreezePayload : cfg.syncPayloadValid ? cfg.lastSyncPayload : nullptr;
-    if (cfg.syncMode == 1 && pl)
+    if (cfg.syncMode == 2 && cfg.rxPayloadValid) pl = cfg.lastRxPayload; // slave: what the master sent last
+    if (pl && (cfg.syncMode == 1 || cfg.syncMode == 2))
         addf(j, ",\"pl\":[%u,%u,%u,%u,%u,%u,%u,%u,%u]", pl[0], pl[1], pl[2], pl[3], pl[4], pl[5], pl[6], pl[7], pl[8]);
     j += "}}";
 }
