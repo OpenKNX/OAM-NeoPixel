@@ -4,7 +4,9 @@
 #include "Segment.h"
 #include "effects/Effect.h"
 #include "knxprod.h"
+#include <array>
 #include <stdint.h>
+#include <vector>
 
 // Forward declarations
 class NeoPixelBusModule;
@@ -12,13 +14,13 @@ class NeoPixelBusModule;
 /**
  * @brief Scene/Preset Manager for ETS-configurable lighting scenes
  *
- * Manages up to 10 ETS-configured scenes per segment. Each scene stores:
+ * Manages up to 10 scenes per segment in an OAM-owned runtime cache initialized from ETS. Each scene stores:
  * - Effect type, primary/secondary colors (RGBWWCW), brightness
  * - Effect-specific parameters (10 bytes, auto-generated)
  * - Effect text (14 bytes, DPT 16.001)
  *
  * Uses computed byte offsets for generic scene access (no per-scene switch/case).
- * Scene data is stored in the segment Union at offsets 160-519 (10 x 36 bytes).
+ * The ETS base layout uses segment Union offsets 160-519 (10 x 36 bytes); edits never write that table.
  */
 class SceneManager
 {
@@ -79,7 +81,7 @@ class SceneManager
      *
      * Captures the segment's current effect type, primary/secondary colors (RGBWWCW),
      * brightness, and effect-specific parameters, writing them into the scene's
-     * parameter memory. Changes are in RAM only until flash is persisted.
+     * OAM cache. Changes are in RAM until module flash persistence runs.
      *
      * @param channelIndex Segment index (0-15)
      * @param sceneNumber Scene number (1-based, as received via DPT 18.001)
@@ -88,7 +90,23 @@ class SceneManager
      */
     bool storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment);
 
+    static constexpr uint8_t MAX_SCENES = 10;
+    using SceneData = std::array<uint8_t, SCENE_SIZE>;
+    bool addScene(uint8_t channel, Segment* segment);
+    bool deleteScene(uint8_t channel, uint8_t scene);
+    SceneData sceneData(uint8_t channel, uint8_t scene);
+    bool importScenes(uint8_t channel, const uint8_t* data, size_t length);
+    std::vector<uint8_t> exportScenes(uint8_t channel);
+    void resetCache();
+
   private:
+    struct SceneCache
+    {
+        uint8_t count = 0;
+        std::array<SceneData, MAX_SCENES> scenes{};
+    };
+    std::vector<SceneCache> _cache;
+    void ensureCache(uint8_t channel);
     NeoPixelBusModule* _module;
 
     /**

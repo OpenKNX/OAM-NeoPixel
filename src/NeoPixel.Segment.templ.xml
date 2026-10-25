@@ -72,6 +72,12 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%071" Offset="28" BitOffset="0" Name="NEO%C%SegmentStartupBrightness" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Helligkeit" Value="255"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%240" Offset="23" BitOffset="3" Name="NEO%C%SegmentResetColorOnEffectChange" ParameterType="%AID%_PT-Boolean" Text="Bei Effektwechsel Farbe auf Standard zurücksetzen" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%%CC%072" Offset="29" BitOffset="0" Name="NEO%C%SegmentEmStopReturnMode" ParameterType="%AID%_PT-EmStopReturnMode" Text="Effektmanager-Stop: Rueckkehr" Value="0"/>
+                <!-- Studio round-trip fields use reserved tail bytes; segment size stays 704. -->
+                <Parameter Id="%AID%_UP-%TT%%CC%260" Offset="696" BitOffset="0" Name="NEO%C%SegmentStartupCW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Start-Farbe Kaltweiß" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%261" Offset="697" BitOffset="0" Name="NEO%C%SegmentStartupSecondaryColor" ParameterType="%AID%_PT-ColorRGB" Text="Zweite Start-Farbe RGB" Value="#000000"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%262" Offset="700" BitOffset="0" Name="NEO%C%SegmentStartupSecondaryWW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Zweite Start-Farbe Weiß / Warmweiß" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%263" Offset="701" BitOffset="0" Name="NEO%C%SegmentStartupSecondaryCW" ParameterType="%AID%_PT-MinMaxValue8Bit" Text="Zweite Start-Farbe Kaltweiß" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%%CC%264" Offset="702" BitOffset="0" Name="NEO%C%SegmentStartupSeparateWhite" ParameterType="%AID%_PT-Boolean" Text="Start-Farbe: Weißkanäle getrennt" Value="0"/>
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
@@ -99,6 +105,12 @@
               </Union>
             </Parameters>
             <ParameterRefs>
+              <ParameterRef Id="%AID%_UP-%TT%%CC%260_R-%TT%%CC%26001" RefId="%AID%_UP-%TT%%CC%260"/>
+              <ParameterRef Id="%AID%_UP-%TT%%CC%261_R-%TT%%CC%26101" RefId="%AID%_UP-%TT%%CC%261"/>
+              <ParameterRef Id="%AID%_UP-%TT%%CC%262_R-%TT%%CC%26201" RefId="%AID%_UP-%TT%%CC%262"/>
+              <ParameterRef Id="%AID%_UP-%TT%%CC%263_R-%TT%%CC%26301" RefId="%AID%_UP-%TT%%CC%263"/>
+              <ParameterRef Id="%AID%_UP-%TT%%CC%264_R-%TT%%CC%26401" RefId="%AID%_UP-%TT%%CC%264"/>
+
               <ParameterRef Id="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" RefId="%AID%_P-%TT%%CC%000" />
               <!-- Segment Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%050_R-%TT%%CC%05001" RefId="%AID%_UP-%TT%%CC%050" />
@@ -469,6 +481,10 @@
                          Die direkten Segment-KOs bleiben sichtbar — sie sind der manuelle Steuerpfad nach "EM Stop". -->
                     <choose ParamRefId="%AID%_UP-%TT%%CC%253_R-%TT%%CC%25301">
                       <when test="0">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel Studio: Import und Vergleich" UIHint="Headline"/>
+                    <Button Id="%AID%_B-%TT%%CC%920" Text="Gespeicherte Studio-Werte in ETS übernehmen" Name="ImportStudioSettings" EventHandler="NEO_importStudioSettings" EventHandlerParameters="{ &quot;segment&quot;:%C% }" EventHandlerOnline="ConnectionOriented"/>
+                    <Button Id="%AID%_B-%TT%%CC%921" Text="ETS mit aktuellen Gerätewerten vergleichen" Name="CompareStudioSettings" EventHandler="NEO_compareStudioSettings" EventHandlerParameters="{ &quot;segment&quot;:%C% }" EventHandlerOnline="ConnectionOriented"/>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Importiert nur Farben, Helligkeit, Effekt und Effektparameter. Anschließend die ETS-Applikation laden. Der Vergleich ändert keine ETS-Werte."/>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Start-Konfiguration" UIHint="Headline" />
@@ -476,6 +492,12 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" IndentLevel="1" HelpContext="NEO-Start-Farbe"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" IndentLevel="1" HelpContext="%DOC%"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%071_R-%TT%%CC%07101" IndentLevel="1" HelpContext="%DOC%"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%260_R-%TT%%CC%26001" IndentLevel="1"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%261_R-%TT%%CC%26101" IndentLevel="1"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%262_R-%TT%%CC%26201" IndentLevel="1"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%263_R-%TT%%CC%26301" IndentLevel="1"/>
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%264_R-%TT%%CC%26401" IndentLevel="1"/>
+
 
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                     <!-- ========================================================================================================= -->

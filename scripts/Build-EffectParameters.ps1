@@ -2300,6 +2300,10 @@ function Generate-UnionParameters {
         $currentOffset = $script:Config.EffectSpilloverStartOffset
       }
 
+      if (($currentOffset + $paramByteSize) -gt 696) {
+        throw "Effect parameters overlap reserved Studio startup colour fields at byte 696."
+      }
+
       # STRING params use empty string default (Value attribute is text)
       $paramValue = if ($param.Type -eq 'PARAM_STRING') { '' } else { $param.Default }
 
@@ -3292,6 +3296,28 @@ function Generate-CppMapping {
   $cpp += '    }'
   $cpp += '}'
   $cpp += ''
+  $cpp += '// ETS suffixes share the exact ordering used by loadEffectParameters().'
+  $cpp += 'inline const char* effectParameterEtsName(uint8_t effectID, uint8_t index)'
+  $cpp += '{'
+  $cpp += '    switch (static_cast<PT_NEOEffectType>(effectID))'
+  $cpp += '    {'
+  foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
+    $enumName = $effect.ClassName -replace 'Effect$', '' -replace '^Effect', ''
+    $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
+    $cpp += "        case PT_NEOEffectType::${enumName}:"
+    $cpp += '            switch (index)'
+    $cpp += '            {'
+    for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
+      $paramNameClean = $effect.Parameters[$i].Name -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
+      $cpp += "                case ${i}: return `"$effectNameClean$paramNameClean`";"
+    }
+    $cpp += '                default: return nullptr;'
+    $cpp += '            }'
+  }
+  $cpp += '        default: return nullptr;'
+  $cpp += '    }'
+  $cpp += '}'
+  $cpp += ''
   $cpp += '#endif // EFFECT_PARAMETER_MAPPING_H'
   $cpp += ''
 
@@ -4167,6 +4193,21 @@ Write-Host "Dynamic choose/when blocks" -ForegroundColor White
 Write-Host "       $dynamicChoosePath" -ForegroundColor DarkGray
 
 # 5. C++ Parameter Mapping Header
+# Studio ETS readback must use the same IDs and parameter order as the firmware.
+$studioNames = [ordered]@{}
+foreach ($effect in $effects | Sort-Object { [int]$_.EffectID }) {
+  $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, ''
+  $names = @($effect.Parameters | ForEach-Object { $effectNameClean + ($_.Name -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, '') })
+  $studioNames[[string]$effect.EffectID] = $names
+}
+$studioScriptPath = Resolve-RepoPath "src/NeoPixel.script.js"
+$studioScript = Get-Content $studioScriptPath -Raw
+$studioBlock = "// BEGIN AUTO-GENERATED: Studio ETS parameter names`nvar NEO_StudioEffectParameters = " + ($studioNames | ConvertTo-Json -Depth 4 -Compress) + ";`n// END AUTO-GENERATED: Studio ETS parameter names"
+if ($studioScript.Contains('// BEGIN AUTO-GENERATED: Studio ETS parameter names')) {
+  $studioScript = [regex]::Replace($studioScript, '(?s)// BEGIN AUTO-GENERATED: Studio ETS parameter names.*?// END AUTO-GENERATED: Studio ETS parameter names', $studioBlock)
+} else { $studioScript += "`n" + $studioBlock + "`n" }
+Set-Content $studioScriptPath -Value $studioScript -Encoding UTF8 -NoNewline
+
 $cppMapping = Generate-CppMapping -Effects $effects
 $cppMappingPath = "src/EffectParameterMapping.h"
 Set-Content -Path $cppMappingPath -Value $cppMapping -Encoding UTF8

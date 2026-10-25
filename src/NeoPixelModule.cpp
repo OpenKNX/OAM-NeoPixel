@@ -1,4 +1,5 @@
 #include "NeoPixelModule.h"
+#include "NeoPixelStudio.h"
 #include "EffectManagerLifecycle.h"
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
@@ -152,6 +153,9 @@ NeoPixelBusModule::NeoPixelBusModule()
 
 NeoPixelBusModule::~NeoPixelBusModule()
 {
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    delete _studio;
+#endif
     delete _flashPersistence;
     delete _effectConfiguration;
     delete _colorManagement;
@@ -162,6 +166,10 @@ NeoPixelBusModule::~NeoPixelBusModule()
 
 void NeoPixelBusModule::setup(bool configured)
 {
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (!_studio) _studio = new (std::nothrow) NeoPixelStudio(*this);
+    if (_studio) _studio->setup();
+#endif
 #ifdef ARDUINO_ARCH_ESP32
     logEsp32ResetReason();
 #endif
@@ -320,6 +328,10 @@ void NeoPixelBusModule::loop(bool configured)
         _drainGate = false;
     }
 
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (_studio) _studio->loop();
+#endif
+
     // Effektkette: slave watchdog + master change detection / heartbeat (after the restore)
     if (!_localTestMode)
     {
@@ -473,6 +485,10 @@ void NeoPixelBusModule::processBeforeRestart()
 
 void NeoPixelBusModule::processBeforeTablesUnload()
 {
+    if (_flashPersistence) _flashPersistence->invalidateForEtsDownload();
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (_studio) _studio->invalidateSaved();
+#endif
     // An ETS download follows, not a restart: the KNX stack keeps running, so arm the
     // sequencer instead of blocking loop() with a synchronous showAll().
     if (!prepareLedShutdown()) return;
@@ -600,7 +616,13 @@ void NeoPixelBusModule::processAfterStartupDelay()
     // here so the restored effect/colour/brightness become the ACTIVE state (reported by ETS
     // sync-back readback). Only acts on segments set to "Letzter Zustand"; StartupEM below is
     // evaluated afterwards and can override it (priority EM > Effekt > Solid).
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (_studio) _studio->restoreSaved(true);
+#endif
     if (_flashPersistence) _flashPersistence->restoreStatesAfterStartup();
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (_studio) _studio->restoreSaved(false);
+#endif
 
     uint8_t previousChannel = _channelIndex;
     for (size_t i = 0; i < _segments.size(); ++i)
@@ -3292,6 +3314,21 @@ bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t pro
     if (objectIndex != NEOPIXEL_FUNCTION_OBJECT_INDEX || propertyId != NEOPIXEL_FUNCTION_PROPERTY_ID)
         return false;
 
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (length && data && data[0] == 0x20)
+    {
+        if (_studio && _initialized && openknx.afterStartupDelay()) return _studio->readback(length, data, resultData, resultLength);
+        resultData[0] = 1;
+        resultLength = 1;
+        return true;
+    }
+#endif
+    if (!data || length != 1 || data[0] != 0)
+    {
+        resultData[0] = 5;
+        resultLength = 1;
+        return true;
+    }
     logDebugP("==> processFunctionProperty (hardware detection): ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
 
 // Read hardware ID from compile-time define
@@ -6823,12 +6860,7 @@ void NeoPixelBusModule::applySegmentDefaultState(size_t segmentIndex)
 
     // Default color/white (TypeColor RGB = 0x00RRGGBB) — the member wrapper above does NOT
     // load the default color, so apply it explicitly like setupEffectConfiguration(seg, true).
-    uint32_t color = ParamNEO_NEOSegmentStartupColor;
-    uint8_t r = (color >> 16) & 0xFF;
-    uint8_t g = (color >> 8) & 0xFF;
-    uint8_t b = color & 0xFF;
-    uint8_t w = static_cast<uint8_t>(ParamNEO_NEOSegmentStartupW);
-    setPrimaryColorOneWhite(cfg.segment, r, g, b, w);
+    applyStartupColors(cfg.segment);
     captureDirectColor(segmentIndex);
 
     // Start brightness seeds the pre-global intent; render then respects the live global factor
@@ -6912,6 +6944,9 @@ void NeoPixelBusModule::captureDirectColor(size_t segmentIndex)
     cfg.savedB = (primary >> 8) & 0xFF;
     cfg.savedWW = primary & 0xFF;
     cfg.savedCW = cfg.segment->getConfig().cw(); // RGBCCT: the 5th channel is not in primary
+    const auto& secondary = cfg.segment->getConfig();
+    cfg.savedSecondaryR = secondary.r2(); cfg.savedSecondaryG = secondary.g2(); cfg.savedSecondaryB = secondary.b2();
+    cfg.savedSecondaryWW = secondary.ww2(); cfg.savedSecondaryCW = secondary.cw2();
     cfg.savedValid = true;
 }
 
@@ -6919,6 +6954,22 @@ void NeoPixelBusModule::captureDirectColor(size_t segmentIndex)
  * @brief Primary colour with one white value. On an RGBCCT buffer W is split like the W object
  *        (warm half, cool rest); otherwise CW is cleared, so no earlier CW stays active.
  */
+void NeoPixelBusModule::applyStartupColors(Segment* segment)
+{
+    const uint32_t primary = ParamNEO_NEOSegmentStartupColor;
+    const uint8_t white = ParamNEO_NEOSegmentStartupW;
+#ifdef ParamNEO_NEOSegmentStartupSeparateWhite
+    if (ParamNEO_NEOSegmentStartupSeparateWhite)
+        segment->setPrimaryColor((primary >> 16) & 255, (primary >> 8) & 255, primary & 255, white, ParamNEO_NEOSegmentStartupCW);
+    else
+#endif
+        setPrimaryColorOneWhite(segment, (primary >> 16) & 255, (primary >> 8) & 255, primary & 255, white);
+#ifdef ParamNEO_NEOSegmentStartupSecondaryColor
+    const uint32_t secondary = ParamNEO_NEOSegmentStartupSecondaryColor;
+    segment->setSecondaryColor((secondary >> 16) & 255, (secondary >> 8) & 255, secondary & 255, ParamNEO_NEOSegmentStartupSecondaryWW, ParamNEO_NEOSegmentStartupSecondaryCW);
+#endif
+}
+
 void NeoPixelBusModule::setPrimaryColorOneWhite(Segment* seg, uint8_t r, uint8_t g, uint8_t b, uint8_t w)
 {
     if (!seg) return;

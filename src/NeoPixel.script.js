@@ -498,3 +498,151 @@ var NEO_SceneEffectDefaults = {};
 // BEGIN AUTO-GENERATED: Scene Effect Defaults Function
 function NEO_SetSceneEffectDefaults(input, output, context) { }
 // END AUTO-GENERATED: Scene Effect Defaults Function
+
+// Studio online functions import only visual settings; strip/segment/power configuration stays in ETS.
+function NEO_readStudioSettings(device, online, progress, context, source) {
+    var segment = toInt(context && context.segment, 0);
+    if (segment < 1 || segment > 16) throw new Error("NeoPixel: Ungültiger Segmentkontext.");
+    var bytes = [], offset = 0, token = -1, total = 0;
+    online.connect();
+    try {
+        do {
+            var response = BASE_invokeFunctionPropertyWrapper(158, 10,
+                [32, segment, source, (offset >> 8) & 255, offset & 255], device, online, progress, 10, 85);
+            if (!response || response.length < 7 || response[0] !== 0 || response[1] !== 1)
+                throw new Error(source === 1 ? "NeoPixel: Kein gültiger Studio-Speicherstand. In Studio erneut speichern; nach einem ETS-Download ist der alte Stand ungültig." : "NeoPixel: Gerät unterstützt den Studio-Vergleich nicht oder ist noch nicht bereit.");
+            var nextToken = response[2] * 256 + response[3];
+            var nextTotal = response[4] * 256 + response[5];
+            if (offset === 0) { token = nextToken; total = nextTotal; }
+            if (token !== nextToken || total !== nextTotal || total < 1 || total > 8192 || offset + response.length - 6 > total)
+                throw new Error("NeoPixel: Segmentdaten haben sich während der Übertragung geändert. Erneut versuchen.");
+            bytes = bytes.concat(response.slice(6));
+            offset = bytes.length;
+        } while (offset < total);
+    } finally { online.disconnect(); }
+    var encoded = "";
+    for (var i = 0; i < bytes.length; i++) encoded += "%" + ("0" + bytes[i].toString(16)).slice(-2);
+    var settings = JSON.parse(decodeURIComponent(encoded));
+    if (settings.version !== 1 || settings.segment !== segment || !settings.parameters || !(settings.parameters instanceof Array))
+        throw new Error("NeoPixel: Unbekanntes Studio-Format.");
+    return settings;
+}
+
+function NEO_studioBindings(device, context, settings) {
+    var base = ["NEOEffectType", "SegmentStartupBrightness", "SegmentStartupColor", "SegmentStartupW", "SegmentStartupCW",
+        "SegmentStartupSeparateWhite", "SegmentStartupSecondaryColor", "SegmentStartupSecondaryWW", "SegmentStartupSecondaryCW"];
+    var effectNames = NEO_StudioEffectParameters[String(settings.effect)];
+    if (!effectNames) throw new Error("NeoPixel: Effekt ist dieser ETS-Applikation nicht bekannt. Applikation aktualisieren.");
+    var allowed = base.concat(effectNames), seen = {}, bindings = [];
+    var prefix = "NEO_NEO" + toInt(context.segment, 0);
+    if (settings.parameters.length !== allowed.length) throw new Error("NeoPixel: Unvollständige Studio-Parameterliste.");
+    for (var i = 0; i < settings.parameters.length; i++) {
+        var entry = settings.parameters[i];
+        if (!entry || allowed.indexOf(entry.name) < 0 || seen[entry.name]) throw new Error("NeoPixel: Ungültige Studio-Parameterliste.");
+        seen[entry.name] = true;
+        if (typeof entry.value !== "number" && typeof entry.value !== "string") throw new Error("NeoPixel: Ungültiger Parameterwert.");
+        if (typeof entry.value === "number" && (entry.value < 0 || entry.value > 255 || Math.floor(entry.value) !== entry.value))
+            throw new Error("NeoPixel: Parameterwert außerhalb des Wertebereichs.");
+        if (entry.name === "SegmentStartupColor" || entry.name === "SegmentStartupSecondaryColor") {
+            if (typeof entry.value !== "string" || !/^#[0-9a-fA-F]{6}$/.test(entry.value)) throw new Error("NeoPixel: Ungültige RGB-Farbe.");
+        } else if (entry.name.indexOf("Text") >= 0) {
+            if (typeof entry.value !== "string") throw new Error("NeoPixel: Ungültiger Effekt-Text.");
+        } else if (typeof entry.value !== "number") throw new Error("NeoPixel: Numerischer Parameter erwartet.");
+        if (entry.name === "NEOEffectType" && entry.value !== settings.effect) throw new Error("NeoPixel: Widersprüchlicher Effekt.");
+        var parameter = device.getParameterByName(prefix + entry.name);
+        if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + prefix + entry.name + ". Applikation aktualisieren.");
+        bindings.push({ parameter: parameter, name: entry.name, value: entry.value });
+    }
+    return bindings.concat(NEO_studioSceneBindings(device, context, settings));
+}
+
+function NEO_importStudioSettings(device, online, progress, context) {
+    progress.setText("NeoPixel: Lese gespeicherte Studio-Einstellungen...");
+    var settings = NEO_readStudioSettings(device, online, progress, context, 1);
+    var bindings = NEO_studioBindings(device, context, settings);
+    // Resolve every target before changing anything, so incompatible applications remain untouched.
+    for (var i = 0; i < bindings.length; i++) bindings[i].parameter.value = bindings[i].value;
+    var reducedEffect = device.getParameterByName("NEO_NEO" + toInt(context.segment, 0) + "NEOEffectTypeNo2D");
+    if (reducedEffect) reducedEffect.value = settings.effect;
+    progress.setProgress(100);
+    progress.setText("Studio-Werte in ETS übernommen. Jetzt die ETS-Applikation in das Gerät laden.");
+}
+
+function NEO_compareStudioSettings(device, online, progress, context) {
+    progress.setText("NeoPixel: Vergleiche ETS mit aktuellen Gerätewerten...");
+    var settings = NEO_readStudioSettings(device, online, progress, context, 0);
+    var bindings = NEO_studioBindings(device, context, settings), different = [];
+    for (var i = 0; i < bindings.length; i++) {
+        var binding = bindings[i], actual = binding.parameter.value, expected = binding.value;
+        if (binding.compare === false) continue;
+        if (binding.name === "SegmentStartupSeparateWhite") continue;
+        var prefix = "NEO_NEO" + toInt(context.segment, 0);
+        if (settings.channels === 5 && !Number(device.getParameterByName(prefix + "SegmentStartupSeparateWhite").value)) {
+            var legacyWhite = Number(device.getParameterByName(prefix + "SegmentStartupW").value);
+            if (binding.name === "SegmentStartupW") actual = Math.floor(legacyWhite / 2);
+            if (binding.name === "SegmentStartupCW") actual = legacyWhite - Math.floor(legacyWhite / 2);
+        }
+        var equal = typeof expected === "number" ? Number(actual) === expected : String(actual).toUpperCase() === String(expected).toUpperCase();
+        if (binding.name.indexOf("Color") < 0 && typeof expected === "string") equal = String(actual) === expected;
+        if (!equal) different.push(binding.name);
+    }
+    progress.setProgress(100);
+    if (different.length) throw new Error("NeoPixel: ETS und Gerät unterscheiden sich bei " + different.length + " Studio-Wert(en): " + different.join(", "));
+    progress.setText("Identisch: Farben, Helligkeit, Effekt und Effektparameter stimmen mit ETS überein.");
+}
+
+// BEGIN AUTO-GENERATED: Studio ETS parameter names
+var NEO_StudioEffectParameters = {"0":[],"1":["WipeSpeed","WipeDirection","WipeLoop"],"2":["RainbowSpeed","RainbowDelta","RainbowSaturation","RainbowDensity","RainbowMode"],"3":["Pride2015Speed"],"4":["JuggleSpeed","JuggleNumDots","JuggleFadeSpeed","JuggleHueOffset"],"5":["BPMBPM","BPMHue"],"6":["CylonSpeed","CylonHue","CylonEyeSize","CylonFadeAmount","CylonDirection","CylonMode"],"7":["TestPhaseDuration","TestMode"],"8":["FireSpeed","FireCooling","FireSparking","FireReverseDirection","FireBlueFireMode"],"9":["TheaterChaseSpeed","TheaterChaseSpacing","TheaterChaseDotSize","TheaterChaseColorMode","TheaterChaseColorSpeed","TheaterChaseBounce"],"10":["SparkleSpeed","SparkleFadeRate","SparkleSparkleCount","SparkleProbability","SparkleWhiteOnly","SparkleBurstMode","SparkleMode"],"11":["BreathingSpeed","BreathingMinBrightness","BreathingCurve","BreathingRainbowMode","BreathingWaveform"],"12":["StrobeSpeed","StrobeOnRatio","StrobeMinBrightness","StrobeRandomTiming","StrobeRainbowStrobe"],"13":["CometSpeed","CometFadeRate","CometTailLength","CometBounceMode","CometRainbowMode","CometMode"],"14":["NoiseSpeed","NoiseScale","NoiseSaturation","NoiseHueOffset","NoisePalette"],"15":["PaletteSpeed","PalettePalette","PaletteBlend","PaletteSpacing"],"16":["BlitzSpeed","BlitzWidth","BlitzDecay","BlitzHue","BlitzIntensity"],"17":["GradientSpeed","GradientStartHue","GradientEndHue","GradientSaturation"],"18":["KerzeSpeed","KerzeIntensity","KerzeZones"],"19":["LaufschriftSpeed","LaufschriftGap","LaufschriftLoop","LaufschriftText","LaufschriftFont"],"20":["Uhr2DViewMode","Uhr2DShowSeconds","Uhr2DBlinkColon","Uhr2DColourHue","Uhr2DDateMode","Uhr2DDateFormat","Uhr2DDateHue","Uhr2DSwitchSec","Uhr2DScrollSpeed","Uhr2DFont"],"21":["Snake2DSpeed","Snake2DHeadHue","Snake2DBodyMode","Snake2DBodyHue"],"22":["Matrix2DSpeed","Matrix2DDensity","Matrix2DPalette","Matrix2DGlitch"],"23":["Tetris2DSpeed","Tetris2DBgBrightness","Tetris2DGhostPiece","Tetris2DColorMode","Tetris2DFlashLines","Tetris2DAutoPlay"],"24":["TRONSpeed","TRONHue","TRONGridSpacing","TRONGlow"],"25":["StarfieldWarpSpeed","StarfieldWarpDensity","StarfieldWarpColorMode","StarfieldWarpWarpPulse"],"26":["PlasmaNebulaSpeed","PlasmaNebulaSaturation","PlasmaNebulaContrast","PlasmaNebulaPaletteShift"],"27":["UFOSwarmSpeed","UFOSwarmCount","UFOSwarmHue","UFOSwarmBeam"],"28":["GameofLife2DSpeed","GameofLife2DHue","GameofLife2DColorMode","GameofLife2DSpawnDensity"],"29":["DNA2DSpeed","DNA2DHue","DNA2DTwist","DNA2DRungSpacing"],"30":["Aurora2DSpeed","Aurora2DHue","Aurora2DScale","Aurora2DIntensity"],"31":["Lissajous2DSpeed","Lissajous2DHue","Lissajous2DFreqA","Lissajous2DFreqB"],"32":["Metaballs2DSpeed","Metaballs2DHue","Metaballs2DBlobCount","Metaballs2DContrast"]};
+// END AUTO-GENERATED: Studio ETS parameter names
+
+function NEO_studioSceneBindings(device, context, settings) {
+    if (settings.scenes === undefined) return [];
+    var data = settings.scenes;
+    if (!(data instanceof Array) || data.length < 1 || data[0] > 10 || data.length !== 1 + data[0] * 36) throw new Error("NeoPixel: Ungültige Szenendaten.");
+    for (var b = 0; b < data.length; b++) if (typeof data[b] !== 'number' || data[b] < 0 || data[b] > 255 || Math.floor(data[b]) !== data[b]) throw new Error("NeoPixel: Ungültiges Szenenbyte.");
+    var prefix = 'NEO_NEO' + toInt(context.segment, 0), bindings = [];
+    function add(name, value, optional) {
+        var parameter = device.getParameterByName(prefix + name);
+        if (!parameter) { if (optional) return null; throw new Error('NeoPixel: ETS-Szenenparameter fehlt: ' + prefix + name); }
+        bindings.push({parameter:parameter, name:name, value:value, compare:!optional});
+        return parameter;
+    }
+    function rgb(at) { return '#' + data.slice(at,at+3).map(function(v){return ('0'+v.toString(16)).slice(-2);}).join('').toUpperCase(); }
+    function latin(at) {
+        var special={164:8364,166:352,168:353,180:381,184:382,188:338,189:339,190:376}, result='';
+        for(var i=0;i<14 && data[at+i];i++) result+=String.fromCharCode(special[data[at+i]] || data[at+i]);
+        return result;
+    }
+    add('SceneCount', data[0]);
+    for (var scene=0;scene<data[0];scene++) {
+        var at=1+scene*36, name='Scene'+String.fromCharCode(65+scene), effect=data[at];
+        if (!NEO_StudioEffectParameters[String(effect)] && !(effect>=200 && effect<=215)) throw new Error('NeoPixel: Unbekannter Szeneneffekt.');
+        add(name+'EffectType',effect); add(name+'EffectTypeNo2D',effect,true);
+        add(name+'PrimaryColor',rgb(at+1)); add(name+'PrimaryWW',data[at+4]); add(name+'PrimaryCW',data[at+5]);
+        add(name+'SecondaryColor',rgb(at+6)); add(name+'SecondaryWW',data[at+9]); add(name+'SecondaryCW',data[at+10]);
+        add(name+'Brightness',data[at+11]);
+        var textParameter=add(name+'EffectText',latin(at+22));
+        if (textParameter.parameterRefId && typeof device.getParameterById==='function') {
+            for (var textEffectId in NEO_StudioEffectParameters) {
+                if (!Object.prototype.hasOwnProperty.call(NEO_StudioEffectParameters,textEffectId) || Number(textEffectId)===0) continue;
+                var textSuffix=String(Number(textEffectId)+2); if(textSuffix.length<2)textSuffix='0'+textSuffix;
+                var textAlias=null;
+                try { textAlias=device.getParameterById(textParameter.parameterRefId.slice(0,-2)+textSuffix); } catch(e) {}
+                if(textAlias)bindings.push({parameter:textAlias,name:name+'EffectText',value:latin(at+22),compare:false});
+            }
+        }
+        for (var slot=0;slot<10;slot++) {
+            var parameter=add(name+'Slot'+slot,data[at+12+slot]);
+            if (parameter.parameterRefId && typeof device.getParameterById==='function') {
+                for (var effectId in NEO_StudioEffectParameters) {
+                    if (!Object.prototype.hasOwnProperty.call(NEO_StudioEffectParameters,effectId) || Number(effectId)===0) continue;
+                    var suffix=String(Number(effectId)+2); if(suffix.length<2)suffix='0'+suffix;
+                    var alias=null;
+                    try { alias=device.getParameterById(parameter.parameterRefId.slice(0,-2)+suffix); } catch(e) {}
+                    if(alias)bindings.push({parameter:alias,name:name+'Slot'+slot,value:data[at+12+slot],compare:false});
+                }
+            }
+        }
+    }
+    return bindings;
+}

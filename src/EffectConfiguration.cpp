@@ -166,12 +166,7 @@ void EffectConfiguration::applyEffectToSegment(Segment* segment, uint8_t effectT
 
             if (resetToDefault)
             {
-                uint32_t color = ParamNEO_NEOSegmentStartupColor;
-                uint8_t r = (color >> 16) & 0xFF;
-                uint8_t g = (color >> 8) & 0xFF;
-                uint8_t b = color & 0xFF;
-                uint8_t w = ParamNEO_NEOSegmentStartupW;
-                NeoPixelBusModule::setPrimaryColorOneWhite(segment, r, g, b, w);
+                _module->applyStartupColors(segment);
 
                 // setEffect() entered the effect before the optional ETS color reset. Enter it
                 // once more so effects that initialise their pixels see the final color.
@@ -245,7 +240,7 @@ void EffectConfiguration::setupEffectConfiguration(Segment* segment, bool loadDe
         uint8_t g = (color >> 8) & 0xFF;
         uint8_t b = color & 0xFF;
         uint8_t w = ParamNEO_NEOSegmentStartupW;
-        NeoPixelBusModule::setPrimaryColorOneWhite(segment, r, g, b, w);
+        _module->applyStartupColors(segment);
         logInfoP("Loaded default color from ETS: R=%d G=%d B=%d W=%d (0x%06X)", r, g, b, w, color);
     }
 

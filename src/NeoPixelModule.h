@@ -42,6 +42,7 @@ class EffectConfiguration;
 class ColorManagement;
 class SegmentController;
 class SceneManager;
+class NeoPixelStudio;
 
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
@@ -74,6 +75,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     friend class ColorManagement;
     friend class SegmentController;
     friend class SceneManager;
+    friend class NeoPixelStudio;
 
   public:
     // Segment Configuration Structure
@@ -132,6 +134,7 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t savedG = 0;
         uint8_t savedB = 0;
         uint8_t savedWW = 0; // Warm White (or single white for RGBW)
+        uint8_t savedSecondaryR = 0, savedSecondaryG = 0, savedSecondaryB = 0, savedSecondaryWW = 0, savedSecondaryCW = 0;
         uint8_t savedCW = 0; // Cool White (RGBCCT only)
         uint8_t savedBrightness = 0;
 
@@ -304,6 +307,9 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     bool _initialized = false;
     bool _clearLedsAfterSetup = false; // Flag to clear LEDs after hardware initialization
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    NeoPixelStudio* _studio = nullptr;
+#endif
     bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
@@ -498,6 +504,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool anySegmentVisible() const;
     void segmentOff(size_t segmentIndex, bool show); ///< own power OFF: pause the EM, stop and clear the segment
     void segmentOn(size_t segmentIndex);             ///< own power ON without the power-on EM edge
+    void applyStartupColors(Segment* segment);
     void captureDirectColor(size_t segmentIndex);    ///< live primary colour -> saved* (no EM running)
     static void setPrimaryColorOneWhite(Segment* seg, uint8_t r, uint8_t g, uint8_t b, uint8_t w); ///< one W value, split on RGBCCT
     void segmentPowerOn(size_t segmentIndex);        ///< ON command: power-on EM on the off->on edge, else segmentOn()

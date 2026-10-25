@@ -13,7 +13,8 @@ class Segment;
  * Handles saving and restoring of segment states (colors, brightness, effects)
  * to/from flash memory. Works with OGM-Common automatic save system.
  *
- * Storage: 14 bytes per segment × 16 segments = 224 bytes max (+ relay state)
+ * Storage: legacy 14-byte segment records and relay state, followed by a versioned
+ * secondary-colour/scene-cache extension (6 + 366 bytes per segment).
  */
 class NeoPixelFlashPersistence
 {
@@ -106,6 +107,8 @@ class NeoPixelFlashPersistence
      * Called automatically by OGM-Common (manual save, periodic save)
      */
     void writeToFlash();
+    bool hasSceneSnapshot() const { return _hasSceneSnapshot; }
+    void invalidateForEtsDownload() { _invalidated = true; }
 
     /**
      * @brief Read LED states from flash
@@ -122,6 +125,8 @@ class NeoPixelFlashPersistence
     void restoreStatesAfterStartup();
 
   private:
+    bool _invalidated = false;
+    bool _hasSceneSnapshot = false;
     NeoPixelBusModule* _module; // Parent module reference
     uint8_t _channelIndex = 0;  // Current channel index for ParamNEO_NEO* macros
     RelayFlashState _relayFlashState = {0, 0, 0};
