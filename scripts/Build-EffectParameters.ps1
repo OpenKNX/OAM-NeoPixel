@@ -795,6 +795,10 @@ if ($Clean) {
     $replacement = '$1' + 'function NEO_SetSceneEffectDefaults(input, output, context) { }' + [Environment]::NewLine + '$3'
     $content = $content -replace $pattern, $replacement
 
+    # Studio's generated ETS names must be reset together with the scene defaults.
+    $pattern = '(?s)(// BEGIN AUTO-GENERATED: Studio ETS parameter names\r?\n).*?(// END AUTO-GENERATED: Studio ETS parameter names)'
+    $content = $content -replace $pattern, ('$1var NEO_StudioEffectParameters = {};' + [Environment]::NewLine + '$2')
+
     Set-Content -Path $scriptJsPath -Value $content -NoNewline -Encoding UTF8
     Write-Host "    ✓ NeoPixel.script.js - Scene Effect Defaults emptied" -ForegroundColor Green
   }

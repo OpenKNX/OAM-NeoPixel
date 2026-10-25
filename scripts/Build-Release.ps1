@@ -121,49 +121,46 @@ if ($isMini -and $isFull) {
 
 # Handle Clean mode - cleanup all generated files
 if ($isClean) {
-    Write-Host "Cleaning all generated files..." -ForegroundColor Yellow
-    Write-Host ""
+    # Generators use repository-relative paths. Resolve them from this script even
+    # when the caller launches -Clean from another working directory.
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Stop'
+    Push-Location (Split-Path -Parent $PSScriptRoot)
+    try {
+        Write-Host "Cleaning effect parameters..." -ForegroundColor Cyan
+        & ./scripts/Build-EffectParameters.ps1 -Clean -Force
+        if (-not $?) { throw "Effect parameter cleanup failed." }
 
-    Write-Host "Cleaning effect parameters..." -ForegroundColor Cyan
-    & scripts/Build-EffectParameters.ps1 -Clean -Force
+        Write-Host "Cleaning hardware config..." -ForegroundColor Cyan
+        & ./scripts/Build-HardwareConfig.ps1 -Clean -Force
+        if (-not $?) { throw "Hardware config cleanup failed." }
 
-    Write-Host ""
-    Write-Host "Cleaning hardware config..." -ForegroundColor Cyan
-    & scripts/Build-HardwareConfig.ps1 -Clean -Force
+        Write-Host "Cleaning generated headers and producer outputs..." -ForegroundColor Cyan
+        # Only known generated outputs: preserve hand-written source and release packages.
+        foreach ($pattern in @(
+            'include/knxprod.h', 'include/buildtime.h', 'include/versions.h', 'include/webassets.h',
+            'src/NeoPixel-*.debug.xml', 'src/NeoPixel-*.baggages'
+        )) {
+            foreach ($item in Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue) {
+                Remove-Item -LiteralPath $item.FullName -Recurse -Force
+                Write-Host "  Removed $($item.Name)" -ForegroundColor DarkGray
+            }
+        }
 
-    Write-Host ""
-    Write-Host "Cleaning generated header files..." -ForegroundColor Cyan
-    $knxprodHeader = "include/knxprod.h"
-    if (Test-Path $knxprodHeader) {
-        Remove-Item $knxprodHeader -Force
-        Write-Host "  ✓ Removed $knxprodHeader" -ForegroundColor Green
-    } else {
-        Write-Host "  • $knxprodHeader not found (already clean)" -ForegroundColor DarkGray
+        Write-Host "Normalizing line endings..." -ForegroundColor Cyan
+        & ./scripts/Normalize-LineEndings.ps1
+        if (-not $?) { throw "Line ending normalization failed." }
+        Write-Host "All generated source files cleaned." -ForegroundColor Green
     }
-
-    Write-Host ""
-    Write-Host "Normalizing line endings..." -ForegroundColor Cyan
-    & scripts/Normalize-LineEndings.ps1
-
-    Write-Host ""
-    Write-Host "✓ All generated files cleaned!" -ForegroundColor Green
-    Write-Host ""
-
+    catch {
+        Write-Host "Cleanup failed: $_" -ForegroundColor Red
+        exit 1
+    }
+    finally {
+        Pop-Location
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
     exit 0
-    ## Ask if user wants to build after cleaning
-    #Write-Host "Cleaning done. Build full release with firmware now? (y/n): " -NoNewline -ForegroundColor Yellow
-    #$buildAfterClean = Read-Host
-    #
-    #if ($buildAfterClean -ne 'y' -and $buildAfterClean -ne 'Y') {
-    #    Write-Host ""
-    #    Write-Host "Cleanup completed. Exiting without build." -ForegroundColor Cyan
-    #    exit 0
-    #}
-
-    Write-Host ""
-    Write-Host "Continuing with build..." -ForegroundColor Cyan
-    Write-Host ""
-        # Don't exit - continue with normal build flow
 }
 
 # ============================================================================
