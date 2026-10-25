@@ -1,0 +1,269 @@
+/* neopixel.css - NeoPixel status page /neo. Tables, h1/h2, .meta come from base.css; this file adds page classes only. */
+:root {
+    /* Structure: OpenKNX green plus soft neutrals. */
+    --np-green: #449841; --np-green-b: #367534; --np-green-d: #2f6b2d; --np-green-t: #e7f1e5;
+    --np-ink: #1f2421; --np-mute: #535a55; --np-faint: #6b716c;
+    --np-line: #e3e6e1; --np-line2: #d2d6cf; --np-panel: #f8f9f7; --np-stage: #fbfcfa;
+    --np-off: #dcdfd9; --np-offedge: #c9cdc6;
+    /* Pastel tones for strips, segments, sections, cues (fill / edge). Text on them is always --np-ink. */
+    --np-t0: #d6e7cd; --np-e0: #86ad78;  /* sage   */
+    --np-t1: #cfdeec; --np-e1: #7fa2c2;  /* mist   */
+    --np-t2: #f4dcc6; --np-e2: #d1a27a;  /* apricot*/
+    --np-t3: #e2d9ef; --np-e3: #a594c6;  /* lilac  */
+    --np-t4: #cce8e1; --np-e4: #79b3a6;  /* seafoam*/
+    --np-t5: #f3d6da; --np-e5: #cf929b;  /* blush  */
+    --np-t6: #f0e7c0; --np-e6: #c4b366;  /* butter */
+    --np-t7: #e0ddd5; --np-e7: #aaa597;  /* stone  */
+    /* Status tints: soft background, dark readable text, saturated dot. */
+    --np-ok-bg: #e6f2e3; --np-ok-fg: #2f6b2d; --np-ok: #449841;
+    --np-warn-bg: #fbf0d4; --np-warn-fg: #82560a; --np-warn: #d9a326;
+    --np-bad-bg: #f8e1dc; --np-bad-fg: #a3341f; --np-bad: #d0634f;
+    --np-idle-bg: #edefeb; --np-idle-fg: #565c57;
+    /* Preview (example data) accent: lilac, distinct from the green live frame. */
+    --np-pv-bg: #f6f2fb; --np-pv-bg2: #faf8fd; --np-pv-e: #d9cdeb; --np-pv-d: #7c64a8;
+}
+.neo { max-width: 1180px; color: var(--np-ink) }
+.neo h1 { margin-bottom: .4em }
+.neo .meta { margin-bottom: 1em }
+.t0 { --f: var(--np-t0); --e: var(--np-e0) } .t1 { --f: var(--np-t1); --e: var(--np-e1) }
+.t2 { --f: var(--np-t2); --e: var(--np-e2) } .t3 { --f: var(--np-t3); --e: var(--np-e3) }
+.t4 { --f: var(--np-t4); --e: var(--np-e4) } .t5 { --f: var(--np-t5); --e: var(--np-e5) }
+.t6 { --f: var(--np-t6); --e: var(--np-e6) } .t7 { --f: var(--np-t7); --e: var(--np-e7) }
+.np-num { font-variant-numeric: tabular-nums; white-space: nowrap }
+.np-m { color: var(--np-mute) }
+.np-f { color: var(--np-faint); font-size: .85em }
+
+/* Header with the Live / Vorschau switch top right. */
+.np-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px }
+.np-head .meta { margin-bottom: .8em }
+.np-mode { display: inline-flex; border: 1px solid var(--np-line2); border-radius: 16px; padding: 2px; background: #fff; flex-shrink: 0 }
+.np-mode button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; margin: 0; border: 0; border-radius: 14px; background: none; color: var(--np-mute); cursor: pointer; font-size: .86em }
+.np-mode button.on { background: var(--np-green-b); color: #fff; font-weight: 600 }
+.np-mode button[data-m="pv"].on { background: var(--np-pv-d); }
+.np-livedot { width: 7px; height: 7px; border-radius: 50%; background: var(--np-ok); box-shadow: 0 0 0 2px rgba(68,152,65,.2) }
+.np-mode button.on .np-livedot { background: #fff; box-shadow: none }
+/* Mock-only remark: small, never part of the device page. */
+.np-mocknote { font-size: .76em; color: var(--np-faint); border: 1px dashed var(--np-line2); border-radius: 5px; padding: 4px 9px; margin-bottom: .9em; line-height: 1.45 }
+.np-mocknote b { color: var(--np-mute); font-weight: 600 }
+/* Preview (example data): lilac frame, sticky banner, never mixed with live values. */
+.np-pv { position: sticky; top: 0; z-index: 3; border: 1px solid var(--np-pv-e); border-left: 4px solid var(--np-pv-d); background: var(--np-pv-bg); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: .84em; box-shadow: 0 2px 6px rgba(80,60,120,.08) }
+.np-pv[hidden] { display: none }
+.np-pv-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px }
+.np-pv-h .np-sp { flex: 1 }
+.np-pv-tag { font-weight: 700; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--np-pv-d); padding: 2px 8px; border-radius: 10px }
+.np-pv-sel { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 6px; margin-top: 7px }
+.np-pv-sel > .np-f { flex-basis: 100%; margin-bottom: -1px }
+.np-pv-sel button { padding: 3px 10px; margin: 0; border: 1px solid var(--np-pv-e); border-radius: 14px; background: #fff; color: var(--np-ink); cursor: pointer; font-size: .95em }
+.np-pv-sel button:hover { border-color: var(--np-pv-d) }
+.np-pv-sel button.on { background: var(--np-pv-d); border-color: var(--np-pv-d); color: #fff }
+.np-pv-d { margin-top: 7px; color: var(--np-mute); line-height: 1.45 }
+.neo.pv .np-bar { border-left-color: var(--np-pv-d); background: var(--np-pv-bg2) }
+.neo.pv .np-stage { background: #fcfbfe }
+.np-foot { margin-top: 18px; font-size: .76em; color: var(--np-faint); line-height: 1.5 }
+
+/* Pills. */
+.np-pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 10px; font-size: .78rem; font-weight: 600; white-space: nowrap; line-height: 1.5 }
+.np-pill.ok { background: var(--np-ok-bg); color: var(--np-ok-fg) }
+.np-pill.warn { background: var(--np-warn-bg); color: var(--np-warn-fg) }
+.np-pill.bad { background: var(--np-bad-bg); color: var(--np-bad-fg) }
+.np-pill.idle { background: var(--np-idle-bg); color: var(--np-idle-fg); font-weight: 500 }
+.np-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; background: var(--np-faint) }
+.ok > .np-dot { background: var(--np-ok) } .warn > .np-dot { background: var(--np-warn) } .bad > .np-dot { background: var(--np-bad) }
+
+/* Status bar. */
+.np-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding: 9px 14px; border: 1px solid var(--np-line); border-left: 3px solid var(--np-green); background: var(--np-panel); border-radius: 0 6px 6px 0; font-size: .85em }
+.np-bar.warn { border-left-color: var(--np-warn) } .np-bar.bad { border-left-color: var(--np-bad) }
+.np-b { display: flex; align-items: baseline; gap: 6px; white-space: nowrap }
+.np-b > span { color: var(--np-mute); font-size: .88em }
+.np-b > b { font-weight: 600; font-variant-numeric: tabular-nums }
+.np-b > em { font-style: normal; color: var(--np-mute); font-size: .88em }
+.np-b.notes { flex-wrap: wrap; white-space: normal; gap: 4px 6px; align-items: center }
+
+/* Meters. */
+.np-meter { display: inline-block; position: relative; width: 74px; height: 7px; border-radius: 4px; background: #eceee9; vertical-align: 1px; margin-right: 7px; overflow: visible }
+.np-meter > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #8fc08a }
+.np-meter.warn > i { background: var(--np-warn) } .np-meter.bad > i { background: var(--np-bad) }
+.np-meter > s { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--np-faint); border-radius: 1px; opacity: .8 }
+.np-meter.lg { width: 140px }
+
+/* Tabs (same as the IP-Interface page). */
+.np-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 1.3em 0 16px; border-bottom: 1px solid var(--np-line2) }
+.np-tab { padding: 7px 15px; color: #555; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 5px 5px 0 0; margin-bottom: -1px; font-size: .92em; background: none }
+.np-tab:hover { background: #f1f3f0 }
+.np-tab.active { color: #222; background: #fff; border-color: var(--np-line2); border-bottom: 1px solid #fff; font-weight: 600 }
+.np-pane[hidden], .np-editor[hidden] { display: none !important }
+
+/* Cards and stages. */
+.np-card { border: 1px solid var(--np-line); border-radius: 8px; background: #fff; margin-bottom: 14px }
+.np-card-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 14px; border-bottom: 1px solid var(--np-line) }
+.np-card-h h3 { font-size: .95em; font-weight: 600; margin: 0 }
+.np-card-h .np-sp { flex: 1 }
+.np-card-b { padding: 12px 14px }
+.np-stage { display: block; width: 100%; background: var(--np-stage) }
+.np-cap { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 8px 14px; border-top: 1px solid var(--np-line); font-size: .8em; color: var(--np-mute) }
+.np-cap b { color: var(--np-ink); font-weight: 600 }
+.np-key { display: inline-flex; align-items: center; gap: 5px }
+.np-key i { width: 10px; height: 10px; border-radius: 50%; display: inline-block }
+.np-note { font-size: .8em; color: var(--np-mute); line-height: 1.5; padding: 8px 12px; background: var(--np-panel); border-left: 3px solid var(--np-line2); border-radius: 0 4px 4px 0; margin: 8px 0 }
+.np-note b { color: var(--np-ink) }
+.np-note.info { border-left-color: var(--np-e1) }
+.np-note.warn { background: var(--np-warn-bg); border-left-color: var(--np-warn); color: var(--np-warn-fg) }
+.np-note.bad { background: var(--np-bad-bg); border-left-color: var(--np-bad); color: var(--np-bad-fg) }
+
+/* Buttons. */
+.np-btn { padding: 4px 11px; margin: 0; font-size: .85em; background: #fff; border: 1px solid var(--np-line2); border-radius: 5px; cursor: pointer; color: #333 }
+.np-btn:hover { border-color: var(--np-green); color: var(--np-green-d) }
+.np-btn.pri { background: var(--np-green-b); border-color: var(--np-green-b); color: #fff }
+.np-btn[disabled] { opacity: .55; cursor: not-allowed }
+
+/* Arrangement editor. */
+.np-editor { border: 1px solid var(--np-line); border-top: 3px solid var(--np-e1); border-radius: 8px; background: #fff; margin-bottom: 14px }
+.np-ed-grid { display: grid; grid-template-columns: minmax(230px, 300px) 1fr; gap: 18px; padding: 12px 14px }
+.np-ed-l label { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .84em; color: var(--np-mute); padding: 3px 0 }
+.np-ed-l input, .np-ed-l select, .np-map select { padding: 3px 6px; margin: 0; border: 1px solid var(--np-line2); border-radius: 4px; background: #fff; color: var(--np-ink); font-size: .92em }
+.np-ed-l input { width: 84px; text-align: right }
+.np-tpls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px }
+.np-tpl { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 84px; padding: 6px 4px; margin: 0; border: 1px solid var(--np-line2); border-radius: 6px; background: #fff; cursor: pointer; font-size: .74em; color: var(--np-ink) }
+.np-tpl svg { width: 46px; height: 28px }
+.np-tpl.on { border-color: var(--np-green); background: var(--np-green-t); font-weight: 600 }
+.np-map { width: 100%; font-size: .84em }
+.np-map td, .np-map th { padding: 5px 8px }
+.np-ed-f { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--np-line) }
+.np-ed-f details { flex-basis: 100%; font-size: .8em }
+.np-ed-f pre { background: var(--np-panel); border: 1px solid var(--np-line); border-radius: 4px; padding: 8px; max-height: 200px; overflow: auto; font-size: .95em }
+
+.np-ed-r { min-width: 0 }
+.np-edcv { border: 1px solid var(--np-line); border-radius: 6px; margin: 4px 0 12px }
+.np-chk { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer }
+.np-chk input { margin: 0 }
+.np-map tr.np-off td { color: var(--np-faint) }
+.np-ed-f #ed-msg { flex: 1 1 220px }
+/* Control panel: large touch targets, rows stack on phones. */
+.np-ctlcv { border-bottom: 1px solid var(--np-line) }
+.np-ctl .np-card-h h3 { display: flex; align-items: center; gap: 4px }
+.np-ctl-r { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 0; border-bottom: 1px solid #f0f1ef }
+.np-ctl-r > i { font-style: normal; color: var(--np-mute); font-size: .85em; flex: 0 0 8.5em }
+.np-ctl-c { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1 1 260px; min-width: 0; font-size: .9em }
+.np-cb { min-height: 40px; min-width: 44px; padding: 6px 14px; margin: 0; border: 1px solid var(--np-line2); border-radius: 7px; background: #fff; color: var(--np-ink); cursor: pointer; font-size: .95em; touch-action: manipulation; user-select: none; -webkit-user-select: none }
+.np-cb:hover { border-color: var(--np-green) }
+.np-cb.on { background: var(--np-green-t); border-color: var(--np-green); font-weight: 600 }
+.np-seg2 { display: inline-flex; gap: 0 }
+.np-seg2 .np-cb:first-child { border-radius: 7px 0 0 7px } .np-seg2 .np-cb:last-child { border-radius: 0 7px 7px 0; margin-left: -1px }
+.np-rng { width: 180px; max-width: 100%; height: 40px; margin: 0; accent-color: var(--np-green) }
+.np-rng.sm { width: 120px }
+.np-col { width: 52px; height: 40px; padding: 2px; margin: 0; border: 1px solid var(--np-line2); border-radius: 7px; background: #fff; cursor: pointer }
+.np-wl { display: inline-flex; align-items: center; gap: 6px; color: var(--np-mute) }
+.np-sel { min-height: 40px; padding: 4px 8px; margin: 0; border: 1px solid var(--np-line2); border-radius: 7px; background: #fff; color: var(--np-ink); max-width: 100% }
+.np-ctl-em { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; flex-basis: 100% }
+.np-ctl-em > span:first-child { flex: 1 1 100% }
+.np-ctl-msg { min-height: 1.2em; padding-top: 6px; font-size: .8em; color: var(--np-warn-fg) }
+.np-ctl-log { font-size: .8em; color: var(--np-mute); margin-top: 6px }
+.np-ctl-log pre { background: var(--np-panel); border: 1px solid var(--np-line); border-radius: 4px; padding: 6px 8px; overflow-x: auto; font-size: .95em; margin-top: 4px }
+@media (max-width: 640px) {
+    .np-ctl-r > i { flex-basis: 100% } .np-rng { width: 100% } .np-ctl-c { flex-basis: 100% }
+    /* touch targets >= 40 px on phones */
+    .np-tab { min-height: 40px } .np-mode button { min-height: 40px }
+    .np-btn, .np-pv-sel button, .np-tpl { min-height: 40px }
+    .np-ed-l input, .np-ed-l select, .np-map select, .np-map input { min-height: 40px }
+    .np-chk input { width: 22px; height: 22px } .np-ed-f summary { padding: 10px 0 }
+}
+/* Pipeline strip -> virtual strip -> segments -> chain. */
+.np-pipe { display: grid; grid-template-columns: 170px 1fr; gap: 6px 14px; align-items: center; font-size: .82em }
+.np-pipe-l b { display: block; font-weight: 600 } .np-pipe-l span { color: var(--np-mute); font-size: .92em }
+.np-row { display: flex; height: 40px; border-radius: 5px; overflow: hidden; border: 1px solid var(--np-line2); background: #fff }
+.np-row > div { background: var(--f, #fff); border-right: 2px solid #fff; padding: 4px 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1.25; min-width: 0 }
+.np-row > div:last-child { border-right: 0 }
+.np-row > div small { display: block; color: var(--np-mute); font-size: .88em }
+.np-row > div.me { box-shadow: inset 0 0 0 2px var(--np-green) }
+.np-row > div.peer { background: repeating-linear-gradient(135deg, #f6f7f5, #f6f7f5 6px, #eef0ec 6px, #eef0ec 12px); color: var(--np-mute) }
+.np-arrow { grid-column: 2; color: var(--np-faint); font-size: .9em; line-height: 1; padding-left: 4px }
+
+/* Tables. */
+.np-tw { overflow-x: auto }
+.np-tbl td, .np-tbl th { padding: 7px 10px; vertical-align: middle }
+.np-tbl th { font-size: .9em; font-weight: 600 }
+.np-tbl td small { display: block; color: var(--np-mute); font-size: .85em }
+.np-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 20px; padding: 0 6px; border-radius: 4px; background: var(--f); border: 1px solid var(--e); color: var(--np-ink); font-size: .78rem; font-weight: 600; margin-right: 6px }
+.np-sw { display: inline-block; width: 18px; height: 18px; border-radius: 50%; margin-right: 4px; vertical-align: -4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18) }
+.np-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .78em; color: var(--np-mute); margin: 8px 0 }
+.np-legend span { display: inline-flex; align-items: center; gap: 5px }
+
+/* Effect manager timelines. */
+.np-em { border: 1px solid var(--np-line); border-radius: 8px; padding: 10px 14px 14px; margin-bottom: 12px; background: #fff }
+.np-em.dis { opacity: .6 }
+.np-em-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .88em; margin-bottom: 10px }
+.np-em-h > b { font-size: 1.05em }
+.np-em-h .np-sp { flex: 1 }
+.np-tlw { position: relative; padding-bottom: 20px }
+.np-tl { display: flex; gap: 3px; align-items: stretch }
+.np-cue { position: relative; flex: 1 1 0; min-width: 96px; background: var(--f); border: 1px solid var(--e); border-radius: 5px; padding: 6px 8px 7px; font-size: .8em; overflow: hidden }
+.np-cue b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.np-cue small { display: block; color: var(--np-mute); font-size: .92em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.np-cue .np-t0 { position: absolute; left: 0; bottom: -17px; font-size: .9em; color: var(--np-faint) }
+.np-cue.hold { border-right: 2px dotted var(--e); border-radius: 5px 0 0 5px; background: linear-gradient(90deg, var(--f) 55%, #fff) }
+.np-cue.done { background: repeating-linear-gradient(135deg, var(--f), var(--f) 7px, #fff 7px, #fff 10px) }
+.np-cue.done b, .np-cue.done small { background: rgba(255,255,255,.82); display: inline-block; padding: 0 3px; border-radius: 3px; max-width: 100% }
+.np-fade { position: absolute; top: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95)); border-left: 1px dashed var(--e) }
+.np-fade::after { content: "\2198\2197"; position: absolute; right: 3px; bottom: 2px; font-size: .9em; color: var(--np-mute) }
+.np-cue.act { box-shadow: 0 0 0 2px var(--np-green); border-color: var(--np-green) }
+.np-cue.paused { box-shadow: 0 0 0 2px var(--np-warn); border-color: var(--np-warn) }
+.np-now { display: inline-block; margin-top: 4px; font-size: .92em; font-weight: 600; color: var(--np-ok-fg); background: rgba(255,255,255,.9); border-radius: 8px; padding: 0 6px }
+.np-cue.paused .np-now { color: var(--np-warn-fg) }
+.np-tail { flex: 0 0 auto; display: flex; align-items: center; padding: 0 9px; border: 1px dashed var(--np-line2); border-radius: 5px; font-size: .8em; color: var(--np-mute); white-space: nowrap; background: var(--np-panel) }
+.np-tail.dead { text-decoration: line-through; color: var(--np-faint) }
+.np-prog { display: block; position: relative; height: 4px; margin-top: 5px; border-radius: 2px; background: rgba(255,255,255,.8); outline: 1px dashed var(--np-pv-d); outline-offset: 1px }
+.np-prog > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--np-green) }
+.np-kz { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--np-pv-d); border: 1px dashed var(--np-pv-d); border-radius: 8px; padding: 0 6px; vertical-align: 1px }
+.np-loop { position: absolute; left: 14px; bottom: 2px; height: 9px; border: 1.5px solid var(--np-e1); border-top: 0; border-radius: 0 0 9px 9px }
+.np-loop::before { content: ""; position: absolute; left: -5px; top: -6px; border: 4px solid transparent; border-bottom: 6px solid var(--np-e1) }
+.np-em-k { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .78em; color: var(--np-mute); margin: 4px 0 10px }
+.np-em-k span { display: inline-flex; align-items: center; gap: 5px }
+.np-em-k i { display: inline-block; width: 22px; height: 12px; border-radius: 3px; border: 1px solid var(--np-e1); background: var(--np-t1) }
+.np-em-k i.hold { background: linear-gradient(90deg, var(--np-t1) 40%, #fff); border-right: 2px dotted var(--np-e1) }
+.np-em-k i.done { background: repeating-linear-gradient(135deg, var(--np-t1), var(--np-t1) 3px, #fff 3px, #fff 5px) }
+.np-em-k i.fade { background: linear-gradient(90deg, var(--np-t1), #fff) }
+.np-em-k i.act { box-shadow: 0 0 0 2px var(--np-green); border-color: var(--np-green) }
+
+/* Chain. */
+.np-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.np-kv { display: grid; grid-template-columns: max-content 1fr; gap: 0 14px; font-size: .84em }
+.np-kv > i { font-style: normal; color: var(--np-mute); padding: 4px 0; border-bottom: 1px solid #f1f2f0 }
+.np-kv > b { font-weight: 400; padding: 4px 0; border-bottom: 1px solid #f1f2f0; font-variant-numeric: tabular-nums }
+.np-bytes { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px }
+.np-bytes span { font-size: .76em; padding: 2px 6px; border-radius: 4px; background: var(--f); border: 1px solid var(--e) }
+
+/* Hardware: dense two-column rows like the IP-Interface page. */
+.np-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px }
+.np-r { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f0f1ef; font-size: .85em; line-height: 1.35; min-height: 30px }
+.np-r > i { font-style: normal; color: var(--np-mute); flex: 0 0 11.5em }
+.np-r > b { min-width: 0; font-weight: 400; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px }
+.np-r .np-pill { white-space: normal }
+.np-sub { grid-column: 1 / -1; font-size: .74em; color: var(--np-faint); text-transform: uppercase; letter-spacing: .08em; margin: 14px 0 2px }
+.np-chips { display: inline-flex; flex-wrap: wrap; gap: 3px }
+.np-chips span { font-size: .74em; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--np-line2); color: var(--np-faint); background: #fff }
+.np-chips span.u { background: var(--np-t1); border-color: var(--np-e1); color: var(--np-ink) }
+.np-ok { color: var(--np-ok-fg) } .np-warn { color: var(--np-warn-fg) } .np-bad { color: var(--np-bad-fg); font-weight: 600 }
+.np-empty { padding: 26px 16px; text-align: center; color: var(--np-mute); font-size: .88em; border: 1px dashed var(--np-line2); border-radius: 8px; background: var(--np-panel) }
+
+@media (max-width: 860px) {
+    .np-ed-grid, .np-two, .np-grid { grid-template-columns: minmax(0, 1fr) }
+    .np-pipe { grid-template-columns: 1fr }
+    .np-arrow { grid-column: 1 }
+    .np-r > i { flex-basis: 9.5em }
+}
+.np-pvline { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: .78em; color: var(--np-pv-d); background: var(--np-pv-bg); border: 1px dashed var(--np-pv-e); border-radius: 5px; padding: 3px 9px; margin: -6px 0 12px }
+.np-pvline[hidden] { display: none }
+@media (max-width: 640px) {
+    main { padding: 1.2em 16px }
+    .np-pv { position: static }
+    .np-mode button { padding: 4px 11px }
+    .np-bar { gap: 6px 14px }
+    .np-b { flex-wrap: wrap; white-space: normal }
+    .np-tab { padding: 6px 10px; font-size: .86em }
+    .np-tl { flex-direction: column }
+    .np-tl > .np-cue { flex: 0 0 auto !important; min-width: 0 }
+    .np-tail { padding: 6px 9px }
+    .np-loop { display: none }
+    .np-row > div { padding: 4px 5px; font-size: .9em }
+}
+@media (prefers-reduced-motion: reduce) { .np-tab { transition: none } }

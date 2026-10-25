@@ -41,6 +41,7 @@
 #include "PhysicalStripConfig.h"
 #include "SerialTimingProfile.h"
 #include "colorhelper.h"
+#include "NeoPixelWeb.h"
 #include "knxprod.h"
 #include <algorithm>
 #include <cstdarg>
@@ -224,6 +225,9 @@ void NeoPixelBusModule::setup(bool configured)
         // Initialize HCL status KOs from the current LightManager snapshot.
         refreshHclMasterStateCache();
         // Power monitoring KOs go out from loop(), after the startup delay
+#ifdef NEOPIXEL_WEB
+        neoPixelWeb.setup(); // routes only; the webserver starts later from the network loop
+#endif
     }
     else
     {
@@ -248,6 +252,10 @@ void NeoPixelBusModule::loop(bool configured)
 
     // _localTestMode ('neo init') lets the loop run without an ETS download for bench tests.
     if ((!configured && !_localTestMode) || !_initialized) return;
+
+#ifdef NEOPIXEL_WEB
+    if (!_localTestMode) neoPixelWeb.loop(); // status page: snapshot and queued commands, ahead of the startup gate
+#endif
 
     // Ahead of the off-refresh branch, which returns before the render path: a Power-OFF
     // that arrived mid-frame blanked only the virtual buffer.
@@ -2712,6 +2720,7 @@ void NeoPixelBusModule::receiveSyncTelegram(size_t segmentIndex,
 
     // Any telegram proves the master is alive, also when it is not applied.
     cfg.lastSyncMs = millis();
+    cfg.lastSyncRxMs = cfg.lastSyncMs | 1;
 
     if (cfg.locked) return;
     // The slave's own EM (running, paused or power-suspended) owns the segment.

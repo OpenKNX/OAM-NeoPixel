@@ -74,6 +74,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     friend class ColorManagement;
     friend class SegmentController;
     friend class SceneManager;
+    friend class NeoPixelWeb;
 
   public:
     // Segment Configuration Structure
@@ -104,6 +105,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 
         // ── Effektkette runtime state (not persisted) ─────────────────────
         uint32_t lastSyncMs = 0;         ///< millis() when last sync was received
+        uint32_t lastSyncRxMs = 0;       ///< millis() of the last received sync telegram (0 = none since boot)
         bool localOverride = false;      ///< local KO has overridden sync state
         uint8_t lastSyncPayload[9] = {}; ///< last payload sent by master (change detection)
         uint32_t lastSyncSentMs = 0;     ///< millis() when master last sent a sync telegram
