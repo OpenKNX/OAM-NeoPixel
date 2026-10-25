@@ -105,13 +105,17 @@ void NeoPixelFlashPersistence::writeToFlash()
         }
         else
         {
+            // The commanded state: a delayed or deferred change saves its target
             for (uint8_t i = 0; i < maxRelays; ++i)
             {
-                if (_module->_relayStates[i])
+                if (_module->relayIntendedState(i))
                 {
                     relayState.statesMask |= static_cast<uint8_t>(1u << i);
                 }
             }
+            // Relays switched off for a restart / ETS download save the state recorded before
+            const uint8_t held = _module->_relayHeldMask;
+            relayState.statesMask = static_cast<uint8_t>((relayState.statesMask & ~held) | (_module->_relayMaskBeforeShutdown & held));
         }
 
         openknx.flash.write((uint8_t*)&relayState, sizeof(RelayFlashState));
@@ -516,26 +520,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
     }
 
     // loop() renders the restored state; the telegrams of the startup delay follow (replayDeferredKos).
-
-    if (_relayFlashValid && _module->_relayCount > 0)
-    {
-        uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
-        uint8_t restoreCount = std::min<uint8_t>(_relayFlashState.count, maxRelays);
-
-        for (uint8_t i = 0; i < restoreCount; ++i)
-        {
-            bool state = (_relayFlashState.statesMask & static_cast<uint8_t>(1u << i)) != 0;
-            // Direct GPIO control without updating lastOffTime (post-reset, no min-off protection needed)
-            uint8_t pin = _module->_relayPins[i];
-            if (pin != 255)
-            {
-                bool physicalState = _module->_relayInverted[i] ? !state : state;
-                digitalWrite(pin, physicalState ? HIGH : LOW);
-                _module->_relayStates[i] = state;
-                logInfoP("Relay %d restored to %s (GPIO %d)", i + 1, state ? "ON" : "OFF", pin);
-            }
-        }
-    }
+    // The relays are set separately (restoreRelaysAfterStartup).
 
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
@@ -546,6 +531,56 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 #else
     logInfoP("Flash restore complete");
 #endif
+}
+
+void NeoPixelFlashPersistence::restoreRelaysAfterStartup()
+{
+    if (!_module) return;
+
+    const uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
+    for (uint8_t i = 0; i < maxRelays; ++i)
+    {
+        const uint8_t pin = _module->_relayPins[i];
+        if (pin == 255) continue;
+
+        bool state = false;
+        switch (_module->_relayStartup[i])
+        {
+            case NeoPixelBusModule::kRelayStartupOff:
+                state = false;
+                break;
+            case NeoPixelBusModule::kRelayStartupOn:
+                state = true;
+                break;
+            default:
+                // "Letzter Zustand": a relay without valid saved data stays OFF from setup
+                if (!_relayFlashValid || i >= _relayFlashState.count) continue;
+                state = (_relayFlashState.statesMask & static_cast<uint8_t>(1u << i)) != 0;
+                break;
+        }
+
+        // The output is OFF since setup() (lastOffTime): an ON waits for the rest of the minimum off-time
+        // from there (the time before the reset is unknown and not counted). An OFF telegram cancels it.
+        auto& timer = _module->_relayTimers[i];
+        const uint32_t minOffMs = _module->relayMinOffSeconds(i) * 1000UL;
+        const uint32_t offForMs = (uint32_t)(millis() - timer.lastOffTime);
+        if (state && minOffMs > 0 && offForMs < minOffMs)
+        {
+            timer.targetState = true;
+            timer.pendingChange = true;
+            timer.triggerTime = millis() + (minOffMs - offForMs);
+            logInfoP("Relay %d ON deferred %lus until the min off-time has elapsed (GPIO %d)", i + 1,
+                     (unsigned long)((minOffMs - offForMs + 999) / 1000), pin);
+            continue;
+        }
+
+        const bool physicalState = _module->_relayInverted[i] ? !state : state;
+        digitalWrite(pin, physicalState ? HIGH : LOW);
+        _module->_relayStates[i] = state;
+        logInfoP("Relay %d %s %s (GPIO %d)", i + 1,
+                 _module->_relayStartup[i] == NeoPixelBusModule::kRelayStartupLast ? "restored to" : "started",
+                 state ? "ON" : "OFF", pin);
+    }
 }
 
 // ============================================================================

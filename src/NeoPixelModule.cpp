@@ -400,16 +400,79 @@ void NeoPixelBusModule::showVirtualStripIfIdle()
     _virtualStrip->show();
 }
 
+uint16_t NeoPixelBusModule::relayMinOffSeconds(uint8_t relayIndex) const
+{
+    switch (relayIndex)
+    {
+#if defined(ParamNEO_NEOExternalRelay1MinOffTime)
+        case 0: return (uint16_t)ParamNEO_NEOExternalRelay1MinOffTime;
+#endif
+#if defined(ParamNEO_NEOExternalRelay2MinOffTime)
+        case 1: return (uint16_t)ParamNEO_NEOExternalRelay2MinOffTime;
+#endif
+#if defined(ParamNEO_NEOExternalRelay3MinOffTime)
+        case 2: return (uint16_t)ParamNEO_NEOExternalRelay3MinOffTime;
+#endif
+#if defined(ParamNEO_NEOExternalRelay4MinOffTime)
+        case 3: return (uint16_t)ParamNEO_NEOExternalRelay4MinOffTime;
+#endif
+        default: return 0;
+    }
+}
+
+bool NeoPixelBusModule::relayIntendedState(uint8_t relayIndex) const
+{
+    if (relayIndex >= kRelayStorageSize) return false;
+    return _relayTimers[relayIndex].pendingChange ? _relayTimers[relayIndex].targetState : _relayStates[relayIndex];
+}
+
 /**
- * @brief Stop effects, drop the relays and blank the logical buffer
- * @return false when the ETS option is off or the module never came up
+ * @brief Record the intended relay states, then switch off the relays set to "Aus"
  *
- * Blanks the VirtualStrip only - syncAll() rebuilds the physical buffers from it. Those are
- * cleared per strip at the point of transmission, where the driver is provably idle: every
- * driver silently skips clear() while a transfer runs.
+ * The flash save that follows the shutdown stores the recorded states, not the OFF state set
+ * here. The record is used by that save only: Common restarts right after it, or the shutdown
+ * came from a table unload, after which knx.configured() stays false until the reboot
+ * (BauSystemBDevice::configured) and flash.save() returns early. A second shutdown (the restart
+ * that ends an ETS download) keeps the first record; its save is skipped for the same reason.
+ */
+void NeoPixelBusModule::shutdownRelays()
+{
+    for (uint8_t i = 0; i < _relayCount && i < kRelayStorageSize; ++i)
+    {
+        const uint8_t bit = static_cast<uint8_t>(1u << i);
+        if (!(_relayHeldMask & bit))
+        {
+            if (relayIntendedState(i))
+                _relayMaskBeforeShutdown |= bit;
+            else
+                _relayMaskBeforeShutdown &= static_cast<uint8_t>(~bit);
+            _relayHeldMask |= bit;
+        }
+
+        // Value 0 (not written by ETS, defensive) keeps the behaviour of the LED option, as before these parameters
+        const bool keep = _relayBeforeRestart[i] == kRelayBeforeKeep ||
+                          (_relayBeforeRestart[i] != kRelayBeforeOff && !_turnOffBeforeRestart);
+        if (keep) continue; // "unveraendert": the restart follows before a pending change could run
+
+        _relayTimers[i].pendingChange = false; // a delayed or deferred ON must not re-close it
+        setRelayOutput(i, false);
+    }
+}
+
+/**
+ * @brief Switch off the relays set to "Aus", stop effects and blank the logical buffer
+ * @return false when the ETS option for the LEDs is off or the module never came up
+ *
+ * A relay follows its "Vor Upload/Neustart" value: 1 (Aus) and 2 (unveraendert) are independent
+ * of the LED option, raw value 0 (not written by ETS, defensive) follows the LED option. Blanks the
+ * VirtualStrip only - syncAll() rebuilds the physical buffers from it. Those are cleared per
+ * strip at the point of transmission, where the driver is provably idle: every driver silently
+ * skips clear() while a transfer runs.
  */
 bool NeoPixelBusModule::prepareLedShutdown()
 {
+    shutdownRelays();
+
     if (!_turnOffBeforeRestart)
     {
         logInfoP("LED shutdown before restart is disabled in ETS");
@@ -417,13 +480,6 @@ bool NeoPixelBusModule::prepareLedShutdown()
     }
 
     logInfoP("Turning off all LEDs before restart/programming");
-
-    // Turn off external relays for safety
-    for (uint8_t i = 0; i < _relayCount; ++i)
-    {
-        _relayTimers[i].pendingChange = false; // a delayed or deferred ON must not re-close it
-        setRelayOutput(i, false);
-    }
 
     if (!_initialized) return false;
 
@@ -588,6 +644,7 @@ void NeoPixelBusModule::processAfterStartupDelay()
     // so it can intentionally override the static ETS base effect.
     if (_segments.empty())
     {
+        if (_flashPersistence) _flashPersistence->restoreRelaysAfterStartup();
         seedStatus();
         _startupRestoreDone = true; // loop() processes the telegrams of the startup delay
         _drainGate = _deferredKoCount > 0;
@@ -600,7 +657,11 @@ void NeoPixelBusModule::processAfterStartupDelay()
     // here so the restored effect/colour/brightness become the ACTIVE state (reported by ETS
     // sync-back readback). Only acts on segments set to "Letzter Zustand"; StartupEM below is
     // evaluated afterwards and can override it (priority EM > Effekt > Solid).
-    if (_flashPersistence) _flashPersistence->restoreStatesAfterStartup();
+    if (_flashPersistence)
+    {
+        _flashPersistence->restoreStatesAfterStartup();
+        _flashPersistence->restoreRelaysAfterStartup();
+    }
 
     uint8_t previousChannel = _channelIndex;
     for (size_t i = 0; i < _segments.size(); ++i)
@@ -1133,24 +1194,14 @@ void NeoPixelBusModule::scheduleRelayChange(uint8_t relayIndex, bool targetState
     if (relayIndex >= kRelayStorageSize) return;
     if (_relayCount == 0 || relayIndex >= _relayCount) return;
 
+    // A command makes this relay's live state the one to save (no save follows a shutdown today)
+    _relayHeldMask &= static_cast<uint8_t>(~(1u << relayIndex));
+
     // Remaining minimum off-time; an ON is deferred until it has elapsed (only when turning ON)
     unsigned long minOffRemainingMs = 0;
     if (targetState && !_relayStates[relayIndex])
     {
-        uint16_t minOffSeconds = 0;
-
-#if defined(ParamNEO_NEOExternalRelay1MinOffTime)
-        if (relayIndex == 0) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay1MinOffTime;
-#endif
-#if defined(ParamNEO_NEOExternalRelay2MinOffTime)
-        if (relayIndex == 1) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay2MinOffTime;
-#endif
-#if defined(ParamNEO_NEOExternalRelay3MinOffTime)
-        if (relayIndex == 2) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay3MinOffTime;
-#endif
-#if defined(ParamNEO_NEOExternalRelay4MinOffTime)
-        if (relayIndex == 3) minOffSeconds = (uint16_t)ParamNEO_NEOExternalRelay4MinOffTime;
-#endif
+        const uint16_t minOffSeconds = relayMinOffSeconds(relayIndex);
 
         if (minOffSeconds > 0 && _relayTimers[relayIndex].lastOffTime != 0)
         {
@@ -3484,7 +3535,10 @@ void NeoPixelBusModule::configureFromETS()
         _relayPins[i] = 255;
         _relayStates[i] = false;
         _relayInverted[i] = false;
+        _relayBeforeRestart[i] = kRelayBeforeAsLeds;
+        _relayStartup[i] = kRelayStartupLast;
     }
+    _relayHeldMask = 0;
 
     if (_relayCount > 0)
     {
@@ -3574,9 +3628,41 @@ void NeoPixelBusModule::configureFromETS()
 #endif
                 if (_relayInverted[i]) logInfoP("Relay %d: Output logic INVERTED (LOW = ON)", i + 1);
 
+// Restart behaviour per relay; cached because the parameters read 0 once the tables unload.
+// A knxprod.h without them is stale: fail the build instead of silently using value 0.
+#if defined(ParamNEO_NEOExternalRelay1BeforeRestart) && defined(ParamNEO_NEOExternalRelay1AfterRestart)
+                if (i == 0) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay1BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay1AfterRestart; }
+#elif defined(NEO_KoExternalRelay1)
+    #error "knxprod.h lacks the restart parameters of relay 1 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+#endif
+#if defined(ParamNEO_NEOExternalRelay2BeforeRestart) && defined(ParamNEO_NEOExternalRelay2AfterRestart)
+                if (i == 1) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay2BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay2AfterRestart; }
+#elif defined(NEO_KoExternalRelay2)
+    #error "knxprod.h lacks the restart parameters of relay 2 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+#endif
+#if defined(ParamNEO_NEOExternalRelay3BeforeRestart) && defined(ParamNEO_NEOExternalRelay3AfterRestart)
+                if (i == 2) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay3BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay3AfterRestart; }
+#elif defined(NEO_KoExternalRelay3)
+    #error "knxprod.h lacks the restart parameters of relay 3 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+#endif
+#if defined(ParamNEO_NEOExternalRelay4BeforeRestart) && defined(ParamNEO_NEOExternalRelay4AfterRestart)
+                if (i == 3) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay4BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay4AfterRestart; }
+#elif defined(NEO_KoExternalRelay4)
+    #error "knxprod.h lacks the restart parameters of relay 4 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+#endif
+                // Value 3 is not offered: treat it like 0
+                if (_relayBeforeRestart[i] > kRelayBeforeKeep) _relayBeforeRestart[i] = kRelayBeforeAsLeds;
+                if (_relayStartup[i] > kRelayStartupOn) _relayStartup[i] = kRelayStartupLast;
+                logInfoP("Relay %d: before restart %s, after restart %s", i + 1,
+                         _relayBeforeRestart[i] == kRelayBeforeKeep ? "unchanged" : (_relayBeforeRestart[i] == kRelayBeforeOff ? "off" : "as LED option"),
+                         _relayStartup[i] == kRelayStartupOff ? "off" : (_relayStartup[i] == kRelayStartupOn ? "on" : "last state"));
+
                 pinMode(gpio, OUTPUT);
                 digitalWrite(gpio, _relayInverted[i] ? HIGH : LOW); // OFF until the startup restore
                 _relayStates[i] = false;
+                // OFF from here: the minimum off-time of an ON (restore or object) counts from setup
+                const unsigned long offSince = millis();
+                _relayTimers[i].lastOffTime = offSince ? offSince : 1;
                 logInfoP("Relay %d: Initial state OFF", i + 1);
             }
         }

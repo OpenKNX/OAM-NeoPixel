@@ -121,6 +121,12 @@ class NeoPixelFlashPersistence
      */
     void restoreStatesAfterStartup();
 
+    /**
+     * @brief Set the relays after the startup delay by their ETS "Nach Neustart" setting
+     * Called by the module before the status seed; "Letzter Zustand" needs valid flash data
+     */
+    void restoreRelaysAfterStartup();
+
   private:
     NeoPixelBusModule* _module; // Parent module reference
     uint8_t _channelIndex = 0;  // Current channel index for ParamNEO_NEO* macros

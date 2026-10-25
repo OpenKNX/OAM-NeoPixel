@@ -375,7 +375,27 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint8_t _relayPins[kRelayStorageSize] = {255};
     bool _relayStates[kRelayStorageSize] = {false};
     bool _relayInverted[kRelayStorageSize] = {false};
+    uint8_t _relayBeforeRestart[kRelayStorageSize] = {0}; ///< ETS "Vor Upload/Neustart" (kRelayBefore*); cached at setup
+    uint8_t _relayStartup[kRelayStorageSize] = {0};       ///< ETS "Nach Neustart" (kRelayStartup*); cached at setup
     RelayTimerState _relayTimers[kRelayStorageSize];
+
+    // Value 0 of both = firmware behaviour before these parameters. ETS writes 1 or 2 for "Vor Upload/Neustart"
+    // in every download of this application, so kRelayBeforeAsLeds is a defensive fallback only.
+    static constexpr uint8_t kRelayBeforeAsLeds = 0; ///< as "LEDs vor Upload/Neustart ausschalten" (not offered in ETS)
+    static constexpr uint8_t kRelayBeforeOff = 1;
+    static constexpr uint8_t kRelayBeforeKeep = 2;
+    static constexpr uint8_t kRelayStartupLast = 0; ///< restore the saved state
+    static constexpr uint8_t kRelayStartupOff = 1;
+    static constexpr uint8_t kRelayStartupOn = 2;
+
+    // Relay states across a restart / ETS download: shutdownRelays() records the intended state of
+    // each relay before switching it off, and writeToFlash() saves that instead of the OFF state.
+    uint8_t _relayMaskBeforeShutdown = 0; ///< intended states at the first shutdown (bit per relay)
+    uint8_t _relayHeldMask = 0;           ///< relays whose saved state comes from _relayMaskBeforeShutdown
+
+    void shutdownRelays();                            ///< Record the intended states and switch off the "Aus" relays
+    bool relayIntendedState(uint8_t relayIndex) const; ///< Target of a pending change, else the output state
+    uint16_t relayMinOffSeconds(uint8_t relayIndex) const; ///< ETS "Minimale Aus-Zeit" of the relay
 
     // HCL (Human Centric Lighting) / Circadian whitepoint control.
     // Applies Kelvin correction mainly to white/low-saturation pixels without overwriting
@@ -656,7 +676,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     uint16_t _hclSegmentStatusKelvin[kStatusSegmentMax] = {}; ///< per-segment HCL Kelvin reported on HCLState
 
     // LED shutdown (ETS: ParamNEO_NEOTurnOffBeforeRestart)
-    bool prepareLedShutdown(); ///< Stop effects, drop relays, blank the virtual buffer
+    bool prepareLedShutdown(); ///< Switch off the relays set to "Aus", stop effects, blank the virtual buffer
     void pumpLedShutdown();    ///< Non-blocking sequencer, one strip per loop() pass
 
     static constexpr uint32_t kLedShutdownTimeoutMs = 2000; ///< Per strip: give up on a wedge
