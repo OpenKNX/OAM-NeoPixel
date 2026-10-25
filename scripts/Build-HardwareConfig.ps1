@@ -751,6 +751,8 @@ $SHARE_RELAY_DELAY_OFFSET = 104
 $SHARE_RELAY_MIN_OFF_TIME_OFFSET = 120
 $SHARE_RELAY_MANUAL_GPIO_OFFSET = 128
 $SHARE_RELAY_INVERT_OFFSET = 132
+$SHARE_RELAY_AFTER_RESTART_OFFSET = 133
+$SHARE_RELAY_BEFORE_RESTART_OFFSET = 137
 $MAX_PHYSICAL_STRIPS = 8
 $MAX_EXTERNAL_RELAYS = 4
 $SHARE_DATA_PORT_BASE_ID = 100
@@ -1007,8 +1009,13 @@ function Generate-RelayInvertParametersInShare {
     [string]$ShareXmlPath
   )
 
-  # Generate Output Logic (Invert) Parameters (00159-00162, 4 bits)
-  # One 1-bit flag per relay: 0 = normal (HIGH=ON), 1 = invertiert (LOW=ON)
+  # Generate Output Logic (Invert) Parameters (00159-00162, 4 bits) and the restart behaviour per
+  # relay: after restart in byte 133 (00187-00190), before upload/restart in byte 137 (00151-00154),
+  # 2 bits each. Value 0 means the firmware behaviour before these parameters existed; ETS writes the
+  # bytes in every download of this application, and "Vor Upload/Neustart" offers only 1 and 2.
+  # Invert: 0 = normal (HIGH=ON), 1 = invertiert (LOW=ON)
+  # After restart: 0 = Letzter Zustand, 1 = Aus, 2 = Ein.
+  # Before upload/restart: 0 = as "LEDs vor Upload/Neustart ausschalten" (not offered), 1 = Aus, 2 = unveraendert (default).
   $paramsXml = "              <!-- External Relay Output Logic (Invert) Union (4 flags in 1 byte, Access=None, JS-only) -->`n"
   $paramsXml += "              <Union SizeInBit=`"8`">`n"
   $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"$SHARE_RELAY_INVERT_OFFSET`" BitOffset=`"0`" />`n"
@@ -1016,6 +1023,24 @@ function Generate-RelayInvertParametersInShare {
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00160`" Offset=`"0`" BitOffset=`"1`" Name=`"NEOExternalRelay2OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00161`" Offset=`"0`" BitOffset=`"2`" Name=`"NEOExternalRelay3OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
   $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%00162`" Offset=`"0`" BitOffset=`"3`" Name=`"NEOExternalRelay4OutputLogic`" ParameterType=`"%AID%_PT-RelayOutputLogic`" Text=`"Ausgangslogik`" Value=`"0`"/>`n"
+  $paramsXml += "              </Union>`n"
+  $paramsXml += "              <!-- External Relay After-Restart Union (2 bits per relay) -->`n"
+  $paramsXml += "              <Union SizeInBit=`"8`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"$SHARE_RELAY_AFTER_RESTART_OFFSET`" BitOffset=`"0`" />`n"
+  for ($relayIdx = 1; $relayIdx -le $MAX_EXTERNAL_RELAYS; $relayIdx++) {
+    $paramId = (186 + $relayIdx).ToString().PadLeft(5, '0')
+    $bitOffset = 2 * ($relayIdx - 1)
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"NEOExternalRelay${relayIdx}AfterRestart`" ParameterType=`"%AID%_PT-RelayAfterRestart`" Text=`"Nach Neustart`" Value=`"0`"/>`n"
+  }
+  $paramsXml += "              </Union>`n"
+  $paramsXml += "              <!-- External Relay Before-Upload/Restart Union (2 bits per relay) -->`n"
+  $paramsXml += "              <Union SizeInBit=`"8`">`n"
+  $paramsXml += "                <Memory CodeSegment=`"%AID%_RS-04-00000`" Offset=`"$SHARE_RELAY_BEFORE_RESTART_OFFSET`" BitOffset=`"0`" />`n"
+  for ($relayIdx = 1; $relayIdx -le $MAX_EXTERNAL_RELAYS; $relayIdx++) {
+    $paramId = (150 + $relayIdx).ToString().PadLeft(5, '0')
+    $bitOffset = 2 * ($relayIdx - 1)
+    $paramsXml += "                <Parameter Id=`"%AID%_UP-%TT%${paramId}`" Offset=`"0`" BitOffset=`"$bitOffset`" Name=`"NEOExternalRelay${relayIdx}BeforeRestart`" ParameterType=`"%AID%_PT-RelayBeforeRestart`" Text=`"Vor Upload/Neustart`" Value=`"2`"/>`n"
+  }
   $paramsXml += "              </Union>"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
@@ -1272,7 +1297,13 @@ function Generate-RelayParameterRefsInShare {
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00159_R-%TT%0015901`" RefId=`"%AID%_UP-%TT%00159`" />`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00160_R-%TT%0016001`" RefId=`"%AID%_UP-%TT%00160`" />`n"
   $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00161_R-%TT%0016101`" RefId=`"%AID%_UP-%TT%00161`" />`n"
-  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00162_R-%TT%0016201`" RefId=`"%AID%_UP-%TT%00162`" />"
+  $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%00162_R-%TT%0016201`" RefId=`"%AID%_UP-%TT%00162`" />`n"
+
+  $refsXml += "              <!-- External Relay Before-Upload/Restart and After-Restart Parameters -->`n"
+  foreach ($paramId in @('00151', '00152', '00153', '00154', '00187', '00188', '00189', '00190')) {
+    $refsXml += "              <ParameterRef Id=`"%AID%_UP-%TT%${paramId}_R-%TT%${paramId}01`" RefId=`"%AID%_UP-%TT%${paramId}`" />`n"
+  }
+  $refsXml = $refsXml.TrimEnd("`n")
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
     -StartMarker $markers['RelayParamRefsStart'] `
@@ -1641,6 +1672,21 @@ function Generate-RelayParameterTypeInShare {
   # Relay name/description (free text, ETS label only - firmware does not read it)
   $ptXml += "              <ParameterType Id=`"%AID%_PT-RelayName`" Name=`"RelayName`">`n"
   $ptXml += "                <TypeText SizeInBit=`"320`" />`n"
+  $ptXml += "              </ParameterType>`n"
+  # Relay behaviour around an ETS download / restart (value 0 = behaviour before these parameters existed;
+  # before upload/restart: 0 follows "LEDs vor Upload/Neustart ausschalten" and is not offered)
+  $ptXml += "              <ParameterType Id=`"%AID%_PT-RelayBeforeRestart`" Name=`"RelayBeforeRestart`">`n"
+  $ptXml += "                <TypeRestriction Base=`"Value`" SizeInBit=`"2`" UIHint=`"DropDown`">`n"
+  $ptXml += "                  <Enumeration Text=`"Aus`" Value=`"1`" Id=`"%ENID%`" />`n"
+  $ptXml += "                  <Enumeration Text=`"unver&#xE4;ndert`" Value=`"2`" Id=`"%ENID%`" />`n"
+  $ptXml += "                </TypeRestriction>`n"
+  $ptXml += "              </ParameterType>`n"
+  $ptXml += "              <ParameterType Id=`"%AID%_PT-RelayAfterRestart`" Name=`"RelayAfterRestart`">`n"
+  $ptXml += "                <TypeRestriction Base=`"Value`" SizeInBit=`"2`" UIHint=`"DropDown`">`n"
+  $ptXml += "                  <Enumeration Text=`"Aus`" Value=`"1`" Id=`"%ENID%`" />`n"
+  $ptXml += "                  <Enumeration Text=`"Ein`" Value=`"2`" Id=`"%ENID%`" />`n"
+  $ptXml += "                  <Enumeration Text=`"Letzter Zustand`" Value=`"0`" Id=`"%ENID%`" />`n"
+  $ptXml += "                </TypeRestriction>`n"
   $ptXml += "              </ParameterType>"
 
   return Replace-MarkerContent -FilePath $ShareXmlPath `
@@ -1784,11 +1830,12 @@ function Generate-RelayUIInShare {
   $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Externe Relais`" UIHint=`"Headline`" />`n"
   $uiXml += "    <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Aktivieren Sie externe Relais und wählen Sie die passenden GPIO-Ports der Hardware. Pro Relais wird ein 1-Bit Schalt-KO eingeblendet.`" />`n"
   $uiXml += "    <ParameterRefRef RefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`" IndentLevel=`"1`" />`n"
-  # --- Relais-Uebersichtstabelle (Name | Ein-Verz. | Aus-Verz. | Logik) ---
+  # --- Relais-Uebersichtstabelle (Name | Ein-Verz. | Aus-Verz. | Logik | Vor Upload/Neustart | Nach Neustart) ---
   $uiXml += "    <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`">`n"
   $uiXml += "      <when test=`">=1`">`n"
   # --- Betriebs-Hinweis: Eigenversorgung des OpenKNX-Geraets (Details in Kontext-Hilfe NEO-Relais) ---
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Hinweis: Versorgt ein per Relais geschaltetes Netzteil auch dieses OpenKNX-Ger&#xE4;t, wird es beim Ausschalten selbst stromlos und vom KNX-Bus getrennt.`" UIHint=`"Information`" />`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"F&#xFC;r ein solches Relais &quot;Vor Upload/Neustart&quot; auf &quot;unver&#xE4;ndert&quot; lassen (Standard); mit &quot;Aus&quot; schaltet das Ger&#xE4;t vor Download/Neustart seine Versorgung ab. Nach dem Neustart ist es mindestens bis Ende der Startverz&#xF6;gerung aus, mit Mindest-Auszeit l&#xE4;nger.`" UIHint=`"Information`" />`n"
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"&#xDC;bersicht`" UIHint=`"Headline`" />`n"
   $uiXml += "        <ParameterBlock Id=`"%AID%_PB-nnn`" Inline=`"true`" Layout=`"Grid`" HelpContext=`"Empty`">`n"
   $uiXml += "          <Rows>`n"
@@ -1798,33 +1845,42 @@ function Generate-RelayUIInShare {
   $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-3`" />`n"
   $uiXml += "            <Row Id=`"%AID%_PB-nnn_R-4`" />`n"
   $uiXml += "          </Rows>`n"
-  # Gesamtbreite ~132% der Standard-UI-Breite (ETS erlaubt die Summe der Spaltenbreiten
+  # Gesamtbreite 190% der Standard-UI-Breite (ETS erlaubt die Summe der Spaltenbreiten
   # bis 200%). Die "Logik"-Spalte wird deutlich breiter, damit das Dropdown
   # "invertiert (LOW = EIN)" einzeilig bleibt; die Verzoegerungs-Spalten etwas breiter,
-  # damit ihre Header "Ein-Verz. (s)"/"Aus-Verz. (s)" nicht umbrechen.
+  # damit ihre Header "Ein-Verz. (s)"/"Aus-Verz. (s)" nicht umbrechen. Die Neustart-Spalten
+  # sind so breit, dass "Vor Upload/Neustart" und "Letzter Zustand" einzeilig bleiben.
   $uiXml += "          <Columns>`n"
   $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-1`" Width=`"12%`" />`n"
   $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-2`" Width=`"32%`" />`n"
   $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-3`" Width=`"18%`" />`n"
   $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-4`" Width=`"18%`" />`n"
   $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-5`" Width=`"52%`" />`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-6`" Width=`"28%`" />`n"
+  $uiXml += "            <Column Id=`"%AID%_PB-nnn_C-7`" Width=`"30%`" />`n"
   $uiXml += "          </Columns>`n"
   $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais`"        UIHint=`"Headline`" Cell=`"0,1`" />`n"
   $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Name`"          UIHint=`"Headline`" Cell=`"0,2`" />`n"
   $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Ein-Verz. (s)`" UIHint=`"Headline`" Cell=`"0,3`" />`n"
   $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Aus-Verz. (s)`" UIHint=`"Headline`" Cell=`"0,4`" />`n"
   $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Logik`"         UIHint=`"Headline`" Cell=`"0,5`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Vor Upload/Neustart`" UIHint=`"Headline`" Cell=`"0,6`" />`n"
+  $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Nach Neustart`" UIHint=`"Headline`" Cell=`"0,7`" />`n"
   $uiXml += "          <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 1`" Cell=`"1,1`" />`n"
   $uiXml += "          <ParameterRefRef RefId=`"%AID%_P-%TT%00182_R-%TT%0018201`" Cell=`"1,2`" HelpContext=`"NEO-Relais-Name`" />`n"
   $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00139_R-%TT%0013901`" Cell=`"1,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00140_R-%TT%0014001`" Cell=`"1,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00159_R-%TT%0015901`" Cell=`"1,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00151_R-%TT%0015101`" Cell=`"1,6`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "          <ParameterRefRef RefId=`"%AID%_UP-%TT%00187_R-%TT%0018701`" Cell=`"1,7`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "          <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`"><when test=`">=2`">`n"
   $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 2`" Cell=`"2,1`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_P-%TT%00183_R-%TT%0018301`" Cell=`"2,2`" HelpContext=`"NEO-Relais-Name`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00141_R-%TT%0014101`" Cell=`"2,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00142_R-%TT%0014201`" Cell=`"2,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00160_R-%TT%0016001`" Cell=`"2,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00152_R-%TT%0015201`" Cell=`"2,6`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00188_R-%TT%0018801`" Cell=`"2,7`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "          </when></choose>`n"
   $uiXml += "          <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`"><when test=`">=3`">`n"
   $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 3`" Cell=`"3,1`" />`n"
@@ -1832,6 +1888,8 @@ function Generate-RelayUIInShare {
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00143_R-%TT%0014301`" Cell=`"3,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00144_R-%TT%0014401`" Cell=`"3,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00161_R-%TT%0016101`" Cell=`"3,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00153_R-%TT%0015301`" Cell=`"3,6`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00189_R-%TT%0018901`" Cell=`"3,7`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "          </when></choose>`n"
   $uiXml += "          <choose ParamRefId=`"%AID%_UP-%TT%00130_R-%TT%0013001`"><when test=`">=4`">`n"
   $uiXml += "            <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Relais 4`" Cell=`"4,1`" />`n"
@@ -1839,6 +1897,8 @@ function Generate-RelayUIInShare {
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00145_R-%TT%0014501`" Cell=`"4,3`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00146_R-%TT%0014601`" Cell=`"4,4`" HelpContext=`"NEO-Relais-Verzoegerung`" />`n"
   $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00162_R-%TT%0016201`" Cell=`"4,5`" HelpContext=`"NEO-Relais-Logik`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00154_R-%TT%0015401`" Cell=`"4,6`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "            <ParameterRefRef RefId=`"%AID%_UP-%TT%00190_R-%TT%0019001`" Cell=`"4,7`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "          </when></choose>`n"
   $uiXml += "        </ParameterBlock>`n"
   $uiXml += "      </when>`n"
@@ -1862,6 +1922,9 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00147_R-%TT%0014701`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00159_R-%TT%0015901`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Verhalten bei ETS-Download und Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00151_R-%TT%0015101`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00187_R-%TT%0018701`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00008_R-%TT%0000801`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00012_R-%TT%0001201`" />`n"
   $uiXml += "        </ParameterBlock>`n"
@@ -1885,6 +1948,9 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00148_R-%TT%0014801`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00160_R-%TT%0016001`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Verhalten bei ETS-Download und Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00152_R-%TT%0015201`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00188_R-%TT%0018801`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00009_R-%TT%0000901`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00013_R-%TT%0001301`" />`n"
   $uiXml += "        </ParameterBlock>`n"
@@ -1908,6 +1974,9 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00149_R-%TT%0014901`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00161_R-%TT%0016101`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Verhalten bei ETS-Download und Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00153_R-%TT%0015301`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00189_R-%TT%0018901`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00010_R-%TT%0001001`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00014_R-%TT%0001401`" />`n"
   $uiXml += "        </ParameterBlock>`n"
@@ -1931,6 +2000,9 @@ function Generate-RelayUIInShare {
   $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Netzteilschutz (0 = deaktiviert)`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00150_R-%TT%0015001`" IndentLevel=`"2`" />`n"
   $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00162_R-%TT%0016201`" IndentLevel=`"2`" />`n"
+  $uiXml += "        <ParameterSeparator Id=`"%AID%_PS-nnn`" Text=`"Verhalten bei ETS-Download und Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00154_R-%TT%0015401`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Vor-Neustart`" />`n"
+  $uiXml += "        <ParameterRefRef RefId=`"%AID%_UP-%TT%00190_R-%TT%0019001`" IndentLevel=`"2`" HelpContext=`"NEO-Relais-Nach-Neustart`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00011_R-%TT%0001101`" />`n"
   $uiXml += "        <ComObjectRefRef RefId=`"%AID%_O-%TT%00015_R-%TT%0001501`" />`n"
   $uiXml += "        </ParameterBlock>`n"
