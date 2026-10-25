@@ -19,8 +19,8 @@
     --np-warn-bg: #fbf0d4; --np-warn-fg: #82560a; --np-warn: #d9a326;
     --np-bad-bg: #f8e1dc; --np-bad-fg: #a3341f; --np-bad: #d0634f;
     --np-idle-bg: #edefeb; --np-idle-fg: #565c57;
-    /* Preview (example data) accent: lilac, distinct from the green live frame. */
-    --np-pv-bg: #f6f2fb; --np-pv-bg2: #faf8fd; --np-pv-e: #d9cdeb; --np-pv-d: #7c64a8;
+    /* Accent of the cue progress outline. */
+    --np-accent: #7c64a8;
 }
 .neo { max-width: 1180px; color: var(--np-ink) }
 .neo h1 { margin-bottom: .4em }
@@ -33,32 +33,11 @@
 .np-m { color: var(--np-mute) }
 .np-f { color: var(--np-faint); font-size: .85em }
 
-/* Header with the Live / Vorschau switch top right. */
+/* Header: title and status line. */
 .np-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px }
 .np-head .meta { margin-bottom: .8em }
-.np-mode { display: inline-flex; border: 1px solid var(--np-line2); border-radius: 16px; padding: 2px; background: #fff; flex-shrink: 0 }
-.np-mode button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; margin: 0; border: 0; border-radius: 14px; background: none; color: var(--np-mute); cursor: pointer; font-size: .86em }
-.np-mode button.on { background: var(--np-green-b); color: #fff; font-weight: 600 }
-.np-mode button[data-m="pv"].on { background: var(--np-pv-d); }
-.np-livedot { width: 7px; height: 7px; border-radius: 50%; background: var(--np-ok); box-shadow: 0 0 0 2px rgba(68,152,65,.2) }
-.np-mode button.on .np-livedot { background: #fff; box-shadow: none }
 /* Mock-only remark: small, never part of the device page. */
-.np-mocknote { font-size: .76em; color: var(--np-faint); border: 1px dashed var(--np-line2); border-radius: 5px; padding: 4px 9px; margin-bottom: .9em; line-height: 1.45 }
-.np-mocknote b { color: var(--np-mute); font-weight: 600 }
 /* Preview (example data): lilac frame, sticky banner, never mixed with live values. */
-.np-pv { position: sticky; top: 0; z-index: 3; border: 1px solid var(--np-pv-e); border-left: 4px solid var(--np-pv-d); background: var(--np-pv-bg); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: .84em; box-shadow: 0 2px 6px rgba(80,60,120,.08) }
-.np-pv[hidden] { display: none }
-.np-pv-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px }
-.np-pv-h .np-sp { flex: 1 }
-.np-pv-tag { font-weight: 700; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--np-pv-d); padding: 2px 8px; border-radius: 10px }
-.np-pv-sel { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 6px; margin-top: 7px }
-.np-pv-sel > .np-f { flex-basis: 100%; margin-bottom: -1px }
-.np-pv-sel button { padding: 3px 10px; margin: 0; border: 1px solid var(--np-pv-e); border-radius: 14px; background: #fff; color: var(--np-ink); cursor: pointer; font-size: .95em }
-.np-pv-sel button:hover { border-color: var(--np-pv-d) }
-.np-pv-sel button.on { background: var(--np-pv-d); border-color: var(--np-pv-d); color: #fff }
-.np-pv-d { margin-top: 7px; color: var(--np-mute); line-height: 1.45 }
-.neo.pv .np-bar { border-left-color: var(--np-pv-d); background: var(--np-pv-bg2) }
-.neo.pv .np-stage { background: #fcfbfe }
 .np-foot { margin-top: 18px; font-size: .76em; color: var(--np-faint); line-height: 1.5 }
 
 /* Pills. */
@@ -162,8 +141,8 @@
 @media (max-width: 640px) {
     .np-ctl-r > i { flex-basis: 100% } .np-rng { width: 100% } .np-ctl-c { flex-basis: 100% }
     /* touch targets >= 40 px on phones */
-    .np-tab { min-height: 40px } .np-mode button { min-height: 40px }
-    .np-btn, .np-pv-sel button, .np-tpl { min-height: 40px }
+    .np-tab { min-height: 40px }
+    .np-btn, .np-tpl { min-height: 40px }
     .np-ed-l input, .np-ed-l select, .np-map select, .np-map input { min-height: 40px }
     .np-chk input { width: 22px; height: 22px } .np-ed-f summary { padding: 10px 0 }
 }
@@ -211,9 +190,8 @@
 .np-cue.paused .np-now { color: var(--np-warn-fg) }
 .np-tail { flex: 0 0 auto; display: flex; align-items: center; padding: 0 9px; border: 1px dashed var(--np-line2); border-radius: 5px; font-size: .8em; color: var(--np-mute); white-space: nowrap; background: var(--np-panel) }
 .np-tail.dead { text-decoration: line-through; color: var(--np-faint) }
-.np-prog { display: block; position: relative; height: 4px; margin-top: 5px; border-radius: 2px; background: rgba(255,255,255,.8); outline: 1px dashed var(--np-pv-d); outline-offset: 1px }
+.np-prog { display: block; position: relative; height: 4px; margin-top: 5px; border-radius: 2px; background: rgba(255,255,255,.8); outline: 1px dashed var(--np-accent); outline-offset: 1px }
 .np-prog > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--np-green) }
-.np-kz { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--np-pv-d); border: 1px dashed var(--np-pv-d); border-radius: 8px; padding: 0 6px; vertical-align: 1px }
 .np-loop { position: absolute; left: 14px; bottom: 2px; height: 9px; border: 1.5px solid var(--np-e1); border-top: 0; border-radius: 0 0 9px 9px }
 .np-loop::before { content: ""; position: absolute; left: -5px; top: -6px; border: 4px solid transparent; border-bottom: 6px solid var(--np-e1) }
 .np-em-k { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .78em; color: var(--np-mute); margin: 4px 0 10px }
@@ -251,12 +229,8 @@
     .np-arrow { grid-column: 1 }
     .np-r > i { flex-basis: 9.5em }
 }
-.np-pvline { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: .78em; color: var(--np-pv-d); background: var(--np-pv-bg); border: 1px dashed var(--np-pv-e); border-radius: 5px; padding: 3px 9px; margin: -6px 0 12px }
-.np-pvline[hidden] { display: none }
 @media (max-width: 640px) {
     main { padding: 1.2em 16px }
-    .np-pv { position: static }
-    .np-mode button { padding: 4px 11px }
     .np-bar { gap: 6px 14px }
     .np-b { flex-wrap: wrap; white-space: normal }
     .np-tab { padding: 6px 10px; font-size: .86em }
@@ -267,3 +241,17 @@
     .np-row > div { padding: 4px 5px; font-size: .9em }
 }
 @media (prefers-reduced-motion: reduce) { .np-tab { transition: none } }
+.np-tog { cursor: pointer; user-select: none }
+.np-ctl.closed .np-card-h { border-bottom: 0 }
+.np-chev { display: inline-block; width: 1em; color: var(--np-mute, #888) }
+.np-fold { cursor: pointer; user-select: none }
+.np-fold::before { content: '\25BE'; display: inline-block; width: 1em; color: var(--np-mute) }
+.closed > .np-fold::before { content: '\25B8' }
+.np-card.closed > :not(.np-card-h), .np-em.closed > :not(.np-em-h) { display: none }
+.np-card.closed > .np-card-h { border-bottom: 0 }
+.np-barw { position: relative }
+.np-barw .np-bar { padding-right: 112px }
+.np-rf { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; align-items: center }
+.np-rf .np-btn { padding: 3px 7px; line-height: 1; font-size: .85em }
+.np-rf .np-sel { padding: 2px 4px; font-size: .85em; min-width: 0; width: auto }
+@media (max-width: 640px) { .np-barw .np-bar { padding-right: 14px } .np-rf { position: static; transform: none; justify-content: flex-end; margin-top: 6px } }
