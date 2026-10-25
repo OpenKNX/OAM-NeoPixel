@@ -1,0 +1,3046 @@
+{
+  "schemaVersion": 1,
+  "id": "terrasse",
+  "number": 4,
+  "title": "Terrasse (Effektkette über drei Geräte)",
+  "description": "Drei Abschnitte, jeder mit eigenem NeoPixel-Gerät und eigenem Netzteil. Pro Gerät 8 Holzbalken mit je 60 LEDs (SK6812/WS2814 (RGBW)), jeder Balken an einem eigenen Ausgang. Der virtuelle Streifen (480 LEDs) ist ein Segment als 2D-Matrix 60×8. Die Effektkette verbindet die Matrizen für direkt gewählte Effekte zu einer Fläche von 180×8: Gerät 1 ist Master (Offset 0), die übrigen Geräte sind Slaves, Gesamtlänge 1440. Effektmanager „Abendstimmung“ (Sonnenuntergang, Welle, Glut, Loop) ist auf allen Geräten gleich angelegt und läuft auf jedem Gerät für sich auf 60×8; Logik 1 auf Gerät 1 startet ihn bei Sonnenuntergang und stoppt ihn um 23:00.",
+  "product": {
+    "name": "OpenKNX NeoPixel",
+    "header": "0xAD00:0xC",
+    "testedAgainst": [
+      {
+        "variant": "Dev",
+        "appId": "0xAD01",
+        "appVersion": "0x12",
+        "build": "NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      },
+      {
+        "variant": "Release",
+        "appId": "0xAD00",
+        "appVersion": "0x0C",
+        "build": "NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      }
+    ],
+    "moduleVersions": {
+      "NEO": "0x5",
+      "NEOSTRIP": "-",
+      "NEOEM": "-",
+      "LOG": "0x44",
+      "FCB": "0xA",
+      "LMG": "0x4"
+    }
+  },
+  "importOrder": [
+    "NEO Kanal 0 (Basis)",
+    "NEOSTRIP Kanal 1..n",
+    "NEO Kanal 1..n (Segmente)",
+    "NEOEM Kanal 1..n",
+    "LMG",
+    "FCB Kanal 0, dann Kanal n",
+    "LOG Kanal n"
+  ],
+  "summary": [
+    {
+      "setting": "Hardware",
+      "value": "OpenKNXiao V1.5 KNeoPix RP2350 (4882), je Gerät"
+    },
+    {
+      "setting": "LED-Streifen 1–8",
+      "value": "SK6812/WS2814 (RGBW), Farbordnung GRBW, je 60 LEDs, Reihenfolge Balken 1–8"
+    },
+    {
+      "setting": "Segment 1",
+      "value": "LED 1–480, Topologie 2D — Linear, Zeilen, Breite 60, Höhe 8, Start-Farbe #FF9040 + W 120"
+    },
+    {
+      "setting": "Effektkette",
+      "value": "Gerät 1 Master / Gerät 2 Slave Offset 480 / Gerät 3 Slave Offset 960, Gesamtlänge 1440 (gemeinsame Fläche 180×8 nur für direkt gewählte Effekte)"
+    },
+    {
+      "setting": "Slave-Timeout / Override",
+      "value": "30 s / Sync übernimmt immer (Standardwerte)"
+    },
+    {
+      "setting": "Effektmanager 1 „Abendstimmung“",
+      "value": "Cue 1 Gradient, Cue 2 Aurora 2D, Cue 3 Fire, je 600 s, Übergang 4000 ms, Loop ein; läuft je Gerät auf 60×8"
+    },
+    {
+      "setting": "Strombegrenzung",
+      "value": "Global „Fester Wert“ 16000 mA, Übergang ab 80 % der Grenze auf 80 % Helligkeit, Strom pro LED 0 = Tabelle des LED-Typs (RGB 3 × 20 mA, RGBW 4 × 20 mA) je Gerät (ein Netzteil je Abschnitt, z. B. 5 V / 20 A)"
+    },
+    {
+      "setting": "Logik 1 (nur Gerät 1)",
+      "value": "Zeitschaltuhr: Sonnenuntergang EIN (Wert 1), 23:00 AUS (Wert 0)"
+    },
+    {
+      "setting": "Effektmanager-Stop: Rückkehr",
+      "value": "Aus (um 23:00 wird es dunkel)"
+    }
+  ],
+  "devices": [
+    {
+      "id": "geraet1",
+      "name": "NeoPixel Terrasse Abschnitt 1 (Master)",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Balken 1",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "purpose": "LED-Streifen 2: Balken 2",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 4,
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "purpose": "LED-Streifen 3: Balken 3",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 5,
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "purpose": "LED-Streifen 4: Balken 4",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 6,
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "purpose": "LED-Streifen 5: Balken 5",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 7,
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "purpose": "LED-Streifen 6: Balken 6",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 8,
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "purpose": "LED-Streifen 7: Balken 7",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 9,
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "purpose": "LED-Streifen 8: Balken 8",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 10,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: 2D-Matrix 60×8, Effektkette Master",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%201§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=1§NEO~VirtualTotalLength=1440§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 11,
+          "module": "NEOEM",
+          "channel": 1,
+          "purpose": "Effektmanager 1: Abendstimmung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 12,
+          "module": "LOG",
+          "channel": 1,
+          "purpose": "Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO 642",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Terrasse%20Abendstimmung§f~LogicType=5§f~Logic=5§f~Td1DuskDawn=8§f~Td2DuskDawn=1§f~TRestoreState=1§f~Td1Value=1§f~Td2HourAbs=23§f~Td2MinuteAbs=0§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffKOSend=1§f~OOffKOSendNumber=642§;OpenKNX",
+          "kind": "companion"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfLEDStrips",
+          "value": 8,
+          "valueText": "8"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitGlobal",
+          "value": 16000,
+          "valueText": "16000"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOcurrentPerLED",
+          "value": 0,
+          "valueText": "0"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitCombined",
+          "value": 1,
+          "valueText": "Fester Wert (mA)"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOautoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOEMEnabled",
+          "value": 1,
+          "valueText": "1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Balken 1",
+          "valueText": "Balken 1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Balken 2",
+          "valueText": "Balken 2"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "Description~",
+          "value": "Balken 3",
+          "valueText": "Balken 3"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "Description~",
+          "value": "Balken 4",
+          "valueText": "Balken 4"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "Description~",
+          "value": "Balken 5",
+          "valueText": "Balken 5"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "Description~",
+          "value": "Balken 6",
+          "valueText": "Balken 6"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "Description~",
+          "value": "Balken 7",
+          "valueText": "Balken 7"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "Description~",
+          "value": "Balken 8",
+          "valueText": "Balken 8"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Terrasse 1",
+          "valueText": "Terrasse 1"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 480,
+          "valueText": "480"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentTopology",
+          "value": 2,
+          "valueText": "2D — Linear, Zeilen (→→→→)"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~MatrixWidth",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SyncMode",
+          "value": 1,
+          "valueText": "Master"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~VirtualTotalLength",
+          "value": 1440,
+          "valueText": "1440"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -28608,
+          "valueText": "#FF9040"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupW",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEmStopReturnMode",
+          "value": 2,
+          "valueText": "Aus"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~CueCount",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Loop",
+          "value": 1,
+          "valueText": "Ja — EM wiederholt von Cue 1"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:1",
+          "value": 17,
+          "valueText": "Gradient"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:2",
+          "value": 17,
+          "valueText": "Gradient"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Brightness",
+          "value": 220,
+          "valueText": "220"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:1",
+          "value": "Sonnenunterg.",
+          "valueText": "Sonnenunterg."
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:2",
+          "value": "Sonnenunterg.",
+          "valueText": "Sonnenunterg."
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1GradientSpeed",
+          "value": 16,
+          "valueText": "16"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1GradientEndHue",
+          "value": 32,
+          "valueText": "32"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Effect:1",
+          "value": 30,
+          "valueText": "Aurora 2D"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Effect:2",
+          "value": 30,
+          "valueText": "Aurora 2D"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:1",
+          "value": "Welle",
+          "valueText": "Welle"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:2",
+          "value": "Welle",
+          "valueText": "Welle"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DSpeed",
+          "value": 40,
+          "valueText": "40"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DHue",
+          "value": 20,
+          "valueText": "20"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DScale",
+          "value": 24,
+          "valueText": "24"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:1",
+          "value": 8,
+          "valueText": "Fire"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:2",
+          "value": 8,
+          "valueText": "Fire"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Brightness",
+          "value": 180,
+          "valueText": "180"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:1",
+          "value": "Glut",
+          "valueText": "Glut"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:2",
+          "value": "Glut",
+          "valueText": "Glut"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireSpeed",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireCooling",
+          "value": 110,
+          "valueText": "110"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireSparking",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Name",
+          "value": "Abendstimmung",
+          "valueText": "Abendstimmung"
+        }
+      ],
+      "companionModules": [
+        {
+          "module": "LOG",
+          "channel": 1,
+          "purpose": "Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO 642",
+          "keySettings": [
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Name",
+              "value": "Terrasse Abendstimmung",
+              "valueText": "Terrasse Abendstimmung"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~LogicType",
+              "value": 5,
+              "valueText": "ZEITSCHALTUHR"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Logic",
+              "value": 5,
+              "valueText": "ZEITSCHALTUHR"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Td1DuskDawn",
+              "value": 8,
+              "valueText": "Sonnenuntergang: plus Zeitversatz"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Td2DuskDawn",
+              "value": 1,
+              "valueText": "Zeitpunkt"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~TRestoreState",
+              "value": 1,
+              "valueText": "Den letzten Schaltpunkt berechnen"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Td1Value",
+              "value": 1,
+              "valueText": "EIN"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Td2HourAbs",
+              "value": 23,
+              "valueText": "23"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Td2MinuteAbs",
+              "value": 0,
+              "valueText": "00"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~ODpt",
+              "value": 2,
+              "valueText": "DPT 5.xxx (1-Byte)"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOnKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOnKOSendNumber",
+              "value": 642,
+              "valueText": "642"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOffKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOffKOSendNumber",
+              "value": 642,
+              "valueText": "642"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Terrasse%20Abendstimmung§f~LogicType=5§f~Logic=5§f~Td1DuskDawn=8§f~Td2DuskDawn=1§f~TRestoreState=1§f~Td1Value=1§f~Td2HourAbs=23§f~Td2MinuteAbs=0§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffKOSend=1§f~OOffKOSendNumber=642§;OpenKNX"
+        }
+      ],
+      "groupAddresses": [
+        {
+          "ga": "4/0/0",
+          "name": "Terrasse Ein/Aus",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 1, 2 (kurz)",
+          "links": [
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Auf allen Geräten verknüpft: ohne laufenden Effektmanager überträgt zwar auch die Kette Ein/Aus, während der Abendstimmung ignorieren die Slaves die Kette aber (eigener Effektmanager) und brauchen das Telegramm direkt. Mit „Sync übernimmt immer“ setzt das direkte Telegramm am Slave nur die lokale Übersteuerung, die bei dieser Richtlinie nicht wirkt; der nächste Kettenwert des Masters ist derselbe. Mit „Lokal hat Vorrang“ würde das direkte Telegramm die Slaves bis zum Neustart von der Kette lösen."
+        },
+        {
+          "ga": "4/1/0",
+          "name": "Terrasse Dimmen",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 1, 2 (lang)",
+          "links": [
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Auf allen Geräten verknüpft (Grund wie 4/0/0): jedes Gerät dimmt selbst; ohne Effektmanager gleicht die Kette die Helligkeit an die des Masters an."
+        },
+        {
+          "ga": "4/2/0",
+          "name": "Terrasse Helligkeit",
+          "dpt": "DPST-5-1",
+          "sender": "MDT Taster 8-fach, Taste 8 (kurz) / Visualisierung",
+          "links": [
+            {
+              "ko": 602,
+              "koName": "NEO_1SegmentBrightness",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 5.1",
+              "dpt": "DPST-5-1",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 602,
+              "koName": "NEO_1SegmentBrightness",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 5.1",
+              "dpt": "DPST-5-1",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 602,
+              "koName": "NEO_1SegmentBrightness",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 5.1",
+              "dpt": "DPST-5-1",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Auf allen Geräten verknüpft (Grund wie 4/0/0)."
+        },
+        {
+          "ga": "4/3/0",
+          "name": "Terrasse RGBW",
+          "dpt": "DPST-251-600",
+          "sender": "Visualisierung",
+          "links": [
+            {
+              "ko": 623,
+              "koName": "NEO_1RGBW",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 251.600",
+              "dpt": "DPST-251-600",
+              "size": "6 Bytes",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 623,
+              "koName": "NEO_1RGBW",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 251.600",
+              "dpt": "DPST-251-600",
+              "size": "6 Bytes",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 623,
+              "koName": "NEO_1RGBW",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 251.600",
+              "dpt": "DPST-251-600",
+              "size": "6 Bytes",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Auf allen Geräten verknüpft: ein Farbbefehl beendet den Effektmanager des Geräts, das ihn empfängt; nur am Master würde die Abendstimmung auf den Slaves weiterlaufen. Ohne Effektmanager überträgt auch die Kette die Farbe."
+        },
+        {
+          "ga": "4/4/0",
+          "name": "Terrasse Abendstimmung Start/Stop",
+          "dpt": "DPST-5-10",
+          "sender": "MDT Taster, Taste 3, 4 (kurz) / Logik 1 auf Gerät 1",
+          "links": [
+            {
+              "ko": 102,
+              "koName": "LOG_KOf1O",
+              "koFunctionText": "Logik 1: Ausgang, 1-Byte",
+              "dpt": "DPST-5-5",
+              "size": "1 Byte",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            },
+            {
+              "ko": 642,
+              "koName": "NEO_1EmStart",
+              "koFunctionText": "NeoPixel Segment 1: EM Start (1-16)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 642,
+              "koName": "NEO_1EmStart",
+              "koFunctionText": "NeoPixel Segment 1: EM Start (1-16)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 642,
+              "koName": "NEO_1EmStart",
+              "koFunctionText": "NeoPixel Segment 1: EM Start (1-16)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Wert 1 startet EM 1, Wert 0 stoppt ihn. Jedes Gerät hat seinen eigenen EM 1; ein laufender EM auf dem Master wird nicht über die Kette übertragen, und während ein EM läuft, rendert jedes Gerät auf seinen eigenen 60×8. Gerät 1 erhält den Wert zusätzlich gerätintern von Logik 1. Das Ausgangs-KO der Logik ist DPT 5.005, die EM-Start-KOs DPT 5.010; beide 1 Byte ohne Skalierung, der Wert 1 kommt unverändert an."
+        },
+        {
+          "ga": "4/4/1",
+          "name": "Terrasse Cue +/-",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 5, 6 (lang)",
+          "links": [
+            {
+              "ko": 640,
+              "koName": "NEO_1CueRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 640,
+              "koName": "NEO_1CueRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 640,
+              "koName": "NEO_1CueRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Nächste/vorherige Cue auf allen drei Geräten."
+        },
+        {
+          "ga": "4/4/2",
+          "name": "Terrasse EM Stop",
+          "dpt": "DPST-1-1",
+          "sender": "freie Taste oder Visualisierung",
+          "links": [
+            {
+              "ko": 644,
+              "koName": "NEO_1EmStop",
+              "koFunctionText": "NeoPixel Segment 1: EM Stop",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 644,
+              "koName": "NEO_1EmStop",
+              "koFunctionText": "NeoPixel Segment 1: EM Stop",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 644,
+              "koName": "NEO_1EmStop",
+              "koFunctionText": "NeoPixel Segment 1: EM Stop",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "EM auf allen drei Geräten beenden."
+        },
+        {
+          "ga": "4/5/0",
+          "name": "Terrasse Sperre",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster 8-fach, Taste 7 (kurz) / Visualisierung",
+          "links": [
+            {
+              "ko": 641,
+              "koName": "NEO_1Lock",
+              "koFunctionText": "NeoPixel Segment 1: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 641,
+              "koName": "NEO_1Lock",
+              "koFunctionText": "NeoPixel Segment 1: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 641,
+              "koName": "NEO_1Lock",
+              "koFunctionText": "NeoPixel Segment 1: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Sperrt die steuernden KOs; ein gesperrter Slave ignoriert die Kette."
+        },
+        {
+          "ga": "4/6/0",
+          "name": "Terrasse Ein/Aus Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel Gerät 1",
+          "links": [
+            {
+              "ko": 601,
+              "koName": "NEO_1SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Rückmeldung des Masters."
+        },
+        {
+          "ga": "4/6/1",
+          "name": "Terrasse EM Zustand",
+          "dpt": "DPST-5-10",
+          "sender": "NeoPixel Gerät 1",
+          "links": [
+            {
+              "ko": 652,
+              "koName": "NEO_1EmRunState",
+              "koFunctionText": "NeoPixel Segment 1: Zustand (0=gestoppt,1=laeuft,2=pausiert)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "0 = gestoppt, 1 = läuft, 2 = pausiert."
+        },
+        {
+          "ga": "4/6/2",
+          "name": "Terrasse Stromverbrauch Gerät 1",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel Gerät 1",
+          "links": [
+            {
+              "ko": 404,
+              "koName": "NEO_PowerCurrentTotal",
+              "koFunctionText": "Stromverbrauch Gesamt (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Gesamtstrom dieses Abschnitts in mA."
+        },
+        {
+          "ga": "4/6/3",
+          "name": "Terrasse Stromverbrauch Gerät 2",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel Gerät 2",
+          "links": [
+            {
+              "ko": 404,
+              "koName": "NEO_PowerCurrentTotal",
+              "koFunctionText": "Stromverbrauch Gesamt (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet2",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Gesamtstrom dieses Abschnitts in mA."
+        },
+        {
+          "ga": "4/6/4",
+          "name": "Terrasse Stromverbrauch Gerät 3",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel Gerät 3",
+          "links": [
+            {
+              "ko": 404,
+              "koName": "NEO_PowerCurrentTotal",
+              "koFunctionText": "Stromverbrauch Gesamt (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet3",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Gesamtstrom dieses Abschnitts in mA."
+        },
+        {
+          "ga": "4/7/0",
+          "name": "Terrasse Effektkette Sync",
+          "dpt": "DPST-16-1",
+          "sender": "NeoPixel Gerät 1 (Master)",
+          "links": [
+            {
+              "ko": 650,
+              "koName": "NEO_1SyncChain",
+              "koFunctionText": "NeoPixel Segment 1: Effektkette Sync-Telegramm (intern)",
+              "dpt": "DPST-16-1",
+              "size": "14 Bytes",
+              "flags": "CWT",
+              "device": "geraet1",
+              "direction": "sendet"
+            },
+            {
+              "ko": 650,
+              "koName": "NEO_1SyncChain",
+              "koFunctionText": "NeoPixel Segment 1: Effektkette Sync-Telegramm (intern)",
+              "dpt": "DPST-16-1",
+              "size": "14 Bytes",
+              "flags": "CWT",
+              "device": "geraet2",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 650,
+              "koName": "NEO_1SyncChain",
+              "koFunctionText": "NeoPixel Segment 1: Effektkette Sync-Telegramm (intern)",
+              "dpt": "DPST-16-1",
+              "size": "14 Bytes",
+              "flags": "CWT",
+              "device": "geraet3",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Verbindet Master und Slaves; nur diese drei KOs auf diese GA legen. Der Master sendet bei jeder Änderung und alle 3 s."
+        },
+        {
+          "ga": "0/0/1",
+          "name": "Uhrzeit",
+          "dpt": "DPST-10-1",
+          "sender": "Zeitgeber",
+          "links": [
+            {
+              "ko": 2,
+              "koName": "BASE_Time",
+              "koFunctionText": "Eingang",
+              "dpt": "DPST-10-1",
+              "size": "3 Bytes",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Zeitschaltuhr der Logik braucht eine gültige Uhrzeit."
+        },
+        {
+          "ga": "0/0/2",
+          "name": "Datum",
+          "dpt": "DPST-11-1",
+          "sender": "Zeitgeber",
+          "links": [
+            {
+              "ko": 3,
+              "koName": "BASE_Date",
+              "koFunctionText": "Eingang",
+              "dpt": "DPST-11-1",
+              "size": "3 Bytes",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Sonnenuntergang wird aus Datum und Standort berechnet."
+        }
+      ]
+    },
+    {
+      "id": "geraet2",
+      "name": "NeoPixel Terrasse Abschnitt 2 (Slave)",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Balken 1",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "purpose": "LED-Streifen 2: Balken 2",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 4,
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "purpose": "LED-Streifen 3: Balken 3",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 5,
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "purpose": "LED-Streifen 4: Balken 4",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 6,
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "purpose": "LED-Streifen 5: Balken 5",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 7,
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "purpose": "LED-Streifen 6: Balken 6",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 8,
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "purpose": "LED-Streifen 7: Balken 7",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 9,
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "purpose": "LED-Streifen 8: Balken 8",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 10,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: 2D-Matrix 60×8, Effektkette Slave",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%202§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=2§NEO~VirtualTotalLength=1440§NEO~VirtualOffset=480§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 11,
+          "module": "NEOEM",
+          "channel": 1,
+          "purpose": "Effektmanager 1: Abendstimmung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX",
+          "kind": "neopixel"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfLEDStrips",
+          "value": 8,
+          "valueText": "8"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitGlobal",
+          "value": 16000,
+          "valueText": "16000"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOcurrentPerLED",
+          "value": 0,
+          "valueText": "0"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitCombined",
+          "value": 1,
+          "valueText": "Fester Wert (mA)"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOautoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOEMEnabled",
+          "value": 1,
+          "valueText": "1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Balken 1",
+          "valueText": "Balken 1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Balken 2",
+          "valueText": "Balken 2"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "Description~",
+          "value": "Balken 3",
+          "valueText": "Balken 3"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "Description~",
+          "value": "Balken 4",
+          "valueText": "Balken 4"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "Description~",
+          "value": "Balken 5",
+          "valueText": "Balken 5"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "Description~",
+          "value": "Balken 6",
+          "valueText": "Balken 6"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "Description~",
+          "value": "Balken 7",
+          "valueText": "Balken 7"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "Description~",
+          "value": "Balken 8",
+          "valueText": "Balken 8"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Terrasse 2",
+          "valueText": "Terrasse 2"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 480,
+          "valueText": "480"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentTopology",
+          "value": 2,
+          "valueText": "2D — Linear, Zeilen (→→→→)"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~MatrixWidth",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SyncMode",
+          "value": 2,
+          "valueText": "Slave"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~VirtualTotalLength",
+          "value": 1440,
+          "valueText": "1440"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~VirtualOffset",
+          "value": 480,
+          "valueText": "480"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -28608,
+          "valueText": "#FF9040"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupW",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEmStopReturnMode",
+          "value": 2,
+          "valueText": "Aus"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~CueCount",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Loop",
+          "value": 1,
+          "valueText": "Ja — EM wiederholt von Cue 1"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:1",
+          "value": 17,
+          "valueText": "Gradient"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:2",
+          "value": 17,
+          "valueText": "Gradient"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Brightness",
+          "value": 220,
+          "valueText": "220"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:1",
+          "value": "Sonnenunterg.",
+          "valueText": "Sonnenunterg."
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:2",
+          "value": "Sonnenunterg.",
+          "valueText": "Sonnenunterg."
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1GradientSpeed",
+          "value": 16,
+          "valueText": "16"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1GradientEndHue",
+          "value": 32,
+          "valueText": "32"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Effect:1",
+          "value": 30,
+          "valueText": "Aurora 2D"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Effect:2",
+          "value": 30,
+          "valueText": "Aurora 2D"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:1",
+          "value": "Welle",
+          "valueText": "Welle"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:2",
+          "value": "Welle",
+          "valueText": "Welle"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DSpeed",
+          "value": 40,
+          "valueText": "40"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DHue",
+          "value": 20,
+          "valueText": "20"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DScale",
+          "value": 24,
+          "valueText": "24"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:1",
+          "value": 8,
+          "valueText": "Fire"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:2",
+          "value": 8,
+          "valueText": "Fire"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Brightness",
+          "value": 180,
+          "valueText": "180"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:1",
+          "value": "Glut",
+          "valueText": "Glut"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:2",
+          "value": "Glut",
+          "valueText": "Glut"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireSpeed",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireCooling",
+          "value": 110,
+          "valueText": "110"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireSparking",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Name",
+          "value": "Abendstimmung",
+          "valueText": "Abendstimmung"
+        }
+      ],
+      "companionModules": [],
+      "groupAddresses": []
+    },
+    {
+      "id": "geraet3",
+      "name": "NeoPixel Terrasse Abschnitt 3 (Slave)",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Balken 1",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "purpose": "LED-Streifen 2: Balken 2",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 4,
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "purpose": "LED-Streifen 3: Balken 3",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 5,
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "purpose": "LED-Streifen 4: Balken 4",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 6,
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "purpose": "LED-Streifen 5: Balken 5",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 7,
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "purpose": "LED-Streifen 6: Balken 6",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 8,
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "purpose": "LED-Streifen 7: Balken 7",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 9,
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "purpose": "LED-Streifen 8: Balken 8",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 10,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: 2D-Matrix 60×8, Effektkette Slave",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%203§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=2§NEO~VirtualTotalLength=1440§NEO~VirtualOffset=960§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 11,
+          "module": "NEOEM",
+          "channel": 1,
+          "purpose": "Effektmanager 1: Abendstimmung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX",
+          "kind": "neopixel"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfLEDStrips",
+          "value": 8,
+          "valueText": "8"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitGlobal",
+          "value": 16000,
+          "valueText": "16000"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOcurrentPerLED",
+          "value": 0,
+          "valueText": "0"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitCombined",
+          "value": 1,
+          "valueText": "Fester Wert (mA)"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOautoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOEMEnabled",
+          "value": 1,
+          "valueText": "1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Balken 1",
+          "valueText": "Balken 1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Balken 2",
+          "valueText": "Balken 2"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "Description~",
+          "value": "Balken 3",
+          "valueText": "Balken 3"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "Description~",
+          "value": "Balken 4",
+          "valueText": "Balken 4"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 4,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "Description~",
+          "value": "Balken 5",
+          "valueText": "Balken 5"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 5,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "Description~",
+          "value": "Balken 6",
+          "valueText": "Balken 6"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 6,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "Description~",
+          "value": "Balken 7",
+          "valueText": "Balken 7"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 7,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "Description~",
+          "value": "Balken 8",
+          "valueText": "Balken 8"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 8,
+          "paramName": "NEO~Length",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Terrasse 3",
+          "valueText": "Terrasse 3"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 480,
+          "valueText": "480"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentTopology",
+          "value": 2,
+          "valueText": "2D — Linear, Zeilen (→→→→)"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~MatrixWidth",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SyncMode",
+          "value": 2,
+          "valueText": "Slave"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~VirtualTotalLength",
+          "value": 1440,
+          "valueText": "1440"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~VirtualOffset",
+          "value": 960,
+          "valueText": "960"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -28608,
+          "valueText": "#FF9040"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupW",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEmStopReturnMode",
+          "value": 2,
+          "valueText": "Aus"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~CueCount",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Loop",
+          "value": 1,
+          "valueText": "Ja — EM wiederholt von Cue 1"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:1",
+          "value": 17,
+          "valueText": "Gradient"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:2",
+          "value": 17,
+          "valueText": "Gradient"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Brightness",
+          "value": 220,
+          "valueText": "220"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:1",
+          "value": "Sonnenunterg.",
+          "valueText": "Sonnenunterg."
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:2",
+          "value": "Sonnenunterg.",
+          "valueText": "Sonnenunterg."
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1GradientSpeed",
+          "value": 16,
+          "valueText": "16"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1GradientEndHue",
+          "value": 32,
+          "valueText": "32"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Effect:1",
+          "value": 30,
+          "valueText": "Aurora 2D"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Effect:2",
+          "value": 30,
+          "valueText": "Aurora 2D"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:1",
+          "value": "Welle",
+          "valueText": "Welle"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:2",
+          "value": "Welle",
+          "valueText": "Welle"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DSpeed",
+          "value": 40,
+          "valueText": "40"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DHue",
+          "value": 20,
+          "valueText": "20"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Aurora2DScale",
+          "value": 24,
+          "valueText": "24"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:1",
+          "value": 8,
+          "valueText": "Fire"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:2",
+          "value": 8,
+          "valueText": "Fire"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Brightness",
+          "value": 180,
+          "valueText": "180"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:1",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:2",
+          "value": 600,
+          "valueText": "600"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:1",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:2",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:1",
+          "value": "Glut",
+          "valueText": "Glut"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:2",
+          "value": "Glut",
+          "valueText": "Glut"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireSpeed",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireCooling",
+          "value": 110,
+          "valueText": "110"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3FireSparking",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Name",
+          "value": "Abendstimmung",
+          "valueText": "Abendstimmung"
+        }
+      ],
+      "companionModules": [],
+      "groupAddresses": []
+    }
+  ],
+  "checkAfterImport": [
+    "Je Gerät: Hardware-Auswahl passend zur Firmware.",
+    "Je Gerät: Daten-Ports der LED-Streifen 1–8 auswählen (Balken 1 = Zeile 1).",
+    "Gerät 1: Standort und Zeitquelle unter Allgemein (Sonnenuntergang).",
+    "Strombegrenzung je Gerät an das Netzteil des Abschnitts anpassen; „Strom pro LED“ (global) steht bei RGBW auf 0: die Firmware rechnet dann mit der Tabelle des LED-Typs (4 × 20 mA); ein Wert über 0 wird ganzzahlig auf die Kanäle verteilt (70 / 4 = 17 mA). Der Parameter ist in der ETS nur bei „Pro LED (automatisch)“ sichtbar, wirkt aber auch hier auf die Messung. Hat jeder Balken ein eigenes Netzteil, global „Deaktiviert“ und je Streifen „Fester Wert“ setzen.",
+    "Alle drei Geräte mit derselben Firmware-Version betreiben (Effektkette).",
+    "Startet ein Slave allein neu, verpasst er den EM-Start; er läuft erst ab dem nächsten Schaltpunkt (oder einem manuellen Start über 4/4/0) wieder mit."
+  ],
+  "keyLayouts": {
+    "6": [
+      {
+        "key": "1",
+        "function": "Terrasse – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "4/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "4/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Terrasse – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "4/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "4/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Abendstimmung starten (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/4/0",
+            "dpt": "DPST-5-10",
+            "value": "1 (EM 1)"
+          }
+        ],
+        "statusLed": {
+          "ga": "4/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Abendstimmung beenden (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/4/0",
+            "dpt": "DPST-5-10",
+            "value": "0 (Stop)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "5",
+        "function": "Vorherige Cue – Wippe links, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "4/4/1",
+            "dpt": "DPST-3-7",
+            "value": "dunkler = vorherige Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "6",
+        "function": "Nächste Cue – Wippe rechts, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "4/4/1",
+            "dpt": "DPST-3-7",
+            "value": "heller = nächste Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      }
+    ],
+    "8": [
+      {
+        "key": "1",
+        "function": "Terrasse – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "4/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "4/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Terrasse – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "4/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "4/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Abendstimmung starten (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/4/0",
+            "dpt": "DPST-5-10",
+            "value": "1 (EM 1)"
+          }
+        ],
+        "statusLed": {
+          "ga": "4/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Abendstimmung beenden (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/4/0",
+            "dpt": "DPST-5-10",
+            "value": "0 (Stop)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "5",
+        "function": "Vorherige Cue – Wippe links, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "4/4/1",
+            "dpt": "DPST-3-7",
+            "value": "dunkler = vorherige Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "6",
+        "function": "Nächste Cue – Wippe rechts, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "4/4/1",
+            "dpt": "DPST-3-7",
+            "value": "heller = nächste Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "7",
+        "function": "Sperre Um (kurz) – keine Status-LED vom NeoPixel",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/5/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (1 = gesperrt)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "8",
+        "function": "Helligkeit 100 % (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "4/2/0",
+            "dpt": "DPST-5-1",
+            "value": "100 %"
+          }
+        ],
+        "statusLed": null
+      }
+    ],
+    "note": "Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen. Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt). Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus. Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen. Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein. Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen. Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+    "noteItems": [
+      "Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt).",
+      "Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus.",
+      "Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen.",
+      "Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein.",
+      "Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen.",
+      "Status-LED: Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+      "MDT-Bezeichnungen: Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen."
+    ],
+    "device": "geraet1"
+  }
+}

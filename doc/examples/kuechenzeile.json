@@ -1,0 +1,629 @@
+{
+  "schemaVersion": 1,
+  "id": "kuechenzeile",
+  "number": 1,
+  "title": "Einfach – Küchenzeile",
+  "description": "Ein Streifen mit 120 LEDs unter den Hängeschränken (WS2812B), ein Segment über den ganzen Streifen. Statische Start-Farbe mit 80 % Helligkeit, nach einem Neustart wird der letzte Zustand wiederhergestellt. Zwei Szenen (Kochen / Abend) für den Taster. Ein Netzteil, globale Strombegrenzung.",
+  "product": {
+    "name": "OpenKNX NeoPixel",
+    "header": "0xAD00:0xC",
+    "testedAgainst": [
+      {
+        "variant": "Dev",
+        "appId": "0xAD01",
+        "appVersion": "0x12",
+        "build": "NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      },
+      {
+        "variant": "Release",
+        "appId": "0xAD00",
+        "appVersion": "0x0C",
+        "build": "NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      }
+    ],
+    "moduleVersions": {
+      "NEO": "0x5",
+      "NEOSTRIP": "-",
+      "NEOEM": "-",
+      "LOG": "0x44",
+      "FCB": "0xA",
+      "LMG": "0x4"
+    }
+  },
+  "importOrder": [
+    "NEO Kanal 0 (Basis)",
+    "NEOSTRIP Kanal 1..n",
+    "NEO Kanal 1..n (Segmente)",
+    "NEOEM Kanal 1..n",
+    "LMG",
+    "FCB Kanal 0, dann Kanal n",
+    "LOG Kanal n"
+  ],
+  "summary": [
+    {
+      "setting": "Hardware",
+      "value": "OpenKNXiao V1.5 KNeoPix RP2350 (4882)"
+    },
+    {
+      "setting": "LED-Streifen 1",
+      "value": "WS2812B, Farbordnung GRB, 120 LEDs"
+    },
+    {
+      "setting": "Segment 1",
+      "value": "LED 1–120, Effekt Solid"
+    },
+    {
+      "setting": "Start-Farbe / Helligkeit",
+      "value": "#FFB46B, 204 von 255 (80 %)"
+    },
+    {
+      "setting": "Verhalten nach Neustart",
+      "value": "Letzter Zustand (Standardwert des Segments)"
+    },
+    {
+      "setting": "Szenen",
+      "value": "1 Kochen #FFD7A8 / 255, 2 Abend #FF8C40 / 90"
+    },
+    {
+      "setting": "Strombegrenzung",
+      "value": "Global „Fester Wert“ 3000 mA, Übergang ab 80 % der Grenze auf 80 % Helligkeit, Strom pro LED 60 mA (ein Netzteil, z. B. 5 V / 4 A)"
+    }
+  ],
+  "devices": [
+    {
+      "id": "geraet1",
+      "name": "NeoPixel Küche",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Küchenzeile",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=K%C3%BCchenzeile§NEO~Length=120§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: Küchenzeile",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=K%C3%BCchenzeile§NEO~SegmentEnd=120§NEO~SegmentStartupColor=-19349§NEO~SegmentStartupBrightness=204§NEO~SceneCount=2§NEO~SceneAPrimaryColor=-10328§NEO~SceneBPrimaryColor=-29632§NEO~SceneBBrightness=90§;OpenKNX",
+          "kind": "neopixel"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitGlobal",
+          "value": 3000,
+          "valueText": "3000"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitCombined",
+          "value": 1,
+          "valueText": "Fester Wert (mA)"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOautoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Küchenzeile",
+          "valueText": "Küchenzeile"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Küchenzeile",
+          "valueText": "Küchenzeile"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -19349,
+          "valueText": "#FFB46B"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupBrightness",
+          "value": 204,
+          "valueText": "204"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SceneCount",
+          "value": 2,
+          "valueText": "2 Szenen"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SceneAPrimaryColor",
+          "value": -10328,
+          "valueText": "#FFD7A8"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SceneBPrimaryColor",
+          "value": -29632,
+          "valueText": "#FF8C40"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SceneBBrightness",
+          "value": 90,
+          "valueText": "90"
+        }
+      ],
+      "companionModules": [],
+      "groupAddresses": [
+        {
+          "ga": "1/0/0",
+          "name": "Küchenzeile Ein/Aus",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 1, 2, 5 (kurz)",
+          "links": [
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Schalten des Segments."
+        },
+        {
+          "ga": "1/1/0",
+          "name": "Küchenzeile Dimmen",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 1, 2 (lang)",
+          "links": [
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Relatives Dimmen der Segment-Helligkeit."
+        },
+        {
+          "ga": "1/2/0",
+          "name": "Küchenzeile Helligkeit",
+          "dpt": "DPST-5-1",
+          "sender": "MDT Taster 8-fach, Taste 7, 8 (kurz) / Visualisierung",
+          "links": [
+            {
+              "ko": 602,
+              "koName": "NEO_1SegmentBrightness",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 5.1",
+              "dpt": "DPST-5-1",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Absoluter Helligkeitswert."
+        },
+        {
+          "ga": "1/3/0",
+          "name": "Küchenzeile RGB",
+          "dpt": "DPST-232-600",
+          "sender": "Visualisierung",
+          "links": [
+            {
+              "ko": 619,
+              "koName": "NEO_1RGB",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 232.600",
+              "dpt": "DPST-232-600",
+              "size": "3 Bytes",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Farbe setzen (RGB, 3 Byte)."
+        },
+        {
+          "ga": "1/4/0",
+          "name": "Küchenzeile Szene",
+          "dpt": "DPST-18-1",
+          "sender": "MDT Taster, Taste 3, 4 (kurz)",
+          "links": [
+            {
+              "ko": 617,
+              "koName": "NEO_1Scene",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 18.001",
+              "dpt": "DPST-18-1",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Wert 0 = Szene 1 (Kochen), Wert 1 = Szene 2 (Abend); Bit 7 gesetzt = aktuellen Zustand als Szene speichern."
+        },
+        {
+          "ga": "1/5/0",
+          "name": "Küchenzeile Sperre",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 6 (kurz) / Visualisierung / Logik",
+          "links": [
+            {
+              "ko": 641,
+              "koName": "NEO_1Lock",
+              "koFunctionText": "NeoPixel Segment 1: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "1 sperrt alle steuernden KOs des Segments (z. B. Reinigung)."
+        },
+        {
+          "ga": "1/6/0",
+          "name": "Küchenzeile Ein/Aus Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 601,
+              "koName": "NEO_1SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Rückmeldung für Taster-LED und Visualisierung."
+        },
+        {
+          "ga": "1/6/1",
+          "name": "Küchenzeile Helligkeit Status",
+          "dpt": "DPST-5-1",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 603,
+              "koName": "NEO_1SegmentBrightnessState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 5.1",
+              "dpt": "DPST-5-1",
+              "size": "1 Byte",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Rückmeldung der Helligkeit."
+        },
+        {
+          "ga": "1/6/2",
+          "name": "Küchenzeile Stromverbrauch",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 404,
+              "koName": "NEO_PowerCurrentTotal",
+              "koFunctionText": "Stromverbrauch Gesamt (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Gesamtstrom in mA (gemeldet, solange die globale Strombegrenzung aktiv ist)."
+        }
+      ]
+    }
+  ],
+  "checkAfterImport": [
+    "Hardware-Auswahl passend zur Firmware.",
+    "Daten-Port von LED-Streifen 1 auswählen.",
+    "LED-Typ und Anzahl, falls abweichend.",
+    "Strombegrenzung an das Netzteil anpassen (Beispiel 3000 mA für 5 V / 4 A mit Reserve)."
+  ],
+  "keyLayouts": {
+    "6": [
+      {
+        "key": "1",
+        "function": "Küchenzeile – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "1/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "1/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Küchenzeile – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "1/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "1/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Szene 1 „Kochen“ (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/4/0",
+            "dpt": "DPST-18-1",
+            "value": "Szene 1 (Telegrammwert 0)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "4",
+        "function": "Szene 2 „Abend“ (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/4/0",
+            "dpt": "DPST-18-1",
+            "value": "Szene 2 (Telegrammwert 1)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "5",
+        "function": "Küchenzeile – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/0/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "1/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "6",
+        "function": "Sperre Um (kurz) – keine Status-LED vom NeoPixel",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/5/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (1 = gesperrt)"
+          }
+        ],
+        "statusLed": null
+      }
+    ],
+    "8": [
+      {
+        "key": "1",
+        "function": "Küchenzeile – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "1/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "1/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Küchenzeile – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "1/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "1/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Szene 1 „Kochen“ (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/4/0",
+            "dpt": "DPST-18-1",
+            "value": "Szene 1 (Telegrammwert 0)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "4",
+        "function": "Szene 2 „Abend“ (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/4/0",
+            "dpt": "DPST-18-1",
+            "value": "Szene 2 (Telegrammwert 1)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "5",
+        "function": "Küchenzeile – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/0/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "1/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "6",
+        "function": "Sperre Um (kurz) – keine Status-LED vom NeoPixel",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/5/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (1 = gesperrt)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "7",
+        "function": "Helligkeit 100 % (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/2/0",
+            "dpt": "DPST-5-1",
+            "value": "100 %"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "8",
+        "function": "Helligkeit 30 % (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "1/2/0",
+            "dpt": "DPST-5-1",
+            "value": "30 %"
+          }
+        ],
+        "statusLed": null
+      }
+    ],
+    "note": "Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen. Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt). Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus. Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen. Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein. Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen. Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+    "noteItems": [
+      "Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt).",
+      "Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus.",
+      "Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen.",
+      "Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein.",
+      "Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen.",
+      "Status-LED: Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+      "MDT-Bezeichnungen: Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen."
+    ],
+    "device": "geraet1"
+  }
+}

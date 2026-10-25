@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 1,
+  "id": "matrix-panel",
+  "number": 5,
+  "title": "Matrix-Panel 16×16",
+  "description": "Ein Panel mit 16×16 LEDs (WS2812B), verdrahtet als 2D — Schlangen, Zeilen (→←→←). Ein Segment als 2D-Matrix mit dem Effekt Plasma Nebula. Globale Strombegrenzung 3000 mA, Start-Helligkeit 50 %.",
+  "product": {
+    "name": "OpenKNX NeoPixel",
+    "header": "0xAD00:0xC",
+    "testedAgainst": [
+      {
+        "variant": "Dev",
+        "appId": "0xAD01",
+        "appVersion": "0x12",
+        "build": "NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      },
+      {
+        "variant": "Release",
+        "appId": "0xAD00",
+        "appVersion": "0x0C",
+        "build": "NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      }
+    ],
+    "moduleVersions": {
+      "NEO": "0x5",
+      "NEOSTRIP": "-",
+      "NEOEM": "-",
+      "LOG": "0x44",
+      "FCB": "0xA",
+      "LMG": "0x4"
+    }
+  },
+  "importOrder": [
+    "NEO Kanal 0 (Basis)",
+    "NEOSTRIP Kanal 1..n",
+    "NEO Kanal 1..n (Segmente)",
+    "NEOEM Kanal 1..n",
+    "LMG",
+    "FCB Kanal 0, dann Kanal n",
+    "LOG Kanal n"
+  ],
+  "summary": [
+    {
+      "setting": "Hardware",
+      "value": "OpenKNXiao V1.5 KNeoPix RP2350 (4882)"
+    },
+    {
+      "setting": "LED-Streifen 1",
+      "value": "WS2812B, Farbordnung GRB, 256 LEDs"
+    },
+    {
+      "setting": "Segment 1",
+      "value": "LED 1–256, Topologie 2D — Schlangen, Zeilen (→←→←), 16×16"
+    },
+    {
+      "setting": "Effekt",
+      "value": "Plasma Nebula (26), Speed 48"
+    },
+    {
+      "setting": "Start-Helligkeit",
+      "value": "128 von 255 (50 %)"
+    },
+    {
+      "setting": "Strombegrenzung",
+      "value": "Global „Fester Wert“ 3000 mA, Übergang ab 80 % der Grenze auf 80 % Helligkeit, Strom pro LED 60 mA (ein Netzteil, z. B. 5 V / 4 A)"
+    }
+  ],
+  "devices": [
+    {
+      "id": "geraet1",
+      "name": "NeoPixel Matrix",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Panel 16x16",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Panel%2016x16§NEO~Length=256§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: Matrix 16×16, Plasma Nebula",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Matrix§NEO~SegmentEnd=256§NEO~SegmentTopology=1§NEO~NEOEffectType:1=26§NEO~NEOEffectType:2=26§NEO~MatrixWidth=16§NEO~MatrixHeight=16§NEO~SegmentStartupBrightness=128§NEO~PlasmaNebulaSpeed=48§;OpenKNX",
+          "kind": "neopixel"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitGlobal",
+          "value": 3000,
+          "valueText": "3000"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitCombined",
+          "value": 1,
+          "valueText": "Fester Wert (mA)"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOautoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Panel 16x16",
+          "valueText": "Panel 16x16"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 256,
+          "valueText": "256"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Matrix",
+          "valueText": "Matrix"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 256,
+          "valueText": "256"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentTopology",
+          "value": 1,
+          "valueText": "2D — Schlangen, Zeilen (→←→←)"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~NEOEffectType:1",
+          "value": 26,
+          "valueText": "Plasma Nebula"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~NEOEffectType:2",
+          "value": 26,
+          "valueText": "Plasma Nebula"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~MatrixWidth",
+          "value": 16,
+          "valueText": "16"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~MatrixHeight",
+          "value": 16,
+          "valueText": "16"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupBrightness",
+          "value": 128,
+          "valueText": "128"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~PlasmaNebulaSpeed",
+          "value": 48,
+          "valueText": "48"
+        }
+      ],
+      "companionModules": [],
+      "groupAddresses": [
+        {
+          "ga": "5/0/0",
+          "name": "Matrix Ein/Aus",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 1, 2 (kurz)",
+          "links": [
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Schalten."
+        },
+        {
+          "ga": "5/1/0",
+          "name": "Matrix Dimmen",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 1, 2 (lang)",
+          "links": [
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Relatives Dimmen."
+        },
+        {
+          "ga": "5/4/0",
+          "name": "Matrix Effekt",
+          "dpt": "DPST-5-10",
+          "sender": "MDT Taster 6-fach, Taste 3, 4, 5, 6 (kurz); 8-fach, Taste 3, 4, 5, 6, 7, 8 (kurz) / Visualisierung",
+          "links": [
+            {
+              "ko": 615,
+              "koName": "NEO_1Fx",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 5.10",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Effektnummer setzen, z. B. 26 Plasma Nebula, 22 Matrix 2D, 30 Aurora 2D."
+        },
+        {
+          "ga": "5/3/0",
+          "name": "Matrix HSV",
+          "dpt": "DPST-232-600",
+          "sender": "Visualisierung",
+          "links": [
+            {
+              "ko": 621,
+              "koName": "NEO_1HSV",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 232.600",
+              "dpt": "DPST-232-600",
+              "size": "3 Bytes",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Grundfarbe für Effekte, die eine Primärfarbe nutzen."
+        },
+        {
+          "ga": "5/6/0",
+          "name": "Matrix Ein/Aus Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 601,
+              "koName": "NEO_1SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Rückmeldung."
+        },
+        {
+          "ga": "5/6/1",
+          "name": "Matrix Effekt Status",
+          "dpt": "DPST-5-10",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 616,
+              "koName": "NEO_1FxState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 5.10",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Aktive Effektnummer."
+        },
+        {
+          "ga": "5/6/2",
+          "name": "Matrix Stromverbrauch",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 404,
+              "koName": "NEO_PowerCurrentTotal",
+              "koFunctionText": "Stromverbrauch Gesamt (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Gesamtstrom in mA (gemeldet, solange die globale Strombegrenzung aktiv ist)."
+        }
+      ]
+    }
+  ],
+  "checkAfterImport": [
+    "Hardware-Auswahl passend zur Firmware.",
+    "Daten-Port von LED-Streifen 1 auswählen.",
+    "Läuft die erste Zeile des Panels von rechts nach links, „Richtung umkehren“ am Segment setzen oder Topologie prüfen.",
+    "Strombegrenzung an das Netzteil anpassen (Beispiel 3000 mA für 5 V / 4 A mit Reserve)."
+  ],
+  "keyLayouts": {
+    "6": [
+      {
+        "key": "1",
+        "function": "Matrix – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "5/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Matrix – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "5/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Effekt Plasma Nebula (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "26"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Effekt Matrix 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "22"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "5",
+        "function": "Effekt Aurora 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "30"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "6",
+        "function": "Effekt Metaballs 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "32"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      }
+    ],
+    "8": [
+      {
+        "key": "1",
+        "function": "Matrix – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "5/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Matrix – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "5/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Effekt Plasma Nebula (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "26"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Effekt Matrix 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "22"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "5",
+        "function": "Effekt Aurora 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "30"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "6",
+        "function": "Effekt Metaballs 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "32"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "7",
+        "function": "Effekt Lissajous 2D (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "31"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "8",
+        "function": "Effekt Starfield Warp (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "5/4/0",
+            "dpt": "DPST-5-10",
+            "value": "25"
+          }
+        ],
+        "statusLed": {
+          "ga": "5/6/1",
+          "dpt": "DPST-5-10"
+        }
+      }
+    ],
+    "note": "Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen. Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt). Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus. Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen. Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein. Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen. Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+    "noteItems": [
+      "Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt).",
+      "Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus.",
+      "Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen.",
+      "Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein.",
+      "Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen.",
+      "Status-LED: Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+      "MDT-Bezeichnungen: Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen."
+    ],
+    "device": "geraet1"
+  }
+}

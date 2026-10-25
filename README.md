@@ -47,6 +47,7 @@ That said, the firmware is **developed and tuned on the OpenKNXiao KNeoPiX** —
 
 - [German application description](doc/Applikationsbeschreibung.md)
 - [LED behavior and diagnostic codes](doc/LED-Behaviour.md)
+- [Example configurations (German): five ETS setups as ConfigTransfer strings with group address proposals](doc/examples/README-Beispielkonfigurationen.md), and an offline [configurator with templates](doc/examples/index.html)
 - [Hardware abstraction concept (defines & generator)](doc/Konzept-Hardware-Defines.md)
 - [Multi-hardware GPIO template generator (technical deep-dive)](doc/Hardware-Config-Generator.md)
 - [OFM-NeoPixel library (technical deep-dive & C++ API)](lib/OFM-NeoPixel/README.md)
@@ -177,6 +178,7 @@ pwsh scripts/Build-Release.ps1 -Release
 - **Timing Mode**: Start with AUTO; switch to SLOW_5PCT-SLOW_20PCT if LEDs flicker or don't respond
 - **GPIO Configuration**: Set data pin, clock pin (for SPI), MOSI pin
 - **Power Limiting**: Configure mode (global, per-LED) and mA limits
+- **Starting point**: import one of the [example configurations](doc/examples/README-Beispielkonfigurationen.md) via ConfigTransfer, or generate your own with the [configurator](doc/examples/index.html)
 - **Segments**: Define segment start/end positions for granular control
 - **Effects**: Assign effects to segments with speed and intensity parameters
 - **Scenes**: Configure up to 10 scenes per segment with colors, brightness, and effects

@@ -1,0 +1,1399 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeoPixel Konfigurator</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxsaW5lIHgxPSI3IiB5MT0iMjAiIHgyPSI3IiB5Mj0iMTUiIHN0cm9rZT0iIzQ0OTg0MSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICA8bGluZSB4MT0iMjUiIHkxPSIxNyIgeDI9IjI1IiB5Mj0iMTIiIHN0cm9rZT0iIzQ0OTg0MSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICA8bGluZSB5MT0iMTYiIHgyPSIzMiIgeTI9IjE2IiBzdHJva2U9IiM0NDk4NDEiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPHJlY3QgeD0iMiIgeT0iMjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzQ0OTg0MSIvPgogICAgPHJlY3QgeD0iMjAiIHk9IjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzQ0OTg0MSIvPgogICAgPHJlY3QgeD0iMjIiIHk9IjIzIiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgIDxyZWN0IHg9IjQiIHk9IjMiIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K">
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Keep the browser from resizing text on its own: mobile Safari inflates long paragraphs to compensate
+   for a scaled-down layout, which made a .8em help text render larger than the .88em table above it. */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    padding: 6px;
+    margin: revert;
+    border: revert;
+    border-radius: 0;
+    background: revert;
+    color: revert;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    font-family: sans-serif;
+    background: #fff;
+    color: #111;
+}
+
+nav {
+    width: 220px;
+    min-width: 220px;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    box-shadow: 3px 0 4px rgba(0, 0, 0, .18);
+    z-index: 1;
+}
+
+.logo {
+    width: 180px;
+    padding: 0 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.logo img {
+    width: 100%;
+    height: auto;
+}
+
+nav a.menu {
+    display: block;
+    width: 100%;
+    padding: 11px 24px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: .9em;
+    border-left: 3px solid transparent;
+    transition: all .15s;
+}
+
+nav a.menu:hover {
+    background: #1a1a1a;
+    color: #fff;
+    border-left-color: #449841;
+}
+
+a.menu.active {
+    color: #fff;
+    border-left-color: #449841;
+    background: #111;
+}
+
+.logo a {
+    display: block;
+    padding: 0;
+}
+
+.nav-wiki {
+    margin-top: auto;
+    width: 100%;
+    padding: 8px 0 8px;
+    text-align: center;
+}
+
+.nav-wiki a, .nav-wiki a:hover {
+    color: #555;
+    font-size: .8em;
+    padding: 0;
+    border: none;
+    background: none;
+    display: inline;
+    width: auto;
+    text-decoration: none;
+}
+
+.nav-wiki a:hover {
+    color: #888;
+}
+
+.menu-container {
+    width: 100%;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-footer {
+    width: 100%;
+    padding: 12px 24px 12px 27px;
+    border-top: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nav-footer a {
+    color: #666;
+    text-decoration: none;
+}
+
+.prog-status {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: .8em;
+    gap: 8px;
+}
+
+/* /prog ist ein POST-Formular; der Button soll wie der frühere Link aussehen. */
+.prog-status-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.prog-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-green { background: #449841; }
+.dot-red { background: #ff5555; }
+.dot-off { background: #555; }
+
+.nav-firm {
+    font-weight: bold;
+    font-size: .8em;
+    color: #aaa;
+}
+
+.nav-info {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: .8em;
+    gap: 8px;
+}
+
+main {
+    flex: 1;
+    padding: 2em;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.meta {
+    color: #666;
+    font-size: .8em;
+    margin-bottom: 1.5em;
+}
+
+.red { color: #ff5555; }
+.green { color: #449841; }
+.yellow { color: #ffff55; }
+.gray { color: #888; }
+
+h1 {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-bottom: 1.5em;
+    color: #111;
+}
+
+h2 {
+    font-size: .95em;
+    font-weight: 600;
+    margin: 1.5em 0 .75em;
+    color: #449841;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: .5em;
+    font-size: .88em;
+}
+
+td, th {
+    text-align: left;
+    padding: 7px 14px;
+}
+
+th {
+    background: #eee;
+    color: #000;
+    border-bottom: 1px solid #bbb;
+}
+
+td {
+    border-top: 1px solid #eee;
+}
+
+tr:last-child td {
+    border-bottom: 1px solid #eee;
+}
+
+.attribute-table td:first-child {
+    color: #888;
+    white-space: nowrap;
+    width: 200px;
+}
+
+main a {
+    color: #449841;
+    text-decoration: none;
+    transition: color .15s;
+}
+
+main a:hover {
+    color: #5ab857;
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 960px;
+}
+
+/* Narrow window (phone): the sidebar stacks on top, the device block moves to a fixed footer.
+   Mostly overrides of wide-layout properties; body's padding-bottom and the fixed .nav-footer are new,
+   because the footer leaves the flow here and the content has to clear it. */
+@media (max-width: 640px) {
+    body {
+        flex-direction: column;
+        padding-bottom: 56px; /* keeps content clear of the fixed footer below */
+    }
+
+    nav {
+        width: auto;
+        min-width: 0;
+        height: auto;
+        position: static;
+        box-shadow: 0 3px 4px rgba(0, 0, 0, .18);
+    }
+
+    .menu-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 6px 0;
+    }
+
+    nav a.menu {
+        width: auto;
+        padding: 10px 14px;
+    }
+
+    .nav-footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2; /* above nav (1), so main scrolls underneath */
+        background: #000;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 18px;
+        padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); /* clears the iPhone home bar */
+    }
+}
+
+/* ---- NeoPixel Konfigurator: additions to base.css (OpenKNX web interface). Colours follow base.css and the NeoPixel status page. ---- */
+:root {
+  --g: #449841; --g-b: #367534; --g-d: #2f6b2d; --g-t: #e7f1e5;
+  --ink: #1f2421; --mute: #535a55; --faint: #6b716c;
+  --line: #e3e6e1; --line2: #d2d6cf; --panel: #f8f9f7;
+  --ok-bg: #e6f2e3; --ok-fg: #2f6b2d; --bad-bg: #f8e1dc; --bad-fg: #a3341f; --warn-bg: #fbf0d4; --warn-fg: #82560a;
+  --chip-bg: #eaf0fb; --chip-fg: #33507a;
+  --bar-h: 56px;
+}
+body { display: block; color: var(--ink); background: #fff; }
+main { display: block; padding: 0; }
+:focus-visible { outline: 2px solid var(--g); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Top bar instead of the base.css sidebar: same black, grey links, green accent. */
+.kb { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 18px; padding: 8px 20px; background: #000; box-shadow: 0 3px 4px rgba(0, 0, 0, .18); }
+.kb-brand { display: flex; align-items: center; gap: 12px; flex: none; color: #fff; text-decoration: none; }
+.kb-brand img { height: 28px; width: auto; display: block; }
+.kb-brand span { font-weight: 600; font-size: .95em; white-space: nowrap; }
+.kb-links { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.kb-links::-webkit-scrollbar { display: none; }
+.kb-link { display: block; padding: 9px 11px 8px; color: #aaa; text-decoration: none; font-size: .86em; white-space: nowrap; border-bottom: 3px solid transparent; transition: color .15s, border-color .15s, background .15s; }
+.kb-link:hover { color: #fff; border-bottom-color: var(--g); background: #1a1a1a; }
+.kb-link.active { color: #fff; border-bottom-color: var(--g); background: #111; }
+.kb-link[hidden] { display: none; }
+.kb-link:focus-visible { outline: 2px solid var(--g); outline-offset: -2px; } /* inset: the scrolling strip would clip an outer ring */
+
+.kb-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; }
+.kb-wrap > h1 { margin-bottom: .35em; }
+.kb-wrap > .meta { margin-bottom: 1.4em; max-width: 760px; }
+section.np-card { scroll-margin-top: calc(var(--bar-h) + 12px); }
+
+/* Cards as on the NeoPixel status page */
+.np-card { border: 1px solid var(--line); border-radius: 8px; background: #fff; margin-bottom: 16px; }
+.np-card-h { display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-bottom: 1px solid var(--line); }
+.np-card-h h2 { margin: 0; }
+.np-card-b { padding: 14px 16px 16px; }
+.np-card-b > :first-child { margin-top: 0; }
+.np-note { font-size: .82em; color: var(--mute); line-height: 1.55; padding: 8px 12px; background: var(--panel); border-left: 3px solid var(--line2); border-radius: 0 4px 4px 0; margin: 10px 0; }
+ul.keynote { margin: 6px 0 0; padding-left: 18px; }
+ul.keynote li { margin: 3px 0; }
+.desc { color: var(--mute); margin-top: 10px; line-height: 1.5; font-size: .92em; }
+h3 { font-size: .92em; font-weight: 600; margin: 18px 0 8px; color: var(--ink); }
+ol.steps, ul.check { padding-left: 22px; line-height: 1.55; font-size: .92em; }
+ol.steps li, ul.check li { margin: 4px 0; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; }
+
+/* Template choice */
+.tpl { display: flex; flex-wrap: wrap; gap: 8px; }
+.np-pill-btn { margin: 0; padding: 6px 14px; border: 1px solid var(--line2); border-radius: 16px; background: #fff; color: var(--ink); cursor: pointer; font-size: .9em; }
+.np-pill-btn:hover { border-color: var(--g); }
+.np-pill-btn[aria-pressed="true"] { background: var(--g-b); border-color: var(--g-b); color: #fff; }
+
+/* Form */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px 18px; }
+.fld label { display: block; font-size: .82em; color: var(--mute); margin-bottom: 4px; }
+.fld input, .fld select { width: 100%; margin: 0; padding: 6px 8px; border: 1px solid var(--line2); border-radius: 4px; background: #fff; color: var(--ink); }
+.fld input[type=color] { height: 36px; padding: 2px; }
+.fld input:hover, .fld select:hover { border-color: #b9beb6; }
+.fld input:disabled, .fld select:disabled { background: #eef0ec; color: var(--faint); cursor: not-allowed; }
+.hint { font-size: .76em; color: var(--faint); margin-top: 4px; line-height: 1.4; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.np-btn { margin: 0; padding: 6px 13px; font-size: .88em; background: #fff; border: 1px solid var(--line2); border-radius: 5px; color: #333; cursor: pointer; }
+.np-btn:hover { border-color: var(--g); color: var(--g-d); }
+.np-btn:disabled, .np-btn:disabled:hover { opacity: .45; cursor: not-allowed; border-color: var(--line2); color: #333; }
+.np-btn.done { background: var(--ok-bg); border-color: #b9d7b3; color: var(--ok-fg); }
+.msg { border-radius: 5px; padding: 9px 12px; margin-top: 14px; font-size: .9em; }
+.msg.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.msg.err { background: var(--bad-bg); color: var(--bad-fg); }
+
+/* Transfer strings */
+.ts { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 10px 0; background: #fff; }
+.ts .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.ts .title { font-weight: 600; font-size: .9em; line-height: 1.45; }
+.chip { display: inline-block; font-size: .72em; font-weight: 600; background: var(--chip-bg); color: var(--chip-fg); border-radius: 10px; padding: 1px 8px; margin-left: 4px; vertical-align: 1px; white-space: nowrap; }
+.chip.comp { background: var(--warn-bg); color: var(--warn-fg); }
+.ts pre { margin: 8px 0 0; background: var(--panel); color: #23394a; border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; white-space: pre-wrap; word-break: break-all; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* Tables: base.css look; cards on narrow screens */
+.tablewrap { overflow-x: auto; }
+.tablewrap table { margin-bottom: 0; }
+td, th { vertical-align: top; }
+td small { color: var(--faint); }
+td.ga { white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+#foot { margin-top: 8px; }
+
+@media (max-width: 640px) {
+  body { padding-bottom: 0; }
+  .kb { flex-wrap: wrap; gap: 2px 10px; padding: 6px 10px 0; }
+  .kb-brand img { height: 24px; }
+  .kb-links { width: 100%; margin-left: -4px; }
+  .kb-link { padding: 8px 9px 7px; }
+  .kb-wrap { padding: 16px 12px 40px; }
+  .np-card-b { padding: 12px; }
+  .np-card-h { padding: 10px 12px; }
+  .ts .head { flex-direction: column; }
+  .tablewrap table, .tablewrap tbody, .tablewrap tr, .tablewrap td { display: block; width: 100%; }
+  .tablewrap thead { display: none; }
+  .tablewrap tr { border: 1px solid var(--line); border-radius: 6px; margin-bottom: 8px; padding: 6px 10px; }
+  .tablewrap td { border: 0; padding: 3px 0; }
+  .tablewrap tr:last-child td { border-bottom: 0; }
+  .tablewrap td.ga { white-space: normal; }
+  .tablewrap td::before { content: attr(data-l); display: block; font-size: .72em; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; }
+}
+@media print {
+  .kb, .row, .copy, .tpl button:not([aria-pressed="true"]) { display: none !important; }
+  .kb-wrap { max-width: none; padding: 0; }
+  .np-card { break-inside: avoid; border-color: #bbb; }
+  .ts pre { border-color: #bbb; }
+}
+@media (prefers-reduced-motion: reduce) { .kb-link { transition: none; } }
+</style>
+</head>
+<body>
+<header class="kb" id="kb">
+  <a class="kb-brand" href="#vorlage"><img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDAyIDI0MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xIDUwQzEgMzQuNyA1LjEgMjIuNyAxMy4zIDE0QzIxLjYgNS4zIDMyLjIgMSA0NS4yIDFDNTMuNyAxIDYxLjQgMyA2OC4zIDcuMUM3NS4xIDExLjIgODAuMyAxNi45IDgzLjkgMjQuMkM4Ny41IDMxLjQgODkuMyAzOS43IDg5LjMgNDguOUM4OS4zIDU4LjMgODcuNCA2Ni43IDgzLjYgNzQuMUM3OS45IDgxLjUgNzQuNSA4Ny4xIDY3LjYgOTAuOUM2MC42IDk0LjcgNTMuMiA5Ni42IDQ1LjIgOTYuNkMzNi41IDk2LjYgMjguNyA5NC41IDIxLjggOTAuM0MxNSA4Ni4xIDkuOCA4MC4zIDYuMyA3My4xQzIuOCA2NS44IDEgNTguMSAxIDUwWk0xMy42IDUwLjJDMTMuNiA2MS4zIDE2LjYgNzAuMSAyMi41IDc2LjVDMjguNSA4Mi45IDM2LjEgODYuMSA0NS4xIDg2LjFDNTQuMyA4Ni4xIDYxLjggODIuOSA2Ny44IDc2LjRDNzMuNyA2OS45IDc2LjcgNjAuOCA3Ni43IDQ4LjlDNzYuNyA0MS40IDc1LjQgMzQuOCA3Mi45IDI5LjJDNzAuNCAyMy42IDY2LjYgMTkuMiA2MS43IDE2LjJDNTYuOCAxMy4xIDUxLjQgMTEuNSA0NS4zIDExLjVDMzYuNiAxMS41IDI5LjIgMTQuNSAyMi45IDIwLjVDMTYuNyAyNi40IDEzLjYgMzYuMyAxMy42IDUwLjJaIiBmaWxsPSJ3aGl0ZSIvPgogICAgPHBhdGggZD0iTTEwMy43IDEyMVYyOC4xSDExNFYzNi44QzExNi40IDMzLjQgMTE5LjIgMzAuOCAxMjIuMyAyOS4yQzEyNS4zIDI3LjQgMTI5IDI2LjYgMTMzLjQgMjYuNkMxMzkuMSAyNi42IDE0NC4yIDI4IDE0OC41IDMxQzE1Mi45IDMzLjkgMTU2LjIgMzguMSAxNTguNCA0My41QzE2MC42IDQ4LjggMTYxLjcgNTQuNiAxNjEuNyA2MUMxNjEuNyA2Ny45IDE2MC41IDc0IDE1OCA3OS41QzE1NS42IDg1IDE1MiA4OS4yIDE0Ny4zIDkyLjFDMTQyLjcgOTUgMTM3LjcgOTYuNSAxMzIuNiA5Ni41QzEyOC44IDk2LjUgMTI1LjQgOTUuNyAxMjIuNCA5NC4xQzExOS40IDkyLjUgMTE2LjkgOTAuNSAxMTUgODhWMTIxSDEwMy43Wk0xMTMuOSA2MS45QzExMy45IDcwLjUgMTE1LjcgNzYuOSAxMTkuMiA4MUMxMjIuNyA4NS4xIDEyNi45IDg3LjIgMTMxLjggODcuMkMxMzYuOSA4Ny4yIDE0MS4yIDg1IDE0NC43IDgwLjhDMTQ4LjQgNzYuNSAxNTAuMiA2OS45IDE1MC4yIDYxQzE1MC4yIDUyLjQgMTQ4LjQgNDYuMSAxNDQuOSA0MS44QzE0MS40IDM3LjYgMTM3LjIgMzUuNSAxMzIuMyAzNS41QzEyNy41IDM1LjUgMTIzLjIgMzcuNyAxMTkuNSA0Mi4zQzExNS44IDQ2LjggMTEzLjkgNTMuMyAxMTMuOSA2MS45WiIgZmlsbD0id2hpdGUiLz4KICAgIDxwYXRoIGQ9Ik0yMjEuMyA3My40TDIzMyA3NC45QzIzMS4xIDgxLjcgMjI3LjcgODcgMjIyLjcgOTAuOEMyMTcuNyA5NC42IDIxMS4zIDk2LjUgMjAzLjYgOTYuNUMxOTMuOCA5Ni41IDE4NiA5My41IDE4MC4zIDg3LjVDMTc0LjYgODEuNCAxNzEuNyA3MyAxNzEuNyA2Mi4xQzE3MS43IDUwLjggMTc0LjYgNDIuMSAxODAuNCAzNS45QzE4Ni4yIDI5LjcgMTkzLjcgMjYuNiAyMDIuOSAyNi42QzIxMS45IDI2LjYgMjE5LjIgMjkuNiAyMjQuOSAzNS43QzIzMC41IDQxLjggMjMzLjQgNTAuNCAyMzMuNCA2MS40QzIzMy40IDYyLjEgMjMzLjMgNjMuMSAyMzMuMyA2NC40SDE4My40QzE4My44IDcxLjggMTg1LjkgNzcuNCAxODkuNyA4MS4zQzE5My40IDg1LjIgMTk4IDg3LjIgMjAzLjYgODcuMkMyMDcuOCA4Ny4yIDIxMS4zIDg2LjEgMjE0LjMgODMuOUMyMTcuMiA4MS43IDIxOS41IDc4LjIgMjIxLjMgNzMuNFpNMTg0IDU1LjFIMjIxLjRDMjIwLjkgNDkuNSAyMTkuNSA0NS4zIDIxNy4xIDQyLjRDMjEzLjUgMzguMSAyMDguOCAzNS45IDIwMy4xIDM1LjlDMTk3LjkgMzUuOSAxOTMuNSAzNy42IDE4OS45IDQxLjFDMTg2LjQgNDQuNiAxODQuNCA0OS4zIDE4NCA1NS4xWiIgZmlsbD0id2hpdGUiLz4KICAgIDxwYXRoIGQ9Ik0yNDcuMyA5NVYyOC4xSDI1Ny41VjM3LjZDMjYyLjQgMzAuMiAyNjkuNSAyNi42IDI3OC44IDI2LjZDMjgyLjggMjYuNiAyODYuNSAyNy4zIDI4OS45IDI4LjhDMjkzLjMgMzAuMiAyOTUuOCAzMi4xIDI5Ny41IDM0LjRDMjk5LjIgMzYuOCAzMDAuMyAzOS42IDMwMSA0Mi44QzMwMS40IDQ0LjkgMzAxLjYgNDguNiAzMDEuNiA1My44Vjk1SDI5MC4zVjU0LjNDMjkwLjMgNDkuNyAyODkuOSA0Ni4yIDI4OSA0NEMyODguMSA0MS42IDI4Ni41IDM5LjggMjg0LjMgMzguNUMyODIgMzcuMSAyNzkuNCAzNi40IDI3Ni40IDM2LjRDMjcxLjYgMzYuNCAyNjcuNCAzNy45IDI2My45IDQxQzI2MC40IDQ0LjEgMjU4LjYgNDkuOSAyNTguNiA1OC40Vjk1SDI0Ny4zWiIgZmlsbD0id2hpdGUiLz4KICAgIDxwYXRoIGQ9Ik0xMDMuNyAyNDIuNVYxMzhIMTI0LjhWMTg0LjRMMTY3LjQgMTM4SDE5NS44TDE1Ni40IDE3OC43TDE5Ny45IDI0Mi41SDE3MC42TDE0MS45IDE5My40TDEyNC44IDIxMC45VjI0Mi41SDEwMy43WiIgZmlsbD0id2hpdGUiLz4KICAgIDxwYXRoIGQ9Ik0yMDkuMSAyNDIuNVYxMzhIMjI5LjZMMjcyLjQgMjA3LjhWMTM4SDI5MlYyNDIuNUgyNzAuOEwyMjguNyAxNzQuM1YyNDIuNUgyMDkuMVoiIGZpbGw9IndoaXRlIi8+CiAgICA8cGF0aCBkPSJNMzAzLjggMjQyLjVMMzM5LjUgMTg3LjlMMzA3LjEgMTM4SDMzMS44TDM1Mi44IDE3MS41TDM3My4zIDEzOEgzOTcuN0wzNjUuMiAxODguN0w0MDAuOSAyNDIuNUgzNzUuNUwzNTIuMyAyMDYuM0wzMjkuMSAyNDIuNUgzMDMuOFoiIGZpbGw9IndoaXRlIi8+CiAgICA8bGluZSB4MT0iMCIgeTE9IjExNiIgeDI9Ijk3LjgiIHkyPSIxMTYiIHN0cm9rZT0iIzQ0OTg0MSIgc3Ryb2tlLXdpZHRoPSIxMCIvPgogICAgPGxpbmUgeDE9IjEyMC44IiB5MT0iMTE2IiB4Mj0iNDAzIiB5Mj0iMTE2IiBzdHJva2U9IiM0NDk4NDEiIHN0cm9rZS13aWR0aD0iMTAiLz4KICAgIDxsaW5lIHgxPSIzNTIuOCIgeTE9Ijk5IiB4Mj0iMzUyLjgiIHkyPSIxMTEiIHN0cm9rZT0iIzQ0OTg0MSIgc3Ryb2tlLXdpZHRoPSIxMCIvPgogICAgPHJlY3QgeD0iMzE4LjgiIHk9IjI4IiB3aWR0aD0iNjciIGhlaWdodD0iNjciIGZpbGw9IiM0NDk4NDEiLz4KICAgIDxsaW5lIHgxPSI0NS44IiB5MT0iMTMzIiB4Mj0iNDUuOCIgeTI9IjEyMSIgc3Ryb2tlPSIjNDQ5ODQxIiBzdHJva2Utd2lkdGg9IjEwIi8+CiAgICA8cmVjdCB4PSI3OS44IiB5PSIyMDUiIHdpZHRoPSI2NyIgaGVpZ2h0PSI2NyIgdHJhbnNmb3JtPSJyb3RhdGUoLTE4MCA3OS44IDIwNSkiIGZpbGw9IiM0NDk4NDEiLz4KPC9zdmc+Cg==" alt="OpenKNX"><span>NeoPixel Konfigurator</span></a>
+  <div class="kb-links" role="navigation" aria-label="Abschnitte">
+    <a class="kb-link" href="#vorlage">Vorlage</a>
+    <a class="kb-link" href="#einstellungen">Einstellungen</a>
+    <a class="kb-link" href="#import">Import</a>
+    <a class="kb-link" href="#transfer">Transfer-Strings</a>
+    <a class="kb-link" href="#gruppenadressen">Gruppenadressen</a>
+    <a class="kb-link" href="#taster">Taster</a>
+    <a class="kb-link" href="#pruefen">Prüfen</a>
+  </div>
+</header>
+<main>
+<div class="kb-wrap">
+  <h1>NeoPixel Konfigurator</h1>
+  <p class="meta">Vorlage wählen, die wichtigsten Werte anpassen und die Transfer-Strings über den Konfigurationstransfer in die ETS importieren. Die Seite arbeitet ohne Internetverbindung.</p>
+  <section class="np-card" id="vorlage">
+    <div class="np-card-h"><h2>1. Vorlage</h2></div>
+    <div class="np-card-b">
+      <div class="tpl" id="tpl" role="group" aria-label="Vorlagen"></div>
+      <p class="desc" id="tplDesc"></p>
+    </div>
+  </section>
+  <section class="np-card" id="einstellungen">
+    <div class="np-card-h"><h2>2. Einstellungen</h2></div>
+    <div class="np-card-b">
+      <div class="grid" id="form"></div>
+      <div class="row">
+        <button class="np-btn" id="reset" type="button">Vorlagenwerte wiederherstellen</button>
+        <button class="np-btn" id="download" type="button">Als .txt speichern</button>
+      </div>
+      <div id="msg" role="status"></div>
+    </div>
+  </section>
+  <section class="np-card" id="import">
+    <div class="np-card-h"><h2>3. Import in der ETS</h2></div>
+    <div class="np-card-b">
+      <ol class="steps">
+        <li>Applikation OpenKNX NeoPixel (Release oder Dev) einfügen, Parameter öffnen.</li>
+        <li>Seite <b>Konfigurationstransfer → Import</b> öffnen.</li>
+        <li>String kopieren und in <b>Transfer-String</b> einfügen, <b>Import-Ziel: „automatisch aus Export übernehmen“</b>.</li>
+        <li><b>Importieren</b>; Resultat <code>[OK]</code> prüfen (Dev-Applikation: bei LED-Streifen und Effektmanager <code>[OK; Version "-" -&gt; undefined]</code>, nur ein Hinweis).</li>
+        <li>Alle Strings in der angezeigten Reihenfolge, je Gerät. Danach die Punkte „Nach dem Import prüfen“ erledigen (vor allem Ports) und herunterladen.</li>
+      </ol>
+      <p class="np-note">Jeder String setzt alle nicht enthaltenen Parameter seines Kanals auf den Standardwert. Gruppenadressen, KO-Flags und Ports werden nicht übertragen. Ports erst nach dem Import wählen.</p>
+      <p class="np-note">RGB-Streifen (z. B. WS2812B, Farbordnung GRB) haben keinen Weißkanal: Weiß entsteht aus der RGB-Farbe, ein W-Wert wird nicht geschrieben. RGBW-Streifen (z. B. SK6812, Farbordnung GRBW) bekommen Weiß über W.</p>
+    </div>
+  </section>
+  <section class="np-card" id="transfer">
+    <div class="np-card-h"><h2>4. Transfer-Strings</h2></div>
+    <div class="np-card-b"><div id="strings"></div></div>
+  </section>
+  <section class="np-card" id="gruppenadressen">
+    <div class="np-card-h"><h2>5. Gruppenadressen (Vorschlag)</h2></div>
+    <div class="np-card-b">
+      <p class="np-note">Hauptgruppe und Mittelgruppen-Basis aus den Einstellungen; Gruppe 0/0/x (Uhrzeit, Datum) bleibt zentral. KO-Flags: C = Kommunikation, R = Lesen, W = Schreiben, T = Übertragen, U = Aktualisieren, I = Initialisierung.</p>
+      <div class="tablewrap" id="gas"></div>
+    </div>
+  </section>
+  <section class="np-card" id="taster" hidden>
+    <div class="np-card-h"><h2>Tasterbelegung</h2></div>
+    <div class="np-card-b">
+      <div class="np-note" id="keysNote"></div>
+      <div class="tablewrap" id="keys"></div>
+    </div>
+  </section>
+  <section class="np-card" id="pruefen">
+    <div class="np-card-h"><h2>6. Nach dem Import prüfen</h2></div>
+    <div class="np-card-b"><ul class="check" id="check"></ul></div>
+  </section>
+  <p class="meta" id="foot"></p>
+  <div class="sr" id="live" aria-live="polite"></div>
+</div>
+</main>
+<script id="catalog" type="application/json">{"header":"0xAD00:0xC","modver":{"NEO":"0x5","NEOSTRIP":"-","NEOEM":"-","LOG":"0x44","FCB":"0xA","LMG":"0x4"},"params":{"FCB/share":{"VisibleChannels":{"i":0,"d":0,"t":{"k":"num","min":0,"max":15},"text":"Verfügbare Kanäle"}},"FCB/templ":{"CH~ChannelType":{"i":2,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"UND"],[2,"ODER"],[4,"Anzahl"],[8,"Auswahl (Multiplexer)"],[3,"Prioritätsschalter"],[5,"Statistische Aggregation"],[7,"Wertüberwachung"],[6,"Count-Down Zeitgeber"],[9,"Blinker"],[11,"Text Format"]]},"text":"Type"},"CH~LogicBehavOut":{"i":23,"d":1,"t":{"k":"enum","v":[[0,"Bei jedem Eingangstelegram"],[1,"Nur bei Änderung des Ausgangswertes"]]},"text":"Sendeverhalten"},"CH~LogicKo2D":{"i":15,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"Normal"],[2,"Invertiert"]]},"text":"Eingang 3"},"CH~NameKo0":{"i":4,"d":"","t":{"k":"text","bytes":40},"text":"Name"},"CH~NameKo1":{"i":5,"d":"","t":{"k":"text","bytes":40},"text":"Name"},"CH~NameKo2":{"i":6,"d":"","t":{"k":"text","bytes":40},"text":"Name"},"Channel~Name":{"i":0,"d":"","t":{"k":"text","bytes":40},"text":"Bezeichnung"}},"LMG/templ":{"CH~Active":{"i":19,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"Aktiviert"]]},"text":"Kanalaktivität"},"CH~DayNightSource":{"i":36,"d":1,"t":{"k":"enum","v":[[0,"Aus"],[1,"Kommunikationsobjekt"],[2,"Astronomisch intern"]]},"text":"Tag/Nacht-Quelle"},"CH~Name":{"i":18,"d":"","t":{"k":"text","bytes":25},"text":"Beschreibung"},"CH~P1_DayFei":{"i":66,"d":0,"t":{"k":"num","min":0,"max":1},"text":"Feiertag"},"CH~P1_DaySa":{"i":63,"d":0,"t":{"k":"num","min":0,"max":1},"text":"Sa"},"CH~P1_DaySo":{"i":64,"d":0,"t":{"k":"num","min":0,"max":1},"text":"So"},"CH~P1_DayUrl":{"i":65,"d":0,"t":{"k":"num","min":0,"max":1},"text":"Urlaub"},"CH~P1_Name":{"i":57,"d":"Standard","t":{"k":"text","bytes":16},"text":"Profil 1 Name"},"CH~ProfileCount":{"i":33,"d":2,"t":{"k":"enum","v":[[1,"1 Profil"],[2,"2 Profile"],[3,"3 Profile"],[4,"4 Profile"]]},"text":"Anzahl Profile"}},"LOG/templ":{"f~E1":{"i":24,"d":0,"t":{"k":"enum","v":[[0,"inaktiv"],[1,"normal aktiv"],[2,"invertiert aktiv"]]},"text":"Eingang 1"},"f~E1OtherKO:2":{"i":28,"d":null,"t":{"k":"num","min":1,"max":1851},"text":"    Nummer des Kommunikationsobjekts"},"f~E1UseOtherKO":{"i":34,"d":0,"t":{"k":"enum","v":[[0,"Eigenes KO"],[1,"Absolutes KO"],[2,"Relatives KO"]]},"text":"Kommunikationsobjekt für Eingang"},"f~E2":{"i":160,"d":0,"t":{"k":"enum","v":[[0,"inaktiv"],[1,"normal aktiv"],[2,"invertiert aktiv"]]},"text":"Eingang 2"},"f~E2OtherKO:2":{"i":164,"d":null,"t":{"k":"num","min":1,"max":1851},"text":"    Nummer des Kommunikationsobjekts"},"f~E2UseOtherKO":{"i":170,"d":0,"t":{"k":"enum","v":[[0,"Eigenes KO"],[1,"Absolutes KO"],[2,"Relatives KO"]]},"text":"Kommunikationsobjekt für Eingang"},"f~I1":{"i":417,"d":0,"t":{"k":"enum","v":[[0,"inaktiv"],[1,"normal aktiv"],[2,"invertiert aktiv"]]},"text":"Interner Eingang 3"},"f~I1Function":{"i":421,"d":null,"t":{"k":"num","min":1,"max":50},"text":"Internen Eingang verbinden mit Kanal Nr."},"f~Logic":{"i":5,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"UND"],[2,"ODER"],[3,"EXCLUSIV-ODER"],[4,"TOR"],[6,"SCHALTER (RS-FLIP-FLOP)"],[5,"ZEITSCHALTUHR"]]},"text":"Logik-Operation"},"f~LogicType":{"i":1,"d":1,"t":{"k":"enum","v":[[1,"UND"],[2,"ODER"],[3,"EXCLUSIV-ODER"],[4,"TOR"],[6,"SCHALTER (RS-FLIP-FLOP)"],[5,"ZEITSCHALTUHR"]]},"text":"Logik-Operation"},"f~Name":{"i":0,"d":"","t":{"k":"text","bytes":40},"text":"Beschreibung"},"f~ODpt":{"i":457,"d":0,"t":{"k":"enum","v":[[0,"DPT 1.xxx (Schalten)"],[1,"DPT 2.xxx (Zwangsführung)"],[17,"DPT 3.xxx (Dimmen)"],[2,"DPT 5.xxx (1-Byte)"],[3,"DPT 5.001 (Prozent)"],[4,"DPT 6.xxx (1-Byte-Vorzeichen)"],[5,"DPT 7.xxx (2-Byte)"],[6,"DPT 8.xxx (2-Byte-Vorzeichen)"],[7,"DPT 9.xxx (2-Byte-Gleitkomma)"],[13,"DPT 12.xxx (4-Byte)"],[14,"DPT 13.xxx (4-Byte-Vorzeichen)"],[15,"DPT 14.xxx (4-Byte-Gleitkomma)"],[8,"DPT 16.001 (14-Byte-Text)"],[9,"DPT 17.001 (Szene)"],[10,"DPT 232.xxx (3-Byte-RGB)"]]},"text":"DPT für Ausgang"},"f~OOffDpt5":{"i":501,"d":0,"t":{"k":"num","min":0,"max":255},"text":"    Wert für AUS senden als"},"f~OOffKOSend":{"i":525,"d":0,"t":{"k":"enum","v":[[0,"Eigenes KO"],[1,"Absolutes KO"],[2,"Relatives KO"]]},"text":"    Wert für AUS an ein zusätzliches\n    KO senden?"},"f~OOffKOSendNumber":{"i":526,"d":null,"t":{"k":"num","min":1,"max":1851},"text":"        Nummer des zusätzlichen KO"},"f~OOnKOSend":{"i":493,"d":0,"t":{"k":"enum","v":[[0,"Eigenes KO"],[1,"Absolutes KO"],[2,"Relatives KO"]]},"text":"    Wert für EIN an ein zusätzliches\n    KO senden?"},"f~OOnKOSendNumber":{"i":494,"d":null,"t":{"k":"num","min":1,"max":1851},"text":"        Nummer des zusätzlichen KO"},"f~OOutputFilter":{"i":454,"d":0,"t":{"k":"enum","v":[[0,"Alle Wiederholungen durchlassen"],[1,"Nur EIN-Wiederholungen durchlassen"],[2,"Nur AUS-Wiederholungen durchlassen"],[3,"Keine Wiederholungen durchlassen"]]},"text":"Wiederholungsfilter"},"f~OStair":{"i":450,"d":0,"t":{"k":"enum","v":[[0,"Nein"],[1,"Ja"]]},"text":"Ausgang hat eine Treppenlichtfunktion"},"f~OStairOff":{"i":452,"d":1,"t":{"k":"enum","v":[[0,"Nein"],[1,"Ja"]]},"text":"Treppenlicht kann ausgeschaltet werden"},"f~OStairtimeBase":{"i":433,"d":0,"t":{"k":"enum","v":[[3,"1/10  Sekunde(n)"],[0,"Sekunde(n)"],[1,"Minute(n)"],[2,"Stunde(n)"]]},"text":"Zeit für Treppenlicht"},"f~OStairtimeTime":{"i":434,"d":30,"t":{"k":"num","min":0,"max":16000},"text":"Zeit für Treppenlicht"},"f~TRestoreState":{"i":302,"d":0,"t":{"k":"enum","v":[[0,"Nein"],[1,"Den letzten Schaltpunkt berechnen"]]},"text":"Bei Neustart letzte Schaltzeit nachholen"},"f~Td1DuskDawn":{"i":292,"d":0,"t":{"k":"enum","v":[[0,"Schaltpunkt nicht aktiviert"],[1,"Zeitpunkt"],[4,"Sonnenaufgang: plus Zeitversatz"],[5,"Sonnenaufgang: minus Zeitversatz"],[6,"Sonnenaufgang: Frühestens um..."],[7,"Sonnenaufgang: Spätestens um..."],[12,"Sonnenaufgang: Über Horizont..."],[14,"Sonnenaufgang: Unter Horizont..."],[8,"Sonnenuntergang: plus Zeitversatz"],[9,"Sonnenuntergang: minus Zeitversatz"],[10,"Sonnenuntergang: Frühestens um..."],[11,"Sonnenuntergang: Spätestens um..."],[13,"Sonnenuntergang: Über Horizont..."],[15,"Sonnenuntergang: Unter Horizont..."]]},"text":"Zeitbezug"},"f~Td1Value":{"i":312,"d":0,"t":{"k":"enum","v":[[0,"AUS"],[1,"EIN"]]},"text":"Schaltwert"},"f~Td2DuskDawn":{"i":293,"d":0,"t":{"k":"enum","v":[[0,"Schaltpunkt nicht aktiviert"],[1,"Zeitpunkt"],[4,"Sonnenaufgang: plus Zeitversatz"],[5,"Sonnenaufgang: minus Zeitversatz"],[6,"Sonnenaufgang: Frühestens um..."],[7,"Sonnenaufgang: Spätestens um..."],[12,"Sonnenaufgang: Über Horizont..."],[14,"Sonnenaufgang: Unter Horizont..."],[8,"Sonnenuntergang: plus Zeitversatz"],[9,"Sonnenuntergang: minus Zeitversatz"],[10,"Sonnenuntergang: Frühestens um..."],[11,"Sonnenuntergang: Spätestens um..."],[13,"Sonnenuntergang: Über Horizont..."],[15,"Sonnenuntergang: Unter Horizont..."]]},"text":"Zeitbezug"},"f~Td2HourAbs":{"i":322,"d":31,"t":{"k":"enum","v":[[31,"jede"],[0,"00"],[1,"01"],[2,"02"],[3,"03"],[4,"04"],[5,"05"],[6,"06"],[7,"07"],[8,"08"],[9,"09"],[10,"10"],[11,"11"],[12,"12"],[13,"13"],[14,"14"],[15,"15"],[16,"16"],[17,"17"],[18,"18"],[19,"19"],[20,"20"],[21,"21"],[22,"22"],[23,"23"]]},"text":"Stunde"},"f~Td2MinuteAbs":{"i":325,"d":63,"t":{"k":"enum","v":[[63,"jede"],[0,"00"],[1,"01"],[2,"02"],[3,"03"],[4,"04"],[5,"05"],[6,"06"],[7,"07"],[8,"08"],[9,"09"],[10,"10"],[11,"11"],[12,"12"],[13,"13"],[14,"14"],[15,"15"],[16,"16"],[17,"17"],[18,"18"],[19,"19"],[20,"20"],[21,"21"],[22,"22"],[23,"23"],[24,"24"],[25,"25"],[26,"26"],[27,"27"],[28,"28"],[29,"29"],[30,"30"],[31,"31"],[32,"32"],[33,"33"],[34,"34"],[35,"35"],[36,"36"],[37,"37"],[38,"38"],[39,"39"],[40,"40"],[41,"41"],[42,"42"],[43,"43"],[44,"44"],[45,"45"],[46,"46"],[47,"47"],[48,"48"],[49,"49"],[50,"50"],[51,"51"],[52,"52"],[53,"53"],[54,"54"],[55,"55"],[56,"56"],[57,"57"],[58,"58"],[59,"59"]]},"text":"Minute"}},"NEO/share":{"HCLMaster":{"i":1,"d":0,"t":{"k":"enum","v":[[0,"Kein Lichtmanager"],[1,"Lichtmanager 1"],[2,"Lichtmanager 2"],[3,"Lichtmanager 3"],[4,"Lichtmanager 4"],[5,"Lichtmanager 5"],[6,"Lichtmanager 6"],[7,"Lichtmanager 7"],[8,"Lichtmanager 8"],[9,"Lichtmanager 9"],[10,"Lichtmanager 10"],[11,"Lichtmanager 11"],[12,"Lichtmanager 12"],[13,"Lichtmanager 13"],[14,"Lichtmanager 14"],[15,"Lichtmanager 15"],[16,"Lichtmanager 16"]]},"text":"Lichtmanager"},"NEOEMEnabled":{"i":15,"d":0,"t":{"k":"num","min":0,"max":16},"text":"Verfügbare Effektmanager"},"NEOExternalRelay1MinOffTime":{"i":107,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Minimale Aus-Zeit (s)"},"NEOExternalRelay1Name":{"i":95,"d":"","t":{"k":"text","bytes":40},"text":"Beschreibung"},"NEOExternalRelay1OffDelay":{"i":100,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Ausschaltverzögerung (s)"},"NEOExternalRelayCount":{"i":54,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"1"],[2,"2"],[3,"3"],[4,"4"]]},"text":"Externe Relais"},"NEONumberOfLEDStrips":{"i":4,"d":1,"t":{"k":"num","min":1,"max":8},"text":"Anzahl der LED-Streifen"},"NEONumberOfSegments":{"i":5,"d":1,"t":{"k":"num","min":1,"max":16},"text":"Anzahl der Segmente"},"NEOStatusSendOnStartup":{"i":17,"d":0,"t":{"k":"enum","v":[[0,"Nein"],[1,"Ja"]]},"text":"Status nach Neustart senden"},"NEOautoBrightnessLimit":{"i":12,"d":100,"t":{"k":"num","min":0,"max":100},"text":"Auto-Helligkeitsbegrenzung (%)"},"NEOcurrentPerLED":{"i":9,"d":60,"t":{"k":"num","min":0,"max":70},"text":"Strom pro LED (mA)"},"NEOpowerLimitCombined":{"i":11,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"Fester Wert (mA)"],[2,"Pro LED (automatisch)"]]},"text":"Strombegrenzung"},"NEOpowerLimitGlobal":{"i":8,"d":1000,"t":{"k":"num","min":0,"max":65535},"text":"Globale Strombegrenzung (mA)"},"NEOpowerLimitThreshold":{"i":13,"d":80,"t":{"k":"num","min":0,"max":100},"text":"Strombegrenzung Schwellwert (%)"},"NeoPixelHardwareSelect":{"i":3,"d":255,"t":{"k":"enum","v":[[255,"--- Bitte wählen Sie eine Hardware aus ---"],[4640,"OpenKNX UP1 UART Gateway"],[4864,"OpenKNXiao V1 KNeoPix RP2040"],[4865,"OpenKNXiao V1 Mini RP2040"],[4866,"OpenKNXiao V1.5 KNeoPix RP2040"],[4880,"OpenKNXiao V1 KNeoPix RP2350"],[4881,"OpenKNXiao V1 Mini RP2350"],[4882,"OpenKNXiao V1.5 KNeoPix RP2350"],[4896,"OpenKNXiao V1 KNeoPix ESP32S3"],[4897,"OpenKNXiao V1 Mini ESP32S3"],[4898,"OpenKNXiao V1.5 KNeoPix ESP32S3"]]},"text":"Hardware Auswahl"}},"NEO/templ":{"Description~":{"i":0,"d":"","t":{"k":"text","bytes":40},"text":"Beschreibung"},"NEO~HCLMode":{"i":1802,"d":1,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"Globalen Lichtmanager verwenden"],[2,"Segment-Lichtmanager verwenden"]]},"text":"HCL-Quelle"},"NEO~MatrixHeight":{"i":14,"d":8,"t":{"k":"num","min":1,"max":255},"text":"Matrix: Höhe (Zeilen)"},"NEO~MatrixWidth":{"i":13,"d":8,"t":{"k":"num","min":1,"max":255},"text":"Matrix: Breite (Spalten)"},"NEO~NEOEffectType:1":{"i":10,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEO~NEOEffectType:2":{"i":11,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEO~PlasmaNebulaSpeed":{"i":143,"d":64,"t":{"k":"num","min":0,"max":255},"text":"Speed (Plasma Nebula)"},"NEO~SceneAPrimaryColor":{"i":174,"d":-1,"t":{"k":"color"},"text":"Primärfarbe RGB"},"NEO~SceneBBrightness":{"i":343,"d":255,"t":{"k":"num","min":0,"max":255},"text":"Helligkeit"},"NEO~SceneBPrimaryColor":{"i":337,"d":-1,"t":{"k":"color"},"text":"Primärfarbe RGB"},"NEO~SceneCount":{"i":171,"d":0,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"1 Szene"],[2,"2 Szenen"],[3,"3 Szenen"],[4,"4 Szenen"],[5,"5 Szenen"],[6,"6 Szenen"],[7,"7 Szenen"],[8,"8 Szenen"],[9,"9 Szenen"],[10,"10 Szenen"]]},"text":"Anzahl Szenen"},"NEO~SegmentEmStopReturnMode":{"i":27,"d":0,"t":{"k":"enum","v":[[0,"Letzter Zustand"],[1,"Segment-Standardwerte"],[2,"Aus"]]},"text":"Effektmanager-Stop: Rueckkehr"},"NEO~SegmentEnd":{"i":2,"d":30,"t":{"k":"num","min":1,"max":16384},"text":"Ende LED"},"NEO~SegmentStart":{"i":1,"d":1,"t":{"k":"num","min":1,"max":16384},"text":"Start LED"},"NEO~SegmentStartupBrightness":{"i":25,"d":255,"t":{"k":"num","min":0,"max":255},"text":"Start-Helligkeit"},"NEO~SegmentStartupColor":{"i":23,"d":-1,"t":{"k":"color"},"text":"Start-Farbe RGB"},"NEO~SegmentStartupW":{"i":24,"d":0,"t":{"k":"num","min":0,"max":255},"text":"Start-Farbe W"},"NEO~SegmentTopology":{"i":9,"d":0,"t":{"k":"enum","v":[[0,"1D — Streifen (kein Matrix)"],[1,"2D — Schlangen, Zeilen (→←→←)"],[2,"2D — Linear, Zeilen (→→→→)"],[3,"2D — Schlangen, Spalten (↓↑↓↑)"],[4,"2D — Linear, Spalten (↓↓↓↓)"],[6,"2D — Gekachelt, Spalten linear (Panelkette)"],[7,"2D — Gekachelt, Spalten Schlangen (Panelkette)"]]},"text":"Topologie"},"NEO~SyncMode":{"i":16,"d":0,"t":{"k":"enum","v":[[0,"Aus (Standalone)"],[1,"Master"],[2,"Slave"]]},"text":"Effektkette: Modus"},"NEO~VirtualOffset":{"i":20,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Effektkette: Mein Offset (LEDs)"},"NEO~VirtualTotalLength":{"i":19,"d":100,"t":{"k":"num","min":1,"max":65535},"text":"Effektkette: Gesamtlänge (LEDs)"}},"NEOEM/templ":{"NEOEM~Cue1Brightness":{"i":20,"d":255,"t":{"k":"num","min":0,"max":255},"text":"Helligkeit"},"NEOEM~Cue1CometSpeed":{"i":79,"d":128,"t":{"k":"num","min":1,"max":255},"text":"Speed"},"NEOEM~Cue1CometTailLength":{"i":81,"d":10,"t":{"k":"num","min":5,"max":30},"text":"TailLength"},"NEOEM~Cue1Duration:1":{"i":21,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Dauer in Sekunden (65535 = bis Effekt fertig)"},"NEOEM~Cue1Duration:2":{"i":22,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Dauer in Sekunden (65535 = bis Effekt fertig)"},"NEOEM~Cue1Effect:1":{"i":5,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEOEM~Cue1Effect:2":{"i":6,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEOEM~Cue1Fade:1":{"i":23,"d":300,"t":{"k":"num","min":0,"max":5000},"text":"Übergangszeit ms"},"NEOEM~Cue1Fade:2":{"i":24,"d":300,"t":{"k":"num","min":0,"max":5000},"text":"Übergangszeit ms"},"NEOEM~Cue1GradientEndHue":{"i":101,"d":160,"t":{"k":"num","min":0,"max":255},"text":"EndHue"},"NEOEM~Cue1GradientSpeed":{"i":99,"d":32,"t":{"k":"num","min":0,"max":255},"text":"Speed"},"NEOEM~Cue1Text:1":{"i":25,"d":"","t":{"k":"text","bytes":14},"text":"Beschreibung"},"NEOEM~Cue1Text:2":{"i":26,"d":"","t":{"k":"text","bytes":14},"text":"Beschreibung"},"NEOEM~Cue2Aurora2DHue":{"i":326,"d":96,"t":{"k":"num","min":0,"max":255},"text":"Hue"},"NEOEM~Cue2Aurora2DScale":{"i":327,"d":18,"t":{"k":"num","min":1,"max":64},"text":"Scale"},"NEOEM~Cue2Aurora2DSpeed":{"i":325,"d":48,"t":{"k":"num","min":1,"max":255},"text":"Speed"},"NEOEM~Cue2Duration:1":{"i":187,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Dauer in Sekunden (65535 = bis Effekt fertig)"},"NEOEM~Cue2Duration:2":{"i":188,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Dauer in Sekunden (65535 = bis Effekt fertig)"},"NEOEM~Cue2Effect:1":{"i":171,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEOEM~Cue2Effect:2":{"i":172,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEOEM~Cue2Fade:1":{"i":189,"d":300,"t":{"k":"num","min":0,"max":5000},"text":"Übergangszeit ms"},"NEOEM~Cue2Fade:2":{"i":190,"d":300,"t":{"k":"num","min":0,"max":5000},"text":"Übergangszeit ms"},"NEOEM~Cue2Text:1":{"i":191,"d":"","t":{"k":"text","bytes":14},"text":"Beschreibung"},"NEOEM~Cue2Text:2":{"i":192,"d":"","t":{"k":"text","bytes":14},"text":"Beschreibung"},"NEOEM~Cue3BreathingSpeed":{"i":401,"d":128,"t":{"k":"num","min":1,"max":255},"text":"Speed"},"NEOEM~Cue3Brightness":{"i":352,"d":255,"t":{"k":"num","min":0,"max":255},"text":"Helligkeit"},"NEOEM~Cue3Duration:1":{"i":353,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Dauer in Sekunden (65535 = bis Effekt fertig)"},"NEOEM~Cue3Duration:2":{"i":354,"d":0,"t":{"k":"num","min":0,"max":65535},"text":"Dauer in Sekunden (65535 = bis Effekt fertig)"},"NEOEM~Cue3Effect:1":{"i":337,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEOEM~Cue3Effect:2":{"i":338,"d":0,"t":{"k":"enum","v":[[0,"Solid"],[1,"Wipe"],[2,"Rainbow"],[3,"Pride2015"],[4,"Juggle"],[5,"BPM"],[6,"Cylon"],[7,"Test"],[8,"Fire"],[9,"Theater Chase"],[10,"Sparkle"],[11,"Breathing"],[12,"Strobe"],[13,"Comet"],[14,"Noise"],[15,"Palette"],[16,"Blitz"],[17,"Gradient"],[18,"Kerze"],[19,"Laufschrift"],[20,"Uhr 2D"],[21,"Snake 2D"],[22,"Matrix 2D"],[23,"Tetris 2D"],[24,"TRON"],[25,"Starfield Warp"],[26,"Plasma Nebula"],[27,"UFO Swarm"],[28,"Game of Life 2D"],[29,"DNA 2D"],[30,"Aurora 2D"],[31,"Lissajous 2D"],[32,"Metaballs 2D"]]},"text":"Effekt"},"NEOEM~Cue3Fade:1":{"i":355,"d":300,"t":{"k":"num","min":0,"max":5000},"text":"Übergangszeit ms"},"NEOEM~Cue3Fade:2":{"i":356,"d":300,"t":{"k":"num","min":0,"max":5000},"text":"Übergangszeit ms"},"NEOEM~Cue3FireCooling":{"i":384,"d":90,"t":{"k":"num","min":0,"max":255},"text":"Cooling"},"NEOEM~Cue3FireSparking":{"i":385,"d":120,"t":{"k":"num","min":0,"max":255},"text":"Sparking"},"NEOEM~Cue3FireSpeed":{"i":383,"d":128,"t":{"k":"num","min":1,"max":255},"text":"Speed"},"NEOEM~Cue3Text:1":{"i":357,"d":"","t":{"k":"text","bytes":14},"text":"Beschreibung"},"NEOEM~Cue3Text:2":{"i":358,"d":"","t":{"k":"text","bytes":14},"text":"Beschreibung"},"NEOEM~CueCount":{"i":0,"d":1,"t":{"k":"num","min":1,"max":10},"text":"Anzahl aktiver Cues"},"NEOEM~Loop":{"i":1,"d":0,"t":{"k":"enum","v":[[0,"Nein — EM stoppt nach letzter Cue"],[1,"Ja — EM wiederholt von Cue 1"]]},"text":"Loop"},"NEOEM~Name":{"i":1665,"d":"","t":{"k":"text","bytes":40},"text":"Beschreibung"}},"NEOSTRIP/templ":{"Description~":{"i":0,"d":"","t":{"k":"text","bytes":40},"text":"Beschreibung"},"NEO~ColourOrder":{"i":2,"d":0,"t":{"k":"enum","v":[[0,"GRB"],[1,"RGB"],[2,"BRG"],[3,"RBG"],[4,"BGR"],[5,"GBR"],[6,"RGBW"],[7,"GRBW"],[8,"RGBCCT"],[9,"GRBCCT"],[10,"RGBCTW"],[11,"GRBCTW"],[12,"WRGB"],[13,"Chip-Vorgabe"]]},"text":"LED Farbordnung"},"NEO~LEDType":{"i":1,"d":0,"t":{"k":"enum","v":[[0,"WS2812B"],[1,"WS2805 RGBCCT"],[2,"WS2811"],[3,"WS2813"],[4,"SK6812"],[5,"APA102"],[6,"SK9822"],[7,"WS281x"],[8,"SK6812/WS2814 (RGBW)"],[9,"TM1814"],[10,"WS2812_400kHz"],[11,"TM1829"],[12,"UCS8903"],[13,"APA106/PL9823"],[14,"TM1914"],[15,"FW1906"],[16,"UCS8904"],[17,"WS2805_RGBCW"],[18,"SM16825"],[19,"WS2811_WHITE"],[20,"WS281x_WWA"],[21,"WS2801"],[22,"LPD8806"],[23,"LPD6803"],[24,"P9813"],[25,"APA102-Clone"],[30,"SK6812 RGBCCT (5ch)"],[31,"WS2814 RGBCCT (5ch)"],[99,"CUSTOM"]]},"text":"LED Typ"},"NEO~Length":{"i":33,"d":30,"t":{"k":"num","min":1,"max":16384},"text":"Anzahl an LEDs/LEDs-Gruppen"},"NEO~autoBrightnessLimit":{"i":40,"d":100,"t":{"k":"num","min":0,"max":100},"text":"Auto-Helligkeitsbegrenzung (%)"},"NEO~currentPerChannel":{"i":39,"d":500,"t":{"k":"num","min":0,"max":65535},"text":"Strom pro Kanal (mA)"},"NEO~currentPerLED":{"i":38,"d":60,"t":{"k":"num","min":0,"max":70},"text":"Strom pro LED (mA)"},"NEO~powerLimitCombined":{"i":35,"d":1,"t":{"k":"enum","v":[[0,"Deaktiviert"],[1,"Global verwenden"],[2,"Benutzerdefiniert (Fester Wert)"],[3,"Benutzerdefiniert (Pro LED)"]]},"text":"Strombegrenzung"},"NEO~powerLimitThreshold":{"i":41,"d":80,"t":{"k":"num","min":0,"max":100},"text":"Strombegrenzung Schwellwert (%)"}}},"segKo":{"SegmentPower":{"ko":600,"koName":"NEO_1SegmentPower","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 1.1","dpt":"DPST-1-1","size":"1 Bit","flags":"CW","off":0},"BriRel":{"ko":625,"koName":"NEO_1BriRel","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 3.7","dpt":"DPST-3-7","size":"4 Bit","flags":"CW","off":25},"SegmentBrightness":{"ko":602,"koName":"NEO_1SegmentBrightness","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 5.1","dpt":"DPST-5-1","size":"1 Byte","flags":"CW","off":2},"RGB":{"ko":619,"koName":"NEO_1RGB","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 232.600","dpt":"DPST-232-600","size":"3 Bytes","flags":"CW","off":19},"Scene":{"ko":617,"koName":"NEO_1Scene","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 18.001","dpt":"DPST-18-1","size":"1 Byte","flags":"CW","off":17},"Lock":{"ko":641,"koName":"NEO_1Lock","koFunctionText":"NeoPixel Segment 1: Sperr-Eingang, DPT 1.1","dpt":"DPST-1-1","size":"1 Bit","flags":"CW","off":41},"SegmentPowerState":{"ko":601,"koName":"NEO_1SegmentPowerState","koFunctionText":"NeoPixel Segment 1: Ausgang, DPT 1.11","dpt":"DPST-1-11","size":"1 Bit","flags":"CRT","off":1},"SegmentBrightnessState":{"ko":603,"koName":"NEO_1SegmentBrightnessState","koFunctionText":"NeoPixel Segment 1: Ausgang, DPT 5.1","dpt":"DPST-5-1","size":"1 Byte","flags":"CRT","off":3},"RGBW":{"ko":623,"koName":"NEO_1RGBW","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 251.600","dpt":"DPST-251-600","size":"6 Bytes","flags":"CW","off":23},"HSV":{"ko":621,"koName":"NEO_1HSV","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 232.600","dpt":"DPST-232-600","size":"3 Bytes","flags":"CW","off":21},"EmStart":{"ko":642,"koName":"NEO_1EmStart","koFunctionText":"NeoPixel Segment 1: EM Start (1-16)","dpt":"DPST-5-10","size":"1 Byte","flags":"CW","off":42},"EmStop":{"ko":644,"koName":"NEO_1EmStop","koFunctionText":"NeoPixel Segment 1: EM Stop","dpt":"DPST-1-1","size":"1 Bit","flags":"CW","off":44},"CueRel":{"ko":640,"koName":"NEO_1CueRel","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 3.7","dpt":"DPST-3-7","size":"4 Bit","flags":"CW","off":40},"EmRunState":{"ko":652,"koName":"NEO_1EmRunState","koFunctionText":"NeoPixel Segment 1: Zustand (0=gestoppt,1=laeuft,2=pausiert)","dpt":"DPST-5-10","size":"1 Byte","flags":"CRT","off":52},"EmCueStatus":{"ko":645,"koName":"NEO_1EmCueStatus","koFunctionText":"NeoPixel Segment 1: Aktive Cue-Nummer","dpt":"DPST-5-10","size":"1 Byte","flags":"CRT","off":45},"EmCueSet":{"ko":646,"koName":"NEO_1EmCueSet","koFunctionText":"NeoPixel Segment 1: Cue anspringen (1-10)","dpt":"DPST-5-10","size":"1 Byte","flags":"CW","off":46},"SyncChain":{"ko":650,"koName":"NEO_1SyncChain","koFunctionText":"NeoPixel Segment 1: Effektkette Sync-Telegramm (intern)","dpt":"DPST-16-1","size":"14 Bytes","flags":"CWT","off":50},"Fx":{"ko":615,"koName":"NEO_1Fx","koFunctionText":"NeoPixel Segment 1: Eingang, DPT 5.10","dpt":"DPST-5-10","size":"1 Byte","flags":"CW","off":15},"FxState":{"ko":616,"koName":"NEO_1FxState","koFunctionText":"NeoPixel Segment 1: Ausgang, DPT 5.10","dpt":"DPST-5-10","size":"1 Byte","flags":"CRT","off":16}},"segKoBase":600,"segKoStride":53,"ko":{"NEO_ExternalRelay1":{"ko":408,"koName":"NEO_ExternalRelay1","koFunctionText":"Relais 1 Ein/Aus","dpt":"DPST-1-1","size":"1 Bit","flags":"CW"},"NEO_ExternalRelay1State":{"ko":412,"koName":"NEO_ExternalRelay1State","koFunctionText":"Relais 1 Status","dpt":"DPST-1-11","size":"1 Bit","flags":"CRT"},"NEO_HCLGlobalState":{"ko":407,"koName":"NEO_HCLGlobalState","koFunctionText":"HCL Global Zustand (K)","dpt":"DPST-7-600","size":"2 Bytes","flags":"CRT"},"BASE_Time":{"ko":2,"koName":"BASE_Time","koFunctionText":"Eingang","dpt":"DPST-10-1","size":"3 Bytes","flags":"CWU"},"BASE_Date":{"ko":3,"koName":"BASE_Date","koFunctionText":"Eingang","dpt":"DPST-11-1","size":"3 Bytes","flags":"CWU"},"LOG_KOf1O":{"ko":102,"koName":"LOG_KOf1O","koFunctionText":"Logik 1: Ausgang, 1-Byte","dpt":"DPST-5-5","size":"1 Byte","flags":"CRT"},"FCB_CH1KO0":{"ko":250,"koName":"FCB_CH1KO0","koFunctionText":"Funktion 1: Eingang 1, Schalten","dpt":"DPST-1-1","size":"1 Bit","flags":"CWU"},"FCB_CH1KO1":{"ko":251,"koName":"FCB_CH1KO1","koFunctionText":"Funktion 1: Eingang 2, Schalten","dpt":"DPST-1-1","size":"1 Bit","flags":"CWU"},"FCB_CH1KO2":{"ko":252,"koName":"FCB_CH1KO2","koFunctionText":"Funktion 1: Eingang 3, Schalten","dpt":"DPST-1-1","size":"1 Bit","flags":"CWU"},"FCB_CH1KO9":{"ko":259,"koName":"FCB_CH1KO9","koFunctionText":"Funktion 1: Ausgang, Schalten","dpt":"DPST-1-1","size":"1 Bit","flags":"CRT"},"NEO_PowerCurrentTotal":{"ko":404,"koName":"NEO_PowerCurrentTotal","koFunctionText":"Stromverbrauch Gesamt (mA)","dpt":"DPST-7-12","size":"2 Bytes","flags":"CRT"}},"colourMap":{"0":0,"2":1,"3":0,"4":0,"7":0,"10":0,"11":1,"12":1,"13":1,"5":4,"6":4,"21":1,"22":0,"23":1,"24":4,"25":4,"8":7,"9":12,"14":7,"15":7,"16":6,"1":9,"17":9,"18":10,"30":9,"31":9,"19":1,"20":1},"stripCurrentKo":{"ko":505,"koName":"NEOSTRIP_PowerCurrent1","koFunctionText":"1: Stromverbrauch (mA)","dpt":"DPST-7-12","size":"2 Bytes","flags":"CRT","off":5},"stripKoBase":500,"stripKoStride":8,"portCount":{"4640":2,"4864":8,"4865":3,"4866":8,"4880":8,"4881":3,"4882":8,"4896":8,"4897":3,"4898":8},"source":"NeoPixel Dev 1.2 (0xAD01/0x12) und Release 0.12 (0xAD00/0x0C), OAM-Commit 0dcdd26","tested":[{"variant":"Dev","appId":"0xAD01","appVersion":"0x12","build":"NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"},{"variant":"Release","appId":"0xAD00","appVersion":"0x0C","build":"NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"}]}</script>
+<script>
+// BEGIN GENERATOR
+/* OpenKNX NeoPixel - ConfigTransfer example generator (single source for the examples and the configurator; runs in browser and node). */
+var NeoGen = (function () {
+  'use strict';
+  var CAT = null;
+
+  function GenError(msg) { this.message = msg; this.name = 'GenError'; }
+  function fail(msg) { throw new GenError(msg); }
+
+  function argb(hex) {
+    var h = String(hex).replace('#', '');
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) fail('Farbe "' + hex + '" ist keine gültige Farbe im Format #RRGGBB.');
+    return ((0xFF000000 | parseInt(h, 16)) | 0);
+  }
+  function hex(v) { return '#' + ('000000' + ((v >>> 0) & 0xFFFFFF).toString(16).toUpperCase()).slice(-6); }
+  function utf8len(s) { return unescape(encodeURIComponent(s)).length; }
+  function part(ch) { return ch === 0 ? 'share' : 'templ'; }
+  function pdef(mod, ch, name) {
+    var p = CAT.params[mod + '/' + part(ch)];
+    if (!p || !p[name]) fail('Interner Fehler: Parameter ' + mod + '/' + name + ' fehlt im Katalog.');
+    return p[name];
+  }
+  var MODN = { NEOSTRIP: 'LED-Streifen', NEOEM: 'Effektmanager', LOG: 'Logik', FCB: 'Funktion', LMG: 'Lichtmanager' };
+  function checkValue(mod, ch, name, v) {
+    var ctx = mod === 'NEO' ? (ch === 0 ? 'Basiseinstellungen' : 'Segment ' + ch) : (ch === 0 ? MODN[mod] + ' Basis' : MODN[mod] + ' ' + ch);
+    var d = pdef(mod, ch, name), t = d.t, where = ctx + ' – ' + d.text + ' (' + name + ')';
+    if (t.k === 'text') {
+      if (typeof v !== 'string') fail(where + ': Text erwartet.');
+      if (utf8len(v) > t.bytes) fail(where + ': „' + v + '“ ist ' + utf8len(v) + ' Byte lang, erlaubt sind ' + t.bytes + ' Byte (Umlaute zählen doppelt).');
+      return;
+    }
+    if (typeof v !== 'number' || !isFinite(v) || Math.floor(v) !== v) fail(where + ': ganze Zahl erwartet, erhalten „' + v + '“.');
+    if (t.k === 'enum') {
+      for (var i = 0; i < t.v.length; i++) if (t.v[i][0] === v) return;
+      fail(where + ': Wert ' + v + ' ist nicht erlaubt.');
+    }
+    if (t.k === 'num' && (v < t.min || v > t.max)) fail(where + ': ' + v + ' liegt außerhalb ' + t.min + '…' + t.max + '.');
+    if (t.k === 'color' && (v > -1 || v < -2147483648)) fail(where + ': ungültige Farbe.');
+  }
+  function valueText(mod, ch, name, v) {
+    var t = pdef(mod, ch, name).t;
+    if (t.k === 'enum') return t.v.filter(function (e) { return e[0] === v; })[0][1];
+    if (t.k === 'color') return hex(v);
+    return String(v);
+  }
+
+  /* One transfer string: module, channel, purpose, list of [name, value]. Default values are not written;
+     multi-ref groups (name:1/name:2) are written for all refs as soon as one ref differs from its default. */
+  function Str(mod, ch, purpose, params) {
+    var items = [];
+    params.forEach(function (p) {
+      checkValue(mod, ch, p[0], p[1]);
+      var d = pdef(mod, ch, p[0]);
+      if (d.d !== null && String(d.d) === String(p[1])) return;
+      items.push({ n: p[0], v: p[1], i: d.i });
+    });
+    var groups = {};
+    params.forEach(function (p) { var b = p[0].split(':')[0]; if (p[0].indexOf(':') > 0) (groups[b] = groups[b] || []).push(p); });
+    Object.keys(groups).forEach(function (b) {
+      var refs = groups[b], kept = items.filter(function (x) { return x.n.split(':')[0] === b; });
+      if (kept.length && kept.length !== refs.length) {
+        refs.forEach(function (p) { if (!kept.some(function (x) { return x.n === p[0]; })) items.push({ n: p[0], v: p[1], i: pdef(mod, ch, p[0]).i }); });
+      }
+    });
+    items.sort(function (a, b) { return a.i - b.i; });
+    return { module: mod, channel: ch, purpose: purpose, items: items };
+  }
+  function build(s) {
+    var head = 'OpenKNX,cv1,' + CAT.header + '/' + s.module + ':' + CAT.modver[s.module] + '/' + s.channel;
+    return [head].concat(s.items.map(function (x) { return x.n + '=' + encodeURIComponent(String(x.v)); }), [';OpenKNX']).join('§');
+  }
+  function settings(s) {
+    return s.items.map(function (x) { return { module: s.module, channel: s.channel, paramName: x.n, value: x.v, valueText: valueText(s.module, s.channel, x.n, x.v) }; });
+  }
+  function both(name, v) { return [[name + ':1', v], [name + ':2', v]]; }
+  function cue(n, effect, text, duration, fade, extra) {
+    var p = both('NEOEM~Cue' + n + 'Effect', effect).concat(both('NEOEM~Cue' + n + 'Text', text),
+      both('NEOEM~Cue' + n + 'Duration', duration), both('NEOEM~Cue' + n + 'Fade', fade));
+    (extra || []).forEach(function (e) { p.push(['NEOEM~Cue' + n + e[0], e[1]]); });
+    return p;
+  }
+
+  /* ---------------------------------------------------------------- LED families and power */
+  function colourOf(lt) { var m = CAT.colourMap[String(lt)]; return m === undefined ? 0 : m; }
+  function hasWhite(lt) { var c = colourOf(lt); return c >= 6 && c <= 12; } // RGBW/GRBW/RGBCCT/../WRGB carry a white channel
+  function ledText(lt) { return valueText('NEOSTRIP', 1, 'NEO~LEDType', lt); }
+  function ledSummary(lt) { return ledText(lt) + ', Farbordnung ' + valueText('NEOSTRIP', 1, 'NEO~ColourOrder', colourOf(lt)); }
+  /* Start colour + W: an RGB-only strip has no white LED (the firmware drops W), so W must be 0 there. */
+  function startColour(lt, color, w, label) {
+    if (typeof w !== 'number' || !isFinite(w) || Math.floor(w) !== w || w < 0 || w > 255) fail(label + ' W: 0…255 erwartet.');
+    if (!hasWhite(lt) && w !== 0) fail(label + ': der LED-Typ „' + ledText(lt) + '“ hat keinen Weißkanal; W muss 0 sein (Weiß über die RGB-Farbe einstellen).');
+    return [['NEO~SegmentStartupColor', argb(color)], ['NEO~SegmentStartupW', w]];
+  }
+  function colourText(lt, color, w) { return color.toUpperCase() + (hasWhite(lt) ? ' + W ' + w : ''); }
+  function strip(ch, desc, length, ledtype, extra) {
+    var p = [['Description~', desc], ['NEO~Length', length], ['NEO~LEDType', ledtype], ['NEO~ColourOrder', colourOf(ledtype)]].concat(extra || []);
+    return Str('NEOSTRIP', ch, 'LED-Streifen ' + ch + ': ' + desc, p);
+  }
+  /* Global "Fester Wert (mA)": all strips with "Global verwenden" share one limit (one supply). */
+  function globalPower(limit, perLed) {
+    return [['NEOpowerLimitCombined', 1], ['NEOpowerLimitGlobal', limit], ['NEOcurrentPerLED', perLed], ['NEOautoBrightnessLimit', 80]];
+  }
+  /* Own limit on the strip ("Benutzerdefiniert (Fester Wert)"), used with global "Deaktiviert" for one supply per strip. */
+  function stripPower(limit) { return [['NEO~powerLimitCombined', 2], ['NEO~currentPerChannel', limit], ['NEO~autoBrightnessLimit', 80]]; }
+  function perLedText(perLed) { return perLed === 0 ? 'Strom pro LED 0 = Tabelle des LED-Typs (RGB 3 × 20 mA, RGBW 4 × 20 mA)' : 'Strom pro LED ' + perLed + ' mA'; }
+  function powerText(limit, perLed) { return 'Global „Fester Wert“ ' + limit + ' mA, Übergang ab 80 % der Grenze auf 80 % Helligkeit, ' + perLedText(perLed); }
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function segKo(n, suffix) {
+    var k = clone(CAT.segKo[suffix]);
+    k.ko = CAT.segKoBase + CAT.segKoStride * (n - 1) + k.off; delete k.off;
+    k.koName = 'NEO_' + n + suffix;
+    k.koFunctionText = k.koFunctionText.replace('Segment 1:', 'Segment ' + n + ':');
+    return k;
+  }
+  function stripCurrentKo(n) {
+    var k = clone(CAT.stripCurrentKo);
+    k.ko = CAT.stripKoBase + CAT.stripKoStride * (n - 1) + k.off; delete k.off;
+    k.koName = 'NEOSTRIP_PowerCurrent' + n; k.koFunctionText = k.koFunctionText.replace(/^1:/, n + ':');
+    return k;
+  }
+  function ko(name) { return clone(CAT.ko[name]); }
+  function link(dev, k, dir) { k.device = dev; k.direction = dir; return k; }
+  function makeGa(base) {
+    return function (addr, name, dpt, links, sender, reason) {
+      var a = addr.split('/').map(Number);
+      if (a[0] !== 0) { a[0] = base.main; a[1] = a[1] + base.mid; }
+      return { ga: a.join('/'), name: name, dpt: dpt, sender: sender, links: links, reason: reason };
+    };
+  }
+  function pct(p, label) {
+    if (typeof p !== 'number' || p < 0 || p > 100) fail(label + ': Prozentwert 0…100 erwartet.');
+    return Math.round(p * 255 / 100);
+  }
+  var WORD = { 2: 'zwei', 3: 'drei', 4: 'vier', 5: 'fünf', 6: 'sechs', 7: 'sieben', 8: 'acht' };
+  function hwText(hw) {
+    var e = pdef('NEO', 0, 'NeoPixelHardwareSelect').t.v.filter(function (x) { return x[0] === hw; })[0];
+    if (!e || hw === 255) fail('Hardware: bitte eine Hardware auswählen.');
+    return e[1];
+  }
+  function needPorts(hw, n, what) {
+    var pc = CAT.portCount[String(hw)];
+    if (pc !== undefined && n > pc) fail(what + ': die gewählte Hardware hat nur ' + pc + ' Ports, benötigt werden ' + n + '.');
+  }
+  function int(v, label, lo, hi) {
+    if (typeof v !== 'number' || !isFinite(v) || Math.floor(v) !== v) fail(label + ': ganze Zahl erwartet.');
+    if (v < lo || v > hi) fail(label + ': erlaubt ist ' + lo + '…' + hi + '.');
+    return v;
+  }
+  function checkLedType(lt) {
+    var ok = pdef('NEOSTRIP', 1, 'NEO~LEDType').t.v.some(function (e) { return e[0] === lt; });
+    if (!ok || [5, 6, 21, 22, 23, 24, 25, 99].indexOf(lt) >= 0) fail('LED-Typ: nicht unterstützt in den Vorlagen; bitte einen Typ ohne Taktleitung wählen (SPI-Typen brauchen einen zweiten Port, CUSTOM eigene Einstellungen).');
+    if (lt === 14 || lt === 15) fail('LED-Typ: „' + (lt === 14 ? 'TM1914' : 'FW1906') + '“ wird in den Vorlagen nicht angeboten: die Farbordnung der ETS (GRBW) passt nicht zur Kanalzahl, mit der die Firmware rechnet (' + (lt === 14 ? '3' : '6') + ' Kanäle).');
+    if (lt === 4) fail('LED-Typ: „SK6812“ (4) wird von der Firmware als 4-Kanal-Typ gerechnet, obwohl die Farbordnung GRB ist; für RGB bitte WS2812B, für RGBW „SK6812/WS2814 (RGBW)“ wählen.');
+  }
+  var PER_LED_HINT = '„Strom pro LED“ (global) steht bei RGBW auf 0: die Firmware rechnet dann mit der Tabelle des LED-Typs (4 × 20 mA); ein Wert über 0 wird ganzzahlig auf die Kanäle verteilt (70 / 4 = 17 mA). Der Parameter ist in der ETS nur bei „Pro LED (automatisch)“ sichtbar, wirkt aber auch hier auf die Messung.';
+
+  /* ---------------------------------------------------------------- templates */
+  var T = {};
+
+  T.kuechenzeile = {
+    title: 'Einfach – Küchenzeile', number: 1,
+    defaults: { hw: 4882, gaMain: 1, gaMid: 0, leds: 120, ledType: 0, name: 'Küchenzeile', color: '#FFB46B', w: 0, brightness: 80, powerLimit: 3000, currentPerLed: 60 },
+    presets: { rgb: { color: '#FFB46B', w: 0, currentPerLed: 60 }, rgbw: { color: '#000000', w: 255, currentPerLed: 0 } },
+    make: function (I) {
+      var d = 'geraet1', g = makeGa({ main: I.gaMain, mid: I.gaMid });
+      int(I.leds, 'Anzahl LEDs', 1, 16384);
+      return { title: this.title, number: this.number,
+        description: 'Ein Streifen mit ' + I.leds + ' LEDs unter den Hängeschränken (' + ledText(I.ledType) + '), ein Segment über den ganzen Streifen. Statische Start-Farbe mit ' + I.brightness + ' % Helligkeit, nach einem Neustart wird der letzte Zustand wiederhergestellt. Zwei Szenen (Kochen / Abend) für den Taster. Ein Netzteil, globale Strombegrenzung.',
+        summary: [['Hardware', hwText(I.hw) + ' (' + I.hw + ')'], ['LED-Streifen 1', ledSummary(I.ledType) + ', ' + I.leds + ' LEDs'],
+          ['Segment 1', 'LED 1–' + I.leds + ', Effekt Solid'], ['Start-Farbe / Helligkeit', colourText(I.ledType, I.color, I.w) + ', ' + pct(I.brightness, 'Start-Helligkeit') + ' von 255 (' + I.brightness + ' %)'],
+          ['Verhalten nach Neustart', 'Letzter Zustand (Standardwert des Segments)'], ['Szenen', '1 Kochen #FFD7A8 / 255, 2 Abend #FF8C40 / 90'],
+          ['Strombegrenzung', powerText(I.powerLimit, I.currentPerLed) + ' (ein Netzteil, z. B. 5 V / 4 A)']],
+        devices: [{
+          id: d, name: 'NeoPixel Küche', hw: I.hw,
+          strings: [
+            Str('NEO', 0, 'Basiseinstellungen: Hardware, Strombegrenzung', [['NeoPixelHardwareSelect', I.hw]].concat(globalPower(I.powerLimit, I.currentPerLed))),
+            strip(1, I.name, I.leds, I.ledType),
+            Str('NEO', 1, 'Segment 1: ' + I.name, [['Description~', I.name], ['NEO~SegmentEnd', I.leds]].concat(startColour(I.ledType, I.color, I.w, 'Start-Farbe'),
+              [['NEO~SegmentStartupBrightness', pct(I.brightness, 'Start-Helligkeit')],
+                ['NEO~SceneCount', 2], ['NEO~SceneAPrimaryColor', argb('#FFD7A8')], ['NEO~SceneBPrimaryColor', argb('#FF8C40')], ['NEO~SceneBBrightness', 90]]))],
+          companions: [],
+          groupAddresses: [
+            g('1/0/0', 'Küchenzeile Ein/Aus', 'DPST-1-1', [link(d, segKo(1, 'SegmentPower'), 'empfängt')], 'Taster (kurz)', 'Schalten des Segments.'),
+            g('1/1/0', 'Küchenzeile Dimmen', 'DPST-3-7', [link(d, segKo(1, 'BriRel'), 'empfängt')], 'Taster (lang)', 'Relatives Dimmen der Segment-Helligkeit.'),
+            g('1/2/0', 'Küchenzeile Helligkeit', 'DPST-5-1', [link(d, segKo(1, 'SegmentBrightness'), 'empfängt')], 'Visualisierung', 'Absoluter Helligkeitswert.'),
+            g('1/3/0', hasWhite(I.ledType) ? 'Küchenzeile RGBW' : 'Küchenzeile RGB', hasWhite(I.ledType) ? 'DPST-251-600' : 'DPST-232-600',
+              [link(d, segKo(1, hasWhite(I.ledType) ? 'RGBW' : 'RGB'), 'empfängt')], 'Visualisierung', hasWhite(I.ledType) ? 'Farbe inkl. Weißkanal (6 Byte).' : 'Farbe setzen (RGB, 3 Byte).'),
+            g('1/4/0', 'Küchenzeile Szene', 'DPST-18-1', [link(d, segKo(1, 'Scene'), 'empfängt')], 'Taster (Szene)', 'Wert 0 = Szene 1 (Kochen), Wert 1 = Szene 2 (Abend); Bit 7 gesetzt = aktuellen Zustand als Szene speichern.'),
+            g('1/5/0', 'Küchenzeile Sperre', 'DPST-1-1', [link(d, segKo(1, 'Lock'), 'empfängt')], 'Visualisierung / Logik', '1 sperrt alle steuernden KOs des Segments (z. B. Reinigung).'),
+            g('1/6/0', 'Küchenzeile Ein/Aus Status', 'DPST-1-11', [link(d, segKo(1, 'SegmentPowerState'), 'sendet')], 'NeoPixel', 'Rückmeldung für Taster-LED und Visualisierung.'),
+            g('1/6/1', 'Küchenzeile Helligkeit Status', 'DPST-5-1', [link(d, segKo(1, 'SegmentBrightnessState'), 'sendet')], 'NeoPixel', 'Rückmeldung der Helligkeit.'),
+            g('1/6/2', 'Küchenzeile Stromverbrauch', 'DPST-7-12', [link(d, ko('NEO_PowerCurrentTotal'), 'sendet')], 'NeoPixel', 'Berechneter Gesamtstrom in mA (gemeldet, solange die globale Strombegrenzung aktiv ist).')] }],
+        check: ['Hardware-Auswahl passend zur Firmware.', 'Daten-Port von LED-Streifen 1 auswählen.', 'LED-Typ und Anzahl, falls abweichend.',
+          'Strombegrenzung an das Netzteil anpassen (Beispiel ' + I.powerLimit + ' mA für 5 V / 4 A mit Reserve).'].concat(hasWhite(I.ledType) ? [PER_LED_HINT] : []) };
+    }
+  };
+
+  T.wintergarten = {
+    title: 'Wintergarten', number: 2,
+    defaults: { hw: 4882, gaMain: 2, gaMid: 0, leds1: 150, leds2: 150, roofRight: 90, ledType: 8, name1: 'Dachkante links', name2: 'Dachkante rechts', name3: 'Sitzecke',
+      roofColor: '#000000', roofW: 255, seatColor: '#FF9A40', seatW: 60, powerLimit: 5000, currentPerLed: 0, relayOffDelay: 30 },
+    presets: { rgb: { roofColor: '#FFFFFF', roofW: 0, seatColor: '#FF9A40', seatW: 0, currentPerLed: 60 }, rgbw: { roofColor: '#000000', roofW: 255, seatColor: '#FF9A40', seatW: 60, currentPerLed: 0 } },
+    make: function (I) {
+      var d = 'geraet1', g = makeGa({ main: I.gaMain, mid: I.gaMid });
+      int(I.leds1, 'LEDs Streifen 1', 1, 16384); int(I.leds2, 'LEDs Streifen 2', 1, 16384);
+      int(I.roofRight, 'LEDs Dachkante rechts', 1, 16384);
+      if (I.roofRight >= I.leds2) fail('Dachkante rechts (' + I.roofRight + ' LEDs) muss kürzer als Streifen 2 (' + I.leds2 + ' LEDs) sein, damit die Sitzecke Platz hat.');
+      needPorts(I.hw, 3, 'Zwei Streifen und Relais 1');
+      var roof = startColour(I.ledType, I.roofColor, I.roofW, 'Start-Farbe Dachkanten');
+      var a2 = I.leds1 + 1, b2 = I.leds1 + I.roofRight, a3 = b2 + 1, b3 = I.leds1 + I.leds2;
+      var relay = ko('NEO_ExternalRelay1').ko;
+      return { title: this.title, number: this.number,
+        description: 'Zwei Streifen (' + ledText(I.ledType) + ') mit ' + I.leds1 + ' und ' + I.leds2 + ' LEDs. Segmente: ' + I.name1 + ' (Streifen 1), ' + I.name2 + ' (erste ' + I.roofRight + ' LEDs von Streifen 2) und ' + I.name3 + ' (letzte ' + (I.leds2 - I.roofRight) + ' LEDs von Streifen 2). Die Dachkanten folgen der HCL-Farbtemperatur von Lichtmanager 1, die Sitzecke nicht. Relais 1 schaltet das gemeinsame LED-Netzteil, solange mindestens ein Segment an ist; die globale Strombegrenzung schützt dieses Netzteil.',
+        summary: [['Hardware', hwText(I.hw) + ' (' + I.hw + ')'], ['LED-Streifen 1 und 2', ledSummary(I.ledType) + ', ' + I.leds1 + ' / ' + I.leds2 + ' LEDs'],
+          ['Segment 1 ' + I.name1, 'LED 1–' + I.leds1 + ', Start-Farbe ' + colourText(I.ledType, I.roofColor, I.roofW) + ', HCL global'],
+          ['Segment 2 ' + I.name2, 'LED ' + a2 + '–' + b2 + ', wie Segment 1'],
+          ['Segment 3 ' + I.name3, 'LED ' + a3 + '–' + b3 + ', ' + colourText(I.ledType, I.seatColor, I.seatW) + ', Helligkeit 180, HCL deaktiviert'],
+          ['HCL', 'Globaler Lichtmanager = Lichtmanager 1; LMG-Kanal 1 aktiviert, Profil 1 an allen Tagen'],
+          ['Strombegrenzung', powerText(I.powerLimit, I.currentPerLed) + ', Streifen „Global verwenden“ (ein Netzteil)'],
+          ['Relais 1', 'LED-Netzteil, Ausschaltverzögerung ' + I.relayOffDelay + ' s, Mindest-Auszeit 10 s, gesteuert von Logik 1+2'],
+          ['Status nach Neustart senden', 'Ja (damit die Netzteil-Logik nach einem Neustart den Segmentzustand erhält)']],
+        devices: [{
+          id: d, name: 'NeoPixel Wintergarten', hw: I.hw,
+          strings: [
+            Str('NEO', 0, 'Basiseinstellungen: Hardware, 2 Streifen, 3 Segmente, HCL, Strombegrenzung, Relais', [
+              ['HCLMaster', 1], ['NeoPixelHardwareSelect', I.hw], ['NEONumberOfLEDStrips', 2], ['NEONumberOfSegments', 3]].concat(globalPower(I.powerLimit, I.currentPerLed), [
+              ['NEOStatusSendOnStartup', 1], ['NEOExternalRelayCount', 1], ['NEOExternalRelay1Name', 'LED-Netzteil'], ['NEOExternalRelay1OffDelay', I.relayOffDelay], ['NEOExternalRelay1MinOffTime', 10]])),
+            strip(1, I.name1, I.leds1, I.ledType),
+            strip(2, I.name2 + ' + ' + I.name3, I.leds2, I.ledType),
+            Str('NEO', 1, 'Segment 1: ' + I.name1, [['Description~', I.name1], ['NEO~SegmentEnd', I.leds1]].concat(roof)),
+            Str('NEO', 2, 'Segment 2: ' + I.name2, [['Description~', I.name2], ['NEO~SegmentStart', a2], ['NEO~SegmentEnd', b2]].concat(roof)),
+            Str('NEO', 3, 'Segment 3: ' + I.name3, [['Description~', I.name3], ['NEO~SegmentStart', a3], ['NEO~SegmentEnd', b3]].concat(
+              startColour(I.ledType, I.seatColor, I.seatW, 'Start-Farbe Sitzecke'), [['NEO~SegmentStartupBrightness', 180], ['NEO~HCLMode', 0]]))],
+          companions: [
+            { purpose: 'Lichtmanager 1: HCL-Kurve für die Dachkanten, an allen Tagen', string: Str('LMG', 1, 'Lichtmanager Kanal 1', [
+              ['CH~Name', 'Wintergarten HCL'], ['CH~Active', 1], ['CH~ProfileCount', 1], ['CH~DayNightSource', 2],
+              ['CH~P1_Name', 'Alle Tage'], ['CH~P1_DaySa', 1], ['CH~P1_DaySo', 1], ['CH~P1_DayUrl', 1], ['CH~P1_DayFei', 1]]) },
+            { purpose: 'Logik 1: ODER der Status-KOs Segment 1 und 2 (gerätintern über KO-Nummer)', string: Str('LOG', 1, 'Logikkanal 1', [
+              ['f~Name', 'Netzteil: Dachkanten an'], ['f~LogicType', 2], ['f~Logic', 2],
+              ['f~E1', 1], ['f~E1OtherKO:2', segKo(1, 'SegmentPowerState').ko], ['f~E1UseOtherKO', 1],
+              ['f~E2', 1], ['f~E2OtherKO:2', segKo(2, 'SegmentPowerState').ko], ['f~E2UseOtherKO', 1]]) },
+            { purpose: 'Logik 2: ODER aus Segment 3 und Logik 1, schreibt in KO ' + relay + ' (Relais 1)', string: Str('LOG', 2, 'Logikkanal 2', [
+              ['f~Name', 'Netzteil Relais 1'], ['f~LogicType', 2], ['f~Logic', 2],
+              ['f~E1', 1], ['f~E1OtherKO:2', segKo(3, 'SegmentPowerState').ko], ['f~E1UseOtherKO', 1],
+              ['f~I1', 1], ['f~I1Function', 1], ['f~OOnKOSend', 1], ['f~OOnKOSendNumber', relay], ['f~OOffKOSend', 1], ['f~OOffKOSendNumber', relay]]) }],
+          groupAddresses: [
+            g('2/0/0', 'Dachkante Ein/Aus', 'DPST-1-1', [link(d, segKo(1, 'SegmentPower'), 'empfängt'), link(d, segKo(2, 'SegmentPower'), 'empfängt')], 'Taster (kurz)', 'Beide Dachkanten gemeinsam schalten.'),
+            g('2/0/1', 'Sitzecke Ein/Aus', 'DPST-1-1', [link(d, segKo(3, 'SegmentPower'), 'empfängt')], 'Taster (kurz)', 'Sitzecke getrennt schalten.'),
+            g('2/1/0', 'Dachkante Dimmen', 'DPST-3-7', [link(d, segKo(1, 'BriRel'), 'empfängt'), link(d, segKo(2, 'BriRel'), 'empfängt')], 'Taster (lang)', 'Relatives Dimmen beider Dachkanten.'),
+            g('2/1/1', 'Sitzecke Dimmen', 'DPST-3-7', [link(d, segKo(3, 'BriRel'), 'empfängt')], 'Taster (lang)', 'Relatives Dimmen der Sitzecke.'),
+            g('2/3/0', hasWhite(I.ledType) ? 'Sitzecke RGBW' : 'Sitzecke RGB', hasWhite(I.ledType) ? 'DPST-251-600' : 'DPST-232-600',
+              [link(d, segKo(3, hasWhite(I.ledType) ? 'RGBW' : 'RGB'), 'empfängt')], 'Visualisierung', hasWhite(I.ledType) ? 'Farbe inkl. Weißkanal (6 Byte).' : 'Farbe setzen (RGB, 3 Byte).'),
+            g('2/3/1', 'Sitzecke HSV', 'DPST-232-600', [link(d, segKo(3, 'HSV'), 'empfängt')], 'Visualisierung', 'Farbe als Farbton/Sättigung/Helligkeit.'),
+            g('2/6/0', 'Dachkante links Status', 'DPST-1-11', [link(d, segKo(1, 'SegmentPowerState'), 'sendet')], 'NeoPixel', 'Taster-LED; die Netzteil-Logik liest das KO direkt über die KO-Nummer, nicht über die GA.'),
+            g('2/6/1', 'Dachkante rechts Status', 'DPST-1-11', [link(d, segKo(2, 'SegmentPowerState'), 'sendet')], 'NeoPixel', 'Wie ' + I.gaMain + '/' + (6 + I.gaMid) + '/0.'),
+            g('2/6/2', 'Sitzecke Status', 'DPST-1-11', [link(d, segKo(3, 'SegmentPowerState'), 'sendet')], 'NeoPixel', 'Wie ' + I.gaMain + '/' + (6 + I.gaMid) + '/0.'),
+            g('2/6/3', 'HCL Farbtemperatur Status', 'DPST-7-600', [link(d, ko('NEO_HCLGlobalState'), 'sendet')], 'NeoPixel', 'Aktuelle Farbtemperatur des globalen Lichtmanagers (Kelvin).'),
+            g('2/6/4', 'Wintergarten Stromverbrauch', 'DPST-7-12', [link(d, ko('NEO_PowerCurrentTotal'), 'sendet')], 'NeoPixel', 'Berechneter Gesamtstrom in mA (gemeldet, solange die globale Strombegrenzung aktiv ist).'),
+            g('2/7/0', 'Netzteil Status', 'DPST-1-11', [link(d, ko('NEO_ExternalRelay1State'), 'sendet')], 'NeoPixel', 'Rückmeldung von Relais 1. Das Relais-KO ' + relay + ' braucht keine GA, Logik 2 schreibt direkt hinein.'),
+            g('0/0/1', 'Uhrzeit', 'DPST-10-1', [link(d, ko('BASE_Time'), 'empfängt')], 'Zeitgeber', 'Lichtmanager und Logik brauchen eine gültige Uhrzeit (alternativ Datum/Uhrzeit DPT 19.001, je nach Einstellung unter Allgemein).'),
+            g('0/0/2', 'Datum', 'DPST-11-1', [link(d, ko('BASE_Date'), 'empfängt')], 'Zeitgeber', 'Wie 0/0/1.')] }],
+        check: ['Hardware-Auswahl passend zur Firmware.', 'Daten-Ports von LED-Streifen 1 und 2 auswählen.', 'Port von Relais 1 auswählen.',
+          'Allgemein: Standort (Breiten-/Längengrad) und Zeitquelle für den Lichtmanager.',
+          'Strombegrenzung an das gemeinsame Netzteil anpassen; ' + PER_LED_HINT,
+          'Versorgt das geschaltete Netzteil auch den Controller, darf das Relais es nicht abschalten (siehe Hilfe „Relais“).',
+          'Am Gerät prüfen, ob eine statische Farbe nach dem Einschalten des Netzteils erscheint (die Netzteil-Logik schaltet erst, wenn das Segment schon an ist).',
+          'Am Gerät prüfen: Nach einem Neustart schaltet das Relais nur, wenn die Logik die Status-Meldungen beim Start erhält („Status nach Neustart senden“ = Ja ist gesetzt); prüfen, ob die Startverzögerung der Logik die erste Meldung verschluckt.'] };
+    }
+  };
+
+  T.garage = {
+    title: 'Garage', number: 3,
+    defaults: { hw: 4882, gaMain: 3, gaMid: 0, leds1: 120, leds2: 180, leds3: 180, ledType: 0, strip1: 'Einfahrt', strip2: 'Wand links', strip3: 'Wand rechts',
+      seg1: 'Einfahrt', seg2: 'Links', seg3: 'Rechts', stairMinutes: 5, limit1: 4000, limit2: 6400, limit3: 6400, currentPerLed: 60 },
+    presets: { rgb: { currentPerLed: 60 }, rgbw: { currentPerLed: 0 } },
+    make: function (I) {
+      var d = 'geraet1', g = makeGa({ main: I.gaMain, mid: I.gaMid });
+      var L = [int(I.leds1, 'LEDs Streifen 1', 1, 16384), int(I.leds2, 'LEDs Streifen 2', 1, 16384), int(I.leds3, 'LEDs Streifen 3', 1, 16384)];
+      var LIM = [I.limit1, I.limit2, I.limit3];
+      int(I.stairMinutes, 'Nachlauf nach (Minuten)', 1, 16000);
+      needPorts(I.hw, 3, 'Drei Streifen');
+      var segNames = [I.seg1, I.seg2, I.seg3], strips = [I.strip1, I.strip2, I.strip3];
+      var segs = [], pos = 1;
+      for (var s = 1; s <= 3; s++) { segs.push([s, segNames[s - 1], pos, pos + L[s - 1] - 1]); pos += L[s - 1]; }
+      var fcbOut = ko('FCB_CH1KO9').ko;
+      var logs = segs.map(function (x) {
+        var s = x[0], nm = x[1];
+        return { purpose: 'Logik ' + s + ': Anwesenheit → EM 1 auf Segment ' + s + ' (' + nm + ') starten, nach ' + I.stairMinutes + ' min Cue 3 „Nachlauf“',
+          string: Str('LOG', s, 'Logikkanal ' + s, [
+            ['f~Name', 'Garage EM ' + nm], ['f~LogicType', 2], ['f~Logic', 2],
+            ['f~E1', 1], ['f~E1OtherKO:2', fcbOut], ['f~E1UseOtherKO', 1],
+            ['f~OStairtimeBase', 1], ['f~OStairtimeTime', I.stairMinutes], ['f~OStair', 1], ['f~OStairOff', 0],
+            ['f~OOutputFilter', 3], ['f~ODpt', 2], ['f~OOffDpt5', 3],
+            ['f~OOnKOSend', 1], ['f~OOnKOSendNumber', segKo(s, 'EmStart').ko], ['f~OOffKOSend', 1], ['f~OOffKOSendNumber', segKo(s, 'EmCueSet').ko]]) };
+      });
+      var all = function (suffix, dir) { return [1, 2, 3].map(function (s) { return link(d, segKo(s, suffix), dir); }); };
+      return { title: this.title, number: this.number,
+        description: 'Drei Streifen (' + ledText(I.ledType) + '): ' + strips[0] + ' (' + L[0] + ' LEDs), ' + strips[1] + ' (' + L[1] + ') und ' + strips[2] + ' (' + L[2] + '), je ein Segment und je ein eigenes Netzteil. Effektmanager 1 „Einfahrt“: Begrüßung (Komet, 10 s), Ausleuchten (Weiß, hält) und Nachlauf (Atmen, 30 s), ohne Loop. Torkontakt oder einer der Bewegungsmelder startet den Effektmanager auf allen drei Segmenten; ' + I.stairMinutes + ' Minuten nach der letzten Meldung springt er auf den Nachlauf, danach gehen die Segmente aus.',
+        summary: [['Hardware', hwText(I.hw) + ' (' + I.hw + ')'], ['LED-Streifen', '1 ' + strips[0] + ' ' + L[0] + ', 2 ' + strips[1] + ' ' + L[1] + ', 3 ' + strips[2] + ' ' + L[2] + ' (' + ledSummary(I.ledType) + ')'],
+          ['Segmente', segs.map(function (x) { return x[0] + ' ' + x[1] + ' ' + x[2] + '–' + x[3]; }).join(', ') + '; nach EM-Stop: Aus'],
+          ['Effektmanager 1 „Einfahrt“', 'Cue 1 Komet 10 s / 1000 ms, Cue 2 Solid weiß hält (Dauer 0), Cue 3 Atmen 30 s / 3000 ms, Loop aus'],
+          ['Funktion 1', 'ODER aus 3 Eingängen, sendet bei jedem Eingangstelegramm'],
+          ['Logik 1–3', 'Treppenlicht ' + I.stairMinutes + ' min ab letzter Meldung; EIN → Wert 1 in „EM Start“, AUS → Wert 3 in „Cue setzen“'],
+          ['Strombegrenzung', 'Global „Deaktiviert“; je Streifen „Benutzerdefiniert (Fester Wert)“ mit „Strom pro Kanal (mA)“ ' + LIM.join(' / ') + ' mA und Übergang ab 80 % auf 80 % Helligkeit (ein Netzteil je Streifen); gemessen mit ' + perLedText(I.currentPerLed)]],
+        devices: [{
+          id: d, name: 'NeoPixel Garage', hw: I.hw,
+          strings: [
+            Str('NEO', 0, 'Basiseinstellungen: Hardware, 3 Streifen, 3 Segmente, 1 Effektmanager', [
+              ['NeoPixelHardwareSelect', I.hw], ['NEONumberOfLEDStrips', 3], ['NEONumberOfSegments', 3], ['NEOcurrentPerLED', I.currentPerLed], ['NEOEMEnabled', 1]]),
+            strip(1, strips[0], L[0], I.ledType, stripPower(LIM[0])), strip(2, strips[1], L[1], I.ledType, stripPower(LIM[1])), strip(3, strips[2], L[2], I.ledType, stripPower(LIM[2]))
+          ].concat(segs.map(function (x) {
+            return Str('NEO', x[0], 'Segment ' + x[0] + ': ' + x[1], [['Description~', x[1]], ['NEO~SegmentStart', x[2]], ['NEO~SegmentEnd', x[3]], ['NEO~SegmentEmStopReturnMode', 2]]);
+          }), [Str('NEOEM', 1, 'Effektmanager 1: Einfahrt', [['NEOEM~Name', 'Einfahrt'], ['NEOEM~CueCount', 3]]
+            .concat(cue(1, 13, 'Begrüßung', 10, 1000, [['CometSpeed', 170], ['CometTailLength', 20]]), cue(2, 0, 'Ausleuchten', 0, 300),
+              cue(3, 11, 'Nachlauf', 30, 3000, [['Brightness', 160], ['BreathingSpeed', 60]])))]),
+          companions: [
+            { purpose: 'Funktionsblöcke: 1 Kanal sichtbar', string: Str('FCB', 0, 'Funktionsblöcke Basis', [['VisibleChannels', 1]]) },
+            { purpose: 'Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)', string: Str('FCB', 1, 'Funktion 1', [
+              ['Channel~Name', 'Garage Anwesenheit'], ['CH~ChannelType', 2], ['CH~NameKo0', 'Torkontakt'], ['CH~NameKo1', 'BM links'],
+              ['CH~NameKo2', 'BM rechts'], ['CH~LogicKo2D', 1], ['CH~LogicBehavOut', 0]]) }].concat(logs),
+          groupAddresses: [
+            g('3/7/0', 'Garage Torkontakt', 'DPST-1-1', [link(d, ko('FCB_CH1KO0'), 'empfängt')], 'Torkontakt / Torantrieb', '1 = Tor offen; Eingang 1 der Funktion 1.'),
+            g('3/7/1', 'Garage Bewegung links', 'DPST-1-1', [link(d, ko('FCB_CH1KO1'), 'empfängt')], 'Bewegungsmelder links', 'Eingang 2 der Funktion 1.'),
+            g('3/7/2', 'Garage Bewegung rechts', 'DPST-1-1', [link(d, ko('FCB_CH1KO2'), 'empfängt')], 'Bewegungsmelder rechts', 'Eingang 3 der Funktion 1.'),
+            g('3/4/0', 'Garage EM Start/Stop', 'DPST-5-10', all('EmStart', 'empfängt'), 'Taster / Visualisierung', 'Wert 1 startet Effektmanager 1 auf allen drei Segmenten, Wert 0 stoppt ihn. Die Logikkanäle schreiben gerätintern direkt in diese KOs.'),
+            g('3/4/1', 'Garage EM Stop', 'DPST-1-1', all('EmStop', 'empfängt'), 'Taster', 'Effektmanager sofort beenden.'),
+            g('3/4/2', 'Garage Cue +/-', 'DPST-3-7', all('CueRel', 'empfängt'), 'Taster (Wippe lang)', 'Nächste/vorherige Cue des laufenden Effektmanagers (Heller = nächste).'),
+            g('3/0/0', 'Garage Licht Ein/Aus', 'DPST-1-1', all('SegmentPower', 'empfängt'), 'Taster (kurz)', 'Manuelles Schalten ohne Effektmanager.'),
+            g('3/1/0', 'Garage Dimmen', 'DPST-3-7', all('BriRel', 'empfängt'), 'Taster (lang)', 'Relatives Dimmen.'),
+            g('3/5/0', 'Garage Sperre', 'DPST-1-1', all('Lock', 'empfängt'), 'Visualisierung', '1 sperrt die steuernden KOs (Automatik aus).'),
+            g('3/6/0', 'Garage EM Zustand', 'DPST-5-10', [link(d, segKo(1, 'EmRunState'), 'sendet')], 'NeoPixel', '0 = gestoppt, 1 = läuft, 2 = pausiert (Segment 1).'),
+            g('3/6/1', 'Garage aktive Cue', 'DPST-5-10', [link(d, segKo(1, 'EmCueStatus'), 'sendet')], 'NeoPixel', 'Nummer der laufenden Cue (Segment 1).'),
+            g('3/6/5', 'Garage Licht Status', 'DPST-1-11', [link(d, segKo(1, 'SegmentPowerState'), 'sendet')], 'NeoPixel', 'Ein/Aus-Status von Segment 1 für die Status-LED des Tasters.')]
+            .concat([1, 2, 3].map(function (s) {
+              return g('3/6/' + (s + 1), 'Garage Stromverbrauch ' + strips[s - 1], 'DPST-7-12', [link(d, stripCurrentKo(s), 'sendet')], 'NeoPixel', 'Berechneter Strom von LED-Streifen ' + s + ' in mA (Streifen mit eigener Grenze melden auch bei global „Deaktiviert“).');
+            })) }],
+        check: ['Hardware-Auswahl passend zur Firmware.', 'Daten-Ports der LED-Streifen 1–3 auswählen.',
+          'Strombegrenzung je Streifen an das jeweilige Netzteil anpassen: Streifen → Strombegrenzung „Benutzerdefiniert (Fester Wert)“, Feld „Strom pro Kanal (mA)“ (Beispiel: 5 V / 5 A → 4000 mA, 5 V / 8 A → 6400 mA). Hängen alle Streifen an einem Netzteil, stattdessen global „Fester Wert“ und an den Streifen „Global verwenden“.'].concat(hasWhite(I.ledType) ? [PER_LED_HINT] : []) };
+    }
+  };
+
+  T.terrasse = {
+    title: 'Terrasse (Effektkette über drei Geräte)', number: 4,
+    defaults: { hw: 4882, gaMain: 4, gaMid: 0, devices: 3, strips: 8, ledsPerStrip: 60, ledType: 8, color: '#FF9040', w: 120, powerLimit: 16000, currentPerLed: 0 },
+    presets: { rgb: { color: '#FF9040', w: 0, currentPerLed: 60 }, rgbw: { color: '#FF9040', w: 120, currentPerLed: 0 } },
+    make: function (I) {
+      var N = int(I.devices, 'Anzahl Geräte', 2, 8), S = int(I.strips, 'Streifen je Gerät', 2, 8), W = int(I.ledsPerStrip, 'LEDs je Streifen', 1, 255);
+      needPorts(I.hw, S, 'Streifen je Gerät');
+      var seglen = S * W, total = N * seglen, w = WORD[N], g = makeGa({ main: I.gaMain, mid: I.gaMid });
+      if (total > 65535) fail('Effektkette: Gesamtlänge ' + total + ' LEDs ist größer als 65535.');
+      var title = 'Terrasse (Effektkette über ' + w + ' Geräte)';
+      var devs = [], others = [];
+      for (var k = 2; k <= N; k++) others.push(k);
+      var allDevs = [1].concat(others), ga440 = '';
+      var colour = startColour(I.ledType, I.color, I.w, 'Start-Farbe');
+      for (var i = 1; i <= N; i++) {
+        var dev = 'geraet' + i, role = i === 1 ? 'Master' : 'Slave';
+        var seg = [['Description~', 'Terrasse ' + i], ['NEO~SegmentEnd', seglen], ['NEO~SegmentTopology', 2], ['NEO~MatrixWidth', W], ['NEO~MatrixHeight', S],
+          ['NEO~SyncMode', i === 1 ? 1 : 2], ['NEO~VirtualTotalLength', total], ['NEO~VirtualOffset', seglen * (i - 1)]].concat(colour, [['NEO~SegmentEmStopReturnMode', 2]]);
+        var strings = [Str('NEO', 0, 'Basiseinstellungen: Hardware, ' + S + ' Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung', [
+          ['NeoPixelHardwareSelect', I.hw], ['NEONumberOfLEDStrips', S]].concat(globalPower(I.powerLimit, I.currentPerLed), [['NEOEMEnabled', 1]]))];
+        for (var b = 1; b <= S; b++) strings.push(strip(b, 'Balken ' + b, W, I.ledType));
+        strings.push(Str('NEO', 1, 'Segment 1: 2D-Matrix ' + W + '×' + S + ', Effektkette ' + role, seg));
+        strings.push(Str('NEOEM', 1, 'Effektmanager 1: Abendstimmung', [['NEOEM~Name', 'Abendstimmung'], ['NEOEM~CueCount', 3], ['NEOEM~Loop', 1]]
+          .concat(cue(1, 17, 'Sonnenunterg.', 600, 4000, [['Brightness', 220], ['GradientSpeed', 16], ['GradientEndHue', 32]]),
+            cue(2, 30, 'Welle', 600, 4000, [['Aurora2DSpeed', 40], ['Aurora2DHue', 20], ['Aurora2DScale', 24]]),
+            cue(3, 8, 'Glut', 600, 4000, [['Brightness', 180], ['FireSpeed', 60], ['FireCooling', 110], ['FireSparking', 60]]))));
+        var comp = [], gas = [];
+        if (i === 1) {
+          var em = segKo(1, 'EmStart').ko;
+          comp.push({ purpose: 'Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO ' + em, string: Str('LOG', 1, 'Logikkanal 1', [
+            ['f~Name', 'Terrasse Abendstimmung'], ['f~LogicType', 5], ['f~Logic', 5], ['f~TRestoreState', 1],
+            ['f~Td1DuskDawn', 8], ['f~Td2DuskDawn', 1], ['f~Td1Value', 1], ['f~Td2HourAbs', 23], ['f~Td2MinuteAbs', 0],
+            ['f~ODpt', 2], ['f~OOnKOSend', 1], ['f~OOnKOSendNumber', em], ['f~OOffKOSend', 1], ['f~OOffKOSendNumber', em]]) });
+          var on = function (suffix, list) { return list.map(function (k2) { return link('geraet' + k2, segKo(1, suffix), 'empfängt'); }); };
+          ga440 = g('4/4/0', 'x', 'x', [], '', '').ga; var ga400 = g('4/0/0', 'x', 'x', [], '', '').ga;
+          gas = [
+            g('4/0/0', 'Terrasse Ein/Aus', 'DPST-1-1', on('SegmentPower', allDevs), 'Taster (kurz)', 'Auf allen Geräten verknüpft: ohne laufenden Effektmanager überträgt zwar auch die Kette Ein/Aus, während der Abendstimmung ignorieren die Slaves die Kette aber (eigener Effektmanager) und brauchen das Telegramm direkt. Mit „Sync übernimmt immer“ setzt das direkte Telegramm am Slave nur die lokale Übersteuerung, die bei dieser Richtlinie nicht wirkt; der nächste Kettenwert des Masters ist derselbe. Mit „Lokal hat Vorrang“ würde das direkte Telegramm die Slaves bis zum Neustart von der Kette lösen.'),
+            g('4/1/0', 'Terrasse Dimmen', 'DPST-3-7', on('BriRel', allDevs), 'Taster (lang)', 'Auf allen Geräten verknüpft (Grund wie ' + ga400 + '): jedes Gerät dimmt selbst; ohne Effektmanager gleicht die Kette die Helligkeit an die des Masters an.'),
+            g('4/2/0', 'Terrasse Helligkeit', 'DPST-5-1', on('SegmentBrightness', allDevs), 'Visualisierung', 'Auf allen Geräten verknüpft (Grund wie ' + ga400 + ').'),
+            g('4/3/0', hasWhite(I.ledType) ? 'Terrasse RGBW' : 'Terrasse RGB', hasWhite(I.ledType) ? 'DPST-251-600' : 'DPST-232-600',
+              on(hasWhite(I.ledType) ? 'RGBW' : 'RGB', allDevs), 'Visualisierung', 'Auf allen Geräten verknüpft: ein Farbbefehl beendet den Effektmanager des Geräts, das ihn empfängt; nur am Master würde die Abendstimmung auf den Slaves weiterlaufen. Ohne Effektmanager überträgt auch die Kette die Farbe.'),
+            g('4/4/0', 'Terrasse Abendstimmung Start/Stop', 'DPST-5-10', [link('geraet1', ko('LOG_KOf1O'), 'sendet')].concat(on('EmStart', others), on('EmStart', [1])),
+              'Logik 1 auf Gerät 1, Taster', 'Wert 1 startet EM 1, Wert 0 stoppt ihn. Jedes Gerät hat seinen eigenen EM 1; ein laufender EM auf dem Master wird nicht über die Kette übertragen, und während ein EM läuft, rendert jedes Gerät auf seinen eigenen ' + W + '×' + S + '. Gerät 1 erhält den Wert zusätzlich gerätintern von Logik 1. Das Ausgangs-KO der Logik ist DPT 5.005, die EM-Start-KOs DPT 5.010; beide 1 Byte ohne Skalierung, der Wert 1 kommt unverändert an.'),
+            g('4/4/1', 'Terrasse Cue +/-', 'DPST-3-7', on('CueRel', allDevs), 'Taster (Wippe lang)', 'Nächste/vorherige Cue auf allen ' + w + ' Geräten.'),
+            g('4/4/2', 'Terrasse EM Stop', 'DPST-1-1', on('EmStop', allDevs), 'Taster', 'EM auf allen ' + w + ' Geräten beenden.'),
+            g('4/5/0', 'Terrasse Sperre', 'DPST-1-1', on('Lock', allDevs), 'Visualisierung', 'Sperrt die steuernden KOs; ein gesperrter Slave ignoriert die Kette.'),
+            g('4/6/0', 'Terrasse Ein/Aus Status', 'DPST-1-11', [link('geraet1', segKo(1, 'SegmentPowerState'), 'sendet')], 'NeoPixel Gerät 1', 'Rückmeldung des Masters.'),
+            g('4/6/1', 'Terrasse EM Zustand', 'DPST-5-10', [link('geraet1', segKo(1, 'EmRunState'), 'sendet')], 'NeoPixel Gerät 1', '0 = gestoppt, 1 = läuft, 2 = pausiert.')]
+            .concat(allDevs.map(function (k3) {
+              return g('4/6/' + (k3 + 1), 'Terrasse Stromverbrauch Gerät ' + k3, 'DPST-7-12', [link('geraet' + k3, ko('NEO_PowerCurrentTotal'), 'sendet')], 'NeoPixel Gerät ' + k3, 'Berechneter Gesamtstrom dieses Abschnitts in mA.');
+            }), [
+            g('4/7/0', 'Terrasse Effektkette Sync', 'DPST-16-1', [link('geraet1', segKo(1, 'SyncChain'), 'sendet')].concat(on('SyncChain', others)),
+              'NeoPixel Gerät 1 (Master)', 'Verbindet Master und Slaves; nur diese ' + w + ' KOs auf diese GA legen. Der Master sendet bei jeder Änderung und alle 3 s.'),
+            g('0/0/1', 'Uhrzeit', 'DPST-10-1', [link('geraet1', ko('BASE_Time'), 'empfängt')], 'Zeitgeber', 'Zeitschaltuhr der Logik braucht eine gültige Uhrzeit.'),
+            g('0/0/2', 'Datum', 'DPST-11-1', [link('geraet1', ko('BASE_Date'), 'empfängt')], 'Zeitgeber', 'Sonnenuntergang wird aus Datum und Standort berechnet.')]);
+        }
+        devs.push({ id: dev, name: 'NeoPixel Terrasse Abschnitt ' + i + ' (' + role + ')', hw: I.hw, strings: strings, companions: comp, groupAddresses: gas });
+      }
+      return { title: title, number: this.number,
+        description: WORD[N].charAt(0).toUpperCase() + WORD[N].slice(1) + ' Abschnitte, jeder mit eigenem NeoPixel-Gerät und eigenem Netzteil. Pro Gerät ' + S + ' Holzbalken mit je ' + W + ' LEDs (' + ledText(I.ledType) + '), jeder Balken an einem eigenen Ausgang. Der virtuelle Streifen (' + seglen + ' LEDs) ist ein Segment als 2D-Matrix ' + W + '×' + S + '. Die Effektkette verbindet die Matrizen für direkt gewählte Effekte zu einer Fläche von ' + (W * N) + '×' + S + ': Gerät 1 ist Master (Offset 0), die übrigen Geräte sind Slaves, Gesamtlänge ' + total + '. Effektmanager „Abendstimmung“ (Sonnenuntergang, Welle, Glut, Loop) ist auf allen Geräten gleich angelegt und läuft auf jedem Gerät für sich auf ' + W + '×' + S + '; Logik 1 auf Gerät 1 startet ihn bei Sonnenuntergang und stoppt ihn um 23:00.',
+        summary: [['Hardware', hwText(I.hw) + ' (' + I.hw + '), je Gerät'], ['LED-Streifen 1–' + S, ledSummary(I.ledType) + ', je ' + W + ' LEDs, Reihenfolge Balken 1–' + S],
+          ['Segment 1', 'LED 1–' + seglen + ', Topologie 2D — Linear, Zeilen, Breite ' + W + ', Höhe ' + S + ', Start-Farbe ' + colourText(I.ledType, I.color, I.w)],
+          ['Effektkette', allDevs.map(function (k4) { return 'Gerät ' + k4 + (k4 === 1 ? ' Master' : ' Slave Offset ' + seglen * (k4 - 1)); }).join(' / ') + ', Gesamtlänge ' + total + ' (gemeinsame Fläche ' + (W * N) + '×' + S + ' nur für direkt gewählte Effekte)'],
+          ['Slave-Timeout / Override', '30 s / Sync übernimmt immer (Standardwerte)'],
+          ['Effektmanager 1 „Abendstimmung“', 'Cue 1 Gradient, Cue 2 Aurora 2D, Cue 3 Fire, je 600 s, Übergang 4000 ms, Loop ein; läuft je Gerät auf ' + W + '×' + S],
+          ['Strombegrenzung', powerText(I.powerLimit, I.currentPerLed) + ' je Gerät (ein Netzteil je Abschnitt, z. B. 5 V / 20 A)'],
+          ['Logik 1 (nur Gerät 1)', 'Zeitschaltuhr: Sonnenuntergang EIN (Wert 1), 23:00 AUS (Wert 0)'], ['Effektmanager-Stop: Rückkehr', 'Aus (um 23:00 wird es dunkel)']],
+        devices: devs,
+        check: ['Je Gerät: Hardware-Auswahl passend zur Firmware.', 'Je Gerät: Daten-Ports der LED-Streifen 1–' + S + ' auswählen (Balken 1 = Zeile 1).',
+          'Gerät 1: Standort und Zeitquelle unter Allgemein (Sonnenuntergang).',
+          'Strombegrenzung je Gerät an das Netzteil des Abschnitts anpassen; ' + PER_LED_HINT + ' Hat jeder Balken ein eigenes Netzteil, global „Deaktiviert“ und je Streifen „Fester Wert“ setzen.',
+          'Alle ' + w + ' Geräte mit derselben Firmware-Version betreiben (Effektkette).',
+          'Startet ein Slave allein neu, verpasst er den EM-Start; er läuft erst ab dem nächsten Schaltpunkt (oder einem manuellen Start über ' + ga440 + ') wieder mit.'] };
+    }
+  };
+
+  T['matrix-panel'] = {
+    title: 'Matrix-Panel 16×16', number: 5,
+    defaults: { hw: 4882, gaMain: 5, gaMid: 0, leds: 256, width: 16, height: 16, topology: 1, effect: 26, ledType: 0, brightness: 50, powerLimit: 3000, currentPerLed: 60 },
+    presets: { rgb: { currentPerLed: 60 }, rgbw: { currentPerLed: 0 } },
+    make: function (I) {
+      var d = 'geraet1', g = makeGa({ main: I.gaMain, mid: I.gaMid });
+      int(I.leds, 'LEDs am Panel', 1, 16384); int(I.width, 'Breite', 2, 255); int(I.height, 'Höhe', 2, 255);
+      if (I.width * I.height !== I.leds) fail('Matrix: Breite × Höhe = ' + (I.width * I.height) + ' muss der Anzahl LEDs (' + I.leds + ') entsprechen.');
+      if ([1, 2, 3, 4].indexOf(I.topology) < 0) fail('Topologie: bitte eine 2D-Topologie wählen.');
+      var fx = pdef('NEO', 1, 'NEO~NEOEffectType:1').t.v.filter(function (x) { return x[0] === I.effect; })[0];
+      if (!fx) fail('Effekt: ungültige Auswahl.');
+      var seg = [['Description~', 'Matrix'], ['NEO~SegmentEnd', I.leds], ['NEO~SegmentTopology', I.topology], ['NEO~NEOEffectType:1', I.effect], ['NEO~NEOEffectType:2', I.effect],
+        ['NEO~MatrixWidth', I.width], ['NEO~MatrixHeight', I.height], ['NEO~SegmentStartupBrightness', pct(I.brightness, 'Start-Helligkeit')]];
+      if (I.effect === 26) seg.push(['NEO~PlasmaNebulaSpeed', 48]);
+      var topoText = valueText('NEO', 1, 'NEO~SegmentTopology', I.topology);
+      return { title: 'Matrix-Panel ' + I.width + '×' + I.height, number: this.number,
+        description: 'Ein Panel mit ' + I.width + '×' + I.height + ' LEDs (' + ledText(I.ledType) + '), verdrahtet als ' + topoText + '. Ein Segment als 2D-Matrix mit dem Effekt ' + fx[1] + '. Globale Strombegrenzung ' + I.powerLimit + ' mA, Start-Helligkeit ' + I.brightness + ' %.',
+        summary: [['Hardware', hwText(I.hw) + ' (' + I.hw + ')'], ['LED-Streifen 1', ledSummary(I.ledType) + ', ' + I.leds + ' LEDs'],
+          ['Segment 1', 'LED 1–' + I.leds + ', Topologie ' + topoText + ', ' + I.width + '×' + I.height], ['Effekt', fx[1] + ' (' + I.effect + ')' + (I.effect === 26 ? ', Speed 48' : '')],
+          ['Start-Helligkeit', pct(I.brightness, 'Start-Helligkeit') + ' von 255 (' + I.brightness + ' %)'], ['Strombegrenzung', powerText(I.powerLimit, I.currentPerLed) + ' (ein Netzteil, z. B. 5 V / 4 A)']],
+        devices: [{
+          id: d, name: 'NeoPixel Matrix', hw: I.hw,
+          strings: [
+            Str('NEO', 0, 'Basiseinstellungen: Hardware, Strombegrenzung', [['NeoPixelHardwareSelect', I.hw]].concat(globalPower(I.powerLimit, I.currentPerLed))),
+            strip(1, 'Panel ' + I.width + 'x' + I.height, I.leds, I.ledType),
+            Str('NEO', 1, 'Segment 1: Matrix ' + I.width + '×' + I.height + ', ' + fx[1], seg)],
+          companions: [],
+          groupAddresses: [
+            g('5/0/0', 'Matrix Ein/Aus', 'DPST-1-1', [link(d, segKo(1, 'SegmentPower'), 'empfängt')], 'Taster (kurz)', 'Schalten.'),
+            g('5/1/0', 'Matrix Dimmen', 'DPST-3-7', [link(d, segKo(1, 'BriRel'), 'empfängt')], 'Taster (lang)', 'Relatives Dimmen.'),
+            g('5/4/0', 'Matrix Effekt', 'DPST-5-10', [link(d, segKo(1, 'Fx'), 'empfängt')], 'Taster / Visualisierung', 'Effektnummer setzen, z. B. 26 Plasma Nebula, 22 Matrix 2D, 30 Aurora 2D.'),
+            g('5/3/0', 'Matrix HSV', 'DPST-232-600', [link(d, segKo(1, 'HSV'), 'empfängt')], 'Visualisierung', 'Grundfarbe für Effekte, die eine Primärfarbe nutzen.'),
+            g('5/6/0', 'Matrix Ein/Aus Status', 'DPST-1-11', [link(d, segKo(1, 'SegmentPowerState'), 'sendet')], 'NeoPixel', 'Rückmeldung.'),
+            g('5/6/1', 'Matrix Effekt Status', 'DPST-5-10', [link(d, segKo(1, 'FxState'), 'sendet')], 'NeoPixel', 'Aktive Effektnummer.'),
+            g('5/6/2', 'Matrix Stromverbrauch', 'DPST-7-12', [link(d, ko('NEO_PowerCurrentTotal'), 'sendet')], 'NeoPixel', 'Berechneter Gesamtstrom in mA (gemeldet, solange die globale Strombegrenzung aktiv ist).')] }],
+        check: ['Hardware-Auswahl passend zur Firmware.', 'Daten-Port von LED-Streifen 1 auswählen.',
+          'Läuft die erste Zeile des Panels von rechts nach links, „Richtung umkehren“ am Segment setzen oder Topologie prüfen.',
+          'Strombegrenzung an das Netzteil anpassen (Beispiel ' + I.powerLimit + ' mA für 5 V / 4 A mit Reserve).'].concat(hasWhite(I.ledType) ? [PER_LED_HINT] : []) };
+    }
+  };
+
+  /* ---------------------------------------------------------------- push-button layouts (e.g. MDT 6- or 8-fold)
+     Rows refer to the example's original GA addresses; generate() maps them to the chosen GA base.
+     s = [press, addr, dpt, value] sent by the key, led = [addr, dpt] status object for the key LED. */
+  function sw(addr, on) { return ['kurz', addr, 'DPST-1-1', on ? '1 (Ein)' : '0 (Aus)']; }
+  function dim(addr, up) { return ['lang', addr, 'DPST-3-7', (up ? 'heller' : 'dunkler') + ', Stopp beim Loslassen']; }
+  function rocker(k, name, swAddr, dimAddr, led) {
+    return [{ key: String(k), func: name + ' – Wippe links: Ein (kurz) / heller (lang)', s: [sw(swAddr, true), dim(dimAddr, true)], led: led },
+      { key: String(k + 1), func: name + ' – Wippe rechts: Aus (kurz) / dunkler (lang)', s: [sw(swAddr, false), dim(dimAddr, false)], led: led }];
+  }
+  function toggle(k, name, addr, led) { return { key: String(k), func: name + ' – Um (kurz)', s: [['kurz', addr, 'DPST-1-1', 'Um (abwechselnd 1/0)']], led: led }; }
+  function free(k) { return { key: String(k), func: 'frei (z. B. für andere Gewerke)', s: [], led: null }; }
+  var KEYS = {
+    kuechenzeile: function () {
+      var six = rocker(1, 'Küchenzeile', '1/0/0', '1/1/0', ['1/6/0', 'DPST-1-11']).concat([
+        { key: '3', func: 'Szene 1 „Kochen“ (kurz)', s: [['kurz', '1/4/0', 'DPST-18-1', 'Szene 1 (Telegrammwert 0)']], led: null },
+        { key: '4', func: 'Szene 2 „Abend“ (kurz)', s: [['kurz', '1/4/0', 'DPST-18-1', 'Szene 2 (Telegrammwert 1)']], led: null },
+        toggle(5, 'Küchenzeile', '1/0/0', ['1/6/0', 'DPST-1-11']),
+        { key: '6', func: 'Sperre Um (kurz) – keine Status-LED vom NeoPixel', s: [['kurz', '1/5/0', 'DPST-1-1', 'Um (1 = gesperrt)']], led: null }]);
+      return { 6: six, 8: six.concat([
+        { key: '7', func: 'Helligkeit 100 % (kurz)', s: [['kurz', '1/2/0', 'DPST-5-1', '100 %']], led: null },
+        { key: '8', func: 'Helligkeit 30 % (kurz)', s: [['kurz', '1/2/0', 'DPST-5-1', '30 %']], led: null }]) };
+    },
+    wintergarten: function () {
+      var six = rocker(1, 'Dachkante', '2/0/0', '2/1/0', ['2/6/0', 'DPST-1-11']).concat(rocker(3, 'Sitzecke', '2/0/1', '2/1/1', ['2/6/2', 'DPST-1-11']),
+        [toggle(5, 'Dachkante', '2/0/0', ['2/6/0', 'DPST-1-11']), toggle(6, 'Sitzecke', '2/0/1', ['2/6/2', 'DPST-1-11'])]);
+      return { 6: six, 8: six.concat([free(7), free(8)]) };
+    },
+    garage: function () {
+      var six = rocker(1, 'Garage Licht', '3/0/0', '3/1/0', ['3/6/5', 'DPST-1-11']).concat([
+        { key: '3', func: 'Effektmanager „Einfahrt“ starten (kurz)', s: [['kurz', '3/4/0', 'DPST-5-10', '1 (EM 1)']], led: ['3/6/0', 'DPST-5-10'] },
+        { key: '4', func: 'Effektmanager beenden (kurz)', s: [['kurz', '3/4/1', 'DPST-1-1', '1 (Stop)']], led: null },
+        { key: '5', func: 'Vorherige Cue – Wippe links, Dimmfunktion (lang)', s: [['lang', '3/4/2', 'DPST-3-7', 'dunkler = vorherige Cue; Stopp beim Loslassen wird ignoriert']], led: null },
+        { key: '6', func: 'Nächste Cue – Wippe rechts, Dimmfunktion (lang)', s: [['lang', '3/4/2', 'DPST-3-7', 'heller = nächste Cue; Stopp beim Loslassen wird ignoriert']], led: null }]);
+      return { 6: six, 8: six.concat([
+        { key: '7', func: 'Sperre Um (kurz) – Automatik aus, keine Status-LED vom NeoPixel', s: [['kurz', '3/5/0', 'DPST-1-1', 'Um (1 = gesperrt)']], led: null },
+        toggle(8, 'Garage Licht', '3/0/0', ['3/6/5', 'DPST-1-11'])]) };
+    },
+    terrasse: function () {
+      var six = rocker(1, 'Terrasse', '4/0/0', '4/1/0', ['4/6/0', 'DPST-1-11']).concat([
+        { key: '3', func: 'Abendstimmung starten (kurz)', s: [['kurz', '4/4/0', 'DPST-5-10', '1 (EM 1)']], led: ['4/6/1', 'DPST-5-10'] },
+        { key: '4', func: 'Abendstimmung beenden (kurz)', s: [['kurz', '4/4/0', 'DPST-5-10', '0 (Stop)']], led: null },
+        { key: '5', func: 'Vorherige Cue – Wippe links, Dimmfunktion (lang)', s: [['lang', '4/4/1', 'DPST-3-7', 'dunkler = vorherige Cue; Stopp beim Loslassen wird ignoriert']], led: null },
+        { key: '6', func: 'Nächste Cue – Wippe rechts, Dimmfunktion (lang)', s: [['lang', '4/4/1', 'DPST-3-7', 'heller = nächste Cue; Stopp beim Loslassen wird ignoriert']], led: null }]);
+      return { 6: six, 8: six.concat([
+        { key: '7', func: 'Sperre Um (kurz) – keine Status-LED vom NeoPixel', s: [['kurz', '4/5/0', 'DPST-1-1', 'Um (1 = gesperrt)']], led: null },
+        { key: '8', func: 'Helligkeit 100 % (kurz)', s: [['kurz', '4/2/0', 'DPST-5-1', '100 %']], led: null }]) };
+    },
+    'matrix-panel': function () {
+      var fx = function (k, id, name) { return { key: String(k), func: 'Effekt ' + name + ' (kurz)', s: [['kurz', '5/4/0', 'DPST-5-10', String(id)]], led: ['5/6/1', 'DPST-5-10'] }; };
+      var six = rocker(1, 'Matrix', '5/0/0', '5/1/0', ['5/6/0', 'DPST-1-11']).concat([fx(3, 26, 'Plasma Nebula'), fx(4, 22, 'Matrix 2D'), fx(5, 30, 'Aurora 2D'), fx(6, 32, 'Metaballs 2D')]);
+      return { 6: six, 8: six.concat([fx(7, 31, 'Lissajous 2D'), fx(8, 25, 'Starfield Warp')]) };
+    }
+  };
+  var KEY_NOTE = 'Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen. ' +
+    'Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt). ' +
+    'Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus. ' +
+    'Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen. ' +
+    'Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein. ' +
+    'Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen. ' +
+    'Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.';
+  /* The same sentences as KEY_NOTE, one item per function (rendered as a list on the page and in the README). */
+  var KEY_NOTE_ITEMS = [
+    'Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt).',
+    'Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus.',
+    'Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen.',
+    'Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein.',
+    'Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen.',
+    'Status-LED: Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.',
+    'MDT-Bezeichnungen: Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen.'];
+  /* Resolves the rows to final GAs and writes the key senders into the GA list. */
+  function applyKeys(id, gaFn, devices) {
+    var L = KEYS[id](), map = {}, out = {};
+    var gas = devices[0].groupAddresses;
+    function resolve(addr) { return addr === 'eigenes Objekt' ? addr : gaFn(addr, 'x', 'x', [], '', '').ga; }
+    [6, 8].forEach(function (n) {
+      out[n] = L[n].map(function (r) {
+        var row = { key: r.key, function: r.func, sends: r.s.map(function (x) { return { press: x[0], ga: resolve(x[1]), dpt: x[2], value: x[3] }; }),
+          statusLed: r.led ? { ga: resolve(r.led[0]), dpt: r.led[1] } : null };
+        row.sends.forEach(function (x) { var k = x.ga; (map[k] = map[k] || {}); (map[k][n] = map[k][n] || {}); (map[k][n][x.press] = map[k][n][x.press] || []).push(r.key); });
+        return row;
+      });
+    });
+    function keyText(m) {
+      if (!m) return '';
+      return ['kurz', 'lang'].filter(function (p) { return m[p]; }).map(function (p) {
+        return m[p].filter(function (x, i, arr) { return arr.indexOf(x) === i; }).join(', ') + ' (' + p + ')';
+      }).join(', ');
+    }
+    gas.forEach(function (gaEntry) {
+      var m = map[gaEntry.ga];
+      if (!m) { if (/Taster/.test(gaEntry.sender)) gaEntry.sender = gaEntry.sender.replace(/Taster( \([^)]*\))?/, 'freie Taste oder Visualisierung'); return; }
+      var a = keyText(m[6]), b = keyText(m[8]);
+      var txt = a && a === b ? 'MDT Taster, Taste ' + a : (a ? 'MDT Taster 6-fach, Taste ' + a + '; 8-fach, Taste ' + b : 'MDT Taster 8-fach, Taste ' + b);
+      var rest = gaEntry.sender.replace(/^Taster( \([^)]*\))?( \/ )?/, '').replace(/, Taster$/, '');
+      gaEntry.sender = rest && rest !== gaEntry.sender ? txt + (rest ? ' / ' + rest : '') : (gaEntry.sender.indexOf('Taster') >= 0 ? txt : txt + ' / ' + gaEntry.sender);
+      if (/, Taster$/.test(gaEntry.sender)) gaEntry.sender = gaEntry.sender.replace(/, Taster$/, '');
+    });
+    return out;
+  }
+
+  /* ---------------------------------------------------------------- semantic checks on the generated result */
+  function val(s, n) { for (var i = 0; i < s.items.length; i++) if (s.items[i].n === n) return s.items[i].v; return pdef(s.module, s.channel, n).d; }
+  function semantic(R) {
+    var chain = [];
+    R.devices.forEach(function (dv) {
+      var base = dv.strings.filter(function (s) { return s.module === 'NEO' && s.channel === 0; })[0];
+      var nstr = val(base, 'NEONumberOfLEDStrips'), nseg = val(base, 'NEONumberOfSegments');
+      var strips = dv.strings.filter(function (s) { return s.module === 'NEOSTRIP'; });
+      if (strips.length !== nstr) fail('Intern: ' + strips.length + ' Streifen-Strings, Anzahl Streifen ist ' + nstr + '.');
+      var total = 0, anyWhite = false;
+      strips.forEach(function (s) {
+        total += val(s, 'NEO~Length');
+        var lt = val(s, 'NEO~LEDType'), co = val(s, 'NEO~ColourOrder');
+        checkLedType(lt);
+        if (co !== colourOf(lt)) fail('LED-Streifen ' + s.channel + ': Farbordnung ' + co + ' passt nicht zum LED-Typ (erwartet ' + colourOf(lt) + ').');
+        if (hasWhite(lt)) anyWhite = true;
+        if (val(s, 'NEO~powerLimitCombined') === 2 && val(s, 'NEO~currentPerChannel') <= 0) fail('LED-Streifen ' + s.channel + ': eigene Stromgrenze 0 mA begrenzt nicht.');
+      });
+      if (val(base, 'NEOpowerLimitCombined') === 1 && val(base, 'NEOpowerLimitGlobal') <= 0) fail('Globale Strombegrenzung: 0 mA begrenzt nicht.');
+      var segs = dv.strings.filter(function (s) { return s.module === 'NEO' && s.channel > 0; });
+      if (segs.length !== nseg) fail('Intern: ' + segs.length + ' Segment-Strings, Anzahl Segmente ist ' + nseg + '.');
+      var ranges = [];
+      segs.forEach(function (s) {
+        var a = val(s, 'NEO~SegmentStart'), b = val(s, 'NEO~SegmentEnd');
+        if (!(a >= 1 && a <= b && b <= total)) fail('Segment ' + s.channel + ': LED ' + a + '…' + b + ' liegt nicht im virtuellen Streifen 1…' + total + '.');
+        ranges.forEach(function (r) { if (a <= r[2] && r[1] <= b) fail('Segment ' + s.channel + ' überlappt Segment ' + r[0] + '.'); });
+        ranges.push([s.channel, a, b]);
+        if (!anyWhite && val(s, 'NEO~SegmentStartupW') !== 0) fail('Segment ' + s.channel + ': W-Wert auf einem Gerät ohne Weißkanal.');
+        var topo = val(s, 'NEO~SegmentTopology'), W = val(s, 'NEO~MatrixWidth'), H = val(s, 'NEO~MatrixHeight');
+        if (topo !== 0 && W * H !== b - a + 1) fail('Segment ' + s.channel + ': Breite × Höhe = ' + (W * H) + ' ist nicht die Segmentlänge ' + (b - a + 1) + '.');
+        var sm = val(s, 'NEO~SyncMode');
+        if (sm) chain.push({ mode: sm, total: val(s, 'NEO~VirtualTotalLength'), off: sm === 1 ? 0 : val(s, 'NEO~VirtualOffset'), len: b - a + 1, H: H, topo: topo });
+      });
+      dv.strings.filter(function (s) { return s.module === 'NEOEM'; }).forEach(function (s) {
+        if (s.channel > val(base, 'NEOEMEnabled')) fail('Effektmanager ' + s.channel + ' ist angelegt, aber „Verfügbare Effektmanager“ ist kleiner.');
+      });
+    });
+    if (chain.length) {
+      if (chain.filter(function (c) { return c.mode === 1; }).length !== 1) fail('Effektkette: genau ein Master erforderlich.');
+      chain.sort(function (a, b) { return a.off - b.off; });
+      var pos = 0, T0 = chain[0].total;
+      chain.forEach(function (c) {
+        if (c.total !== T0) fail('Effektkette: Gesamtlänge unterschiedlich.');
+        if (c.off !== pos) fail('Effektkette: Offset ' + c.off + ' erwartet ' + pos + ' (Lücke oder Überlappung).');
+        if (c.topo && (c.total % c.H || c.off % c.H)) fail('Effektkette 2D: Gesamtlänge und Offsets müssen Vielfache der Höhe sein.');
+        pos += c.len;
+      });
+      if (pos !== T0) fail('Effektkette: Geräte decken ' + pos + ' von ' + T0 + ' LEDs ab.');
+    }
+    R.devices.forEach(function (dv) {
+      dv.groupAddresses.forEach(function (x) {
+        var a = x.ga.split('/').map(Number);
+        if (a[0] < 0 || a[0] > 31 || a[1] < 0 || a[1] > 7 || a[2] < 0 || a[2] > 255) fail('Gruppenadresse ' + x.ga + ' liegt außerhalb 0–31/0–7/0–255 (Hauptgruppe/Mittelgruppe prüfen).');
+      });
+    });
+  }
+
+  var ORDER = { NEO0: 0, NEOSTRIP: 1, NEO: 2, NEOEM: 3, LMG: 4, FCB: 5, LOG: 6 };
+  function orderKey(s) { return [ORDER[(s.module === 'NEO' && s.channel === 0) ? 'NEO0' : s.module], s.channel]; }
+
+  /* Run a template; returns the example in the JSON schema plus .txt text in `txt`. */
+  function generate(id, inputs) {
+    var t = T[id];
+    if (!t) fail('Unbekannte Vorlage ' + id);
+    var I = {}; Object.keys(t.defaults).forEach(function (k) { I[k] = (inputs && inputs[k] !== undefined) ? inputs[k] : t.defaults[k]; });
+    int(I.gaMain, 'GA-Hauptgruppe', 1, 31); int(I.gaMid, 'GA-Mittelgruppe (Basis)', 0, 7);
+    hwText(I.hw); checkLedType(I.ledType);
+    var buttons = (inputs && inputs.buttons !== undefined) ? inputs.buttons : 0;
+    if ([0, 6, 8].indexOf(buttons) < 0) fail('Taster: keiner, 6-fach oder 8-fach.');
+    if (I.currentPerLed !== undefined) int(I.currentPerLed, 'Strom pro LED (mA)', 0, pdef('NEO', 0, 'NEOcurrentPerLED').t.max);
+    var R = t.make(I);
+    var keyLayouts = applyKeys(id, makeGa({ main: I.gaMain, mid: I.gaMid }), R.devices);
+    semantic(R);
+    var lines = ['# OpenKNX NeoPixel – Beispielkonfiguration ' + R.number + ': ' + R.title,
+      '# Import: Konfigurationstransfer > Import, Import-Ziel "automatisch aus Export übernehmen".',
+      '# Jede Zeile ohne "#" ist ein Transfer-String; in der angegebenen Reihenfolge einzeln importieren.', ''];
+    var out = { schemaVersion: 1, id: id, number: R.number, title: R.title, description: R.description,
+      product: { name: 'OpenKNX NeoPixel', header: CAT.header, testedAgainst: CAT.tested, moduleVersions: CAT.modver },
+      importOrder: ['NEO Kanal 0 (Basis)', 'NEOSTRIP Kanal 1..n', 'NEO Kanal 1..n (Segmente)', 'NEOEM Kanal 1..n', 'LMG', 'FCB Kanal 0, dann Kanal n', 'LOG Kanal n'],
+      summary: R.summary.map(function (x) { return { setting: x[0], value: x[1] }; }), devices: [], checkAfterImport: R.check,
+      keyLayouts: { note: KEY_NOTE, noteItems: KEY_NOTE_ITEMS, device: R.devices[0].id, '6': keyLayouts[6], '8': keyLayouts[8] } };
+    R.devices.forEach(function (dv) {
+      var all = dv.strings.map(function (s) { return [s, s.purpose]; }).concat(dv.companions.map(function (c) { return [c.string, c.purpose]; }));
+      all = all.map(function (x, idx) { return { s: x[0], p: x[1], idx: idx }; });
+      all.sort(function (a, b) { var ka = orderKey(a.s), kb = orderKey(b.s); return ka[0] - kb[0] || ka[1] - kb[1] || a.idx - b.idx; });
+      lines.push('#@device ' + dv.id, '# ===== ' + dv.name + ' =====');
+      var ts = [];
+      all.forEach(function (x, n) {
+        var st = build(x.s);
+        lines.push('# ' + (n + 1) + '. ' + x.p, st);
+        ts.push({ order: n + 1, module: x.s.module, channel: x.s.channel, purpose: x.p, string: st, kind: ['LOG', 'FCB', 'LMG'].indexOf(x.s.module) >= 0 ? 'companion' : 'neopixel' });
+      });
+      lines.push('');
+      out.devices.push({ id: dv.id, name: dv.name, hardware: { deviceHwId: dv.hw, text: hwText(dv.hw) }, transferStrings: ts,
+        keySettings: [].concat.apply([], dv.strings.map(settings)),
+        companionModules: dv.companions.map(function (c) { return { module: c.string.module, channel: c.string.channel, purpose: c.purpose, keySettings: settings(c.string), transferString: build(c.string) }; }),
+        groupAddresses: dv.groupAddresses });
+    });
+    if (buttons) {
+      lines.push('# ===== Tasterbelegung (z. B. MDT Taster ' + buttons + '-fach, ' + R.devices[0].name + ') =====');
+      keyLayouts[buttons].forEach(function (r) {
+        lines.push('# Taste ' + r.key + ': ' + r.function + (r.sends.length ? ' -> ' + r.sends.map(function (x) { return x.ga + ' ' + x.dpt + ' ' + x.value + ' (' + x.press + ')'; }).join('; ') : '') +
+          (r.statusLed ? ' | Status-LED: ' + r.statusLed.ga + (r.statusLed.dpt ? ' ' + r.statusLed.dpt : '') : ''));
+      });
+      lines.push('# ' + KEY_NOTE, '');
+    }
+    out.txt = lines.join('\n');
+    return out;
+  }
+
+  return {
+    init: function (catalog) { CAT = catalog; },
+    templates: T, generate: generate, GenError: GenError,
+    enumOf: function (mod, ch, name) { return pdef(mod, ch, name).t.v; },
+    colourOf: colourOf, hasWhite: hasWhite
+  };
+})();
+if (typeof module !== 'undefined') module.exports = NeoGen;
+
+// END GENERATOR
+</script>
+<script>
+(function () {
+  'use strict';
+  var CAT = JSON.parse(document.getElementById('catalog').textContent);
+  NeoGen.init(CAT);
+  var SPI = [5, 6, 21, 22, 23, 24, 25, 99];
+  function opts(mod, ch, name, filter) {
+    return NeoGen.enumOf(mod, ch, name).filter(function (e) { return !filter || filter(e[0]); }).map(function (e) { return [e[0], e[1] + ' (' + e[0] + ')']; });
+  }
+  var HW = opts('NEO', 0, 'NeoPixelHardwareSelect', function (v) { return v !== 255; });
+  var LED = opts('NEOSTRIP', 1, 'NEO~LEDType', function (v) { return SPI.indexOf(v) < 0 && [4, 14, 15].indexOf(v) < 0; }); // colour order and measured channel count differ for 4, 14, 15
+  var TOPO = opts('NEO', 1, 'NEO~SegmentTopology', function (v) { return v >= 1 && v <= 4; });
+  var FX2D = opts('NEO', 1, 'NEO~NEOEffectType:1', function (v) { return v >= 20 && v <= 32; });
+  var common = [
+    { k: 'hw', l: 'Hardware', t: 'sel', o: HW, h: 'Geräte-ID; Ports nach dem Import wählen.' },
+    { k: 'gaMain', l: 'GA-Hauptgruppe', t: 'num', min: 1, max: 31 },
+    { k: 'gaMid', l: 'GA-Mittelgruppe (Basis)', t: 'num', min: 0, max: 7, h: 'Wird zu den Mittelgruppen 0–7 addiert.' },
+    { k: 'buttons', l: 'Taster (z. B. MDT)', t: 'sel', o: [[0, 'keiner'], [6, '6-fach'], [8, '8-fach']], h: 'Fügt eine Tasterbelegung zur Ausgabe und zur .txt hinzu.' }];
+  var CPL = { k: 'currentPerLed', l: 'Strom pro LED (mA, 0 = Tabelle)', t: 'num', min: 0, max: 70, h: '0 = Tabelle des LED-Typs (RGB 3 × 20 mA, RGBW 4 × 20 mA), empfohlen für RGBW. Ein Wert über 0 wird ganzzahlig auf die Kanäle verteilt. In der ETS nur bei „Pro LED (automatisch)“ sichtbar.' };
+  var LEDT = { k: 'ledType', l: 'LED-Typ', t: 'sel', o: LED, h: 'Farbordnung folgt dem Typ. Wechsel RGB ↔ RGBW setzt Farbe, W und Strom pro LED auf die Vorlagenwerte der Familie.' };
+  var UI = {
+    kuechenzeile: { d: 'Ein Streifen, ein Segment, statische Start-Farbe, zwei Szenen (Kochen / Abend), nach Neustart letzter Zustand. Ein Netzteil mit globaler Strombegrenzung. Vorlage: WS2812B (RGB).', f: [
+      { k: 'leds', l: 'Anzahl LEDs', t: 'num', min: 1, max: 16384 }, LEDT,
+      { k: 'name', l: 'Bezeichnung', t: 'text' }, { k: 'color', l: 'Start-Farbe RGB', t: 'color' }, { k: 'w', l: 'Start-Farbe W (nur mit Weißkanal)', t: 'num', min: 0, max: 255, wf: true },
+      { k: 'brightness', l: 'Start-Helligkeit (%)', t: 'num', min: 0, max: 100 },
+      { k: 'powerLimit', l: 'Globale Strombegrenzung (mA)', t: 'num', min: 1, max: 65535 }, CPL] },
+    wintergarten: { d: 'Zwei Streifen, drei Segmente; Dachkanten mit HCL über Lichtmanager 1, Sitzecke ohne HCL; Relais 1 schaltet das gemeinsame Netzteil über zwei Logikkanäle, globale Strombegrenzung. Vorlage: SK6812 RGBW.', f: [
+      { k: 'leds1', l: 'LEDs Streifen 1 (Segment 1)', t: 'num', min: 1, max: 16384 }, { k: 'leds2', l: 'LEDs Streifen 2 (Segment 2 + 3)', t: 'num', min: 1, max: 16384 },
+      { k: 'roofRight', l: 'LEDs Segment 2 (Rest = Segment 3)', t: 'num', min: 1, max: 16384 }, LEDT,
+      { k: 'name1', l: 'Name Segment 1', t: 'text' }, { k: 'name2', l: 'Name Segment 2', t: 'text' }, { k: 'name3', l: 'Name Segment 3', t: 'text' },
+      { k: 'roofColor', l: 'Start-Farbe Dachkanten RGB', t: 'color' }, { k: 'roofW', l: 'Start-Farbe Dachkanten W', t: 'num', min: 0, max: 255, wf: true },
+      { k: 'seatColor', l: 'Start-Farbe Segment 3 RGB', t: 'color' }, { k: 'seatW', l: 'Start-Farbe Segment 3 W', t: 'num', min: 0, max: 255, wf: true },
+      { k: 'powerLimit', l: 'Globale Strombegrenzung (mA)', t: 'num', min: 1, max: 65535 }, CPL,
+      { k: 'relayOffDelay', l: 'Relais Ausschaltverzögerung (s)', t: 'num', min: 0, max: 65535 }] },
+    garage: { d: 'Drei Streifen mit je eigenem Netzteil und eigener Stromgrenze (global „Deaktiviert“); Effektmanager „Einfahrt“ (Begrüßung, Ausleuchten, Nachlauf); Torkontakt und zwei Bewegungsmelder starten ihn über Funktionsblock und Logik. Vorlage: WS2812B (RGB).', f: [
+      { k: 'leds1', l: 'LEDs Streifen 1', t: 'num', min: 1, max: 16384 }, { k: 'leds2', l: 'LEDs Streifen 2', t: 'num', min: 1, max: 16384 }, { k: 'leds3', l: 'LEDs Streifen 3', t: 'num', min: 1, max: 16384 },
+      LEDT,
+      { k: 'strip1', l: 'Name Streifen 1', t: 'text' }, { k: 'strip2', l: 'Name Streifen 2', t: 'text' }, { k: 'strip3', l: 'Name Streifen 3', t: 'text' },
+      { k: 'seg1', l: 'Name Segment 1', t: 'text' }, { k: 'seg2', l: 'Name Segment 2', t: 'text' }, { k: 'seg3', l: 'Name Segment 3', t: 'text' },
+      { k: 'stairMinutes', l: 'Nachlauf nach (Minuten)', t: 'num', min: 1, max: 16000 },
+      { k: 'limit1', l: 'Stromgrenze Streifen 1 (mA)', t: 'num', min: 1, max: 65535 }, { k: 'limit2', l: 'Stromgrenze Streifen 2 (mA)', t: 'num', min: 1, max: 65535 },
+      { k: 'limit3', l: 'Stromgrenze Streifen 3 (mA)', t: 'num', min: 1, max: 65535 }, CPL] },
+    terrasse: { d: 'Mehrere Geräte als Effektkette (1 Master, Rest Slaves); je Gerät ein Segment als 2D-Matrix aus den parallelen Streifen; Effektmanager „Abendstimmung“ auf jedem Gerät, gestartet von einer Zeitschaltuhr auf Gerät 1. Offsets und Gesamtlänge werden berechnet. Ein Netzteil je Gerät, globale Strombegrenzung. Vorlage: SK6812 RGBW.', f: [
+      { k: 'devices', l: 'Anzahl Geräte', t: 'num', min: 2, max: 8 }, { k: 'strips', l: 'Streifen je Gerät (= Matrix-Höhe)', t: 'num', min: 2, max: 8 },
+      { k: 'ledsPerStrip', l: 'LEDs je Streifen (= Matrix-Breite)', t: 'num', min: 1, max: 255 }, LEDT,
+      { k: 'color', l: 'Start-Farbe RGB', t: 'color' }, { k: 'w', l: 'Start-Farbe W (nur mit Weißkanal)', t: 'num', min: 0, max: 255, wf: true },
+      { k: 'powerLimit', l: 'Globale Strombegrenzung je Gerät (mA)', t: 'num', min: 1, max: 65535 }, CPL] },
+    'matrix-panel': { d: 'Ein Panel als 2D-Matrix mit einem 2D-Effekt, globale Strombegrenzung. Vorlage: WS2812B (RGB).', f: [
+      { k: 'leds', l: 'LEDs am Panel', t: 'num', min: 1, max: 16384 }, { k: 'width', l: 'Breite (Spalten)', t: 'num', min: 2, max: 255 }, { k: 'height', l: 'Höhe (Zeilen)', t: 'num', min: 2, max: 255 },
+      { k: 'topology', l: 'Topologie', t: 'sel', o: TOPO }, { k: 'effect', l: 'Effekt', t: 'sel', o: FX2D }, LEDT,
+      { k: 'brightness', l: 'Start-Helligkeit (%)', t: 'num', min: 0, max: 100 },
+      { k: 'powerLimit', l: 'Globale Strombegrenzung (mA)', t: 'num', min: 1, max: 65535 }, CPL] }
+  };
+  var cur = 'kuechenzeile', values = {}, last = null, family = null, buttons = 0;
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function renderTpl() {
+    $('tpl').innerHTML = Object.keys(NeoGen.templates).map(function (id) {
+      var t = NeoGen.templates[id];
+      return '<button type="button" class="np-pill-btn" data-id="' + id + '" aria-pressed="' + (id === cur) + '">' + t.number + '. ' + esc(t.title.replace(/ \(.*\)$/, '')) + '</button>';
+    }).join('');
+    $('tplDesc').textContent = UI[cur].d;
+  }
+  function renderForm() {
+    var t = NeoGen.templates[cur];
+    values = JSON.parse(JSON.stringify(t.defaults)); family = NeoGen.hasWhite(values.ledType); values.buttons = buttons;
+    $('form').innerHTML = UI[cur].f.concat(common).map(function (f) {
+      var v = values[f.k], ctl;
+      if (f.t === 'sel') ctl = '<select data-k="' + f.k + '" data-t="sel">' + f.o.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>';
+      else if (f.t === 'num') ctl = '<input type="number" data-k="' + f.k + '" data-t="num" value="' + v + '" min="' + f.min + '" max="' + f.max + '" step="1">';
+      else if (f.t === 'color') ctl = '<input type="color" data-k="' + f.k + '" data-t="color" value="' + String(v).toLowerCase() + '">';
+      else ctl = '<input type="text" data-k="' + f.k + '" data-t="text" value="' + esc(v) + '">';
+      if (f.wf) ctl = ctl.replace('<input ', '<input data-w="1" ');
+      var id = 'f-' + f.k;
+      ctl = ctl.replace(' data-k=', ' id="' + id + '"' + (f.h ? ' aria-describedby="' + id + '-h"' : '') + ' data-k=');
+      return '<div class="fld"><label for="' + id + '">' + esc(f.l) + '</label>' + ctl + (f.h ? '<div class="hint" id="' + id + '-h">' + esc(f.h) + '</div>' : '') + '</div>';
+    }).join('');
+    syncWhite();
+  }
+  function setField(k, v) {
+    values[k] = v;
+    var el = $('form').querySelector('[data-k="' + k + '"]');
+    if (el) el.value = el.getAttribute('data-t') === 'color' ? String(v).toLowerCase() : v;
+  }
+  function syncWhite() {
+    var white = NeoGen.hasWhite(values.ledType);
+    Array.prototype.forEach.call($('form').querySelectorAll('[data-w]'), function (el) {
+      el.disabled = !white;
+      if (!white) setField(el.getAttribute('data-k'), 0);
+    });
+  }
+  /* Applies the template's family preset once the LED family differs from the last applied one.
+     Runs after every readForm(), so the order of the browser's input and change events does not matter. */
+  function applyFamily() {
+    var t = NeoGen.templates[cur], fam = NeoGen.hasWhite(values.ledType);
+    if (family !== null && fam !== family && t.presets) {
+      var p = t.presets[fam ? 'rgbw' : 'rgb'];
+      Object.keys(p).forEach(function (k) { setField(k, p[k]); });
+    }
+    family = fam;
+    syncWhite();
+  }
+  function readForm() {
+    Array.prototype.forEach.call($('form').querySelectorAll('[data-k]'), function (el) {
+      var k = el.getAttribute('data-k'), t = el.getAttribute('data-t');
+      if (t === 'num' || t === 'sel') values[k] = el.value === '' ? NaN : Number(el.value);
+      else if (t === 'color') values[k] = el.value.toUpperCase();
+      else values[k] = el.value;
+    });
+  }
+  function render() {
+    readForm();
+    buttons = values.buttons;
+    applyFamily();
+    var R;
+    try { R = NeoGen.generate(cur, values); }
+    catch (e) {
+      if (!(e instanceof NeoGen.GenError)) throw e;
+      $('msg').innerHTML = '<div class="msg err"><b>Eingabe nicht übernommen:</b> ' + esc(e.message) + '</div>';
+      // no stale output: the previous strings must not stay copyable
+      last = null;
+      var stale = '<p class="msg err">Keine Ausgabe – bitte die Eingabe oben korrigieren.</p>';
+      $('strings').innerHTML = stale; $('gas').innerHTML = stale; $('keys').innerHTML = stale; $('check').innerHTML = '';
+      $('download').disabled = true;
+      return;
+    }
+    last = R;
+    $('download').disabled = false;
+    var n = R.devices.reduce(function (a, d) { return a + d.transferStrings.length; }, 0);
+    $('msg').innerHTML = '<div class="msg ok">' + n + ' Transfer-Strings für ' + R.devices.length + (R.devices.length > 1 ? ' Geräte' : ' Gerät') + ' erzeugt.</div>';
+    var multi = R.devices.length > 1;
+    $('strings').innerHTML = R.devices.map(function (d) {
+      return (multi ? '<h3>' + esc(d.name) + '</h3>' : '') + d.transferStrings.map(function (t) {
+        return '<div class="ts"><div class="head"><span class="title">' + t.order + '. ' + esc(t.purpose) +
+          ' <span class="chip' + (t.kind === 'companion' ? ' comp' : '') + '">' + t.module + ' ' + (t.channel === 0 ? 'Basis' : 'Kanal ' + t.channel) + '</span></span>' +
+          '<button type="button" class="np-btn copy" aria-label="String ' + t.order + ' kopieren">Kopieren</button></div><pre>' + esc(t.string) + '</pre></div>';
+      }).join('');
+    }).join('');
+    var rows = [];
+    R.devices.forEach(function (d) { d.groupAddresses.forEach(function (g) { rows.push(g); }); });
+    $('gas').innerHTML = '<table><thead><tr><th>GA</th><th>Name / DPT</th><th>KOs</th><th>Zweck</th></tr></thead><tbody>' + rows.map(function (g) {
+      return '<tr><td class="ga" data-l="GA">' + esc(g.ga) + '</td><td data-l="Name / DPT">' + esc(g.name) + '<br><small>' + esc(g.dpt) + ' · Sender: ' + esc(g.sender) + '</small></td><td data-l="KOs">' + g.links.map(function (l) {
+        return (multi ? 'Gerät ' + esc(l.device.replace('geraet', '')) + ': ' : '') + 'KO ' + l.ko + ' ' + esc(l.koName) + '<br><small>' + esc(l.koFunctionText) + ' · ' + esc(l.dpt) + ' · ' + esc(l.flags) + ' · ' + esc(l.direction) + '</small>';
+      }).join('<br>') + '</td><td data-l="Zweck">' + esc(g.reason) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+    var K = R.keyLayouts;
+    $('taster').hidden = !buttons; syncNav();
+    if (buttons) {
+      $('keysNote').innerHTML = '<p><b>Tasterbelegung ' + buttons + '-fach für ' + esc(R.devices.filter(function (d) { return d.id === K.device; })[0].name) + '</b></p><ul class="keynote">' +
+        K.noteItems.map(function (x) { var i = x.indexOf(': '); return '<li><b>' + esc(x.slice(0, i)) + ':</b> ' + esc(x.slice(i + 2)) + '</li>'; }).join('') + '</ul>';
+      $('keys').innerHTML = '<table><thead><tr><th>Taste</th><th>Funktion</th><th>Sendet an</th><th>Status-LED</th></tr></thead><tbody>' + K[String(buttons)].map(function (r) {
+        return '<tr><td class="ga" data-l="Taste">' + esc(r.key) + '</td><td data-l="Funktion">' + esc(r.function) + '</td><td data-l="Sendet an">' + (r.sends.length ? r.sends.map(function (x) {
+          return '<b>' + esc(x.ga) + '</b> · ' + esc(x.dpt) + '<br><small>' + esc(x.value) + ' (' + esc(x.press) + ')</small>';
+        }).join('<br>') : '–') + '</td><td data-l="Status-LED">' + (r.statusLed ? esc(r.statusLed.ga) + (r.statusLed.dpt ? '<br><small>' + esc(r.statusLed.dpt) + '</small>' : '') : '–') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+    }
+    $('check').innerHTML = R.check.concat(['Start-Farbe und Cue-Farben im Segment bzw. Effektmanager.']).map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('');
+  }
+  function copyText(text, btn) {
+    function done() { btn.textContent = 'Kopiert'; btn.classList.add('done'); $('live').textContent = 'In die Zwischenablage kopiert.'; setTimeout(function () { btn.textContent = 'Kopieren'; btn.classList.remove('done'); }, 1500); }
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { btn.textContent = 'Bitte markieren und kopieren'; }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  }
+  $('tpl').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-id]'); if (!b) return;
+    cur = b.getAttribute('data-id'); renderTpl(); renderForm(); render();
+  });
+  $('form').addEventListener('input', render);
+  $('form').addEventListener('change', render);
+  $('reset').addEventListener('click', function () { renderForm(); render(); });
+  $('strings').addEventListener('click', function (e) {
+    var b = e.target.closest('button.copy'); if (!b) return;
+    copyText(b.closest('.ts').querySelector('pre').textContent, b);
+  });
+  $('download').addEventListener('click', function () {
+    if (!last) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([last.txt], { type: 'text/plain;charset=utf-8' }));
+    a.download = cur + (buttons ? '-taster' + buttons : '') + '.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+  $('foot').textContent = 'Parameterkatalog: ' + CAT.source + '. Kopfzeile ' + CAT.header + '; Modulversionen ' + Object.keys(CAT.modver).map(function (m) { return m + ' ' + CAT.modver[m]; }).join(', ') + '.';
+  /* Top bar: bar height feeds scroll-margin, the link of the section in view is highlighted. */
+  var bar = $('kb'), links = Array.prototype.slice.call(document.querySelectorAll('.kb-link'));
+  function barHeight() { document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px'); }
+  function syncNav() {
+    links.forEach(function (a) { var s = document.querySelector(a.getAttribute('href')); a.hidden = !s || s.hidden; });
+    markActive();
+  }
+  function markActive() {
+    var top = bar.offsetHeight + 24, active = null;
+    links.forEach(function (a) {
+      var s = document.querySelector(a.getAttribute('href'));
+      if (s && !s.hidden && s.getBoundingClientRect().top - top <= 0) active = a;
+    });
+    if (!active) active = links[0];
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) active = links.filter(function (a) { return !a.hidden; }).pop();
+    links.forEach(function (a) {
+      var on = a === active;
+      a.classList.toggle('active', on);
+      if (on) { a.setAttribute('aria-current', 'location'); if (a.scrollIntoView && a.parentNode.scrollWidth > a.parentNode.clientWidth) a.parentNode.scrollLeft = a.offsetLeft - 12; }
+      else a.removeAttribute('aria-current');
+    });
+  }
+  window.addEventListener('scroll', markActive, { passive: true });
+  window.addEventListener('resize', function () { barHeight(); markActive(); });
+  barHeight();
+  renderTpl(); renderForm(); render(); syncNav();
+})();
+</script>
+</body>
+</html>

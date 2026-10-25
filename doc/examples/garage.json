@@ -1,0 +1,1679 @@
+{
+  "schemaVersion": 1,
+  "id": "garage",
+  "number": 3,
+  "title": "Garage",
+  "description": "Drei Streifen (WS2812B): Einfahrt (120 LEDs), Wand links (180) und Wand rechts (180), je ein Segment und je ein eigenes Netzteil. Effektmanager 1 „Einfahrt“: Begrüßung (Komet, 10 s), Ausleuchten (Weiß, hält) und Nachlauf (Atmen, 30 s), ohne Loop. Torkontakt oder einer der Bewegungsmelder startet den Effektmanager auf allen drei Segmenten; 5 Minuten nach der letzten Meldung springt er auf den Nachlauf, danach gehen die Segmente aus.",
+  "product": {
+    "name": "OpenKNX NeoPixel",
+    "header": "0xAD00:0xC",
+    "testedAgainst": [
+      {
+        "variant": "Dev",
+        "appId": "0xAD01",
+        "appVersion": "0x12",
+        "build": "NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      },
+      {
+        "variant": "Release",
+        "appId": "0xAD00",
+        "appVersion": "0x0C",
+        "build": "NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      }
+    ],
+    "moduleVersions": {
+      "NEO": "0x5",
+      "NEOSTRIP": "-",
+      "NEOEM": "-",
+      "LOG": "0x44",
+      "FCB": "0xA",
+      "LMG": "0x4"
+    }
+  },
+  "importOrder": [
+    "NEO Kanal 0 (Basis)",
+    "NEOSTRIP Kanal 1..n",
+    "NEO Kanal 1..n (Segmente)",
+    "NEOEM Kanal 1..n",
+    "LMG",
+    "FCB Kanal 0, dann Kanal n",
+    "LOG Kanal n"
+  ],
+  "summary": [
+    {
+      "setting": "Hardware",
+      "value": "OpenKNXiao V1.5 KNeoPix RP2350 (4882)"
+    },
+    {
+      "setting": "LED-Streifen",
+      "value": "1 Einfahrt 120, 2 Wand links 180, 3 Wand rechts 180 (WS2812B, Farbordnung GRB)"
+    },
+    {
+      "setting": "Segmente",
+      "value": "1 Einfahrt 1–120, 2 Links 121–300, 3 Rechts 301–480; nach EM-Stop: Aus"
+    },
+    {
+      "setting": "Effektmanager 1 „Einfahrt“",
+      "value": "Cue 1 Komet 10 s / 1000 ms, Cue 2 Solid weiß hält (Dauer 0), Cue 3 Atmen 30 s / 3000 ms, Loop aus"
+    },
+    {
+      "setting": "Funktion 1",
+      "value": "ODER aus 3 Eingängen, sendet bei jedem Eingangstelegramm"
+    },
+    {
+      "setting": "Logik 1–3",
+      "value": "Treppenlicht 5 min ab letzter Meldung; EIN → Wert 1 in „EM Start“, AUS → Wert 3 in „Cue setzen“"
+    },
+    {
+      "setting": "Strombegrenzung",
+      "value": "Global „Deaktiviert“; je Streifen „Benutzerdefiniert (Fester Wert)“ mit „Strom pro Kanal (mA)“ 4000 / 6400 / 6400 mA und Übergang ab 80 % auf 80 % Helligkeit (ein Netzteil je Streifen); gemessen mit Strom pro LED 60 mA"
+    }
+  ],
+  "devices": [
+    {
+      "id": "geraet1",
+      "name": "NeoPixel Garage",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, 3 Streifen, 3 Segmente, 1 Effektmanager",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=3§NEONumberOfSegments=3§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Einfahrt",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Einfahrt§NEO~Length=120§NEO~powerLimitCombined=2§NEO~currentPerChannel=4000§NEO~autoBrightnessLimit=80§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "purpose": "LED-Streifen 2: Wand links",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Wand%20links§NEO~Length=180§NEO~powerLimitCombined=2§NEO~currentPerChannel=6400§NEO~autoBrightnessLimit=80§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 4,
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "purpose": "LED-Streifen 3: Wand rechts",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Wand%20rechts§NEO~Length=180§NEO~powerLimitCombined=2§NEO~currentPerChannel=6400§NEO~autoBrightnessLimit=80§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 5,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: Einfahrt",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Einfahrt§NEO~SegmentEnd=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 6,
+          "module": "NEO",
+          "channel": 2,
+          "purpose": "Segment 2: Links",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/2§Description~=Links§NEO~SegmentStart=121§NEO~SegmentEnd=300§NEO~SegmentEmStopReturnMode=2§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 7,
+          "module": "NEO",
+          "channel": 3,
+          "purpose": "Segment 3: Rechts",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/3§Description~=Rechts§NEO~SegmentStart=301§NEO~SegmentEnd=480§NEO~SegmentEmStopReturnMode=2§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 8,
+          "module": "NEOEM",
+          "channel": 1,
+          "purpose": "Effektmanager 1: Einfahrt",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Cue1Effect:1=13§NEOEM~Cue1Effect:2=13§NEOEM~Cue1Duration:1=10§NEOEM~Cue1Duration:2=10§NEOEM~Cue1Fade:1=1000§NEOEM~Cue1Fade:2=1000§NEOEM~Cue1Text:1=Begr%C3%BC%C3%9Fung§NEOEM~Cue1Text:2=Begr%C3%BC%C3%9Fung§NEOEM~Cue1CometSpeed=170§NEOEM~Cue1CometTailLength=20§NEOEM~Cue2Text:1=Ausleuchten§NEOEM~Cue2Text:2=Ausleuchten§NEOEM~Cue3Effect:1=11§NEOEM~Cue3Effect:2=11§NEOEM~Cue3Brightness=160§NEOEM~Cue3Duration:1=30§NEOEM~Cue3Duration:2=30§NEOEM~Cue3Fade:1=3000§NEOEM~Cue3Fade:2=3000§NEOEM~Cue3Text:1=Nachlauf§NEOEM~Cue3Text:2=Nachlauf§NEOEM~Cue3BreathingSpeed=60§NEOEM~Name=Einfahrt§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 9,
+          "module": "FCB",
+          "channel": 0,
+          "purpose": "Funktionsblöcke: 1 Kanal sichtbar",
+          "string": "OpenKNX,cv1,0xAD00:0xC/FCB:0xA/0§VisibleChannels=1§;OpenKNX",
+          "kind": "companion"
+        },
+        {
+          "order": 10,
+          "module": "FCB",
+          "channel": 1,
+          "purpose": "Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)",
+          "string": "OpenKNX,cv1,0xAD00:0xC/FCB:0xA/1§Channel~Name=Garage%20Anwesenheit§CH~ChannelType=2§CH~NameKo0=Torkontakt§CH~NameKo1=BM%20links§CH~NameKo2=BM%20rechts§CH~LogicKo2D=1§CH~LogicBehavOut=0§;OpenKNX",
+          "kind": "companion"
+        },
+        {
+          "order": 11,
+          "module": "LOG",
+          "channel": 1,
+          "purpose": "Logik 1: Anwesenheit → EM 1 auf Segment 1 (Einfahrt) starten, nach 5 min Cue 3 „Nachlauf“",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Garage%20EM%20Einfahrt§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=646§;OpenKNX",
+          "kind": "companion"
+        },
+        {
+          "order": 12,
+          "module": "LOG",
+          "channel": 2,
+          "purpose": "Logik 2: Anwesenheit → EM 1 auf Segment 2 (Links) starten, nach 5 min Cue 3 „Nachlauf“",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Garage%20EM%20Links§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=695§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=699§;OpenKNX",
+          "kind": "companion"
+        },
+        {
+          "order": 13,
+          "module": "LOG",
+          "channel": 3,
+          "purpose": "Logik 3: Anwesenheit → EM 1 auf Segment 3 (Rechts) starten, nach 5 min Cue 3 „Nachlauf“",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/3§f~Name=Garage%20EM%20Rechts§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=748§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=752§;OpenKNX",
+          "kind": "companion"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfLEDStrips",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfSegments",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOEMEnabled",
+          "value": 1,
+          "valueText": "1"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Einfahrt",
+          "valueText": "Einfahrt"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~powerLimitCombined",
+          "value": 2,
+          "valueText": "Benutzerdefiniert (Fester Wert)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~currentPerChannel",
+          "value": 4000,
+          "valueText": "4000"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~autoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Wand links",
+          "valueText": "Wand links"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~Length",
+          "value": 180,
+          "valueText": "180"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~powerLimitCombined",
+          "value": 2,
+          "valueText": "Benutzerdefiniert (Fester Wert)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~currentPerChannel",
+          "value": 6400,
+          "valueText": "6400"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~autoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "Description~",
+          "value": "Wand rechts",
+          "valueText": "Wand rechts"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~Length",
+          "value": 180,
+          "valueText": "180"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~powerLimitCombined",
+          "value": 2,
+          "valueText": "Benutzerdefiniert (Fester Wert)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~currentPerChannel",
+          "value": 6400,
+          "valueText": "6400"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 3,
+          "paramName": "NEO~autoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Einfahrt",
+          "valueText": "Einfahrt"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 120,
+          "valueText": "120"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEmStopReturnMode",
+          "value": 2,
+          "valueText": "Aus"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Links",
+          "valueText": "Links"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentStart",
+          "value": 121,
+          "valueText": "121"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentEnd",
+          "value": 300,
+          "valueText": "300"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentEmStopReturnMode",
+          "value": 2,
+          "valueText": "Aus"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "Description~",
+          "value": "Rechts",
+          "valueText": "Rechts"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentStart",
+          "value": 301,
+          "valueText": "301"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentEnd",
+          "value": 480,
+          "valueText": "480"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentEmStopReturnMode",
+          "value": 2,
+          "valueText": "Aus"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~CueCount",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:1",
+          "value": 13,
+          "valueText": "Comet"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Effect:2",
+          "value": 13,
+          "valueText": "Comet"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:1",
+          "value": 10,
+          "valueText": "10"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Duration:2",
+          "value": 10,
+          "valueText": "10"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:1",
+          "value": 1000,
+          "valueText": "1000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Fade:2",
+          "value": 1000,
+          "valueText": "1000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:1",
+          "value": "Begrüßung",
+          "valueText": "Begrüßung"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1Text:2",
+          "value": "Begrüßung",
+          "valueText": "Begrüßung"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1CometSpeed",
+          "value": 170,
+          "valueText": "170"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue1CometTailLength",
+          "value": 20,
+          "valueText": "20"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:1",
+          "value": "Ausleuchten",
+          "valueText": "Ausleuchten"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue2Text:2",
+          "value": "Ausleuchten",
+          "valueText": "Ausleuchten"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:1",
+          "value": 11,
+          "valueText": "Breathing"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Effect:2",
+          "value": 11,
+          "valueText": "Breathing"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Brightness",
+          "value": 160,
+          "valueText": "160"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:1",
+          "value": 30,
+          "valueText": "30"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Duration:2",
+          "value": 30,
+          "valueText": "30"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:1",
+          "value": 3000,
+          "valueText": "3000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Fade:2",
+          "value": 3000,
+          "valueText": "3000"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:1",
+          "value": "Nachlauf",
+          "valueText": "Nachlauf"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3Text:2",
+          "value": "Nachlauf",
+          "valueText": "Nachlauf"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Cue3BreathingSpeed",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEOEM",
+          "channel": 1,
+          "paramName": "NEOEM~Name",
+          "value": "Einfahrt",
+          "valueText": "Einfahrt"
+        }
+      ],
+      "companionModules": [
+        {
+          "module": "FCB",
+          "channel": 0,
+          "purpose": "Funktionsblöcke: 1 Kanal sichtbar",
+          "keySettings": [
+            {
+              "module": "FCB",
+              "channel": 0,
+              "paramName": "VisibleChannels",
+              "value": 1,
+              "valueText": "1"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/FCB:0xA/0§VisibleChannels=1§;OpenKNX"
+        },
+        {
+          "module": "FCB",
+          "channel": 1,
+          "purpose": "Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)",
+          "keySettings": [
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "Channel~Name",
+              "value": "Garage Anwesenheit",
+              "valueText": "Garage Anwesenheit"
+            },
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "CH~ChannelType",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "CH~NameKo0",
+              "value": "Torkontakt",
+              "valueText": "Torkontakt"
+            },
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "CH~NameKo1",
+              "value": "BM links",
+              "valueText": "BM links"
+            },
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "CH~NameKo2",
+              "value": "BM rechts",
+              "valueText": "BM rechts"
+            },
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "CH~LogicKo2D",
+              "value": 1,
+              "valueText": "Normal"
+            },
+            {
+              "module": "FCB",
+              "channel": 1,
+              "paramName": "CH~LogicBehavOut",
+              "value": 0,
+              "valueText": "Bei jedem Eingangstelegram"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/FCB:0xA/1§Channel~Name=Garage%20Anwesenheit§CH~ChannelType=2§CH~NameKo0=Torkontakt§CH~NameKo1=BM%20links§CH~NameKo2=BM%20rechts§CH~LogicKo2D=1§CH~LogicBehavOut=0§;OpenKNX"
+        },
+        {
+          "module": "LOG",
+          "channel": 1,
+          "purpose": "Logik 1: Anwesenheit → EM 1 auf Segment 1 (Einfahrt) starten, nach 5 min Cue 3 „Nachlauf“",
+          "keySettings": [
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Name",
+              "value": "Garage EM Einfahrt",
+              "valueText": "Garage EM Einfahrt"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~LogicType",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Logic",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E1",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E1OtherKO:2",
+              "value": 259,
+              "valueText": "259"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E1UseOtherKO",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OStairtimeBase",
+              "value": 1,
+              "valueText": "Minute(n)"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OStairtimeTime",
+              "value": 5,
+              "valueText": "5"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OStair",
+              "value": 1,
+              "valueText": "Ja"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OStairOff",
+              "value": 0,
+              "valueText": "Nein"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOutputFilter",
+              "value": 3,
+              "valueText": "Keine Wiederholungen durchlassen"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~ODpt",
+              "value": 2,
+              "valueText": "DPT 5.xxx (1-Byte)"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOnKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOnKOSendNumber",
+              "value": 642,
+              "valueText": "642"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOffDpt5",
+              "value": 3,
+              "valueText": "3"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOffKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~OOffKOSendNumber",
+              "value": 646,
+              "valueText": "646"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Garage%20EM%20Einfahrt§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=646§;OpenKNX"
+        },
+        {
+          "module": "LOG",
+          "channel": 2,
+          "purpose": "Logik 2: Anwesenheit → EM 1 auf Segment 2 (Links) starten, nach 5 min Cue 3 „Nachlauf“",
+          "keySettings": [
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~Name",
+              "value": "Garage EM Links",
+              "valueText": "Garage EM Links"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~LogicType",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~Logic",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~E1",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~E1OtherKO:2",
+              "value": 259,
+              "valueText": "259"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~E1UseOtherKO",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OStairtimeBase",
+              "value": 1,
+              "valueText": "Minute(n)"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OStairtimeTime",
+              "value": 5,
+              "valueText": "5"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OStair",
+              "value": 1,
+              "valueText": "Ja"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OStairOff",
+              "value": 0,
+              "valueText": "Nein"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOutputFilter",
+              "value": 3,
+              "valueText": "Keine Wiederholungen durchlassen"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~ODpt",
+              "value": 2,
+              "valueText": "DPT 5.xxx (1-Byte)"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOnKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOnKOSendNumber",
+              "value": 695,
+              "valueText": "695"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOffDpt5",
+              "value": 3,
+              "valueText": "3"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOffKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOffKOSendNumber",
+              "value": 699,
+              "valueText": "699"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Garage%20EM%20Links§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=695§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=699§;OpenKNX"
+        },
+        {
+          "module": "LOG",
+          "channel": 3,
+          "purpose": "Logik 3: Anwesenheit → EM 1 auf Segment 3 (Rechts) starten, nach 5 min Cue 3 „Nachlauf“",
+          "keySettings": [
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~Name",
+              "value": "Garage EM Rechts",
+              "valueText": "Garage EM Rechts"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~LogicType",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~Logic",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~E1",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~E1OtherKO:2",
+              "value": 259,
+              "valueText": "259"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~E1UseOtherKO",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OStairtimeBase",
+              "value": 1,
+              "valueText": "Minute(n)"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OStairtimeTime",
+              "value": 5,
+              "valueText": "5"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OStair",
+              "value": 1,
+              "valueText": "Ja"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OStairOff",
+              "value": 0,
+              "valueText": "Nein"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OOutputFilter",
+              "value": 3,
+              "valueText": "Keine Wiederholungen durchlassen"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~ODpt",
+              "value": 2,
+              "valueText": "DPT 5.xxx (1-Byte)"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OOnKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OOnKOSendNumber",
+              "value": 748,
+              "valueText": "748"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OOffDpt5",
+              "value": 3,
+              "valueText": "3"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OOffKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 3,
+              "paramName": "f~OOffKOSendNumber",
+              "value": 752,
+              "valueText": "752"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/3§f~Name=Garage%20EM%20Rechts§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=748§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=752§;OpenKNX"
+        }
+      ],
+      "groupAddresses": [
+        {
+          "ga": "3/7/0",
+          "name": "Garage Torkontakt",
+          "dpt": "DPST-1-1",
+          "sender": "Torkontakt / Torantrieb",
+          "links": [
+            {
+              "ko": 250,
+              "koName": "FCB_CH1KO0",
+              "koFunctionText": "Funktion 1: Eingang 1, Schalten",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "1 = Tor offen; Eingang 1 der Funktion 1."
+        },
+        {
+          "ga": "3/7/1",
+          "name": "Garage Bewegung links",
+          "dpt": "DPST-1-1",
+          "sender": "Bewegungsmelder links",
+          "links": [
+            {
+              "ko": 251,
+              "koName": "FCB_CH1KO1",
+              "koFunctionText": "Funktion 1: Eingang 2, Schalten",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Eingang 2 der Funktion 1."
+        },
+        {
+          "ga": "3/7/2",
+          "name": "Garage Bewegung rechts",
+          "dpt": "DPST-1-1",
+          "sender": "Bewegungsmelder rechts",
+          "links": [
+            {
+              "ko": 252,
+              "koName": "FCB_CH1KO2",
+              "koFunctionText": "Funktion 1: Eingang 3, Schalten",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Eingang 3 der Funktion 1."
+        },
+        {
+          "ga": "3/4/0",
+          "name": "Garage EM Start/Stop",
+          "dpt": "DPST-5-10",
+          "sender": "MDT Taster, Taste 3 (kurz) / Visualisierung",
+          "links": [
+            {
+              "ko": 642,
+              "koName": "NEO_1EmStart",
+              "koFunctionText": "NeoPixel Segment 1: EM Start (1-16)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 695,
+              "koName": "NEO_2EmStart",
+              "koFunctionText": "NeoPixel Segment 2: EM Start (1-16)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 748,
+              "koName": "NEO_3EmStart",
+              "koFunctionText": "NeoPixel Segment 3: EM Start (1-16)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Wert 1 startet Effektmanager 1 auf allen drei Segmenten, Wert 0 stoppt ihn. Die Logikkanäle schreiben gerätintern direkt in diese KOs."
+        },
+        {
+          "ga": "3/4/1",
+          "name": "Garage EM Stop",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 4 (kurz)",
+          "links": [
+            {
+              "ko": 644,
+              "koName": "NEO_1EmStop",
+              "koFunctionText": "NeoPixel Segment 1: EM Stop",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 697,
+              "koName": "NEO_2EmStop",
+              "koFunctionText": "NeoPixel Segment 2: EM Stop",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 750,
+              "koName": "NEO_3EmStop",
+              "koFunctionText": "NeoPixel Segment 3: EM Stop",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Effektmanager sofort beenden."
+        },
+        {
+          "ga": "3/4/2",
+          "name": "Garage Cue +/-",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 5, 6 (lang)",
+          "links": [
+            {
+              "ko": 640,
+              "koName": "NEO_1CueRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 693,
+              "koName": "NEO_2CueRel",
+              "koFunctionText": "NeoPixel Segment 2: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 746,
+              "koName": "NEO_3CueRel",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Nächste/vorherige Cue des laufenden Effektmanagers (Heller = nächste)."
+        },
+        {
+          "ga": "3/0/0",
+          "name": "Garage Licht Ein/Aus",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster 6-fach, Taste 1, 2 (kurz); 8-fach, Taste 1, 2, 8 (kurz)",
+          "links": [
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 653,
+              "koName": "NEO_2SegmentPower",
+              "koFunctionText": "NeoPixel Segment 2: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 706,
+              "koName": "NEO_3SegmentPower",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Manuelles Schalten ohne Effektmanager."
+        },
+        {
+          "ga": "3/1/0",
+          "name": "Garage Dimmen",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 1, 2 (lang)",
+          "links": [
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 678,
+              "koName": "NEO_2BriRel",
+              "koFunctionText": "NeoPixel Segment 2: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 731,
+              "koName": "NEO_3BriRel",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Relatives Dimmen."
+        },
+        {
+          "ga": "3/5/0",
+          "name": "Garage Sperre",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster 8-fach, Taste 7 (kurz) / Visualisierung",
+          "links": [
+            {
+              "ko": 641,
+              "koName": "NEO_1Lock",
+              "koFunctionText": "NeoPixel Segment 1: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 694,
+              "koName": "NEO_2Lock",
+              "koFunctionText": "NeoPixel Segment 2: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 747,
+              "koName": "NEO_3Lock",
+              "koFunctionText": "NeoPixel Segment 3: Sperr-Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "1 sperrt die steuernden KOs (Automatik aus)."
+        },
+        {
+          "ga": "3/6/0",
+          "name": "Garage EM Zustand",
+          "dpt": "DPST-5-10",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 652,
+              "koName": "NEO_1EmRunState",
+              "koFunctionText": "NeoPixel Segment 1: Zustand (0=gestoppt,1=laeuft,2=pausiert)",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "0 = gestoppt, 1 = läuft, 2 = pausiert (Segment 1)."
+        },
+        {
+          "ga": "3/6/1",
+          "name": "Garage aktive Cue",
+          "dpt": "DPST-5-10",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 645,
+              "koName": "NEO_1EmCueStatus",
+              "koFunctionText": "NeoPixel Segment 1: Aktive Cue-Nummer",
+              "dpt": "DPST-5-10",
+              "size": "1 Byte",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Nummer der laufenden Cue (Segment 1)."
+        },
+        {
+          "ga": "3/6/5",
+          "name": "Garage Licht Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 601,
+              "koName": "NEO_1SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Ein/Aus-Status von Segment 1 für die Status-LED des Tasters."
+        },
+        {
+          "ga": "3/6/2",
+          "name": "Garage Stromverbrauch Einfahrt",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 505,
+              "koName": "NEOSTRIP_PowerCurrent1",
+              "koFunctionText": "1: Stromverbrauch (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Strom von LED-Streifen 1 in mA (Streifen mit eigener Grenze melden auch bei global „Deaktiviert“)."
+        },
+        {
+          "ga": "3/6/3",
+          "name": "Garage Stromverbrauch Wand links",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 513,
+              "koName": "NEOSTRIP_PowerCurrent2",
+              "koFunctionText": "2: Stromverbrauch (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Strom von LED-Streifen 2 in mA (Streifen mit eigener Grenze melden auch bei global „Deaktiviert“)."
+        },
+        {
+          "ga": "3/6/4",
+          "name": "Garage Stromverbrauch Wand rechts",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 521,
+              "koName": "NEOSTRIP_PowerCurrent3",
+              "koFunctionText": "3: Stromverbrauch (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Strom von LED-Streifen 3 in mA (Streifen mit eigener Grenze melden auch bei global „Deaktiviert“)."
+        }
+      ]
+    }
+  ],
+  "checkAfterImport": [
+    "Hardware-Auswahl passend zur Firmware.",
+    "Daten-Ports der LED-Streifen 1–3 auswählen.",
+    "Strombegrenzung je Streifen an das jeweilige Netzteil anpassen: Streifen → Strombegrenzung „Benutzerdefiniert (Fester Wert)“, Feld „Strom pro Kanal (mA)“ (Beispiel: 5 V / 5 A → 4000 mA, 5 V / 8 A → 6400 mA). Hängen alle Streifen an einem Netzteil, stattdessen global „Fester Wert“ und an den Streifen „Global verwenden“."
+  ],
+  "keyLayouts": {
+    "6": [
+      {
+        "key": "1",
+        "function": "Garage Licht – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "3/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/5",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Garage Licht – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "3/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/5",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Effektmanager „Einfahrt“ starten (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/4/0",
+            "dpt": "DPST-5-10",
+            "value": "1 (EM 1)"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/0",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Effektmanager beenden (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/4/1",
+            "dpt": "DPST-1-1",
+            "value": "1 (Stop)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "5",
+        "function": "Vorherige Cue – Wippe links, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "3/4/2",
+            "dpt": "DPST-3-7",
+            "value": "dunkler = vorherige Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "6",
+        "function": "Nächste Cue – Wippe rechts, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "3/4/2",
+            "dpt": "DPST-3-7",
+            "value": "heller = nächste Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      }
+    ],
+    "8": [
+      {
+        "key": "1",
+        "function": "Garage Licht – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "3/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/5",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Garage Licht – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "3/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/5",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Effektmanager „Einfahrt“ starten (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/4/0",
+            "dpt": "DPST-5-10",
+            "value": "1 (EM 1)"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/0",
+          "dpt": "DPST-5-10"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Effektmanager beenden (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/4/1",
+            "dpt": "DPST-1-1",
+            "value": "1 (Stop)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "5",
+        "function": "Vorherige Cue – Wippe links, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "3/4/2",
+            "dpt": "DPST-3-7",
+            "value": "dunkler = vorherige Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "6",
+        "function": "Nächste Cue – Wippe rechts, Dimmfunktion (lang)",
+        "sends": [
+          {
+            "press": "lang",
+            "ga": "3/4/2",
+            "dpt": "DPST-3-7",
+            "value": "heller = nächste Cue; Stopp beim Loslassen wird ignoriert"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "7",
+        "function": "Sperre Um (kurz) – Automatik aus, keine Status-LED vom NeoPixel",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/5/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (1 = gesperrt)"
+          }
+        ],
+        "statusLed": null
+      },
+      {
+        "key": "8",
+        "function": "Garage Licht – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "3/0/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "3/6/5",
+          "dpt": "DPST-1-11"
+        }
+      }
+    ],
+    "note": "Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen. Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt). Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus. Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen. Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein. Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen. Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+    "noteItems": [
+      "Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt).",
+      "Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus.",
+      "Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen.",
+      "Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein.",
+      "Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen.",
+      "Status-LED: Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+      "MDT-Bezeichnungen: Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen."
+    ],
+    "device": "geraet1"
+  }
+}

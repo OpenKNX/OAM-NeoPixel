@@ -1,0 +1,1228 @@
+{
+  "schemaVersion": 1,
+  "id": "wintergarten",
+  "number": 2,
+  "title": "Wintergarten",
+  "description": "Zwei Streifen (SK6812/WS2814 (RGBW)) mit 150 und 150 LEDs. Segmente: Dachkante links (Streifen 1), Dachkante rechts (erste 90 LEDs von Streifen 2) und Sitzecke (letzte 60 LEDs von Streifen 2). Die Dachkanten folgen der HCL-Farbtemperatur von Lichtmanager 1, die Sitzecke nicht. Relais 1 schaltet das gemeinsame LED-Netzteil, solange mindestens ein Segment an ist; die globale Strombegrenzung schützt dieses Netzteil.",
+  "product": {
+    "name": "OpenKNX NeoPixel",
+    "header": "0xAD00:0xC",
+    "testedAgainst": [
+      {
+        "variant": "Dev",
+        "appId": "0xAD01",
+        "appVersion": "0x12",
+        "build": "NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      },
+      {
+        "variant": "Release",
+        "appId": "0xAD00",
+        "appVersion": "0x0C",
+        "build": "NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0"
+      }
+    ],
+    "moduleVersions": {
+      "NEO": "0x5",
+      "NEOSTRIP": "-",
+      "NEOEM": "-",
+      "LOG": "0x44",
+      "FCB": "0xA",
+      "LMG": "0x4"
+    }
+  },
+  "importOrder": [
+    "NEO Kanal 0 (Basis)",
+    "NEOSTRIP Kanal 1..n",
+    "NEO Kanal 1..n (Segmente)",
+    "NEOEM Kanal 1..n",
+    "LMG",
+    "FCB Kanal 0, dann Kanal n",
+    "LOG Kanal n"
+  ],
+  "summary": [
+    {
+      "setting": "Hardware",
+      "value": "OpenKNXiao V1.5 KNeoPix RP2350 (4882)"
+    },
+    {
+      "setting": "LED-Streifen 1 und 2",
+      "value": "SK6812/WS2814 (RGBW), Farbordnung GRBW, 150 / 150 LEDs"
+    },
+    {
+      "setting": "Segment 1 Dachkante links",
+      "value": "LED 1–150, Start-Farbe #000000 + W 255, HCL global"
+    },
+    {
+      "setting": "Segment 2 Dachkante rechts",
+      "value": "LED 151–240, wie Segment 1"
+    },
+    {
+      "setting": "Segment 3 Sitzecke",
+      "value": "LED 241–300, #FF9A40 + W 60, Helligkeit 180, HCL deaktiviert"
+    },
+    {
+      "setting": "HCL",
+      "value": "Globaler Lichtmanager = Lichtmanager 1; LMG-Kanal 1 aktiviert, Profil 1 an allen Tagen"
+    },
+    {
+      "setting": "Strombegrenzung",
+      "value": "Global „Fester Wert“ 5000 mA, Übergang ab 80 % der Grenze auf 80 % Helligkeit, Strom pro LED 0 = Tabelle des LED-Typs (RGB 3 × 20 mA, RGBW 4 × 20 mA), Streifen „Global verwenden“ (ein Netzteil)"
+    },
+    {
+      "setting": "Relais 1",
+      "value": "LED-Netzteil, Ausschaltverzögerung 30 s, Mindest-Auszeit 10 s, gesteuert von Logik 1+2"
+    },
+    {
+      "setting": "Status nach Neustart senden",
+      "value": "Ja (damit die Netzteil-Logik nach einem Neustart den Segmentzustand erhält)"
+    }
+  ],
+  "devices": [
+    {
+      "id": "geraet1",
+      "name": "NeoPixel Wintergarten",
+      "hardware": {
+        "deviceHwId": 4882,
+        "text": "OpenKNXiao V1.5 KNeoPix RP2350"
+      },
+      "transferStrings": [
+        {
+          "order": 1,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Hardware, 2 Streifen, 3 Segmente, HCL, Strombegrenzung, Relais",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§HCLMaster=1§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=2§NEONumberOfSegments=3§NEOpowerLimitGlobal=5000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOStatusSendOnStartup=1§NEOExternalRelayCount=1§NEOExternalRelay1Name=LED-Netzteil§NEOExternalRelay1OffDelay=30§NEOExternalRelay1MinOffTime=10§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 2,
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "purpose": "LED-Streifen 1: Dachkante links",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Dachkante%20links§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=150§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "purpose": "LED-Streifen 2: Dachkante rechts + Sitzecke",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Dachkante%20rechts%20%2B%20Sitzecke§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=150§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 4,
+          "module": "NEO",
+          "channel": 1,
+          "purpose": "Segment 1: Dachkante links",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Dachkante%20links§NEO~SegmentEnd=150§NEO~SegmentStartupColor=-16777216§NEO~SegmentStartupW=255§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 5,
+          "module": "NEO",
+          "channel": 2,
+          "purpose": "Segment 2: Dachkante rechts",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/2§Description~=Dachkante%20rechts§NEO~SegmentStart=151§NEO~SegmentEnd=240§NEO~SegmentStartupColor=-16777216§NEO~SegmentStartupW=255§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 6,
+          "module": "NEO",
+          "channel": 3,
+          "purpose": "Segment 3: Sitzecke",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/3§Description~=Sitzecke§NEO~SegmentStart=241§NEO~SegmentEnd=300§NEO~SegmentStartupColor=-26048§NEO~SegmentStartupW=60§NEO~SegmentStartupBrightness=180§NEO~HCLMode=0§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 7,
+          "module": "LMG",
+          "channel": 1,
+          "purpose": "Lichtmanager 1: HCL-Kurve für die Dachkanten, an allen Tagen",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LMG:0x4/1§CH~Name=Wintergarten%20HCL§CH~Active=1§CH~ProfileCount=1§CH~DayNightSource=2§CH~P1_Name=Alle%20Tage§CH~P1_DaySa=1§CH~P1_DaySo=1§CH~P1_DayUrl=1§CH~P1_DayFei=1§;OpenKNX",
+          "kind": "companion"
+        },
+        {
+          "order": 8,
+          "module": "LOG",
+          "channel": 1,
+          "purpose": "Logik 1: ODER der Status-KOs Segment 1 und 2 (gerätintern über KO-Nummer)",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Netzteil%3A%20Dachkanten%20an§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=601§f~E1UseOtherKO=1§f~E2=1§f~E2OtherKO:2=654§f~E2UseOtherKO=1§;OpenKNX",
+          "kind": "companion"
+        },
+        {
+          "order": 9,
+          "module": "LOG",
+          "channel": 2,
+          "purpose": "Logik 2: ODER aus Segment 3 und Logik 1, schreibt in KO 408 (Relais 1)",
+          "string": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Netzteil%20Relais%201§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=707§f~E1UseOtherKO=1§f~I1=1§f~I1Function=1§f~OOnKOSend=1§f~OOnKOSendNumber=408§f~OOffKOSend=1§f~OOffKOSendNumber=408§;OpenKNX",
+          "kind": "companion"
+        }
+      ],
+      "keySettings": [
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "HCLMaster",
+          "value": 1,
+          "valueText": "Lichtmanager 1"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NeoPixelHardwareSelect",
+          "value": 4882,
+          "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfLEDStrips",
+          "value": 2,
+          "valueText": "2"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEONumberOfSegments",
+          "value": 3,
+          "valueText": "3"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitGlobal",
+          "value": 5000,
+          "valueText": "5000"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOcurrentPerLED",
+          "value": 0,
+          "valueText": "0"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOpowerLimitCombined",
+          "value": 1,
+          "valueText": "Fester Wert (mA)"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOautoBrightnessLimit",
+          "value": 80,
+          "valueText": "80"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOStatusSendOnStartup",
+          "value": 1,
+          "valueText": "Ja"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOExternalRelayCount",
+          "value": 1,
+          "valueText": "1"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOExternalRelay1Name",
+          "value": "LED-Netzteil",
+          "valueText": "LED-Netzteil"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOExternalRelay1OffDelay",
+          "value": 30,
+          "valueText": "30"
+        },
+        {
+          "module": "NEO",
+          "channel": 0,
+          "paramName": "NEOExternalRelay1MinOffTime",
+          "value": 10,
+          "valueText": "10"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Dachkante links",
+          "valueText": "Dachkante links"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 1,
+          "paramName": "NEO~Length",
+          "value": 150,
+          "valueText": "150"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Dachkante rechts + Sitzecke",
+          "valueText": "Dachkante rechts + Sitzecke"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~LEDType",
+          "value": 8,
+          "valueText": "SK6812/WS2814 (RGBW)"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~ColourOrder",
+          "value": 7,
+          "valueText": "GRBW"
+        },
+        {
+          "module": "NEOSTRIP",
+          "channel": 2,
+          "paramName": "NEO~Length",
+          "value": 150,
+          "valueText": "150"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "Description~",
+          "value": "Dachkante links",
+          "valueText": "Dachkante links"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentEnd",
+          "value": 150,
+          "valueText": "150"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -16777216,
+          "valueText": "#000000"
+        },
+        {
+          "module": "NEO",
+          "channel": 1,
+          "paramName": "NEO~SegmentStartupW",
+          "value": 255,
+          "valueText": "255"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "Description~",
+          "value": "Dachkante rechts",
+          "valueText": "Dachkante rechts"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentStart",
+          "value": 151,
+          "valueText": "151"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentEnd",
+          "value": 240,
+          "valueText": "240"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -16777216,
+          "valueText": "#000000"
+        },
+        {
+          "module": "NEO",
+          "channel": 2,
+          "paramName": "NEO~SegmentStartupW",
+          "value": 255,
+          "valueText": "255"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "Description~",
+          "value": "Sitzecke",
+          "valueText": "Sitzecke"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentStart",
+          "value": 241,
+          "valueText": "241"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentEnd",
+          "value": 300,
+          "valueText": "300"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentStartupColor",
+          "value": -26048,
+          "valueText": "#FF9A40"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentStartupW",
+          "value": 60,
+          "valueText": "60"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~SegmentStartupBrightness",
+          "value": 180,
+          "valueText": "180"
+        },
+        {
+          "module": "NEO",
+          "channel": 3,
+          "paramName": "NEO~HCLMode",
+          "value": 0,
+          "valueText": "Deaktiviert"
+        }
+      ],
+      "companionModules": [
+        {
+          "module": "LMG",
+          "channel": 1,
+          "purpose": "Lichtmanager 1: HCL-Kurve für die Dachkanten, an allen Tagen",
+          "keySettings": [
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~Name",
+              "value": "Wintergarten HCL",
+              "valueText": "Wintergarten HCL"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~Active",
+              "value": 1,
+              "valueText": "Aktiviert"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~ProfileCount",
+              "value": 1,
+              "valueText": "1 Profil"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~DayNightSource",
+              "value": 2,
+              "valueText": "Astronomisch intern"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~P1_Name",
+              "value": "Alle Tage",
+              "valueText": "Alle Tage"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~P1_DaySa",
+              "value": 1,
+              "valueText": "1"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~P1_DaySo",
+              "value": 1,
+              "valueText": "1"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~P1_DayUrl",
+              "value": 1,
+              "valueText": "1"
+            },
+            {
+              "module": "LMG",
+              "channel": 1,
+              "paramName": "CH~P1_DayFei",
+              "value": 1,
+              "valueText": "1"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LMG:0x4/1§CH~Name=Wintergarten%20HCL§CH~Active=1§CH~ProfileCount=1§CH~DayNightSource=2§CH~P1_Name=Alle%20Tage§CH~P1_DaySa=1§CH~P1_DaySo=1§CH~P1_DayUrl=1§CH~P1_DayFei=1§;OpenKNX"
+        },
+        {
+          "module": "LOG",
+          "channel": 1,
+          "purpose": "Logik 1: ODER der Status-KOs Segment 1 und 2 (gerätintern über KO-Nummer)",
+          "keySettings": [
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Name",
+              "value": "Netzteil: Dachkanten an",
+              "valueText": "Netzteil: Dachkanten an"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~LogicType",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~Logic",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E1",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E1OtherKO:2",
+              "value": 601,
+              "valueText": "601"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E1UseOtherKO",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E2",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E2OtherKO:2",
+              "value": 654,
+              "valueText": "654"
+            },
+            {
+              "module": "LOG",
+              "channel": 1,
+              "paramName": "f~E2UseOtherKO",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Netzteil%3A%20Dachkanten%20an§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=601§f~E1UseOtherKO=1§f~E2=1§f~E2OtherKO:2=654§f~E2UseOtherKO=1§;OpenKNX"
+        },
+        {
+          "module": "LOG",
+          "channel": 2,
+          "purpose": "Logik 2: ODER aus Segment 3 und Logik 1, schreibt in KO 408 (Relais 1)",
+          "keySettings": [
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~Name",
+              "value": "Netzteil Relais 1",
+              "valueText": "Netzteil Relais 1"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~LogicType",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~Logic",
+              "value": 2,
+              "valueText": "ODER"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~E1",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~E1OtherKO:2",
+              "value": 707,
+              "valueText": "707"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~E1UseOtherKO",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~I1",
+              "value": 1,
+              "valueText": "normal aktiv"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~I1Function",
+              "value": 1,
+              "valueText": "1"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOnKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOnKOSendNumber",
+              "value": 408,
+              "valueText": "408"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOffKOSend",
+              "value": 1,
+              "valueText": "Absolutes KO"
+            },
+            {
+              "module": "LOG",
+              "channel": 2,
+              "paramName": "f~OOffKOSendNumber",
+              "value": 408,
+              "valueText": "408"
+            }
+          ],
+          "transferString": "OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Netzteil%20Relais%201§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=707§f~E1UseOtherKO=1§f~I1=1§f~I1Function=1§f~OOnKOSend=1§f~OOnKOSendNumber=408§f~OOffKOSend=1§f~OOffKOSendNumber=408§;OpenKNX"
+        }
+      ],
+      "groupAddresses": [
+        {
+          "ga": "2/0/0",
+          "name": "Dachkante Ein/Aus",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 1, 2, 5 (kurz)",
+          "links": [
+            {
+              "ko": 600,
+              "koName": "NEO_1SegmentPower",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 653,
+              "koName": "NEO_2SegmentPower",
+              "koFunctionText": "NeoPixel Segment 2: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Beide Dachkanten gemeinsam schalten."
+        },
+        {
+          "ga": "2/0/1",
+          "name": "Sitzecke Ein/Aus",
+          "dpt": "DPST-1-1",
+          "sender": "MDT Taster, Taste 3, 4, 6 (kurz)",
+          "links": [
+            {
+              "ko": 706,
+              "koName": "NEO_3SegmentPower",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 1.1",
+              "dpt": "DPST-1-1",
+              "size": "1 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Sitzecke getrennt schalten."
+        },
+        {
+          "ga": "2/1/0",
+          "name": "Dachkante Dimmen",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 1, 2 (lang)",
+          "links": [
+            {
+              "ko": 625,
+              "koName": "NEO_1BriRel",
+              "koFunctionText": "NeoPixel Segment 1: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            },
+            {
+              "ko": 678,
+              "koName": "NEO_2BriRel",
+              "koFunctionText": "NeoPixel Segment 2: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Relatives Dimmen beider Dachkanten."
+        },
+        {
+          "ga": "2/1/1",
+          "name": "Sitzecke Dimmen",
+          "dpt": "DPST-3-7",
+          "sender": "MDT Taster, Taste 3, 4 (lang)",
+          "links": [
+            {
+              "ko": 731,
+              "koName": "NEO_3BriRel",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 3.7",
+              "dpt": "DPST-3-7",
+              "size": "4 Bit",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Relatives Dimmen der Sitzecke."
+        },
+        {
+          "ga": "2/3/0",
+          "name": "Sitzecke RGBW",
+          "dpt": "DPST-251-600",
+          "sender": "Visualisierung",
+          "links": [
+            {
+              "ko": 729,
+              "koName": "NEO_3RGBW",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 251.600",
+              "dpt": "DPST-251-600",
+              "size": "6 Bytes",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Farbe inkl. Weißkanal (6 Byte)."
+        },
+        {
+          "ga": "2/3/1",
+          "name": "Sitzecke HSV",
+          "dpt": "DPST-232-600",
+          "sender": "Visualisierung",
+          "links": [
+            {
+              "ko": 727,
+              "koName": "NEO_3HSV",
+              "koFunctionText": "NeoPixel Segment 3: Eingang, DPT 232.600",
+              "dpt": "DPST-232-600",
+              "size": "3 Bytes",
+              "flags": "CW",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Farbe als Farbton/Sättigung/Helligkeit."
+        },
+        {
+          "ga": "2/6/0",
+          "name": "Dachkante links Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 601,
+              "koName": "NEO_1SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 1: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Taster-LED; die Netzteil-Logik liest das KO direkt über die KO-Nummer, nicht über die GA."
+        },
+        {
+          "ga": "2/6/1",
+          "name": "Dachkante rechts Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 654,
+              "koName": "NEO_2SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 2: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Wie 2/6/0."
+        },
+        {
+          "ga": "2/6/2",
+          "name": "Sitzecke Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 707,
+              "koName": "NEO_3SegmentPowerState",
+              "koFunctionText": "NeoPixel Segment 3: Ausgang, DPT 1.11",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Wie 2/6/0."
+        },
+        {
+          "ga": "2/6/3",
+          "name": "HCL Farbtemperatur Status",
+          "dpt": "DPST-7-600",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 407,
+              "koName": "NEO_HCLGlobalState",
+              "koFunctionText": "HCL Global Zustand (K)",
+              "dpt": "DPST-7-600",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Aktuelle Farbtemperatur des globalen Lichtmanagers (Kelvin)."
+        },
+        {
+          "ga": "2/6/4",
+          "name": "Wintergarten Stromverbrauch",
+          "dpt": "DPST-7-12",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 404,
+              "koName": "NEO_PowerCurrentTotal",
+              "koFunctionText": "Stromverbrauch Gesamt (mA)",
+              "dpt": "DPST-7-12",
+              "size": "2 Bytes",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Berechneter Gesamtstrom in mA (gemeldet, solange die globale Strombegrenzung aktiv ist)."
+        },
+        {
+          "ga": "2/7/0",
+          "name": "Netzteil Status",
+          "dpt": "DPST-1-11",
+          "sender": "NeoPixel",
+          "links": [
+            {
+              "ko": 412,
+              "koName": "NEO_ExternalRelay1State",
+              "koFunctionText": "Relais 1 Status",
+              "dpt": "DPST-1-11",
+              "size": "1 Bit",
+              "flags": "CRT",
+              "device": "geraet1",
+              "direction": "sendet"
+            }
+          ],
+          "reason": "Rückmeldung von Relais 1. Das Relais-KO 408 braucht keine GA, Logik 2 schreibt direkt hinein."
+        },
+        {
+          "ga": "0/0/1",
+          "name": "Uhrzeit",
+          "dpt": "DPST-10-1",
+          "sender": "Zeitgeber",
+          "links": [
+            {
+              "ko": 2,
+              "koName": "BASE_Time",
+              "koFunctionText": "Eingang",
+              "dpt": "DPST-10-1",
+              "size": "3 Bytes",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Lichtmanager und Logik brauchen eine gültige Uhrzeit (alternativ Datum/Uhrzeit DPT 19.001, je nach Einstellung unter Allgemein)."
+        },
+        {
+          "ga": "0/0/2",
+          "name": "Datum",
+          "dpt": "DPST-11-1",
+          "sender": "Zeitgeber",
+          "links": [
+            {
+              "ko": 3,
+              "koName": "BASE_Date",
+              "koFunctionText": "Eingang",
+              "dpt": "DPST-11-1",
+              "size": "3 Bytes",
+              "flags": "CWU",
+              "device": "geraet1",
+              "direction": "empfängt"
+            }
+          ],
+          "reason": "Wie 0/0/1."
+        }
+      ]
+    }
+  ],
+  "checkAfterImport": [
+    "Hardware-Auswahl passend zur Firmware.",
+    "Daten-Ports von LED-Streifen 1 und 2 auswählen.",
+    "Port von Relais 1 auswählen.",
+    "Allgemein: Standort (Breiten-/Längengrad) und Zeitquelle für den Lichtmanager.",
+    "Strombegrenzung an das gemeinsame Netzteil anpassen; „Strom pro LED“ (global) steht bei RGBW auf 0: die Firmware rechnet dann mit der Tabelle des LED-Typs (4 × 20 mA); ein Wert über 0 wird ganzzahlig auf die Kanäle verteilt (70 / 4 = 17 mA). Der Parameter ist in der ETS nur bei „Pro LED (automatisch)“ sichtbar, wirkt aber auch hier auf die Messung.",
+    "Versorgt das geschaltete Netzteil auch den Controller, darf das Relais es nicht abschalten (siehe Hilfe „Relais“).",
+    "Am Gerät prüfen, ob eine statische Farbe nach dem Einschalten des Netzteils erscheint (die Netzteil-Logik schaltet erst, wenn das Segment schon an ist).",
+    "Am Gerät prüfen: Nach einem Neustart schaltet das Relais nur, wenn die Logik die Status-Meldungen beim Start erhält („Status nach Neustart senden“ = Ja ist gesetzt); prüfen, ob die Startverzögerung der Logik die erste Meldung verschluckt."
+  ],
+  "keyLayouts": {
+    "6": [
+      {
+        "key": "1",
+        "function": "Dachkante – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Dachkante – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Sitzecke – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/1",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/1",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/2",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Sitzecke – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/1",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/1",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/2",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "5",
+        "function": "Dachkante – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "6",
+        "function": "Sitzecke – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/1",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/2",
+          "dpt": "DPST-1-11"
+        }
+      }
+    ],
+    "8": [
+      {
+        "key": "1",
+        "function": "Dachkante – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/0",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/0",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "2",
+        "function": "Dachkante – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/0",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/0",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "3",
+        "function": "Sitzecke – Wippe links: Ein (kurz) / heller (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/1",
+            "dpt": "DPST-1-1",
+            "value": "1 (Ein)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/1",
+            "dpt": "DPST-3-7",
+            "value": "heller, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/2",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "4",
+        "function": "Sitzecke – Wippe rechts: Aus (kurz) / dunkler (lang)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/1",
+            "dpt": "DPST-1-1",
+            "value": "0 (Aus)"
+          },
+          {
+            "press": "lang",
+            "ga": "2/1/1",
+            "dpt": "DPST-3-7",
+            "value": "dunkler, Stopp beim Loslassen"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/2",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "5",
+        "function": "Dachkante – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/0",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/0",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "6",
+        "function": "Sitzecke – Um (kurz)",
+        "sends": [
+          {
+            "press": "kurz",
+            "ga": "2/0/1",
+            "dpt": "DPST-1-1",
+            "value": "Um (abwechselnd 1/0)"
+          }
+        ],
+        "statusLed": {
+          "ga": "2/6/2",
+          "dpt": "DPST-1-11"
+        }
+      },
+      {
+        "key": "7",
+        "function": "frei (z. B. für andere Gewerke)",
+        "sends": [],
+        "statusLed": null
+      },
+      {
+        "key": "8",
+        "function": "frei (z. B. für andere Gewerke)",
+        "sends": [],
+        "statusLed": null
+      }
+    ],
+    "note": "Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen. Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt). Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus. Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen. Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein. Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen. Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+    "noteItems": [
+      "Um: das Status-Objekt der Taste mit der Status-GA verbinden, damit die Taste den aktuellen Zustand kennt; der NeoPixel sendet den Ein/Aus-Status bei jeder Änderung, auch durch Effektmanager, Szene oder „Alle LEDs“ (Lesen-Flag gesetzt).",
+      "Dimmen: das Dimm-Objekt des NeoPixel ist DPT 3.007 Start/Stopp (3 s für den ganzen Bereich); heller dimmen schaltet ein ausgeschaltetes Segment ein, auf 0 gedimmt meldet der Status Aus.",
+      "Cue +/−: ein Start-Telegramm springt eine Cue weiter bzw. zurück, solange ein Effektmanager läuft oder pausiert ist; an der ersten/letzten Cue bleibt er stehen.",
+      "Szene: Szenennummer n wird als Telegrammwert n − 1 gesendet; nicht angelegte Szenen werden ignoriert, eine Szene schaltet das Segment ein.",
+      "Sperre: sperrt alle steuernden Objekte des Segments (auch die gerätinterne Logik); der NeoPixel hat kein Sperr-Statusobjekt, die LED kann den Sperrzustand nicht anzeigen.",
+      "Status-LED: Bei Wippen für mehrere Segmente zeigt die LED den Status des ersten Segments. Ob eine Status-LED ein 1-Byte-Objekt (5.010) auswerten kann, hängt vom Taster ab.",
+      "MDT-Bezeichnungen: Funktionen sind allgemein beschrieben (Schalten/Um, Dimmen relativ 3.007 mit Stopp-Telegramm beim Loslassen, Szene 18.001, Wert senden 5.001/5.010, Status-LED über Objekt); die Bezeichnungen in der MDT-Applikation können abweichen."
+    ],
+    "device": "geraet1"
+  }
+}

@@ -1,0 +1,80 @@
+# OpenKNX NeoPixel – Beispielkonfiguration 4: Terrasse (Effektkette über drei Geräte)
+# Import: Konfigurationstransfer > Import, Import-Ziel "automatisch aus Export übernehmen".
+# Jede Zeile ohne "#" ist ein Transfer-String; in der angegebenen Reihenfolge einzeln importieren.
+
+#@device geraet1
+# ===== NeoPixel Terrasse Abschnitt 1 (Master) =====
+# 1. Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX
+# 2. LED-Streifen 1: Balken 1
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 3. LED-Streifen 2: Balken 2
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 4. LED-Streifen 3: Balken 3
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 5. LED-Streifen 4: Balken 4
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 6. LED-Streifen 5: Balken 5
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 7. LED-Streifen 6: Balken 6
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 8. LED-Streifen 7: Balken 7
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 9. LED-Streifen 8: Balken 8
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 10. Segment 1: 2D-Matrix 60×8, Effektkette Master
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%201§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=1§NEO~VirtualTotalLength=1440§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
+# 11. Effektmanager 1: Abendstimmung
+OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX
+# 12. Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO 642
+OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Terrasse%20Abendstimmung§f~LogicType=5§f~Logic=5§f~Td1DuskDawn=8§f~Td2DuskDawn=1§f~TRestoreState=1§f~Td1Value=1§f~Td2HourAbs=23§f~Td2MinuteAbs=0§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffKOSend=1§f~OOffKOSendNumber=642§;OpenKNX
+
+#@device geraet2
+# ===== NeoPixel Terrasse Abschnitt 2 (Slave) =====
+# 1. Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX
+# 2. LED-Streifen 1: Balken 1
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 3. LED-Streifen 2: Balken 2
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 4. LED-Streifen 3: Balken 3
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 5. LED-Streifen 4: Balken 4
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 6. LED-Streifen 5: Balken 5
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 7. LED-Streifen 6: Balken 6
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 8. LED-Streifen 7: Balken 7
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 9. LED-Streifen 8: Balken 8
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 10. Segment 1: 2D-Matrix 60×8, Effektkette Slave
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%202§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=2§NEO~VirtualTotalLength=1440§NEO~VirtualOffset=480§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
+# 11. Effektmanager 1: Abendstimmung
+OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX
+
+#@device geraet3
+# ===== NeoPixel Terrasse Abschnitt 3 (Slave) =====
+# 1. Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX
+# 2. LED-Streifen 1: Balken 1
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 3. LED-Streifen 2: Balken 2
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 4. LED-Streifen 3: Balken 3
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 5. LED-Streifen 4: Balken 4
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 6. LED-Streifen 5: Balken 5
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 7. LED-Streifen 6: Balken 6
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 8. LED-Streifen 7: Balken 7
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 9. LED-Streifen 8: Balken 8
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
+# 10. Segment 1: 2D-Matrix 60×8, Effektkette Slave
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%203§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=2§NEO~VirtualTotalLength=1440§NEO~VirtualOffset=960§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
+# 11. Effektmanager 1: Abendstimmung
+OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX

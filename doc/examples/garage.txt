@@ -1,0 +1,32 @@
+# OpenKNX NeoPixel – Beispielkonfiguration 3: Garage
+# Import: Konfigurationstransfer > Import, Import-Ziel "automatisch aus Export übernehmen".
+# Jede Zeile ohne "#" ist ein Transfer-String; in der angegebenen Reihenfolge einzeln importieren.
+
+#@device geraet1
+# ===== NeoPixel Garage =====
+# 1. Basiseinstellungen: Hardware, 3 Streifen, 3 Segmente, 1 Effektmanager
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=3§NEONumberOfSegments=3§NEOEMEnabled=1§;OpenKNX
+# 2. LED-Streifen 1: Einfahrt
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Einfahrt§NEO~Length=120§NEO~powerLimitCombined=2§NEO~currentPerChannel=4000§NEO~autoBrightnessLimit=80§;OpenKNX
+# 3. LED-Streifen 2: Wand links
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Wand%20links§NEO~Length=180§NEO~powerLimitCombined=2§NEO~currentPerChannel=6400§NEO~autoBrightnessLimit=80§;OpenKNX
+# 4. LED-Streifen 3: Wand rechts
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Wand%20rechts§NEO~Length=180§NEO~powerLimitCombined=2§NEO~currentPerChannel=6400§NEO~autoBrightnessLimit=80§;OpenKNX
+# 5. Segment 1: Einfahrt
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Einfahrt§NEO~SegmentEnd=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
+# 6. Segment 2: Links
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/2§Description~=Links§NEO~SegmentStart=121§NEO~SegmentEnd=300§NEO~SegmentEmStopReturnMode=2§;OpenKNX
+# 7. Segment 3: Rechts
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/3§Description~=Rechts§NEO~SegmentStart=301§NEO~SegmentEnd=480§NEO~SegmentEmStopReturnMode=2§;OpenKNX
+# 8. Effektmanager 1: Einfahrt
+OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Cue1Effect:1=13§NEOEM~Cue1Effect:2=13§NEOEM~Cue1Duration:1=10§NEOEM~Cue1Duration:2=10§NEOEM~Cue1Fade:1=1000§NEOEM~Cue1Fade:2=1000§NEOEM~Cue1Text:1=Begr%C3%BC%C3%9Fung§NEOEM~Cue1Text:2=Begr%C3%BC%C3%9Fung§NEOEM~Cue1CometSpeed=170§NEOEM~Cue1CometTailLength=20§NEOEM~Cue2Text:1=Ausleuchten§NEOEM~Cue2Text:2=Ausleuchten§NEOEM~Cue3Effect:1=11§NEOEM~Cue3Effect:2=11§NEOEM~Cue3Brightness=160§NEOEM~Cue3Duration:1=30§NEOEM~Cue3Duration:2=30§NEOEM~Cue3Fade:1=3000§NEOEM~Cue3Fade:2=3000§NEOEM~Cue3Text:1=Nachlauf§NEOEM~Cue3Text:2=Nachlauf§NEOEM~Cue3BreathingSpeed=60§NEOEM~Name=Einfahrt§;OpenKNX
+# 9. Funktionsblöcke: 1 Kanal sichtbar
+OpenKNX,cv1,0xAD00:0xC/FCB:0xA/0§VisibleChannels=1§;OpenKNX
+# 10. Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)
+OpenKNX,cv1,0xAD00:0xC/FCB:0xA/1§Channel~Name=Garage%20Anwesenheit§CH~ChannelType=2§CH~NameKo0=Torkontakt§CH~NameKo1=BM%20links§CH~NameKo2=BM%20rechts§CH~LogicKo2D=1§CH~LogicBehavOut=0§;OpenKNX
+# 11. Logik 1: Anwesenheit → EM 1 auf Segment 1 (Einfahrt) starten, nach 5 min Cue 3 „Nachlauf“
+OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Garage%20EM%20Einfahrt§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=646§;OpenKNX
+# 12. Logik 2: Anwesenheit → EM 1 auf Segment 2 (Links) starten, nach 5 min Cue 3 „Nachlauf“
+OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Garage%20EM%20Links§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=695§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=699§;OpenKNX
+# 13. Logik 3: Anwesenheit → EM 1 auf Segment 3 (Rechts) starten, nach 5 min Cue 3 „Nachlauf“
+OpenKNX,cv1,0xAD00:0xC/LOG:0x44/3§f~Name=Garage%20EM%20Rechts§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=748§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=752§;OpenKNX

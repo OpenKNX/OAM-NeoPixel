@@ -1,0 +1,24 @@
+# OpenKNX NeoPixel – Beispielkonfiguration 2: Wintergarten
+# Import: Konfigurationstransfer > Import, Import-Ziel "automatisch aus Export übernehmen".
+# Jede Zeile ohne "#" ist ein Transfer-String; in der angegebenen Reihenfolge einzeln importieren.
+
+#@device geraet1
+# ===== NeoPixel Wintergarten =====
+# 1. Basiseinstellungen: Hardware, 2 Streifen, 3 Segmente, HCL, Strombegrenzung, Relais
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§HCLMaster=1§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=2§NEONumberOfSegments=3§NEOpowerLimitGlobal=5000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOStatusSendOnStartup=1§NEOExternalRelayCount=1§NEOExternalRelay1Name=LED-Netzteil§NEOExternalRelay1OffDelay=30§NEOExternalRelay1MinOffTime=10§;OpenKNX
+# 2. LED-Streifen 1: Dachkante links
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Dachkante%20links§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=150§;OpenKNX
+# 3. LED-Streifen 2: Dachkante rechts + Sitzecke
+OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Dachkante%20rechts%20%2B%20Sitzecke§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=150§;OpenKNX
+# 4. Segment 1: Dachkante links
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Dachkante%20links§NEO~SegmentEnd=150§NEO~SegmentStartupColor=-16777216§NEO~SegmentStartupW=255§;OpenKNX
+# 5. Segment 2: Dachkante rechts
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/2§Description~=Dachkante%20rechts§NEO~SegmentStart=151§NEO~SegmentEnd=240§NEO~SegmentStartupColor=-16777216§NEO~SegmentStartupW=255§;OpenKNX
+# 6. Segment 3: Sitzecke
+OpenKNX,cv1,0xAD00:0xC/NEO:0x5/3§Description~=Sitzecke§NEO~SegmentStart=241§NEO~SegmentEnd=300§NEO~SegmentStartupColor=-26048§NEO~SegmentStartupW=60§NEO~SegmentStartupBrightness=180§NEO~HCLMode=0§;OpenKNX
+# 7. Lichtmanager 1: HCL-Kurve für die Dachkanten, an allen Tagen
+OpenKNX,cv1,0xAD00:0xC/LMG:0x4/1§CH~Name=Wintergarten%20HCL§CH~Active=1§CH~ProfileCount=1§CH~DayNightSource=2§CH~P1_Name=Alle%20Tage§CH~P1_DaySa=1§CH~P1_DaySo=1§CH~P1_DayUrl=1§CH~P1_DayFei=1§;OpenKNX
+# 8. Logik 1: ODER der Status-KOs Segment 1 und 2 (gerätintern über KO-Nummer)
+OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Netzteil%3A%20Dachkanten%20an§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=601§f~E1UseOtherKO=1§f~E2=1§f~E2OtherKO:2=654§f~E2UseOtherKO=1§;OpenKNX
+# 9. Logik 2: ODER aus Segment 3 und Logik 1, schreibt in KO 408 (Relais 1)
+OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Netzteil%20Relais%201§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=707§f~E1UseOtherKO=1§f~I1=1§f~I1Function=1§f~OOnKOSend=1§f~OOnKOSendNumber=408§f~OOffKOSend=1§f~OOffKOSendNumber=408§;OpenKNX
