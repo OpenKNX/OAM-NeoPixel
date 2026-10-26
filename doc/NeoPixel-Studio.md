@@ -131,13 +131,31 @@ On the segment's main ETS page, below Beschreibung:
 1. **Gespeicherte Studio-Werte in ETS übernehmen** imports the last explicit Save:
    primary/secondary colours, brightness, effect, parameters, all scene data/count
    and the optional commissioning plan.
-   Scene slot aliases and reduced effect selectors are refreshed as well.
+   Active scene slot/text aliases and reduced effect selectors are refreshed and
+   verified as well. Inactive effect aliases retain their unrelated defaults.
 2. Review the imported project values and download the ETS application to the device.
 3. **ETS mit aktuellen Gerätewerten vergleichen** compares ETS with live visual settings
    and scenes without modifying ETS, listing each differing parameter with its ETS value and current device value.
    Differences are a successful comparison result, not a parameter script error.
-   The full result is also written to the ETS log. ETS signed ARGB colour values
+   Both buttons act on the selected segment, including the shared strip length/skip
+   fields. Other segments are not imported or compared. The result states the
+   number of checked values and lists each difference. Each result line is also
+   written as a separate numbered ETS log entry so a shortened task-tree summary
+   cannot hide the complete list. Visible effect-specific scene aliases are
+   compared, even when their generic backing slots still contain different values. ETS signed ARGB colour values
    are normalised to RGB hex codes before comparison.
+
+The readback progress shows cumulative **Block i/N** and **bytes received/total**
+for the selected segment and identifies saved versus live data. The underlying
+Common transfer restarts its packet sequence numbers for each 42-byte JSON page;
+those local counters are hidden. The percentage increases throughout Save import,
+ETS verification and the subsequent live check. Old snapshots without scene or
+commissioning data explicitly report that those fields were not checked.
+
+The Studio On/Off switch and temporary test patterns are runtime controls. They
+do not modify or import ETS startup behaviour. Picker mode, Auto apply, drafts
+and the test brightness control are not independent ETS parameters; colour
+channels, final values and stored scene data are the synchronised settings.
 
 Import uses the last explicit Save; comparison uses live state. Import reads back
 and verifies the values accepted by ETS (including brightness, RGB/white colours,
