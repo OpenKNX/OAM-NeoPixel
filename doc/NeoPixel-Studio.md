@@ -2,8 +2,10 @@
 
 Open `/neopixel` on network firmware builds with `OPENKNX_WEBSERVER`. The page uses
 the shared OpenKNX navigation, styles and logo. It controls configured segments;
-it cannot change strip definitions, segment geometry, GPIOs, current limits or
-power-supply configuration.
+the live editor changes only visual settings. The commissioning tab additionally
+applies LED counts, skipped leading LEDs and the selected segment's range live,
+and exports them for an ETS download. GPIOs, protocols, matrix topology, current limits and power-supply
+configuration remain exclusively in ETS.
 
 An unprogrammed device shows that an ETS application download is required. Startup
 and an ETS download in progress have separate status messages; controls stay hidden
@@ -45,6 +47,43 @@ Changing a colour, effect or parameter takes manual control from an effect manag
 A standalone brightness change can dim an effect manager; applying a full visual
 draft selects a direct effect. Global OFF continues to hide switched-on segments.
 
+## Responsive layout and commissioning
+
+The page uses the same white cards, framed tabs, green active controls and compact
+sliders as the NeoPixel status page. At Full-HD width both colour pickers and effect
+parameters sit side by side. Phones use a compact navigation bar, a small action
+menu, a single colour picker selected by Primary/Secondary tabs and separate
+Steuern / Szenen / Inbetriebnahme panels. These overrides are scoped to Studio.
+
+In **Inbetriebnahme**, edit the number of LEDs (or addressable LED groups) for each
+existing strip, skipped leading LEDs (0–255), and the selected segment's first/last
+LED. LED numbers start at 1; a strip count of 0 disables that existing strip. The
+segment range must fit the combined strips. The form does not add strips or change
+pins, LED protocol, matrix dimensions or power settings.
+
+With **Auto apply: On**, editing a number field applies the layout after a short
+typing pause; confirming the field applies it immediately. **LED-Konfiguration live anwenden** also applies it
+manually when Auto apply is off. The firmware waits for an idle frame, blanks the
+old output, rebuilds the buffers and restores colours, effects and power states.
+A shared layout change is rejected if a segment is locked or another segment would
+extend past the new total. Failed driver initialization attempts restore the old layout.
+
+**Save to device** stores the selected segment's layout with its Studio snapshot.
+Import it with the existing ETS button and download the ETS application to make
+it the authoritative startup configuration. A restart uses the downloaded ETS LED
+layout; a saved plan remains available for manual live application and ETS import.
+Live comparison reports the layout actually running. Pins, protocols, relays and
+power settings continue to come from ETS. ETS downloads invalidate saved plans.
+
+Tests include red, green, blue, white, separate warm/cool white for RGBCCT, a looping
+wipe and automatic channel cycling. They use the selected segment's current ETS
+mapping and normal LED rendering/current limits. Test brightness is limited to
+1–64 / 255; global power must be on, the segment unlocked and an effect manager
+stopped. A compiled-in Wipe/Test effect is required for the respective pattern.
+**Stop** restores the previous visual state and segment power. Tests stop after
+60 seconds, on a lock/global-off, and before normal flash persistence. Saving a
+Studio snapshot while testing is rejected, so patterns cannot replace that save.
+
 ## Scenes
 
 Studio lists up to ten scenes per segment. Recalling a static scene previews its
@@ -84,7 +123,8 @@ snapshots from being reused. A changed segment parameter hash also rejects old i
 On the segment's main ETS page, below Beschreibung:
 
 1. **Gespeicherte Studio-Werte in ETS übernehmen** imports the last explicit Save:
-   primary/secondary colours, brightness, effect, parameters and all scene data/count.
+   primary/secondary colours, brightness, effect, parameters, all scene data/count
+   and the optional commissioning plan.
    Scene slot aliases and reduced effect selectors are refreshed as well.
 2. Review the imported project values and download the ETS application to the device.
 3. **ETS mit aktuellen Gerätewerten vergleichen** compares ETS with live visual settings
@@ -101,8 +141,9 @@ whether the runtime has changed since Save; it does not silently replace the sav
 snapshot with newer live values. If the report shows saved brightness 106 versus
 live brightness 255, save the desired current state again before importing it.
 With a fresh matching save and no intervening runtime changes, import followed by
-comparison must report identical values. Geometry, hardware,
-current limits and effect-manager sequences are outside the import/comparison scope.
+comparison must report identical values. Pending LED counts/skip/segment ranges
+are additionally synchronised when present. Other hardware settings, current limits
+and effect-manager sequences stay outside the import/comparison scope.
 ETS remains the source of truth. No Studio command overwrites downloaded KNX tables.
 
 The ETS schema uses reserved segment bytes 696–702 for secondary startup colours and
@@ -119,9 +160,10 @@ reimport the ETS product for these fields and the online buttons.
 
 Commands include effect, brightness, RGB/white channels, parameter, power,
 sceneRecall/sceneStore/sceneAdd/sceneDelete, save, load (reload live values) and
-restoreEts (restore downloaded settings). A batch contains up to 32
+restoreEts (restore downloaded settings), commissioning (apply an LED layout live),
+testStart and testStop. A batch contains up to 32
 commands for one segment, with at most one final scene action. All values are validated
-before mutation. Nested batches, saves, loads and ETS restores are rejected. The first version retains
+before mutation. Nested batches, saves, loads, ETS restores and commissioning/test commands are rejected. The first version retains
 only the latest result and serializes commands across browsers.
 
 HTTP callbacks queue commands or copy immutable snapshots. Effects and filesystem

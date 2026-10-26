@@ -313,6 +313,14 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
+    std::vector<uint8_t> _physicalStripEtsIds;
+    bool _liveLedLayout = false;
+    bool _livePinKnown[8] = {};
+    uint8_t _liveDataPins[8] = {}, _liveClockPins[8] = {};
+    uint16_t _liveStripLengths[8] = {}, _liveStripSkips[8] = {};
+    uint16_t _liveSegmentStarts[16] = {}, _liveSegmentEnds[16] = {};
+    uint16_t configuredStripLength(uint8_t index) const;
+    uint16_t configuredStripSkip(uint8_t index) const;
     VirtualStrip* _virtualStrip = nullptr;
 
     // Virtual Strip Configuration (NEW)
@@ -428,7 +436,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool _powerKoDark = false; // round sampled while global OFF keeps every segment dark: report 0
 
     // Configuration & Setup
-    void configureFromETS(); // reads ETS params and builds phys+virt layout
+    void configureFromETS(bool physicalOnly = false); // reads ETS params and builds phys+virt layout
     bool executeEmChainAction(uint8_t action, int arg1, int arg2);
     // Console EM/cue authoring (runtime-only; lost on reboot — ETS is the permanent source)
     bool executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,

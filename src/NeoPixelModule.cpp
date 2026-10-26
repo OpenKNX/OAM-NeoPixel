@@ -583,6 +583,10 @@ uint16_t NeoPixelBusModule::flashSize()
 
 void NeoPixelBusModule::writeFlash()
 {
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    // Commissioning patterns are temporary and must never become reboot state.
+    if (_studio) _studio->stopTest();
+#endif
     if (_flashPersistence)
     {
         _flashPersistence->writeToFlash();
@@ -3400,10 +3404,24 @@ void NeoPixelBusModule::initializeGpioPins()
 // Configuration & Setup
 // =============================================================================
 
-void NeoPixelBusModule::configureFromETS()
+uint16_t NeoPixelBusModule::configuredStripLength(uint8_t index) const
+{
+    if (_liveLedLayout && index < 8) return _liveStripLengths[index];
+    const uint8_t _channelIndex = index;
+    return ParamNEOSTRIP_NEOLength;
+}
+
+uint16_t NeoPixelBusModule::configuredStripSkip(uint8_t index) const
+{
+    if (_liveLedLayout && index < 8) return _liveStripSkips[index];
+    const uint8_t _channelIndex = index;
+    return ParamNEOSTRIP_NEOSkipFirstLEDs;
+}
+
+void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 {
     // Initialize the OFM-NeoPixel module first
-    _neoPixel.init();
+    if (!_neoPixel.getManager()) _neoPixel.init();
 
 // Log hardware configuration and check for mismatch
 #ifdef DEVICE_HW_ID
@@ -3515,111 +3533,120 @@ void NeoPixelBusModule::configureFromETS()
     };
 
     // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
-    _relayCount = std::min<uint8_t>(kMaxExternalRelays, ParamNEO_NEOExternalRelayCount);
-    for (uint8_t i = 0; i < kRelayStorageSize; ++i)
+    if (!physicalOnly)
     {
-        _relayPins[i] = 255;
-        _relayStates[i] = false;
-        _relayInverted[i] = false;
-    }
-
-    if (_relayCount > 0)
-    {
-        if (_hwConfigMismatch)
+        _relayCount = std::min<uint8_t>(kMaxExternalRelays, ParamNEO_NEOExternalRelayCount);
+        for (uint8_t i = 0; i < kRelayStorageSize; ++i)
         {
-            logErrorP("External relays disabled due to hardware mismatch");
-            _relayCount = 0;
+            _relayPins[i] = 255;
+            _relayStates[i] = false;
+            _relayInverted[i] = false;
         }
-        else
-        {
-            auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
-                // Get port selection from ETS
-                uint8_t portIndex;
-                switch (relayIndex)
-                {
-                    case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
-                    case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
-                    case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
-                    case 3: portIndex = (uint8_t)ParamNEO_NEOExternalRelay4Port; break;
-                    default: portIndex = 255; break;
-                }
 
-                // Check if "Manuell" (Value 10) is selected in Port dropdown
-                if (portIndex == 10)
-                {
-                    // Return manual GPIO number from ETS parameter
+        if (_relayCount > 0)
+        {
+            if (_hwConfigMismatch)
+            {
+                logErrorP("External relays disabled due to hardware mismatch");
+                _relayCount = 0;
+            }
+            else
+            {
+                auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
+                    // Get port selection from ETS
+                    uint8_t portIndex;
                     switch (relayIndex)
                     {
-#if defined(ParamNEO_NEOExternalRelay1GPIO)
-                        case 0: return (uint8_t)ParamNEO_NEOExternalRelay1GPIO;
-#endif
-#if defined(ParamNEO_NEOExternalRelay2GPIO)
-                        case 1: return (uint8_t)ParamNEO_NEOExternalRelay2GPIO;
-#endif
-#if defined(ParamNEO_NEOExternalRelay3GPIO)
-                        case 2: return (uint8_t)ParamNEO_NEOExternalRelay3GPIO;
-#endif
-#if defined(ParamNEO_NEOExternalRelay4GPIO)
-                        case 3: return (uint8_t)ParamNEO_NEOExternalRelay4GPIO;
-#endif
-                        default: return 255;
+                        case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
+                        case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
+                        case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
+                        case 3: portIndex = (uint8_t)ParamNEO_NEOExternalRelay4Port; break;
+                        default: portIndex = 255; break;
                     }
-                }
 
-                // Otherwise use hardware port mapping (portIndex 0-N)
+                    // Check if "Manuell" (Value 10) is selected in Port dropdown
+                    if (portIndex == 10)
+                    {
+                        // Return manual GPIO number from ETS parameter
+                        switch (relayIndex)
+                        {
+    #if defined(ParamNEO_NEOExternalRelay1GPIO)
+                            case 0: return (uint8_t)ParamNEO_NEOExternalRelay1GPIO;
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay2GPIO)
+                            case 1: return (uint8_t)ParamNEO_NEOExternalRelay2GPIO;
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay3GPIO)
+                            case 2: return (uint8_t)ParamNEO_NEOExternalRelay3GPIO;
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay4GPIO)
+                            case 3: return (uint8_t)ParamNEO_NEOExternalRelay4GPIO;
+    #endif
+                            default: return 255;
+                        }
+                    }
 
-                if (!isHardwarePortSelected(portIndex))
+                    // Otherwise use hardware port mapping (portIndex 0-N)
+
+                    if (!isHardwarePortSelected(portIndex))
+                    {
+                        return 255;
+                    }
+                    return mapPortIndexToGpio(portIndex);
+                };
+
+                for (uint8_t i = 0; i < _relayCount; ++i)
                 {
-                    return 255;
+                    uint8_t gpio = resolveRelayGpio(i);
+                    _relayPins[i] = gpio;
+
+                    if (gpio == 255)
+                    {
+                        logWarningP("Relay %d: No valid GPIO selected in ETS", i + 1);
+                        continue;
+                    }
+
+                    if (isPinUsed(gpio))
+                    {
+                        logErrorP("Relay %d: GPIO %d already in use", i + 1, gpio);
+                    }
+                    else
+                    {
+                        usedPins.push_back(gpio);
+                        logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
+                    }
+
+    // Read output logic (invert) setting per relay; needed before the first write below
+    #if defined(ParamNEO_NEOExternalRelay1OutputLogic)
+                    if (i == 0) _relayInverted[i] = (ParamNEO_NEOExternalRelay1OutputLogic != 0);
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay2OutputLogic)
+                    if (i == 1) _relayInverted[i] = (ParamNEO_NEOExternalRelay2OutputLogic != 0);
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay3OutputLogic)
+                    if (i == 2) _relayInverted[i] = (ParamNEO_NEOExternalRelay3OutputLogic != 0);
+    #endif
+    #if defined(ParamNEO_NEOExternalRelay4OutputLogic)
+                    if (i == 3) _relayInverted[i] = (ParamNEO_NEOExternalRelay4OutputLogic != 0);
+    #endif
+                    if (_relayInverted[i]) logInfoP("Relay %d: Output logic INVERTED (LOW = ON)", i + 1);
+
+                    pinMode(gpio, OUTPUT);
+                    digitalWrite(gpio, _relayInverted[i] ? HIGH : LOW); // OFF until the startup restore
+                    _relayStates[i] = false;
+                    logInfoP("Relay %d: Initial state OFF", i + 1);
                 }
-                return mapPortIndexToGpio(portIndex);
-            };
-
-            for (uint8_t i = 0; i < _relayCount; ++i)
-            {
-                uint8_t gpio = resolveRelayGpio(i);
-                _relayPins[i] = gpio;
-
-                if (gpio == 255)
-                {
-                    logWarningP("Relay %d: No valid GPIO selected in ETS", i + 1);
-                    continue;
-                }
-
-                if (isPinUsed(gpio))
-                {
-                    logErrorP("Relay %d: GPIO %d already in use", i + 1, gpio);
-                }
-                else
-                {
-                    usedPins.push_back(gpio);
-                    logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
-                }
-
-// Read output logic (invert) setting per relay; needed before the first write below
-#if defined(ParamNEO_NEOExternalRelay1OutputLogic)
-                if (i == 0) _relayInverted[i] = (ParamNEO_NEOExternalRelay1OutputLogic != 0);
-#endif
-#if defined(ParamNEO_NEOExternalRelay2OutputLogic)
-                if (i == 1) _relayInverted[i] = (ParamNEO_NEOExternalRelay2OutputLogic != 0);
-#endif
-#if defined(ParamNEO_NEOExternalRelay3OutputLogic)
-                if (i == 2) _relayInverted[i] = (ParamNEO_NEOExternalRelay3OutputLogic != 0);
-#endif
-#if defined(ParamNEO_NEOExternalRelay4OutputLogic)
-                if (i == 3) _relayInverted[i] = (ParamNEO_NEOExternalRelay4OutputLogic != 0);
-#endif
-                if (_relayInverted[i]) logInfoP("Relay %d: Output logic INVERTED (LOW = ON)", i + 1);
-
-                pinMode(gpio, OUTPUT);
-                digitalWrite(gpio, _relayInverted[i] ? HIGH : LOW); // OFF until the startup restore
-                _relayStates[i] = false;
-                logInfoP("Relay %d: Initial state OFF", i + 1);
             }
         }
+
+    }
+    else
+    {
+        for (uint8_t i = 0; i < _relayCount; ++i)
+            if (_relayPins[i] != 255) usedPins.push_back(_relayPins[i]);
     }
 
-    // 1) Determine number of strips from ETS (match the runtime strip limit)
+    // Determine number of strips from ETS (match the runtime strip limit).
     const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
     _totalLeds = 0;
 
@@ -3630,6 +3657,7 @@ void NeoPixelBusModule::configureFromETS()
         if (strip) delete strip;
     }
     _physicalStrips.clear();
+    _physicalStripEtsIds.clear();
 
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
@@ -3643,7 +3671,14 @@ void NeoPixelBusModule::configureFromETS()
         setChannelIndex(i);
         logInfoP("PRE-SCAN Strip %d: Set _channelIndex = %d", i, _channelIndex);
 
-        const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
+        if (physicalOnly && _livePinKnown[i])
+        {
+            usedPins.push_back(_liveDataPins[i]);
+            if (_liveClockPins[i] != 255) usedPins.push_back(_liveClockPins[i]);
+            continue;
+        }
+
+        const uint16_t pixels = configuredStripLength(_channelIndex);
         logInfoP("PRE-SCAN Strip %d: Read pixels = %d (from offset %d)", i, pixels, NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize + NEOSTRIP_NEOLength);
         if (pixels == 0) continue; // Skip strips with 0 LEDs
 
@@ -3772,7 +3807,7 @@ void NeoPixelBusModule::configureFromETS()
             order = ProtocolHelper::getColorOrder(proto);
         const uint8_t ledType = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
-        const uint16_t pixels = (uint16_t)ParamNEOSTRIP_NEOLength;
+        const uint16_t pixels = configuredStripLength(_channelIndex);
 
         // DEBUG: Log all parameters for this strip
         logInfoP("Strip %d: LEDType=%d, pixels=%d (channelIndex=%d)", i, ledType, pixels, _channelIndex);
@@ -3810,7 +3845,12 @@ void NeoPixelBusModule::configureFromETS()
             // Check if manual GPIO configuration is enabled
             bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
-            if (gpioManualConfig)
+            if (physicalOnly && _livePinKnown[i])
+            {
+                mosiGpio = _liveDataPins[i];
+                sckGpio = _liveClockPins[i];
+            }
+            else if (gpioManualConfig)
             {
                 // Use ETS configured GPIO pins (already pre-marked as used during pre-scan)
                 mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
@@ -3929,7 +3969,7 @@ void NeoPixelBusModule::configureFromETS()
                 if (spiCfg)
                 {
                     // Read "Überspringe erste LEDs" parameter for this strip
-                    uint16_t skipLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
+                    uint16_t skipLeds = configuredStripSkip(_channelIndex);
 
                     // Store skipFirstLeds in config (VirtualStrip will force them to black)
                     spiCfg->setSkipFirstLeds(skipLeds);
@@ -3974,7 +4014,8 @@ void NeoPixelBusModule::configureFromETS()
             // Check if manual GPIO configuration is enabled
             bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
 
-            if (gpioManualConfig)
+            if (physicalOnly && _livePinKnown[i]) dataGpioPin = _liveDataPins[i];
+            else if (gpioManualConfig)
             {
                 // Use ETS configured GPIO pin (already pre-marked as used during pre-scan)
                 dataGpioPin = dataGpio;
@@ -4058,7 +4099,7 @@ void NeoPixelBusModule::configureFromETS()
                 auto* cfg = phys->getConfig();
                 if (cfg)
                 {
-                    uint16_t skipLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
+                    uint16_t skipLeds = configuredStripSkip(_channelIndex);
                     cfg->setSkipFirstLeds(skipLeds);
 
                     if (skipLeds > 0)
@@ -4081,6 +4122,7 @@ void NeoPixelBusModule::configureFromETS()
 
             _totalLeds += pixels;
             _physicalStrips.push_back(phys);
+            _physicalStripEtsIds.push_back(i);
 
             // ETS "Timing": value 0 means "use the chip profile" and leaves the driver to
             // resolve the protocol itself. Any other value is an expert bit-rate override
@@ -4205,6 +4247,8 @@ void NeoPixelBusModule::configureFromETS()
     }
 
     logInfoP("Created %d physical strips with total %d LEDs", maxStrips, _totalLeds);
+
+    if (physicalOnly) return;
 
     // 3) Configure virtual strip order from ETS parameters
     configureVirtualStripOrder();
@@ -4634,13 +4678,10 @@ void NeoPixelBusModule::configureVirtualStripOrder()
         uint8_t physStripIndex = positions[pos];
 
         // Skip unused positions (value 0) or invalid indices
-        if (physStripIndex == 0 || physStripIndex > _physicalStrips.size())
-        {
-            continue;
-        }
-
-        // Convert from 1-based to 0-based indexing
-        physStripIndex -= 1;
+        if (physStripIndex == 0) continue;
+        const auto slot = std::find(_physicalStripEtsIds.begin(), _physicalStripEtsIds.end(), physStripIndex - 1);
+        if (slot == _physicalStripEtsIds.end()) continue; // disabled or failed ETS slot
+        physStripIndex = static_cast<uint8_t>(slot - _physicalStripEtsIds.begin());
 
         // Get the LED count for this physical strip
         if (physStripIndex < _physicalStrips.size() && _physicalStrips[physStripIndex])
@@ -4763,8 +4804,8 @@ void NeoPixelBusModule::createVirtualStripWithOrder()
 
         // Apply skip offset if configured for this strip
         uint8_t oldChannelIndex = _channelIndex;
-        _channelIndex = config.physicalStripIndex;
-        uint16_t skipLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
+        _channelIndex = _physicalStripEtsIds[config.physicalStripIndex];
+        uint16_t skipLeds = configuredStripSkip(_channelIndex);
         _channelIndex = oldChannelIndex;
 
         uint16_t effectiveLeds = config.ledCount;
@@ -5120,7 +5161,7 @@ void NeoPixelBusModule::configureStripOptions()
     logDebugP("Swap mode configured: %d", _swapMode);
 
     // Skip first LEDs - now handled automatically in VirtualStrip::syncToPhysical()
-    _skipFirstLeds = ParamNEOSTRIP_NEOSkipFirstLEDs;
+    _skipFirstLeds = configuredStripSkip(_channelIndex);
     if (_skipFirstLeds > 0)
     {
         logInfoP("Skip first LEDs configured: %d LEDs (handled by OFM-NeoPixel)", _skipFirstLeds);
@@ -5193,8 +5234,8 @@ NeoPixelBusModule::SegmentConfig NeoPixelBusModule::createSegmentConfig(uint8_t 
     _channelIndex = segmentIndex;
 
     // Read segment parameters from ETS (these are now truly per-segment parameters)
-    uint16_t etsStartLed = ParamNEO_NEOSegmentStart;
-    uint16_t etsEndLed = ParamNEO_NEOSegmentEnd;
+    uint16_t etsStartLed = _liveLedLayout ? _liveSegmentStarts[segmentIndex] : ParamNEO_NEOSegmentStart;
+    uint16_t etsEndLed = _liveLedLayout ? _liveSegmentEnds[segmentIndex] : ParamNEO_NEOSegmentEnd;
 
     // Convert from 1-based (ETS user-friendly) to 0-based (internal indexing)
     // ETS shows "Start LED = 1" but internally we need index 0
@@ -5778,14 +5819,14 @@ void NeoPixelBusModule::debugShowConfiguration()
         if (!strip) continue;
 
         // Set _channelIndex to read ETS parameters for this strip
-        uint8_t _channelIndex = i;
+        uint8_t _channelIndex = _physicalStripEtsIds[i];
 
         logInfoP("  ┌─ Strip %d:", i + 1);
         logInfoP("  │");
 
         // === ETS Configuration (Raw Parameters) ===
         logInfoP("  │  📋 ETS Configuration:");
-        logInfoP("  │    LED Count:        %d", (uint16_t)ParamNEOSTRIP_NEOLength);
+        logInfoP("  │    LED Count:        %d", configuredStripLength(_channelIndex));
 
         uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const char* ledTypeNames[] = {
@@ -5878,7 +5919,7 @@ void NeoPixelBusModule::debugShowConfiguration()
                  NeoPixelTimingSelection::bitrateKhz(timingSel));
 
         // Skip First LEDs
-        uint16_t skipLeds = (uint16_t)ParamNEOSTRIP_NEOSkipFirstLEDs;
+        uint16_t skipLeds = configuredStripSkip(_channelIndex);
         logInfoP("  │    Skip First LEDs:  %d", skipLeds);
 
         // Color Correction (Master + Sub-Checkboxen)

@@ -67,6 +67,7 @@ std::string NeoPixelStudio::exportSegment(size_t index, bool forSave, std::strin
     json.beginObject().field("version", uint32_t(1)).field("segment", uint32_t(index + 1));
     json.field("configSignature", configSignature(index)).field("effect", uint32_t(id));
     json.field("channels", uint32_t(_module._virtualStrip ? _module._virtualStrip->getBytesPerLed() : 3));
+    json.key("commissioning"); writeCommissioning(json, index, false, !forSave);
     json.key("parameters").beginArray();
     number(json, "NEOEffectType", id);
     number(json, "SegmentStartupBrightness", cfg.savedBrightness);
@@ -216,6 +217,7 @@ std::string NeoPixelStudio::readSaved(size_t index, std::string& error) const
 
 void NeoPixelStudio::invalidateSaved()
 {
+    _testRestore.clear(); _testSegment = -1;
     _acceptCommands.store(false);
     // Retire an in-flight LED frame before filesystem writes (also safe on RP2040).
     if (auto* manager = _module._neoPixel.getManager()) manager->flushFrame();
@@ -244,6 +246,7 @@ void NeoPixelStudio::restoreSaved(bool scenesOnly)
         const std::string json = readSaved(index, error);
         if (!error.empty()) continue;
         const Reader saved(json.c_str());
+        if (scenesOnly && saved.get("commissioning").isObject()) stageCommissioning(index, saved.get("commissioning"));
         if (scenesOnly)
         {
             if (_module._flashPersistence && _module._flashPersistence->hasSceneSnapshot()) continue;

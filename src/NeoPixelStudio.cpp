@@ -163,12 +163,22 @@ void NeoPixelStudio::setup(bool configured)
 void NeoPixelStudio::loop()
 {
     if (!_acceptCommands.load()) return;
+    tickTest(millis());
     std::string command;
     uint32_t id = 0;
     if (_guard.exchange(1, std::memory_order_acquire)) return;
     if (!_pending.empty())
     {
         const Reader pending(_pending.c_str());
+        if (pending.get("action").equals("commissioning"))
+        {
+            auto* manager = _module._neoPixel.getManager();
+            if (manager && (manager->isFrameInFlight() || manager->isAnyBusy()))
+            {
+                _guard.store(0, std::memory_order_release);
+                return;
+            }
+        }
         if (pending.get("action").equals("save"))
         {
             for (auto* strip : _module.getPhysicalStrips())
@@ -218,8 +228,10 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     if (!segment) return "Segment unavailable";
     const std::string action = doc.get("action").toString();
     if (action == "load") return {};
+    if (action == "save" && _testSegment >= 0) return "Stop the commissioning test before saving";
     if (action == "save") return validateOnly ? "Save cannot be nested" : saveSegment(index);
     if (cfg.locked) return "Segment is locked by KNX";
+    if (action == "commissioning" || action == "testStart" || action == "testStop") return commissioningControl(index, doc, validateOnly);
     const Reader value = doc.get("value");
     if (action == "batch")
     {
@@ -258,6 +270,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
             }
             if (captureText.size() > 14) return "Scenes support at most 14 bytes of effect text";
         }
+        if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
         for (size_t i = 0; i < count; ++i)
         {
             const std::string error = applyDoc(value.get(i));
@@ -269,6 +282,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     {
         if (!integer(value, 0, 1)) return "Invalid power value";
         if (validateOnly) return {};
+        if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
         if (static_cast<uint32_t>(value.toFloat()))
         {
             const uint8_t intent = cfg.savedBrightness;
@@ -297,6 +311,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
         else if (!integer(value, 1, count) || (action == "sceneDelete" && static_cast<uint32_t>(value.toFloat()) != count))
             return "Invalid scene; only the highest scene can be deleted";
         if (validateOnly) return {};
+        if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
         const uint8_t previous = _module._channelIndex;
         _module._channelIndex = index;
         bool success = action == "sceneAdd" ? _module._sceneManager->addScene(index, segment) : action == "sceneDelete" ? _module._sceneManager->deleteScene(index, static_cast<uint32_t>(value.toFloat()))
@@ -387,6 +402,8 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
 
     if (validateOnly) return {};
 
+    if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
+
     // All validation precedes takeover: an invalid request must not stop an EM.
     const uint8_t previousChannel = _module._channelIndex;
     _module._channelIndex = index;
@@ -395,6 +412,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     if (cfg.syncMode == 2) cfg.localOverride = true;
     if (action == "restoreEts")
     {
+        _commissioning[index].clear();
         _module.applySegmentDefaultState(index);
         _module.reEnterEffect(index);
         if (_module._sceneManager) _module._sceneManager->restoreEtsScenes(index);
@@ -470,7 +488,12 @@ std::string NeoPixelStudio::snapshot()
         Effect* effect = segment->getEffect();
         json.beginObject().field("id", uint32_t(i + 1)).field("locked", cfg.locked);
         const bool details = selected == i + 1;
-        json.field("detailsLoaded", details);
+        json.field("detailsLoaded", details).field("testing", _testSegment == int(i));
+        if (details) {
+            json.field("commissioningPending", commissioning(i) != commissioning(i, true));
+            json.field("commissioningApplied", commissioning(i) == commissioning(i, false, true));
+            json.key("commissioning"); writeCommissioning(json, i);
+        }
         json.field("power", _module.isSegmentVisible(cfg)).field("em", cfg.emController.isRunning());
         json.field("brightness", uint32_t(cfg.savedBrightness)).field("effect", uint32_t(getTypeFromEffect(effect)));
         color(json, "primary", c.r(), c.g(), c.b(), c.ww(), c.cw());

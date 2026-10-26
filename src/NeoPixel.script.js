@@ -648,7 +648,32 @@ function NEO_studioBindings(device, context, settings) {
         if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + prefix + entry.name + ". Applikation aktualisieren.");
         bindings.push({ parameter: parameter, name: entry.name, value: entry.value });
     }
-    return bindings.concat(NEO_studioSceneBindings(device, context, settings));
+    return bindings.concat(NEO_studioSceneBindings(device, context, settings), NEO_studioCommissioningBindings(device, context, settings));
+}
+
+// Commissioning edits are a plan for the next ETS download, never writes to KNX tables.
+function NEO_studioCommissioningBindings(device, context, settings) {
+    var plan = settings.commissioning;
+    if (plan === undefined) return []; // compatibility with existing saved snapshots
+    function integer(value, low, high) { return typeof value === "number" && Math.floor(value) === value && value >= low && value <= high; }
+    if (!plan || !(plan.strips instanceof Array) || plan.strips.length < 1 || plan.strips.length > 8) throw new Error("NeoPixel: Ungültiger Inbetriebnahme-Entwurf.");
+    var bindings = [], total = 0;
+    function add(fullName, name, value) {
+        var parameter = device.getParameterByName(fullName);
+        if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + fullName);
+        bindings.push({parameter:parameter, name:name, value:value, commissioning:true});
+    }
+    for (var i = 0; i < plan.strips.length; i++) {
+        var strip = plan.strips[i];
+        if (!strip || strip.id !== i+1 || !integer(strip.length,0,16383) || !integer(strip.skip,0,(strip.length ? Math.min(255,strip.length-1) : 0))) throw new Error("NeoPixel: Ungültige LED-Anzahl oder übersprungene LEDs.");
+        total += strip.length;
+        add("NEOSTRIP_NEO"+strip.id+"Length", "Strip"+strip.id+"Length", strip.length);
+        add("NEOSTRIP_NEO"+strip.id+"SkipFirstLEDs", "Strip"+strip.id+"SkipFirstLEDs", strip.skip);
+    }
+    if (total>65535 || !integer(plan.start,1,Math.min(total,16383)) || !integer(plan.end,plan.start,Math.min(total,16383))) throw new Error("NeoPixel: Segmentbereich liegt außerhalb der Streifen.");
+    var prefix="NEO_NEO"+toInt(context.segment,0);
+    add(prefix+"SegmentStart","SegmentStart",plan.start); add(prefix+"SegmentEnd","SegmentEnd",plan.end);
+    return bindings;
 }
 
 function NEO_studioIsColor(name) {
@@ -730,7 +755,7 @@ function NEO_importStudioSettings(device, online, progress, context) {
         var live = NEO_readStudioSettings(device, online, progress, context, 0);
         var changed = NEO_studioDifferences(device, context, live, NEO_studioBindings(device, context, live), false);
         if (changed.length) report = "Gespeicherter Studio-Stand vollständig in ETS übernommen und geprüft. Der aktuelle Geräte-Stand weicht davon ab (" + changed.length + " Wert(e)):\n" + changed.join("\n") +
-            "\nFür den aktuellen Stand erneut in Studio speichern und anschließend importieren.";
+            "\nFür aktuelle Änderungen erneut in Studio speichern und anschließend importieren. Der ETS-Download legt den dauerhaften Startzustand fest.";
         else report = "Studio-Import geprüft: ETS, gespeicherter Studio-Stand und aktuelle Gerätewerte stimmen überein. Jetzt die ETS-Applikation in das Gerät laden.";
     } catch (liveError) {
         report += "\nAktueller Geräte-Stand konnte nicht geprüft werden: " + liveError.message;

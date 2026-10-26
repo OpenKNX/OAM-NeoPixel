@@ -235,3 +235,27 @@ vm.runInContext('parameters.NEO_NEO1SegmentStartupBrightness.value=0; NEO_compar
 assert.match(reports[0],/SegmentStartupBrightness: ETS = 0; Gerät = 106/);
 context.Log={info:()=>{throw new Error('log unavailable');}};
 assert.doesNotThrow(()=>vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context));
+
+// Commissioning plans synchronise only the explicitly allowed strip/range fields.
+vm.runInContext(`
+Log=undefined;
+settings.commissioning={start:1,end:30,strips:[{id:1,length:30,skip:0},{id:2,length:30,skip:0}]};
+parameters.NEO_NEO1SegmentStart={value:1}; parameters.NEO_NEO1SegmentEnd={value:30};
+parameters.NEOSTRIP_NEO1Length={value:30}; parameters.NEOSTRIP_NEO1SkipFirstLEDs={value:0};
+parameters.NEOSTRIP_NEO2Length={value:30}; parameters.NEOSTRIP_NEO2SkipFirstLEDs={value:0};
+parameters.NEOSTRIP_NEO1GPIO={value:12};
+savedSettings=NEO_parseStudioJson(encodeFixtureJson(settings));
+savedSettings.commissioning={start:4,end:500,strips:[{id:1,length:1000,skip:3},{id:2,length:0,skip:0}]};
+NEO_importStudioSettings(device,online,progress,eventContext);
+`,context);
+assert.equal(context.parameters.NEOSTRIP_NEO1Length.value,1000);
+assert.equal(context.parameters.NEOSTRIP_NEO1SkipFirstLEDs.value,3);
+assert.equal(context.parameters.NEOSTRIP_NEO2Length.value,0);
+assert.equal(context.parameters.NEO_NEO1SegmentStart.value,4);
+assert.equal(context.parameters.NEO_NEO1SegmentEnd.value,500);
+assert.equal(context.parameters.NEOSTRIP_NEO1GPIO.value,12);
+assert.match(context.progress.text,/ETS-Download legt den dauerhaften Startzustand fest/);
+vm.runInContext('savedSettings.commissioning.strips[1].skip=1',context);
+assert.throws(()=>vm.runInContext('NEO_importStudioSettings(device,online,progress,eventContext)',context),/Ungültige LED-Anzahl/);
+assert.equal(context.parameters.NEOSTRIP_NEO1Length.value,1000,'invalid commissioning import must not change ETS');
+console.log('Commissioning import: 16-bit LED counts, skip, segment range, disabled strips and GPIO isolation passed');

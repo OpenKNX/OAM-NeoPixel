@@ -390,7 +390,7 @@
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="NeoPixel Studio: Import und Vergleich" UIHint="Headline"/>
                     <Button Id="%AID%_B-%TT%%CC%920" Text="Gespeicherte Studio-Werte in ETS übernehmen" Name="ImportStudioSettings" EventHandler="NEO_importStudioSettings" EventHandlerParameters="{ &quot;segment&quot;:%C% }" EventHandlerOnline="ConnectionOriented"/>
                     <Button Id="%AID%_B-%TT%%CC%921" Text="ETS mit aktuellen Gerätewerten vergleichen" Name="CompareStudioSettings" EventHandler="NEO_compareStudioSettings" EventHandlerParameters="{ &quot;segment&quot;:%C% }" EventHandlerOnline="ConnectionOriented"/>
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Importiert Farben, Helligkeit, Effekt, Effektparameter und Szenen. Anschließend die ETS-Applikation laden. Der Vergleich zeigt abweichende Parameter mit ETS- und Gerätewerten und ändert keine ETS-Werte."/>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Importiert Farben, Helligkeit, Effekt, Effektparameter, Szenen und den LED-Inbetriebnahme-Entwurf. Anschließend die ETS-Applikation laden. Der Vergleich zeigt abweichende Parameter mit ETS- und Gerätewerten und ändert keine ETS-Werte."/>
                     <!-- ===== Sub-Knoten "Aufbau": Topologie + LED-Bereich + Darstellung ===== -->
                     <ParameterBlock Id="%AID%_PB-nnn" Name="SegAufbau" Text="Aufbau" Icon="neo_aufbau" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
                     <!-- Topologie (1D / 2D Matrix) — zuerst, da sie 1D/2D/3D bestimmt -->

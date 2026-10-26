@@ -8,6 +8,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 STUBS = r'''
 #include <cassert>
+#include <array>
 #include <cmath>
 #include <cctype>
 #include <cstdint>
@@ -82,7 +83,7 @@ struct NeoPixelBusModule {
     };
     std::vector<SegmentConfig> _segments;
     uint8_t _channelIndex=7,_globalBrightness=128;
-    bool _localTestMode=false;
+    bool _localTestMode=false, _globalPowerOn=true;
     VirtualStrip strip;
     VirtualStrip* _virtualStrip=&strip;
     int interrupts=0, captures=0, hides=0, statuses=0, syncs=0, restores=0;
@@ -115,7 +116,11 @@ struct NeoPixelBusModule {
 };
 struct NeoPixelStudio {
     NeoPixelBusModule& _module;
-    int saves=0;
+    int saves=0, _testSegment=-1;
+    std::string _testRestore;
+    std::array<std::string,16> _commissioning;
+    std::string stopTest() { _testRestore.clear(); _testSegment=-1; return {}; }
+    std::string commissioningControl(size_t,const Reader&,bool) { return "Unavailable in handler fixture"; }
     std::string saveSegment(size_t) { ++saves; return {}; }
     std::string apply(const std::string&);
     std::string applyDoc(const Reader&,bool=false,uint8_t=255);

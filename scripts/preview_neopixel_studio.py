@@ -34,6 +34,7 @@ EFFECTS = {
                            ['Links nach rechts', 'Rechts nach links', 'Oben nach unten',
                             'Unten nach oben', 'Mitte nach aussen', 'Aussen nach Mitte']),
                  parameter(2, 'Loop', 'bool', 1, 0, 1)]),
+    7: ('Channel test', [parameter(0, 'PhaseDuration', 'number', 2, 1, 60), parameter(1, 'Mode', 'enum', 0, 0, 1, ['RGBW','RGBCCT'])]),
     19: ('Scroll Text', [parameter(0, 'Speed', 'number', 100, 1),
                          parameter(1, 'Gap', 'number', 1),
                          parameter(2, 'Loop', 'bool', 1, 0, 1),
@@ -72,7 +73,7 @@ class Device:
         scene = dict(id=1, effect=1, brightness=160, primary=copy.deepcopy(colour), secondary=copy.deepcopy(segment['secondary']), slots=[25,0,1,0,0,0,0,0,0,0], text='')
         segment['scenes'] = [scene]
         second = copy.deepcopy(segment)
-        second.update(id=2, locked=True, em=False, effect=0, parameters=[])
+        second.update(id=2, locked=scenario == 'locked', em=False, effect=0, parameters=[])
         self.state = dict(ready=scenario not in ('startup', 'unconfigured', 'programming'),
                           configured=scenario != 'unconfigured', programming=scenario == 'programming',
                           globalPower=scenario != 'off',
@@ -80,6 +81,12 @@ class Device:
                           channels=channels,
                           segments=[] if scenario in ('empty', 'startup', 'unconfigured', 'programming') else [segment, second])
 
+        for s in self.state['segments']:
+            s['testing'] = False
+            s['commissioningPending'] = False
+            s['commissioning'] = dict(start=1,end=30,strips=[dict(id=1,length=30,skip=0),dict(id=2,length=30,skip=0)])
+        self.test_restore = None
+        self.test_until = 0
         self.ets_segments = copy.deepcopy(self.state['segments'])
 
     def apply(self, command):
@@ -88,7 +95,7 @@ class Device:
             raise ValueError('Unknown segment')
         action, value = command.get('action'), command.get('value')
         if action == 'batch':
-            if not isinstance(value, list) or not 1 <= len(value) <= 32 or any(not isinstance(c,dict) or c.get('segment') != segment['id'] or c.get('action') in ('batch','save','load','restoreEts') for c in value):
+            if not isinstance(value, list) or not 1 <= len(value) <= 32 or any(not isinstance(c,dict) or c.get('segment') != segment['id'] or c.get('action') in ('batch','save','load','restoreEts','commissioning','testStart','testStop') for c in value):
                 raise ValueError('Invalid batch')
             original = copy.deepcopy(self.state)
             try:
@@ -99,6 +106,8 @@ class Device:
             return
         if action == 'load':
             return
+        if action == 'save' and self.test_restore:
+            raise ValueError('Stop the commissioning test before saving')
         if action == 'save':
             if segment['em']:
                 raise ValueError('Choose a direct effect before saving; effect manager is running')
@@ -111,6 +120,33 @@ class Device:
             return
         if segment['locked']:
             raise ValueError('Segment is locked by KNX')
+        if action == 'commissioning':
+            if not isinstance(value,dict) or len(value.get('strips',[])) != 2: raise ValueError('Invalid strips')
+            if any(type(s.get('length')) is not int or not 0<=s['length']<=16383 or type(s.get('skip')) is not int or not 0<=s['skip']<min(256,max(1,s['length'])) for s in value['strips']): raise ValueError('Invalid LED count or skipped LEDs')
+            if not 1<=value['start']<=value['end']<=sum(s['length'] for s in value['strips']): raise ValueError('Invalid segment range')
+            for other in self.state['segments']:
+                if other['id'] != segment['id'] and other['commissioning']['end'] > sum(s['length'] for s in value['strips']): raise ValueError('Another segment exceeds the new LED count')
+                if other['locked']: raise ValueError('A segment is locked by KNX')
+            self.stop_test()
+            for other in self.state['segments']:
+                other['commissioning']['strips'] = copy.deepcopy(value['strips'])
+                other['commissioningPending'] = True
+                other['commissioningApplied'] = True
+            segment['commissioning']=copy.deepcopy(value)
+            segment['commissioningPending']=value!=next(s['commissioning'] for s in self.ets_segments if s['id']==segment['id'])
+            return
+        if action == 'testStop':
+            self.stop_test()
+            return
+        if action == 'testStart':
+            if not self.state['globalPower'] or segment['em']: raise ValueError('Switch global power on and stop the effect manager before testing')
+            self.stop_test()
+            pattern=value['pattern']
+            if pattern not in ('red','green','blue','white','warm','cool','chase','cycle') or not 1<=value['level']<=64: raise ValueError('Invalid test')
+            self.test_restore=copy.deepcopy(segment); self.test_until=time.monotonic()+60
+            segment.update(testing=True,ownPower=True,power=True,brightness=value['level'],effect=1 if pattern=='chase' else 0)
+            segment['primary']=dict(rgb={'red':'#ff0000','green':'#00ff00','blue':'#0000ff'}.get(pattern,'#ffffff'),ww=0,cw=0)
+            return
         if action == 'restoreEts':
             defaults = next(s for s in self.ets_segments if s['id'] == segment['id'])
             for key in ('effect', 'brightness', 'primary', 'secondary', 'parameters', 'scenes'):
@@ -194,7 +230,16 @@ class Device:
         if action != 'brightness':
             segment['em'] = False
 
+    def stop_test(self):
+        if self.test_restore:
+            saved=self.test_restore
+            for segment in self.state['segments']:
+                if segment['id']==saved['id']: segment.update(saved)
+            self.test_restore=None
+
     def complete(self):
+        if self.test_restore and time.monotonic()>=self.test_until: self.stop_test()
+
         if self.pending and time.monotonic() >= self.pending[0]:
             _, request_id, command = self.pending
             try:
@@ -217,11 +262,10 @@ def page(scenario):
 <div class="menu-container"><a class="menu active" href="/neopixel">NeoPixel Studio</a></div>
 <div class="nav-footer"><div class="nav-firm">OAM-NeoPixel · local preview</div>
 <div class="nav-info"><span class="prog-dot dot-off"></span>Simulated device</div></div></nav>
-<main><div class="container" style="border:1px solid #ddd;padding:12px;margin-bottom:24px;font-size:.88em">
-<strong>Local GUI preview</strong> · simulated responses, no hardware connection.
+<main><details style="font-size:12px;margin-bottom:12px"><summary>Local preview · simulated device</summary>
 <form method="get" action="/neopixel" style="margin-top:8px"><label for="preview-scenario">Scenario </label>
 <select id="preview-scenario" name="scenario">{options}</select> <button>Load / reset</button></form>
-</div>{asset('HTML')}</main></body></html>'''
+</details>{asset('HTML')}</main></body></html>'''
 
 
 class Handler(BaseHTTPRequestHandler):

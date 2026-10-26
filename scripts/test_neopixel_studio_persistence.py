@@ -14,8 +14,16 @@ STUBS = STUBS.replace('    void setParameter(Segment*, uint8_t, uint32_t);',
                       '    uint32_t getParameter(const Segment*, uint8_t p) const { return p==0 ? 12 : 1; }\n    void setParameter(Segment*, uint8_t, uint32_t);')
 STUBS = STUBS.replace('    bool isRunning() const', '    uint8_t lastEmId() const { return 0; }\n    bool isRunning() const')
 STUBS = STUBS.replace('    int interrupts=0', '    struct Pixel { struct Manager { void flushFrame() {} } manager; Manager* getManager() { return &manager; } } _neoPixel;\n    uint8_t effectiveStartupBehavior(size_t) const { return 1; }\n    struct Persistence { bool present=false; bool hasSceneSnapshot() const { return present; } } persistence; Persistence* _flashPersistence=&persistence;\n    int interrupts=0')
+STUBS = STUBS.replace('    int interrupts=0', '    bool _liveLedLayout=false; uint16_t _liveSegmentStarts[16]={}, _liveSegmentEnds[16]={};\n    unsigned configuredStripLength(unsigned i) const { return 30+i; }\n    unsigned configuredStripSkip(unsigned) const { return 0; }\n    int interrupts=0')
 STUBS += r'''
 #define EM_NONE 0
+inline uint32_t fixtureMillis=0;
+inline uint32_t millis() { return fixtureMillis; }
+#define ParamNEO_NEONumberOfLEDStrips 2
+#define ParamNEO_NEOSegmentStart 1
+#define ParamNEO_NEOSegmentEnd 30
+#define ParamNEOSTRIP_NEOLength (30+_channelIndex)
+#define ParamNEOSTRIP_NEOSkipFirstLEDs 0
 inline struct OpenKnx { struct Flash { int calls=0; void save() {++calls;} } flash; } openknx;
 #define NEO_ParamBlockSize 704
 #define NEO_ParamBlockOffset 0
@@ -61,12 +69,39 @@ int main() {
     Segment segment;
     module._segments.resize(1); module._segments[0].segment=&segment;
     NeoPixelStudio studio(module);
+    const std::vector<uint8_t> etsBytes(knx.bytes,knx.bytes+sizeof(knx.bytes));
+    assert(studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":4,"end":40,"strips":[{"id":1,"length":40,"skip":3},{"id":2,"length":20,"skip":0}]}})").empty());
+    assert(studio.commissioning(0)!=studio.commissioning(0,true));
+    assert(!studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":1,"end":40,"strips":[{"id":1,"length":40,"skip":40},{"id":2,"length":20,"skip":0}]}})").empty());
+    assert(!studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":1,"end":61,"strips":[{"id":1,"length":40,"skip":0},{"id":2,"length":20,"skip":0}]}})").empty());
+    assert(std::equal(etsBytes.begin(),etsBytes.end(),knx.bytes));
+    module._globalPowerOn=false;
+    assert(!studio.apply(R"({"segment":1,"action":"testStart","value":{"pattern":"red","level":32}})").empty());
+    module._globalPowerOn=true;
+    assert(!studio.apply(R"({"segment":1,"action":"testStart","value":{"pattern":"red","level":255}})").empty());
+    assert(studio.apply(R"({"segment":1,"action":"testStart","value":{"pattern":"red","level":32}})").empty());
+    assert(studio._testSegment==0 && segment.config.r()==255 && segment.config.g()==0 && module._segments[0].savedBrightness==32);
+    assert(!studio.apply(R"({"segment":1,"action":"save"})").empty());
+    assert(!studio.apply(R"({"segment":1,"action":"batch","value":[{"segment":1,"action":"testStop"}]})").empty());
+    studio.tickTest(59999);assert(studio._testSegment==0);
+    studio.tickTest(60000);assert(studio._testSegment==-1);
+    assert(segment.config.r()==10 && segment.config.g()==20 && module._segments[0].savedBrightness==100);
+    assert(openknx.flash.calls==0); // test patterns are never explicitly saved
+    assert(studio.apply(R"({"segment":1,"action":"testStart","value":{"pattern":"chase","level":20}})").empty());
+    module._segments[0].locked=true;
+    studio.tickTest(1);
+    assert(studio._testSegment==-1 && module._segments[0].locked && segment.config.r()==10);
+    module._segments[0].locked=false;
+    assert(std::equal(etsBytes.begin(),etsBytes.end(),knx.bytes));
     std::string error;
     assert(studio.readSaved(0,error).empty() && !error.empty());
     assert(studio.saveSegment(0).empty());
     error.clear();
     const std::string first=studio.readSaved(0,error);
     assert(!first.empty() && error.empty());
+    assert(OpenKNX::Format::JSON::Reader(first.c_str()).get("commissioning").get("start").toUInt()==4);
+    const std::string livePlan=studio.exportSegment(0,false,error);
+    assert(OpenKNX::Format::JSON::Reader(livePlan.c_str()).get("commissioning").get("start").toUInt()==1);
     module._segments[0].savedBrightness=201;
     failRename=true;
     assert(!studio.saveSegment(0).empty());
@@ -131,12 +166,15 @@ def main():
         (temp / 'LittleFS.h').write_text(FS)
         shutil.copyfile(ROOT / 'src/NeoPixelStudio.h', temp / 'NeoPixelStudio.h')
         shutil.copyfile(ROOT / 'src/NeoPixelStudioPersistence.cpp', temp / 'production.cpp')
+        shutil.copyfile(ROOT / 'src/NeoPixelStudioCommissioning.cpp', temp / 'commissioning.cpp')
         control = (ROOT / 'src/NeoPixelStudio.cpp').read_text()
         helpers = control[control.index('    bool integer('):control.index('    std::string utf8(')]
         methods = control[control.index('std::string NeoPixelStudio::apply('):control.index('std::string NeoPixelStudio::snapshot(')]
         (temp / 'SceneManager.h').write_text('#pragma once\n#include "NeoPixelModule.h"\nstruct SceneManager { static constexpr uint8_t MAX_SCENES=10; };\n')
         (temp / 'test.cpp').write_text(TESTS)
-        (temp / 'combined.cpp').write_text(TESTS + '\n#include "SceneManager.h"\n' + helpers + methods + '\n#include "production.cpp"\n')
+        # Geometry rebuilding is covered by test_neopixel_studio_live.py; this fixture
+        # isolates snapshot persistence and plan validation from hardware allocation.
+        (temp / 'combined.cpp').write_text(TESTS + '\n#include "SceneManager.h"\n' + helpers + methods + '\n#include "commissioning.cpp"\nstd::string NeoPixelStudio::applyLiveCommissioning(size_t i, const OpenKNX::Format::JSON::Reader& v) { return stageCommissioning(i,v); }\n#include "production.cpp"\n')
         subprocess.run([shutil.which('clang++') or 'c++', '-std=c++17', '-fsanitize=address,undefined',
                         '-DOPENKNX_WEBSERVER', '-DKNX_IP_WIFI', '-DOPENKNX_LITTLE_FS=1',
                         '-I' + str(temp), '-I' + str(ROOT / 'lib/OFM-Network/src'), '-I' + str(ROOT / 'lib/OGM-Common/src'),

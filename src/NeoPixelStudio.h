@@ -2,7 +2,9 @@
 
 #if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
     #include "OpenKNX/Format/JSON/Reader.h"
+    #include "OpenKNX/Format/JSON/Writer.h"
     #include <atomic>
+    #include <array>
     #include <cstdint>
     #include <string>
 
@@ -19,6 +21,7 @@ class NeoPixelStudio
     bool readback(uint8_t length, const uint8_t* data, uint8_t* result, uint8_t& resultLength);
 
   private:
+    friend class NeoPixelBusModule;
     NeoPixelBusModule& _module;
     // HTTP runs on another task on ESP32. Never wait for it from the rendering loop.
     std::atomic<uint32_t> _guard{0};
@@ -35,6 +38,18 @@ class NeoPixelStudio
     std::string _error;
     bool _registered = false;
     bool _processing = false;
+
+    std::array<std::string, 16> _commissioning;
+    std::string _testRestore;
+    int _testSegment = -1;
+    uint32_t _testUntil = 0;
+    std::string commissioning(size_t index, bool downloaded = false, bool runtime = false) const;
+    void writeCommissioning(OpenKNX::Format::JSON::Writer& json, size_t index, bool downloaded = false, bool runtime = false) const;
+    std::string commissioningControl(size_t index, const OpenKNX::Format::JSON::Reader& doc, bool validateOnly);
+    std::string applyLiveCommissioning(size_t index, const OpenKNX::Format::JSON::Reader& value);
+    std::string stageCommissioning(size_t index, const OpenKNX::Format::JSON::Reader& value);
+    std::string stopTest();
+    void tickTest(uint32_t now);
 
     std::string _etsExport;
     uint16_t _etsToken = 0;

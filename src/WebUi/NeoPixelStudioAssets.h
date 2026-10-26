@@ -1,34 +1,35 @@
 #pragma once
 
 static const char kNeoPixelStudioHtml[] = R"HTML(
-<div class="container" id="neopixel-studio">
-<h1>NeoPixel Studio</h1>
-<p class="meta">Live colours and effects for the segments configured in ETS. Changes apply automatically. Disable automatic apply to edit a draft before applying it. Startup behaviour follows the ETS settings.</p>
-<p id="studio-status" role="status" aria-live="polite">Connecting…</p>
+<div class="container" id="neopixel-studio" data-active-colour="primary">
+<div class="studio-title"><h1>NeoPixel Studio</h1><p id="studio-status" role="status" aria-live="polite">Connecting…</p></div>
 <noscript>JavaScript is required to control NeoPixel Studio.</noscript>
 <form id="studio-form" hidden>
-<div class="studio-actions"><button type="button" id="studio-auto-apply" aria-pressed="true">Automatic apply: On</button><button type="button" id="studio-apply">Apply live</button><button type="button" id="studio-reset">Reset draft</button><button type="button" id="studio-save">Save to device</button><button type="button" id="studio-load">Reload live values</button><button type="button" id="studio-restore-ets">Restore ETS settings</button></div>
-<h2>Segment</h2>
-<label for="studio-segment">Select segment</label>
-<select id="studio-segment"></select>
-<p class="meta" id="studio-segment-state"></p>
-<fieldset id="studio-controls">
-<legend class="studio-sr">Live controls</legend>
-<h2>Effect</h2>
-<div class="studio-row"><label for="studio-effect">Effect</label><select id="studio-effect"></select></div>
-<div class="studio-row"><label for="studio-power">Segment power</label><input type="checkbox" id="studio-power"></div>
-<h2>Colours</h2>
-<div class="studio-row"><label for="studio-brightness">Brightness</label><input id="studio-brightness" type="range" min="0" max="255"><output id="studio-brightness-value" for="studio-brightness"></output></div>
-<div id="studio-colours"></div>
-
-<h2>Effect parameters</h2>
-<div id="studio-parameters"></div>
-<h2>Scenes</h2><div id="studio-scenes"></div>
-</fieldset>
-<p id="studio-draft" class="meta"></p><details><summary>Review pending changes</summary><pre id="studio-payload"></pre></details>
-<p class="meta">Automatic apply updates the live output after each edit. When disabled, use Apply live to preview the draft. Save applies it and persists visual settings and scenes for ETS import. Reload live values discards the draft and reads current output settings. Restore ETS settings applies the downloaded colours, brightness, effect, parameters and scenes. Neither overwrites the saved Studio snapshot. ETS remains the configuration source.</p>
-</form>
+<div class="studio-toolbar">
+<div class="studio-segment-select"><label for="studio-segment">Segment</label><select id="studio-segment"></select><span class="meta" id="studio-segment-state"></span></div>
+<div class="studio-actions"><button type="button" id="studio-auto-apply" aria-pressed="true">Auto apply: On</button><button type="button" id="studio-save">Save to device</button><details class="studio-more"><summary>Actions</summary><div><button type="button" id="studio-apply">Apply live</button><button type="button" id="studio-reset">Reset draft</button><button type="button" id="studio-load">Reload live values</button><button type="button" id="studio-restore-ets">Restore ETS settings</button></div></details></div>
 </div>
+<div class="studio-tabs" role="tablist" aria-label="Studio pages"><button type="button" id="studio-tab-control" role="tab" aria-selected="true" aria-controls="studio-panel-control">Steuern</button><button type="button" id="studio-tab-scenes" role="tab" aria-selected="false" aria-controls="studio-panel-scenes" tabindex="-1">Szenen</button><button type="button" id="studio-tab-commission" role="tab" aria-selected="false" aria-controls="studio-panel-commission" tabindex="-1">Inbetriebnahme</button></div>
+<fieldset id="studio-controls"><legend class="studio-sr">Live controls</legend>
+<section id="studio-panel-control" role="tabpanel" aria-labelledby="studio-tab-control">
+<div class="studio-live-grid"><div class="studio-card"><div class="studio-card-heading"><h2>Live output</h2><label class="studio-power-label" for="studio-power">Power <input type="checkbox" id="studio-power"></label></div>
+<div class="studio-row"><label for="studio-effect">Effect</label><select id="studio-effect"></select></div>
+<div class="studio-row"><label for="studio-brightness">Brightness</label><input id="studio-brightness" type="range" min="0" max="255"><output id="studio-brightness-value" for="studio-brightness"></output></div>
+<div class="studio-colour-select" role="group" aria-label="Colour to edit"><button type="button" data-colour="primary" aria-pressed="true">Primary colour</button><button type="button" data-colour="secondary" aria-pressed="false">Secondary colour</button></div><div id="studio-colours"></div></div>
+<div class="studio-card"><div class="studio-card-heading"><h2>Effect parameters</h2></div><div id="studio-parameters"></div></div></div>
+</section>
+<section id="studio-panel-scenes" role="tabpanel" aria-labelledby="studio-tab-scenes" hidden><div class="studio-card"><div class="studio-card-heading"><h2>Scenes</h2></div><div id="studio-scenes"></div></div></section>
+</fieldset>
+<section id="studio-panel-commission" role="tabpanel" aria-labelledby="studio-tab-commission" hidden>
+<div class="studio-live-grid"><div class="studio-card"><div class="studio-card-heading"><h2>Verkabelung testen</h2><span class="studio-badge" id="studio-test-status">Bereit</span></div><p class="meta studio-note">Testet das ausgewählte Segment mit der aktuell heruntergeladenen Aufteilung. Globale Abschaltung, Sperren und Stromgrenzen gelten weiter. Stop stellt die vorherigen Werte wieder her; automatisch nach 60 Sekunden.</p><label class="studio-test-level" for="studio-test-level">Test-Helligkeit <input id="studio-test-level" type="range" min="1" max="64" value="32"><output id="studio-test-level-value">13%</output></label>
+<div class="studio-test-buttons"><button type="button" data-test="red">Rot</button><button type="button" data-test="green">Grün</button><button type="button" data-test="blue">Blau</button><button type="button" data-test="white">Weiß</button><button type="button" data-test="warm">Warmweiß</button><button type="button" data-test="cool">Kaltweiß</button><button type="button" data-test="chase">Lauflicht</button><button type="button" data-test="cycle">Kanalwechsel</button></div><button type="button" id="studio-test-stop">■ Stop · vorherigen Zustand wiederherstellen</button></div>
+<div class="studio-card"><div class="studio-card-heading"><h2>LED-Konfiguration</h2><span class="studio-badge">Live + ETS</span></div>
+<p class="meta studio-note">LED-Nummern beginnen bei 1. Auto apply wendet Änderungen direkt an. Für den dauerhaften Startzustand speichern, in ETS übernehmen und herunterladen. GPIO, LED-Typ und Stromgrenzen werden in ETS konfiguriert.</p>
+<fieldset id="studio-commission-fields"><legend class="studio-sr">LED configuration draft</legend><div id="studio-strip-fields"></div><h3>Segmentbereich im virtuellen Streifen</h3><div class="studio-inline-fields"><label for="studio-start-led">Erste LED<input id="studio-start-led" type="number" min="1" max="16383" step="1" required></label><label for="studio-end-led">Letzte LED<input id="studio-end-led" type="number" min="1" max="16383" step="1" required></label></div><button type="button" id="studio-commission-apply">LED-Konfiguration live anwenden</button></fieldset><p class="meta" id="studio-commission-status"></p></div>
+</div>
+</section>
+<details class="studio-help"><summary>Pending changes &amp; help <span id="studio-draft"></span></summary><pre id="studio-payload"></pre><p class="meta">Auto apply updates live output. Save persists the selected segment's visual settings, scenes and commissioning draft for ETS import. Reload reads live values; Restore ETS settings reapplies downloaded visual settings. ETS remains the configuration source.</p></details>
+</form></div>
 <style>
 #neopixel-studio #studio-status {font-size:.88em;margin-bottom:1em;min-height:1.2em;color:#666}
 #neopixel-studio #studio-status[data-error="true"] {color:#b3261e}
@@ -85,6 +86,123 @@ static const char kNeoPixelStudioHtml[] = R"HTML(
 #neopixel-studio #studio-scenes .studio-scene {display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eee;font-size:.88em}
 #neopixel-studio .studio-scene strong {margin-right:auto}
 #neopixel-studio #studio-payload {font-size:.75em;white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;margin:12px 0}
+#neopixel-studio .studio-picker-tabs button[aria-pressed=true] {background:#e1efdc;border-color:#449841;color:#1c391c}
+#neopixel-studio input[type=checkbox] {appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:20px;background:#c9cfca;position:relative;cursor:pointer;flex-shrink:0}
+#neopixel-studio input[type=checkbox]:before {content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+#neopixel-studio input[type=checkbox]:checked {background:#449841}
+#neopixel-studio input[type=checkbox]:checked:before {transform:translateX(14px)}
+#neopixel-studio #studio-colours {align-items:start}
+#neopixel-studio .studio-picker[data-mode=mixed] .studio-white-preview {height:32px}
+#neopixel-studio[data-ready=false] .studio-title {flex-direction:column;align-items:flex-start;gap:8px}
+#neopixel-studio[data-ready=false] #studio-status {max-width:100%;text-align:left;font-size:13px}
+#neopixel-studio .studio-inline-fields label {display:flex;flex-direction:column;justify-content:space-between}
+/* Explicit tracks avoid native padding and thumb-centre endpoint gaps. */
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone) {appearance:none;-webkit-appearance:none;padding:0;border:0;background:transparent;cursor:pointer}
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-webkit-slider-runnable-track {height:6px;border:0;border-radius:3px;background:linear-gradient(to right,#449841 0%,#449841 var(--studio-fill,0%),#e0e4df var(--studio-fill,0%),#e0e4df 100%)}
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-webkit-slider-thumb {appearance:none;-webkit-appearance:none;width:16px;height:16px;margin-top:-5px;border:0;border-radius:50%;background:#449841}
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-moz-range-track {height:6px;border:0;border-radius:3px;background:linear-gradient(to right,#449841 0%,#449841 var(--studio-fill,0%),#e0e4df var(--studio-fill,0%),#e0e4df 100%)}
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-moz-range-progress {background:transparent}
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-moz-range-thumb {width:16px;height:16px;border:0;border-radius:50%;background:#449841}
+/* Studio-scoped overrides: shared OpenKNX pages keep their existing layout. */
+body:has(#neopixel-studio) main {padding:20px 24px;min-width:0;flex:1}
+body:has(#neopixel-studio) nav {width:190px;min-width:190px}
+#neopixel-studio {max-width:1680px;margin:0 auto;width:100%;font-size:14px}
+#neopixel-studio [hidden] {display:none!important}
+#neopixel-studio h1 {font-size:22px;margin:0;line-height:1.3}
+#neopixel-studio h2 {font-size:15px;margin:0;text-transform:none;letter-spacing:0;color:#18221b}
+#neopixel-studio h3 {font-size:13px;margin:12px 0 6px}
+#neopixel-studio .studio-title {display:flex;gap:16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+#neopixel-studio #studio-status {margin:0;font-size:12px;text-align:right;max-width:65%}
+#neopixel-studio button,#neopixel-studio select,#neopixel-studio input:not([type=range]):not([type=checkbox]) {font:inherit;border:1px solid #cbd2cc;border-radius:6px;background:#fff;color:#202720;padding:7px 10px;margin:0;min-height:34px}
+#neopixel-studio button {cursor:pointer;white-space:normal;line-height:1.25;-webkit-appearance:none}
+#neopixel-studio button:hover {background:#f2f6f1;border-color:#82a67a}
+#neopixel-studio button:disabled {opacity:.45;cursor:default}
+#neopixel-studio button[aria-pressed=true] {background:#e1efdc;border-color:#449841;color:#1c391c}
+#neopixel-studio #studio-save,#neopixel-studio #studio-commission-apply {background:#316c2d;color:white;border-color:#316c2d}
+#neopixel-studio .studio-toolbar {display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#f5f7f4;border-left:3px solid #449841;padding:9px 12px;margin-bottom:14px}
+#neopixel-studio .studio-segment-select {display:flex;gap:8px;align-items:center;flex:1;flex-wrap:wrap}
+#neopixel-studio #studio-segment-state {font-size:12px;margin:0}
+#neopixel-studio .studio-actions {margin:0;gap:6px;align-items:center}
+#neopixel-studio .studio-more {position:relative}
+#neopixel-studio summary {cursor:pointer;font-size:12px}
+#neopixel-studio .studio-more summary {border:1px solid #cbd2cc;padding:8px 10px;border-radius:6px;background:white;font-size:13px}
+#neopixel-studio .studio-more>div {position:absolute;right:0;top:40px;display:grid;gap:6px;padding:10px;border:1px solid #ccc;border-radius:8px;background:white;box-shadow:0 5px 16px #0002;min-width:190px;z-index:4}
+#neopixel-studio .studio-tabs {display:flex;border-bottom:1px solid #cbd2cc;gap:4px;margin-bottom:14px;overflow-x:auto}
+#neopixel-studio .studio-tabs button {border:1px solid transparent;border-radius:6px 6px 0 0;background:transparent;flex-shrink:0;padding:9px 15px}
+#neopixel-studio .studio-tabs button[aria-selected=true] {border-color:#cbd2cc;border-bottom-color:white;background:white;font-weight:600}
+#neopixel-studio .studio-live-grid {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:16px;align-items:start}
+#neopixel-studio .studio-card {border:1px solid #d5dbd4;border-radius:8px;padding:0 14px 14px;min-width:0;background:#fff}
+#neopixel-studio .studio-card-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 0;border-bottom:1px solid #e6e9e4;margin-bottom:6px}
+#neopixel-studio .studio-power-label {display:flex;align-items:center;gap:8px;font-size:13px}
+#neopixel-studio .studio-row {min-height:42px;padding:8px 0;gap:10px}
+#neopixel-studio .studio-row label {width:110px;flex-shrink:0;font-size:13px}
+#neopixel-studio .studio-row select {flex:1;width:100%}
+#neopixel-studio input[type=range] {height:20px;max-width:none;accent-color:#449841;margin:0}
+#neopixel-studio #studio-colours {gap:12px;margin-top:10px}
+#neopixel-studio .studio-picker {padding:10px;border-radius:7px}
+#neopixel-studio .studio-picker-heading {margin-bottom:8px}
+#neopixel-studio .studio-picker h3 {margin:0}
+#neopixel-studio .studio-picker-tabs {margin-bottom:10px}
+#neopixel-studio .studio-picker-tabs button {border-radius:0;min-height:32px;padding:5px 8px}
+#neopixel-studio .studio-picker-tabs button:first-child {border-radius:6px 0 0 6px}
+#neopixel-studio .studio-picker-tabs button:last-child {border-radius:0 6px 6px 0}
+#neopixel-studio .studio-spectrum,#neopixel-studio .studio-white-preview {height:125px;border-radius:4px}
+#neopixel-studio .studio-picker-label {font-size:12px;margin:9px 0 5px}
+#neopixel-studio .studio-hex-row {margin-top:9px}
+#neopixel-studio .studio-rgb-numbers {margin-top:8px;gap:6px}
+#neopixel-studio .studio-white-help,#neopixel-studio .studio-mixed {margin-top:8px;font-size:12px}
+#neopixel-studio .studio-colour-select {display:none}
+#neopixel-studio .studio-note {font-size:12px;line-height:1.5;margin:10px 0}
+#neopixel-studio .studio-badge {font-size:11px;border-radius:20px;background:#e3efdf;color:#315a2a;padding:3px 8px;white-space:nowrap}
+#neopixel-studio .studio-inline-fields {display:flex;gap:10px;margin:9px 0 12px}
+#neopixel-studio .studio-inline-fields label {flex:1;font-size:12px;min-width:0}
+#neopixel-studio .studio-inline-fields input {display:block;width:100%;margin-top:5px!important}
+#neopixel-studio .studio-test-buttons {display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+#neopixel-studio [data-test=red] {border-bottom:3px solid #d84949}
+#neopixel-studio [data-test=green] {border-bottom:3px solid #449841}
+#neopixel-studio [data-test=blue] {border-bottom:3px solid #477dc2}
+#neopixel-studio .studio-test-level {display:flex;align-items:center;gap:10px;font-size:13px}
+#neopixel-studio .studio-test-level input {flex:1;min-width:40px}
+#neopixel-studio #studio-test-stop {width:100%}
+#neopixel-studio .studio-help {margin:14px 0;border-top:1px solid #eee;padding-top:10px}
+#neopixel-studio #studio-draft {font-size:11px;color:#687365;margin-left:8px}
+@media(max-width:1100px) {
+#neopixel-studio .studio-live-grid {grid-template-columns:1fr}
+}
+@media(max-width:640px) {
+body:has(#neopixel-studio) {padding-bottom:30px}
+body:has(#neopixel-studio) main {padding:12px}
+body:has(#neopixel-studio) nav {display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;width:100%;min-width:0;padding:4px 8px}
+body:has(#neopixel-studio) .logo {width:54px;padding:0;margin:0}
+body:has(#neopixel-studio) .logo img {display:block;max-height:42px}
+body:has(#neopixel-studio) .menu-container {flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;margin:0;min-width:0}
+body:has(#neopixel-studio) nav a.menu {font-size:12px;padding:10px 9px;white-space:nowrap;flex-shrink:0;border-left:0;border-bottom:2px solid transparent}
+body:has(#neopixel-studio) nav a.menu.active {border-bottom-color:#449841}
+body:has(#neopixel-studio) .nav-wiki {display:none}
+body:has(#neopixel-studio) .nav-footer {font-size:10px;white-space:nowrap;flex-wrap:nowrap;justify-content:center;padding:6px 8px;gap:10px;max-height:28px;overflow:hidden}
+body:has(#neopixel-studio) .nav-footer .nav-firm,body:has(#neopixel-studio) .nav-footer .prog-status {display:none}
+#neopixel-studio h1 {font-size:19px}
+#neopixel-studio .studio-title {align-items:center;gap:8px;margin-bottom:9px}
+#neopixel-studio #studio-status {font-size:11px;max-width:52%}
+#neopixel-studio .studio-toolbar {padding:8px;margin-bottom:10px;gap:8px}
+#neopixel-studio .studio-segment-select {flex-basis:100%}
+#neopixel-studio .studio-actions {width:100%;display:grid;grid-template-columns:1.2fr 1.2fr .8fr}
+#neopixel-studio .studio-actions button,#neopixel-studio .studio-more summary {font-size:12px;text-align:center;min-height:36px}
+#neopixel-studio .studio-tabs {margin-bottom:10px;gap:0}
+#neopixel-studio .studio-tabs button {padding:9px 13px}
+#neopixel-studio .studio-card {padding:0 10px 10px}
+#neopixel-studio .studio-row {flex-wrap:nowrap;gap:8px}
+#neopixel-studio .studio-row label {width:85px}
+#neopixel-studio .studio-numeric {width:62px;padding:5px}
+#neopixel-studio input:not([type=range]):not([type=checkbox]),#neopixel-studio select {font-size:16px}
+#neopixel-studio .studio-colour-select {display:flex;margin-top:10px}
+#neopixel-studio .studio-colour-select button {flex:1;font-size:12px}
+#neopixel-studio #studio-colours {display:block;margin-top:8px}
+#neopixel-studio[data-active-colour=primary] .studio-picker[data-key=secondary],#neopixel-studio[data-active-colour=secondary] .studio-picker[data-key=primary] {display:none}
+#neopixel-studio .studio-spectrum,#neopixel-studio .studio-white-preview {height:110px}
+#neopixel-studio .studio-test-buttons {grid-template-columns:repeat(2,1fr)}
+#neopixel-studio #studio-draft {display:block;margin:4px 0 0}
+}
 </style>
 <script defer src="/neopixel/studio.js"></script>
 )HTML";
@@ -98,6 +216,19 @@ static const char kNeoPixelStudioJs[] = R"JS(
     let state, liveState, effects = [], selected = 0, busy = false, autoApply = true, signature = '', timer;
     const dirty = new Set(), sceneActions = new Map();
     const clone = value => JSON.parse(JSON.stringify(value));
+    function levelPercent(value) {
+        const percent = Number(value) * 100 / 255, rounded = Math.round(percent);
+        return (percent > 0 && percent < 100 && (rounded === 0 || rounded === 100) ? percent.toFixed(1) : rounded) + '%';
+    }
+    function paintRange(input) {
+        if (input.matches('.studio-hue,.studio-white-tone')) return;
+        const min = Number(input.min || 0), max = Number(input.max || 100);
+        const percent = max > min ? Math.max(0, Math.min(100, (Number(input.value) - min) * 100 / (max - min))) : 0;
+        input.style.setProperty('--studio-fill', percent + '%');
+    }
+    root.addEventListener('input', event => {
+        if (event.target.matches('input[type=range]')) paintRange(event.target);
+    });
     const status = (text, error = false) => {
         el('status').textContent = text;
         el('status').dataset.error = String(error);
@@ -117,9 +248,13 @@ static const char kNeoPixelStudioJs[] = R"JS(
     const current = () => state?.segments.find(segment => segment.id === selected);
     function disabled() {
         const segment = current();
-        el('controls').disabled = busy || !segment || segment.locked || segment.detailsLoaded === false;
-        el('segment').disabled = busy;
-        el('save').disabled = busy || !segment;
+        el('controls').disabled = busy || !segment || segment.locked || segment.testing || segment.detailsLoaded === false;
+        el('commission-fields').disabled = busy || !segment || segment.locked || segment.testing || segment.detailsLoaded === false;
+        root.querySelectorAll('[data-test]').forEach(b => { b.disabled = busy || !segment || segment.locked || segment.em || !state.globalPower || segment.detailsLoaded === false || (b.dataset.test === 'chase' && !effects.some(e => e.id === 1)) || (b.dataset.test === 'cycle' && !effects.some(e => e.id === 7)); });
+        el('test-stop').disabled = busy || !segment?.testing;
+        el('test-level').disabled = busy || !segment || segment.testing;
+        el('segment').disabled = busy || state?.segments.some(s => s.testing);
+        el('save').disabled = busy || !segment || segment.testing;
         el('load').disabled = busy || !segment;
         el('restore-ets').disabled = busy || !segment || segment.locked || segment.detailsLoaded === false;
         el('apply').disabled = busy || !segment || segment.locked || !dirty.has(selected);
@@ -208,7 +343,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
         });
         const memory = pickerMemory.get(memoryKey);
         const panel = document.createElement('section');
-        panel.className = 'studio-picker';
+        panel.className = 'studio-picker'; panel.dataset.key = key;
         // Keys and names are fixed application strings. Device values are assigned through DOM properties.
         panel.innerHTML = `<div class="studio-picker-heading"><h3>${name}</h3><span class="studio-swatch" aria-hidden="true"></span></div>
 <div class="studio-picker-tabs" role="group" aria-label="${name} mode">
@@ -233,6 +368,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
         let hsv = rgbToHsv(memory.rgb), dragging = false;
         function paint() {
             const white = memory.mode === 'white', mixed = memory.mode === 'mixed';
+            panel.dataset.mode = memory.mode;
             panel.querySelector('.studio-rgb-picker').hidden = white;
             panel.querySelector('.studio-white-picker').hidden = !white && !mixed;
             find('-rgb-mode').setAttribute('aria-pressed', String(!white && !mixed));
@@ -248,7 +384,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
             find('-kelvin').value = Math.round(2000 + memory.blend * 45);
             level.value = memory.level;
             blend.value = memory.blend;
-            find('-level-value').textContent = Math.round(memory.level * 100 / 255) + '%';
+            find('-level-value').textContent = levelPercent(memory.level);
             blend.setAttribute('aria-valuetext', `${100 - memory.blend}% warm, ${memory.blend}% cool`);
             panel.querySelector('.studio-white-blend').hidden = state.channels === 4;
             panel.querySelector('.studio-white-help').textContent = state.channels === 3 ? 'Temperature is approximated using RGB channels.' : state.channels === 4 ? 'Uses the strip’s white channel.' : 'Uses the warm and cool white channels.';
@@ -359,6 +495,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
         paint();
     }
     function render(force = false) {
+        root.dataset.ready = String(state.ready);
         const segment = current();
         if (!state.ready) {
             el('form').hidden = true;
@@ -413,10 +550,12 @@ static const char kNeoPixelStudioJs[] = R"JS(
         set('effect', segment.effect);
         set('brightness', segment.brightness);
         set('power', segment.ownPower ?? segment.power, true);
-        el('brightness-value').textContent = Math.round(segment.brightness * 100 / 255) + '%';
+        el('brightness-value').textContent = levelPercent(segment.brightness);
         for (const key of ['primary', 'secondary']) pickers.get(key)?.sync(segment[key], force);
         for (const p of segment.parameters) set('param-' + p.id, p.value, p.type === 'bool');
         renderScenes(segment);
+        renderCommissioning(segment);
+        root.querySelectorAll('input[type=range]').forEach(paintRange);
         el('draft').textContent = dirty.has(selected) ? 'Draft has pending changes for this segment.' : 'Draft matches the device.';
         el('payload').textContent = buildBatch().map(item => {
             if (item.action === 'effect') return 'Effect: ' + (effects.find(e => e.id === item.value)?.name || item.value);
@@ -514,7 +653,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
     }
     function accept(next) {
         liveState = clone(next);
-        if (state) next.segments = next.segments.map(segment => dirty.has(segment.id) ? { ...state.segments.find(s => s.id === segment.id), locked:segment.locked, em:segment.em } : segment);
+        if (state) next.segments = next.segments.map(segment => dirty.has(segment.id) ? { ...state.segments.find(s => s.id === segment.id), locked:segment.locked, em:segment.em, commissioning:segment.commissioning, commissioningPending:segment.commissioningPending, commissioningApplied:segment.commissioningApplied, testing:segment.testing } : segment);
         state = next;
         const ids = state.segments.map(segment => String(segment.id));
         if (JSON.stringify([...el('segment').options].map(item => item.value)) !== JSON.stringify(ids)) {
@@ -541,10 +680,10 @@ static const char kNeoPixelStudioJs[] = R"JS(
                 await new Promise(resolve => setTimeout(resolve, 150));
                 const next = await request('state?segment=' + Math.max(selected, 1));
                 if (next.completedId >= queued.id) {
-                    if (!next.error && (action === 'batch' || action === 'load' || action === 'restoreEts')) { dirty.delete(selected); visualDirty.delete(selected); sceneActions.delete(selected); if (action === 'load' || action === 'restoreEts') pickerMemory.clear(); signature = ''; }
+                    if (!next.error && (action === 'batch' || action === 'load' || action === 'restoreEts' || action === 'testStart' || action === 'testStop')) { dirty.delete(selected); visualDirty.delete(selected); sceneActions.delete(selected); if (action === 'load' || action === 'restoreEts' || action === 'testStart' || action === 'testStop') pickerMemory.clear(); signature = ''; }
                     accept(next);
                     if (next.completedId === queued.id && next.error) throw new Error(next.error);
-                    const message = action === 'save' ? 'Saved to device · import this segment’s saved Studio settings in ETS' : action === 'load' ? 'Reloaded current live values' : action === 'restoreEts' ? 'Restored downloaded ETS settings · saved Studio snapshot unchanged' : 'Applied';
+                    const message = action === 'save' ? 'Saved to device · import this segment’s saved Studio settings in ETS' : action === 'testStart' ? 'Test aktiv · Stop oder automatische Rückkehr nach 60 Sekunden' : action === 'testStop' ? 'Test beendet · vorheriger Zustand wiederhergestellt' : action === 'commissioning' ? 'LED-Konfiguration live angewendet · Save to device für ETS-Import drücken' : action === 'load' ? 'Reloaded current live values' : action === 'restoreEts' ? 'Restored downloaded ETS settings · saved Studio snapshot unchanged' : 'Applied';
                     status(next.completedId === queued.id ? message : 'Device state refreshed; another browser also changed it');
                     return true;
                 }
@@ -576,19 +715,20 @@ static const char kNeoPixelStudioJs[] = R"JS(
             status('Connection lost · ' + error.message, true);
         } finally { if (!busy) timer = setTimeout(poll, document.hidden ? 5000 : 1200); }
     }
-    el('auto-apply').addEventListener('click', () => {
+    el('auto-apply').addEventListener('click', async () => {
         autoApply = !autoApply;
         el('auto-apply').setAttribute('aria-pressed', String(autoApply));
-        el('auto-apply').textContent = 'Automatic apply: ' + (autoApply ? 'On' : 'Off');
-        if (autoApply && dirty.has(selected) && !busy) sendCommand('batch', buildBatch());
+        el('auto-apply').textContent = 'Auto apply: ' + (autoApply ? 'On' : 'Off');
+        if (autoApply && !busy) { if (!await stageCommissioning()) return; if (dirty.has(selected)) await sendCommand('batch', buildBatch()); }
         else if (!busy) status(autoApply ? 'Automatic apply enabled' : 'Automatic apply disabled · edit a draft, then Apply live');
     });
-    el('apply').addEventListener('click', () => sendCommand('batch', buildBatch()));
+    el('apply').addEventListener('click', async () => { if (await stageCommissioning()) await sendCommand('batch', buildBatch()); });
     el('reset').addEventListener('click', () => {
         dirty.delete(selected); visualDirty.delete(selected); sceneActions.delete(selected); pickerMemory.clear(); signature = '';
         state.segments = state.segments.map(s => s.id === selected ? clone(liveState.segments.find(live => live.id === selected)) : s); render(true); status('Draft reset');
     });
     el('save').addEventListener('click', async () => {
+        if (!await stageCommissioning()) return;
         if (dirty.has(selected) && !await sendCommand('batch', buildBatch())) return;
         sendCommand('save', null);
     });
@@ -597,9 +737,103 @@ static const char kNeoPixelStudioJs[] = R"JS(
     el('form').addEventListener('submit', event => event.preventDefault());
     el('segment').addEventListener('change', () => { selected = Number(el('segment').value); signature = ''; render(); clearTimeout(timer); poll(); });
     el('effect').addEventListener('change', () => command('effect', Number(el('effect').value)));
-    el('brightness').addEventListener('input', () => { el('brightness-value').textContent = Math.round(Number(el('brightness').value) * 100 / 255) + '%'; });
+    el('brightness').addEventListener('input', () => { el('brightness-value').textContent = levelPercent(el('brightness').value); });
     el('power').addEventListener('change', () => command('power', Number(el('power').checked)));
     el('brightness').addEventListener('change', () => command('brightness', Number(el('brightness').value)));
+    const commissioningDrafts = new Map(), commissioningDirty = new Set();
+    let commissioningSignature = '', commissioningTimer;
+    function scheduleCommissioning(delay = 400) {
+        clearTimeout(commissioningTimer);
+        if (!autoApply) return;
+        const segmentId = selected;
+        commissioningTimer = setTimeout(() => {
+            if (!autoApply || selected !== segmentId || !commissioningDirty.has(segmentId)) return;
+            if (busy) { scheduleCommissioning(); return; }
+            const draft = commissioningDrafts.get(segmentId);
+            if ([...el('commission-fields').querySelectorAll('input')].some(input => !input.checkValidity()) ||
+                draft.strips.some(s => s.length ? s.skip >= s.length : s.skip !== 0) || draft.start > draft.end || draft.end > draft.strips.reduce((sum,s) => sum+s.length,0)) return;
+            stageCommissioning();
+        }, delay);
+    }
+    function renderCommissioning(segment) {
+        if (!segment.commissioning) return;
+        if (!commissioningDirty.has(selected)) commissioningDrafts.set(selected, clone(segment.commissioning));
+        const draft = commissioningDrafts.get(selected);
+        const next = JSON.stringify([selected, draft.strips.map(s => s.id)]);
+        if (next !== commissioningSignature) {
+            commissioningSignature = next;
+            el('strip-fields').replaceChildren();
+            for (const strip of draft.strips) {
+                const entry = document.createElement('div'); entry.className = 'studio-strip';
+                entry.innerHTML = `<h3>Streifen ${strip.id}</h3><div class="studio-inline-fields"><label for="studio-strip-${strip.id}-length">Anzahl LEDs / Gruppen<input id="studio-strip-${strip.id}-length" type="number" min="0" max="16383" step="1" required></label><label for="studio-strip-${strip.id}-skip">Erste LEDs überspringen<input id="studio-strip-${strip.id}-skip" type="number" min="0" max="255" step="1" required></label></div>`;
+                el('strip-fields').append(entry);
+                for (const key of ['length','skip']) el(`strip-${strip.id}-${key}`).addEventListener('input', event => {
+                    const current = commissioningDrafts.get(selected);
+                    const oldTotal = current.strips.reduce((sum,s) => sum+s.length,0);
+                    current.strips.find(s => s.id === strip.id)[key] = Number(event.target.value);
+                    const total = current.strips.reduce((sum,s) => sum+s.length,0);
+                    if (key === 'length' && total > 0) {
+                        if (current.end === oldTotal || current.end > total) current.end = Math.min(16383,total);
+                        current.start = Math.min(current.start,current.end);
+                        el('start-led').value = current.start; el('end-led').value = current.end;
+                    }
+                    commissioningDirty.add(selected); el('commission-status').textContent = 'Ungespeicherter Entwurf · mit Save to device für ETS sichern.'; scheduleCommissioning();
+                });
+                for (const key of ['length','skip']) el(`strip-${strip.id}-${key}`).addEventListener('change', () => scheduleCommissioning(0));
+            }
+        }
+        for (const strip of draft.strips) for (const key of ['length','skip']) {
+            const input = el(`strip-${strip.id}-${key}`);
+            if (input !== document.activeElement) input.value = strip[key];
+        }
+        for (const key of ['start','end']) if (el(key + '-led') !== document.activeElement) el(key + '-led').value = draft[key];
+        if (!commissioningDirty.has(selected)) el('commission-status').textContent = segment.commissioningApplied === false ? 'Gespeicherter Entwurf · mit LED-Konfiguration live anwenden aktivieren.' : segment.commissioningPending ? 'Live-Konfiguration weicht von ETS ab · für dauerhaften Startzustand speichern, in ETS importieren und herunterladen.' : 'Aktuelle ETS-Aufteilung · Auto apply wendet Änderungen direkt an.';
+        el('test-status').textContent = segment.testing ? 'Test aktiv · max. 60 s' : segment.locked ? 'KNX-Sperre aktiv' : !state.globalPower ? 'Global ausgeschaltet' : segment.em ? 'Effektmanager läuft' : 'Bereit';
+        root.querySelectorAll('[data-test="warm"],[data-test="cool"]').forEach(b => { b.hidden = state.channels !== 5; });
+    }
+    async function stageCommissioning(force = false) {
+        if (!force && !commissioningDirty.has(selected)) return true;
+        const invalid = [...el('commission-fields').querySelectorAll('input')].find(input => !input.checkValidity());
+        if (invalid) { invalid.reportValidity(); return false; }
+        const draft = commissioningDrafts.get(selected);
+        if (draft.strips.some(s => s.length ? s.skip >= s.length : s.skip !== 0) || draft.start > draft.end || draft.end > draft.strips.reduce((sum,s) => sum+s.length,0)) {
+            status('LED-Bereich und übersprungene LEDs müssen innerhalb der Streifen liegen.', true); return false;
+        }
+        const segmentId = selected;
+        const submitted = JSON.stringify(draft);
+        const result = await sendCommand('commissioning', clone(draft));
+        if (result && JSON.stringify(commissioningDrafts.get(segmentId)) === submitted) { commissioningDirty.delete(segmentId); if (selected === segmentId) renderCommissioning(liveState.segments.find(s => s.id === segmentId)); }
+        return result;
+    }
+    for (const key of ['start','end']) el(key + '-led').addEventListener('input', event => {
+        commissioningDrafts.get(selected)[key] = Number(event.target.value); commissioningDirty.add(selected);
+        el('commission-status').textContent = 'Ungespeicherter Entwurf · mit Save to device für ETS sichern.'; scheduleCommissioning();
+    });
+    for (const key of ['start','end']) el(key + '-led').addEventListener('change', () => scheduleCommissioning(0));
+    el('commission-apply').addEventListener('click', () => stageCommissioning(true));
+    root.querySelectorAll('[data-test]').forEach(button => button.addEventListener('click', () => sendCommand('testStart', {pattern:button.dataset.test,level:Number(el('test-level').value)})));
+    el('test-stop').addEventListener('click', () => sendCommand('testStop', null));
+    el('test-level').addEventListener('input', () => { el('test-level-value').textContent = levelPercent(el('test-level').value); });
+    const tabs = ['control','scenes','commission'];
+    function selectTab(name) {
+        for (const tab of tabs) {
+            el('panel-' + tab).hidden = tab !== name;
+            el('tab-' + tab).setAttribute('aria-selected', String(tab === name));
+            el('tab-' + tab).tabIndex = tab === name ? 0 : -1;
+        }
+    }
+    tabs.forEach((tab, index) => {
+        el('tab-' + tab).addEventListener('click', () => selectTab(tab));
+        el('tab-' + tab).addEventListener('keydown', event => {
+            if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+            event.preventDefault(); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length-1 : (index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+            selectTab(tabs[next]); el('tab-' + tabs[next]).focus();
+        });
+    });
+    root.querySelectorAll('[data-colour]').forEach(button => button.addEventListener('click', () => {
+        root.dataset.activeColour = button.dataset.colour;
+        root.querySelectorAll('[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    }));
     poll();
 })();
 )JS";
