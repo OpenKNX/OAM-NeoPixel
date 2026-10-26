@@ -651,43 +651,101 @@ function NEO_studioBindings(device, context, settings) {
     return bindings.concat(NEO_studioSceneBindings(device, context, settings));
 }
 
+function NEO_studioIsColor(name) {
+    return name === "SegmentStartupColor" || name === "SegmentStartupSecondaryColor" ||
+        /^Scene[A-J](Primary|Secondary)Color$/.test(name);
+}
+
+// ETS TypeColor may be a signed ARGB integer (red = -65536), not a #RRGGBB string.
+function NEO_studioRgb(value) {
+    var text = String(value);
+    if (/^#[0-9a-fA-F]{6}$/.test(text)) return text.toUpperCase();
+    if (/^#[0-9a-fA-F]{8}$/.test(text)) return '#' + text.slice(-6).toUpperCase();
+    if ((typeof value === "number" || /^-?[0-9]+$/.test(text)) && isFinite(Number(value)))
+        return '#' + ('000000' + (Number(value) & 0xFFFFFF).toString(16)).slice(-6).toUpperCase();
+    return text;
+}
+
+function NEO_studioEtsValue(binding) {
+    if (!NEO_studioIsColor(binding.name)) return binding.value;
+    var current = binding.parameter.value;
+    if (typeof current === "number") return parseInt(binding.value.slice(1), 16) | 0xFF000000;
+    if (/^-?[0-9]+$/.test(String(current))) return String(parseInt(binding.value.slice(1), 16) | 0xFF000000);
+    return binding.value;
+}
+
+function NEO_studioDifferences(device, context, settings, bindings, verifyImport) {
+    var different = [], prefix = "NEO_NEO" + toInt(context.segment, 0);
+    for (var i = 0; i < bindings.length; i++) {
+        var binding = bindings[i], actual = binding.parameter.value, expected = binding.value;
+        if (binding.compare === false) continue;
+        if (binding.name === "SegmentStartupSeparateWhite" && !verifyImport) continue;
+        if (!verifyImport && settings.channels === 5 && !Number(device.getParameterByName(prefix + "SegmentStartupSeparateWhite").value)) {
+            var legacyWhite = Number(device.getParameterByName(prefix + "SegmentStartupW").value);
+            if (binding.name === "SegmentStartupW") actual = Math.floor(legacyWhite / 2);
+            if (binding.name === "SegmentStartupCW") actual = legacyWhite - Math.floor(legacyWhite / 2);
+        }
+        if (NEO_studioIsColor(binding.name)) {
+            actual = NEO_studioRgb(actual); expected = NEO_studioRgb(expected);
+        }
+        var equal = typeof expected === "number" ? Number(actual) === expected : String(actual) === String(expected);
+        if (!equal) different.push("- " + binding.name + ": ETS = " + NEO_studioValueText(actual) + (verifyImport ? "; Studio-Speicherstand = " : "; Gerät = ") + NEO_studioValueText(expected));
+    }
+    return different;
+}
+
+function NEO_studioReport(progress, report) {
+    progress.setProgress(100);
+    progress.setText(report);
+    // Keep the full list in the ETS log as well; the task tree can truncate long lines.
+    if (typeof Log !== "undefined" && NEO_hasHostMethod(Log, "info")) {
+        try { Log.info(report); } catch (logError) { }
+    }
+}
+
 function NEO_importStudioSettings(device, online, progress, context) {
     progress.setText("NeoPixel: Lese gespeicherte Studio-Einstellungen...");
     var settings = NEO_readStudioSettings(device, online, progress, context, 1);
-    var bindings = NEO_studioBindings(device, context, settings);
-    // Resolve every target before changing anything, so incompatible applications remain untouched.
-    for (var i = 0; i < bindings.length; i++) bindings[i].parameter.value = bindings[i].value;
+    var bindings = NEO_studioBindings(device, context, settings), previous = [];
     var reducedEffect = device.getParameterByName("NEO_NEO" + toInt(context.segment, 0) + "NEOEffectTypeNo2D");
-    if (reducedEffect) reducedEffect.value = settings.effect;
-    progress.setProgress(100);
-    progress.setText("Studio-Werte in ETS übernommen. Jetzt die ETS-Applikation in das Gerät laden.");
+    if (reducedEffect) bindings.push({parameter:reducedEffect, name:"NEOEffectTypeNo2D", value:settings.effect});
+    // Resolve every target before changing anything. Verify what ETS actually accepted,
+    // including numeric TypeColor conversion, instead of reporting an unchecked success.
+    for (var i = 0; i < bindings.length; i++) previous.push(bindings[i].parameter.value);
+    try {
+        for (var j = 0; j < bindings.length; j++) bindings[j].parameter.value = NEO_studioEtsValue(bindings[j]);
+        var rejected = NEO_studioDifferences(device, context, settings, bindings, true);
+        if (rejected.length) throw new Error("NeoPixel: ETS hat diese Studio-Werte nicht übernommen:\n" + rejected.join("\n"));
+    } catch (error) {
+        for (var undo = bindings.length - 1; undo >= 0; undo--) {
+            try { bindings[undo].parameter.value = previous[undo]; } catch (ignored) { }
+        }
+        throw error;
+    }
+    var report = "Gespeicherte Studio-Werte in ETS übernommen und geprüft. Jetzt die ETS-Applikation in das Gerät laden.";
+    // A saved snapshot and current runtime are different sources. Report changes since
+    // Save explicitly, without silently substituting live values for the requested save.
+    try {
+        progress.setText("Studio-Import geprüft. Vergleiche mit aktuellen Gerätewerten...");
+        var live = NEO_readStudioSettings(device, online, progress, context, 0);
+        var changed = NEO_studioDifferences(device, context, live, NEO_studioBindings(device, context, live), false);
+        if (changed.length) report = "Gespeicherter Studio-Stand vollständig in ETS übernommen und geprüft. Der aktuelle Geräte-Stand weicht davon ab (" + changed.length + " Wert(e)):\n" + changed.join("\n") +
+            "\nFür den aktuellen Stand erneut in Studio speichern und anschließend importieren.";
+        else report = "Studio-Import geprüft: ETS, gespeicherter Studio-Stand und aktuelle Gerätewerte stimmen überein. Jetzt die ETS-Applikation in das Gerät laden.";
+    } catch (liveError) {
+        report += "\nAktueller Geräte-Stand konnte nicht geprüft werden: " + liveError.message;
+    }
+    NEO_studioReport(progress, report);
 }
 
 function NEO_compareStudioSettings(device, online, progress, context) {
     progress.setText("NeoPixel: Vergleiche ETS mit aktuellen Gerätewerten...");
     var settings = NEO_readStudioSettings(device, online, progress, context, 0);
-    var bindings = NEO_studioBindings(device, context, settings), different = [];
-    for (var i = 0; i < bindings.length; i++) {
-        var binding = bindings[i], actual = binding.parameter.value, expected = binding.value;
-        if (binding.compare === false) continue;
-        if (binding.name === "SegmentStartupSeparateWhite") continue;
-        var prefix = "NEO_NEO" + toInt(context.segment, 0);
-        if (settings.channels === 5 && !Number(device.getParameterByName(prefix + "SegmentStartupSeparateWhite").value)) {
-            var legacyWhite = Number(device.getParameterByName(prefix + "SegmentStartupW").value);
-            if (binding.name === "SegmentStartupW") actual = Math.floor(legacyWhite / 2);
-            if (binding.name === "SegmentStartupCW") actual = legacyWhite - Math.floor(legacyWhite / 2);
-        }
-        var equal = typeof expected === "number" ? Number(actual) === expected : String(actual).toUpperCase() === String(expected).toUpperCase();
-        if (binding.name.indexOf("Color") < 0 && typeof expected === "string") equal = String(actual) === expected;
-        if (!equal) different.push("- " + binding.name + ": ETS = " + NEO_studioValueText(actual) + "; Gerät = " + NEO_studioValueText(expected));
-    }
-    progress.setProgress(100);
-    if (different.length) {
-        var report = "NeoPixel Segment " + toInt(context.segment, 0) + ": " + different.length + " abweichende Studio-Wert(e).\n" + different.join("\n");
-        progress.setText(report);
-        throw new Error(report);
-    }
-    progress.setText("Identisch: Farben, Helligkeit, Effekt, Effektparameter und Szenen stimmen mit ETS überein.");
+    var different = NEO_studioDifferences(device, context, settings, NEO_studioBindings(device, context, settings), false);
+    var report = different.length ? "NeoPixel Segment " + toInt(context.segment, 0) + ": " + different.length + " abweichende Studio-Wert(e).\n" + different.join("\n")
+        : "Identisch: Farben, Helligkeit, Effekt, Effektparameter und Szenen stimmen mit ETS überein.";
+    // Differences are a successful comparison result, not a parameter script failure.
+    NEO_studioReport(progress, report);
 }
 
 // BEGIN AUTO-GENERATED: Studio ETS parameter names

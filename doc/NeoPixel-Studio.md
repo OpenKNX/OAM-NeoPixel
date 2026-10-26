@@ -89,8 +89,19 @@ On the segment's main ETS page, below Beschreibung:
 2. Review the imported project values and download the ETS application to the device.
 3. **ETS mit aktuellen Gerätewerten vergleichen** compares ETS with live visual settings
    and scenes without modifying ETS, listing each differing parameter with its ETS value and current device value.
+   Differences are a successful comparison result, not a parameter script error.
+   The full result is also written to the ETS log. ETS signed ARGB colour values
+   are normalised to RGB hex codes before comparison.
 
-Import uses the last explicit Save; comparison uses live state. Geometry, hardware,
+Import uses the last explicit Save; comparison uses live state. Import reads back
+and verifies the values accepted by ETS (including brightness, RGB/white colours,
+effect parameters and scenes). Rejected values cause an error and an attempt to
+restore the previous project values. After import, a separate live check reports
+whether the runtime has changed since Save; it does not silently replace the saved
+snapshot with newer live values. If the report shows saved brightness 106 versus
+live brightness 255, save the desired current state again before importing it.
+With a fresh matching save and no intervening runtime changes, import followed by
+comparison must report identical values. Geometry, hardware,
 current limits and effect-manager sequences are outside the import/comparison scope.
 ETS remains the source of truth. No Studio command overwrites downloaded KNX tables.
 

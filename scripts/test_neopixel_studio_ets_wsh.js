@@ -47,12 +47,12 @@ for (var j = 0; j < fixture.parameters.length; j++) {
 }
 parameters.NEO_NEO1SceneCount = {value:0};
 var device = {getParameterByName:function(name) { return parameters[name] || null; }};
-var connected = false, source = -1, pages = 0, context = {segment:1};
+var connected = false, source = -1, pages = 0, savedRead = false, context = {segment:1};
 var online = {connect:function() {connected=true;}, disconnect:function() {connected=false;}};
 var progress = {text:'', setText:function(text) {this.text=text;}, setProgress:function(value) {this.percent=value;}};
 function BASE_invokeFunctionPropertyWrapper(object, property, request) {
     check(connected && object===158 && property===10 && request[0]===32, 'Invalid online request');
-    source=request[2]; pages++;
+    source=request[2]; pages++; if(source===1)savedRead=true;
     var encoded=unescape(encodeURIComponent(payload)), bytes=[];
     for (var k=0;k<encoded.length;k++) bytes.push(encoded.charCodeAt(k));
     var offset=request[3]*256+request[4];
@@ -61,13 +61,12 @@ function BASE_invokeFunctionPropertyWrapper(object, property, request) {
 NEO_compareStudioSettings(device, online, progress, context);
 check(progress.text.indexOf('Identisch')===0 && !connected && pages>1, 'Equal comparison failed');
 parameters.NEO_NEO1LaufschriftGap.value=7;
-var difference=false;
-try { NEO_compareStudioSettings(device, online, progress, context); }
-catch (error) { difference=error.message.indexOf('LaufschriftGap: ETS = 7;')>=0; }
+NEO_compareStudioSettings(device, online, progress, context);
+var difference=progress.text.indexOf('LaufschriftGap: ETS = 7;')>=0;
 check(difference && source===0 && !connected, 'Difference report failed');
 check(parameters.NEO_NEO1LaufschriftGap.value===7, 'Comparison changed ETS');
 NEO_importStudioSettings(device, online, progress, context);
-check(source===1 && !connected && parameters.NEO_NEO1LaufschriftGap.value===1, 'Saved import failed');
+check(savedRead && !connected && parameters.NEO_NEO1LaufschriftGap.value===1, 'Saved import failed');
 check(parameters.NEO_NEO1LaufschriftText.value==='Gr\u00fc\u00dfe \u20ac', 'Unicode text failed');
 var rejected=false;
 try { NEO_parseStudioJson('{"a":1,}'); } catch (error) { rejected=true; }

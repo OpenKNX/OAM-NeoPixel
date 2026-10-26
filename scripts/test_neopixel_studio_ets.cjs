@@ -21,6 +21,7 @@ Function.prototype.bind = undefined;
 Date.now = undefined;
 `, context);
 vm.runInContext(source, context);
+const generatedEffectNames = context.NEO_StudioEffectParameters;
 // The tracked ETS script has empty generated maps after -Clean. These names are
 // transport fixtures; the build-cycle regression checks generation of the real map.
 context.NEO_StudioEffectParameters = {
@@ -37,7 +38,7 @@ var settings = {version:1, segment:1, channels:5, effect:19, parameters:[
  {name:'SegmentStartupSecondaryWW',value:0}, {name:'SegmentStartupSecondaryCW',value:70},
  {name:'LaufschriftSpeed',value:100}, {name:'LaufschriftGap',value:1},
  {name:'LaufschriftLoop',value:1}, {name:'LaufschriftText',value:'Grüße €'}, {name:'LaufschriftFont',value:2}]};
-var parameters = {}, connected = false, lastSource=-1, pageCount=0, changingToken=false;
+var parameters = {}, connected = false, lastSource=-1, pageCount=0, changingToken=false, savedSettings=null, savedReads=0;
 for(var pi=0;pi<settings.parameters.length;pi++) {var p=settings.parameters[pi];parameters['NEO_NEO1'+p.name] = {value:p.value};}
 parameters.NEO_NEO1NEOEffectTypeNo2D={value:19};
 parameters.NEO_NEO1SegmentStart={value:12};
@@ -48,8 +49,8 @@ var eventContext={segment:1};
 function BASE_invokeFunctionPropertyWrapper(object,property,data) {
  if(object!==158 || property!==10 || data[0]!==32) throw new Error('wrong protocol');
  if(!connected) throw new Error('not connected');
- lastSource=data[2]; pageCount++;
- var encoded=unescape(encodeURIComponent(encodeFixtureJson(settings))), bytes=[];
+ lastSource=data[2]; pageCount++; if(data[2]===1)savedReads++;
+ var encoded=unescape(encodeURIComponent(encodeFixtureJson(data[2]===1 && savedSettings ? savedSettings : settings))), bytes=[];
  for(var i=0;i<encoded.length;i++)bytes.push(encoded.charCodeAt(i));
  var offset=data[3]*256+data[4],token=changingToken&&offset>0?2:1;
  return [0,1,0,token,bytes.length>>8,bytes.length&255].concat(bytes.slice(offset,offset+42));
@@ -61,12 +62,12 @@ assert.equal(context.connected, false);
 assert.equal(context.lastSource, 0);
 assert.ok(context.pageCount > 1);
 vm.runInContext('parameters.NEO_NEO1LaufschriftGap.value=7', context);
-assert.throws(() => vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)', context), /LaufschriftGap/);
+assert.doesNotThrow(() => vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)', context));
 assert.equal(context.parameters.NEO_NEO1LaufschriftGap.value, 7, 'comparison must not mutate ETS');
 assert.match(context.progress.text, /Segment 1: 1 abweichende/);
 assert.match(context.progress.text, /\n- LaufschriftGap: ETS = 7; Gerät = 1/);
 vm.runInContext('parameters.NEO_NEO1SegmentStartupBrightness.value=99', context);
-assert.throws(() => vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)', context), /SegmentStartupBrightness/);
+assert.doesNotThrow(() => vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)', context));
 assert.match(context.progress.text, /2 abweichende/);
 assert.match(context.progress.text, /\n- SegmentStartupBrightness: ETS = 99; Gerät = 180/);
 assert.match(context.progress.text, /\n- LaufschriftGap: ETS = 7; Gerät = 1/);
@@ -75,7 +76,8 @@ vm.runInContext('NEO_importStudioSettings(device,online,progress,eventContext)',
 assert.equal(context.parameters.NEO_NEO1LaufschriftGap.value, 1);
 assert.equal(context.parameters.NEO_NEO1LaufschriftText.value, 'Grüße €');
 assert.equal(context.parameters.NEO_NEO1SegmentStart.value, 12, 'geometry must stay unchanged');
-assert.equal(context.lastSource, 1);
+assert.ok(context.savedReads > 0);
+assert.match(context.progress.text, /stimmen überein/);
 vm.runInContext('parameters.NEO_NEO1NEOEffectType.value=0; delete parameters.NEO_NEO1LaufschriftFont', context);
 assert.throws(() => vm.runInContext('NEO_importStudioSettings(device,online,progress,eventContext)', context), /ETS-Parameter fehlt/);
 assert.equal(context.parameters.NEO_NEO1NEOEffectType.value, 0, 'incompatible imports must not partially change ETS');
@@ -114,16 +116,67 @@ NEO_importStudioSettings(device,online,progress,eventContext);
 `,context);
 assert.equal(context.parameters.NEO_NEO1SceneCount.value,1);
 assert.equal(context.parameters.NEO_NEO1SceneAEffectType.value,1);
-assert.equal(context.parameters.NEO_NEO1SceneAPrimaryColor.value,'#010203');
+assert.equal(context.NEO_studioRgb(context.parameters.NEO_NEO1SceneAPrimaryColor.value),'#010203');
 assert.equal(context.parameters.NEO_NEO1SceneAEffectText.value,'Grüße');
 assert.equal(context.sceneAlias.value,33,'scene slot aliases must refresh');
 assert.equal(context.textAlias.value,'Grüße','scene text aliases must refresh');
 vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context);
 vm.runInContext('parameters.NEO_NEO1SceneABrightness.value=9',context);
-assert.throws(()=>vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context),/SceneABrightness/);
+assert.doesNotThrow(()=>vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context));
 assert.equal(context.parameters.NEO_NEO1SceneABrightness.value,9);
 assert.match(context.progress.text, /SceneABrightness: ETS = 9; Gerät = 150/);
-console.log('ETS paged readback, import, comparison, UTF-8 and configuration-scope regressions passed');
+// Real ETS TypeColor values use signed ARGB, including black -16777216.
+assert.equal(context.NEO_studioRgb(-65536), '#FF0000');
+assert.equal(context.NEO_studioRgb(-16777216), '#000000');
+assert.equal(context.NEO_studioRgb(0xff0011ff), '#0011FF');
+vm.runInContext(`
+parameters.NEO_NEO1SceneABrightness.value=150;
+parameters.NEO_NEO1SegmentStartupColor.value=0xff123456|0;
+parameters.NEO_NEO1SegmentStartupSecondaryColor.value=0xffaabbcc|0;
+parameters.NEO_NEO1SceneAPrimaryColor.value=0xff010203|0;
+parameters.NEO_NEO1SceneASecondaryColor.value=0xff000000|0;
+NEO_compareStudioSettings(device,online,progress,eventContext);
+`,context);
+assert.match(context.progress.text, /Identisch/);
+vm.runInContext(`
+parameters.NEO_NEO1SegmentStartupColor.value=-65536;
+NEO_importStudioSettings(device,online,progress,eventContext);
+NEO_compareStudioSettings(device,online,progress,eventContext);
+`,context);
+assert.equal(context.parameters.NEO_NEO1SegmentStartupColor.value, 0xff123456|0);
+assert.match(context.progress.text, /Identisch/);
+
+// Reproduce the screenshots: import saved brightness 106 while live has moved to 255.
+vm.runInContext(`
+savedSettings=NEO_parseStudioJson(encodeFixtureJson(settings));
+savedSettings.parameters[1].value=106;
+settings.parameters[1].value=255;
+NEO_importStudioSettings(device,online,progress,eventContext);
+`,context);
+assert.equal(context.parameters.NEO_NEO1SegmentStartupBrightness.value,106);
+assert.match(context.progress.text, /vollständig.*übernommen und geprüft/);
+assert.match(context.progress.text, /SegmentStartupBrightness: ETS = 106; Gerät = 255/);
+assert.match(context.progress.text, /erneut in Studio speichern/);
+assert.doesNotThrow(()=>vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context));
+assert.match(context.progress.text, /SegmentStartupBrightness: ETS = 106; Gerät = 255/);
+// A fresh Save followed by Import and Compare must match every exported field.
+vm.runInContext(`savedSettings=null; NEO_importStudioSettings(device,online,progress,eventContext);`,context);
+assert.match(context.progress.text, /stimmen überein/);
+vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context);
+assert.match(context.progress.text, /Identisch/);
+
+// Model an ETS setter that silently rejects/clamps brightness: no false success,
+// and other project values must be restored if verification fails.
+let etsBrightness=106;
+Object.defineProperty(context.parameters.NEO_NEO1SegmentStartupBrightness,'value',{
+    configurable:true,get:()=>etsBrightness,set:value=>{if(value!==255)etsBrightness=value;}
+});
+const oldColor=context.parameters.NEO_NEO1SegmentStartupColor.value;
+vm.runInContext("settings.parameters[2].value='#ABCDEF'",context);
+assert.throws(()=>vm.runInContext('NEO_importStudioSettings(device,online,progress,eventContext)',context),/nicht übernommen/);
+assert.equal(etsBrightness,106);
+assert.equal(context.parameters.NEO_NEO1SegmentStartupColor.value,oldColor,'failed import must roll back other ETS values');
+console.log('ETS import/compare, ARGB colours, verified brightness, stale saves and rollback regressions passed');
 
 // The legacy ETS runtime has no JSON global. Validate strict data-only parsing,
 // escaped text and malformed payload rejection in that same environment.
@@ -145,3 +198,40 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'test_neopixel_studio_et
     NEO_TestSource: source,
     WScript: {Echo: text => console.log(text)}
 });
+
+// When run on a generated product, exercise every compiled effect's complete
+// parameter name list, not only the representative protocol fixtures above.
+const effectCatalog = Object.keys(generatedEffectNames).length ? generatedEffectNames : context.NEO_StudioEffectParameters;
+context.NEO_StudioEffectParameters = effectCatalog;
+let checkedParameters = 0;
+for (const effectId of Object.keys(effectCatalog)) {
+    const values = [
+        {name:'NEOEffectType',value:Number(effectId)}, {name:'SegmentStartupBrightness',value:106},
+        {name:'SegmentStartupColor',value:'#0011FF'}, {name:'SegmentStartupW',value:51},
+        {name:'SegmentStartupCW',value:93}, {name:'SegmentStartupSeparateWhite',value:1},
+        {name:'SegmentStartupSecondaryColor',value:'#020304'},
+        {name:'SegmentStartupSecondaryWW',value:29}, {name:'SegmentStartupSecondaryCW',value:71}
+    ];
+    for (const [i,name] of effectCatalog[effectId].entries()) values.push({name,value:name.includes('Text') ? 'Grüße €' : (i+1)%3});
+    context.settings = context.NEO_parseStudioJson(JSON.stringify({version:1,segment:1,channels:5,effect:Number(effectId),parameters:values,scenes:[0]}));
+    vm.runInContext(`
+    savedSettings=null; parameters={};
+    for(var n=0;n<settings.parameters.length;n++) {
+        var entry=settings.parameters[n];
+        parameters['NEO_NEO1'+entry.name]={value:entry.name==='SegmentStartupColor'||entry.name==='SegmentStartupSecondaryColor' ? -16777216 : typeof entry.value==='string' ? '' : 0};
+    }
+    parameters.NEO_NEO1SceneCount={value:0};
+    NEO_importStudioSettings(device,online,progress,eventContext);
+    NEO_compareStudioSettings(device,online,progress,eventContext);
+    `,context);
+    assert.match(context.progress.text,/Identisch/,'round-trip failed for effect '+effectId);
+    checkedParameters += values.length;
+}
+console.log('Verified complete ETS round-trip for '+Object.keys(effectCatalog).length+' effects / '+checkedParameters+' visual and effect values');
+
+const reports=[];
+context.Log={info:report=>reports.push(report)};
+vm.runInContext('parameters.NEO_NEO1SegmentStartupBrightness.value=0; NEO_compareStudioSettings(device,online,progress,eventContext)',context);
+assert.match(reports[0],/SegmentStartupBrightness: ETS = 0; Gerät = 106/);
+context.Log={info:()=>{throw new Error('log unavailable');}};
+assert.doesNotThrow(()=>vm.runInContext('NEO_compareStudioSettings(device,online,progress,eventContext)',context));
