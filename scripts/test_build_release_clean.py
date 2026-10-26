@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -38,6 +39,19 @@ with tempfile.TemporaryDirectory(prefix='neopixel-build-clean-') as directory:
     assert b'var NEO_StudioEffectParameters = {};' in baseline
     if '--full' in sys.argv:
         run(fixture, '-File', 'scripts/Build-Release.ps1', '-SkipFirmware')
+        # The local producer may lack the KNX XSDs. Still enforce the schema's
+        # 255-character separator Text limit on the fully expanded product.
+        product = ET.parse(fixture / 'src/NeoPixel-Dev.debug.xml')
+        separators = [element for element in product.iter()
+                      if element.tag.split('}')[-1] == 'ParameterSeparator']
+        assert separators, 'generated product contains no parameter separators'
+        for separator in separators:
+            text = separator.get('Text', '')
+            assert len(text) <= 255, (
+                f"ETS separator {separator.get('Id')} exceeds the 255-character Text limit "
+                f"({len(text)}): {text}")
+        print(f'Validated the ETS Text limit on {len(separators)} generated separators.')
+
     else:
         run(fixture, '-File', 'scripts/Build-HardwareConfig.ps1', '-UniversalBuild')
         run(fixture, '-File', 'scripts/Build-EffectParameters.ps1', '-SkipOpenKNXproducer')
