@@ -58,7 +58,9 @@ Steuern / Szenen / Inbetriebnahme panels. These overrides are scoped to Studio.
 In **Inbetriebnahme**, edit the number of LEDs (or addressable LED groups) for each
 existing strip, skipped leading LEDs (0–255), and the selected segment's first/last
 LED. LED numbers start at 1; a strip count of 0 disables that existing strip. The
-segment range must fit the combined strips. The form does not add strips or change
+segment range must fit the combined strips. An end beyond the total is clamped
+to the maximum immediately on input, including with Auto apply off. The correction
+is reported in the page and applied live when Auto apply is on. The form does not add strips or change
 pins, LED protocol, matrix dimensions or power settings.
 
 With **Auto apply: On**, editing a number field applies the layout after a short
@@ -75,9 +77,13 @@ layout; a saved plan remains available for manual live application and ETS impor
 Live comparison reports the layout actually running. Pins, protocols, relays and
 power settings continue to come from ETS. ETS downloads invalidate saved plans.
 
-Tests include red, green, blue, white, separate warm/cool white for RGBCCT, a looping
+Tests include red, green, blue, white, warm/cool white, a looping
 wipe and automatic channel cycling. They use the selected segment's current ETS
-mapping and normal LED rendering/current limits. Test brightness is limited to
+mapping and normal LED rendering/current limits. White tests use the capabilities
+of each physical strip: RGB synthesizes a white tone, RGBW uses its single white
+channel for all three choices, and RGBCCT isolates WW/CW (or combines them for
+white). HCL is temporarily bypassed inside the test segment so it cannot alter the
+wiring test colours; other segments retain HCL. Test brightness is limited to
 1–64 / 255; global power must be on, the segment unlocked and an effect manager
 stopped. A compiled-in Wipe/Test effect is required for the respective pattern.
 **Stop** restores the previous visual state and segment power. Tests stop after

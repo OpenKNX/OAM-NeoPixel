@@ -22,7 +22,7 @@ static const char kNeoPixelStudioHtml[] = R"HTML(
 </fieldset>
 <section id="studio-panel-commission" role="tabpanel" aria-labelledby="studio-tab-commission" hidden>
 <div class="studio-live-grid"><div class="studio-card"><div class="studio-card-heading"><h2>Verkabelung testen</h2><span class="studio-badge" id="studio-test-status">Bereit</span></div><p class="meta studio-note">Testet das ausgewählte Segment mit der aktuell heruntergeladenen Aufteilung. Globale Abschaltung, Sperren und Stromgrenzen gelten weiter. Stop stellt die vorherigen Werte wieder her; automatisch nach 60 Sekunden.</p><label class="studio-test-level" for="studio-test-level">Test-Helligkeit <input id="studio-test-level" type="range" min="1" max="64" value="32"><output id="studio-test-level-value">13%</output></label>
-<div class="studio-test-buttons"><button type="button" data-test="red">Rot</button><button type="button" data-test="green">Grün</button><button type="button" data-test="blue">Blau</button><button type="button" data-test="white">Weiß</button><button type="button" data-test="warm">Warmweiß</button><button type="button" data-test="cool">Kaltweiß</button><button type="button" data-test="chase">Lauflicht</button><button type="button" data-test="cycle">Kanalwechsel</button></div><button type="button" id="studio-test-stop">■ Stop · vorherigen Zustand wiederherstellen</button></div>
+<div class="studio-test-buttons"><button type="button" data-test="red">Rot</button><button type="button" data-test="green">Grün</button><button type="button" data-test="blue">Blau</button><button type="button" data-test="white">Weiß</button><button type="button" data-test="warm">Warmweiß</button><button type="button" data-test="cool">Kaltweiß</button><button type="button" data-test="chase">Lauflicht</button><button type="button" data-test="cycle">Kanalwechsel</button></div><p class="meta">RGB: Weißtöne angenähert. RGBW: WW/KW testen denselben Weißkanal. RGBCCT: getrennte WW/KW-Kanäle. HCL ist im Testsegment vorübergehend ausgesetzt.</p><button type="button" id="studio-test-stop">■ Stop · vorherigen Zustand wiederherstellen</button></div>
 <div class="studio-card"><div class="studio-card-heading"><h2>LED-Konfiguration</h2><span class="studio-badge">Live + ETS</span></div>
 <p class="meta studio-note">LED-Nummern beginnen bei 1. Auto apply wendet Änderungen direkt an. Für den dauerhaften Startzustand speichern, in ETS übernehmen und herunterladen. GPIO, LED-Typ und Stromgrenzen werden in ETS konfiguriert.</p>
 <fieldset id="studio-commission-fields"><legend class="studio-sr">LED configuration draft</legend><div id="studio-strip-fields"></div><h3>Segmentbereich im virtuellen Streifen</h3><div class="studio-inline-fields"><label for="studio-start-led">Erste LED<input id="studio-start-led" type="number" min="1" max="16383" step="1" required></label><label for="studio-end-led">Letzte LED<input id="studio-end-led" type="number" min="1" max="16383" step="1" required></label></div><button type="button" id="studio-commission-apply">LED-Konfiguration live anwenden</button></fieldset><p class="meta" id="studio-commission-status"></p></div>
@@ -740,7 +740,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
     el('brightness').addEventListener('input', () => { el('brightness-value').textContent = levelPercent(el('brightness').value); });
     el('power').addEventListener('change', () => command('power', Number(el('power').checked)));
     el('brightness').addEventListener('change', () => command('brightness', Number(el('brightness').value)));
-    const commissioningDrafts = new Map(), commissioningDirty = new Set();
+    const commissioningDrafts = new Map(), commissioningDirty = new Set(), commissioningCorrections = new Map();
     let commissioningSignature = '', commissioningTimer;
     function scheduleCommissioning(delay = 400) {
         clearTimeout(commissioningTimer);
@@ -749,9 +749,6 @@ static const char kNeoPixelStudioJs[] = R"JS(
         commissioningTimer = setTimeout(() => {
             if (!autoApply || selected !== segmentId || !commissioningDirty.has(segmentId)) return;
             if (busy) { scheduleCommissioning(); return; }
-            const draft = commissioningDrafts.get(segmentId);
-            if ([...el('commission-fields').querySelectorAll('input')].some(input => !input.checkValidity()) ||
-                draft.strips.some(s => s.length ? s.skip >= s.length : s.skip !== 0) || draft.start > draft.end || draft.end > draft.strips.reduce((sum,s) => sum+s.length,0)) return;
             stageCommissioning();
         }, delay);
     }
@@ -777,7 +774,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
                         current.start = Math.min(current.start,current.end);
                         el('start-led').value = current.start; el('end-led').value = current.end;
                     }
-                    commissioningDirty.add(selected); el('commission-status').textContent = 'Ungespeicherter Entwurf · mit Save to device für ETS sichern.'; scheduleCommissioning();
+                    commissioningDirty.add(selected); el('commission-status').textContent = 'Ungespeicherter Entwurf · mit Save to device für ETS sichern.'; clampCommissioningEnd(); scheduleCommissioning();
                 });
                 for (const key of ['length','skip']) el(`strip-${strip.id}-${key}`).addEventListener('change', () => scheduleCommissioning(0));
             }
@@ -786,15 +783,33 @@ static const char kNeoPixelStudioJs[] = R"JS(
             const input = el(`strip-${strip.id}-${key}`);
             if (input !== document.activeElement) input.value = strip[key];
         }
+        const rangeMaximum = Math.min(16383, draft.strips.reduce((sum,s) => sum+s.length,0));
+        el('end-led').max = Math.max(1, rangeMaximum);
         for (const key of ['start','end']) if (el(key + '-led') !== document.activeElement) el(key + '-led').value = draft[key];
         if (!commissioningDirty.has(selected)) el('commission-status').textContent = segment.commissioningApplied === false ? 'Gespeicherter Entwurf · mit LED-Konfiguration live anwenden aktivieren.' : segment.commissioningPending ? 'Live-Konfiguration weicht von ETS ab · für dauerhaften Startzustand speichern, in ETS importieren und herunterladen.' : 'Aktuelle ETS-Aufteilung · Auto apply wendet Änderungen direkt an.';
         el('test-status').textContent = segment.testing ? 'Test aktiv · max. 60 s' : segment.locked ? 'KNX-Sperre aktiv' : !state.globalPower ? 'Global ausgeschaltet' : segment.em ? 'Effektmanager läuft' : 'Bereit';
-        root.querySelectorAll('[data-test="warm"],[data-test="cool"]').forEach(b => { b.hidden = state.channels !== 5; });
+        root.querySelectorAll('[data-test="warm"],[data-test="cool"]').forEach(b => { b.hidden = false; });
+    }
+    function clampCommissioningEnd() {
+        const draft = commissioningDrafts.get(selected);
+        const maximum = Math.min(16383, draft.strips.reduce((sum,s) => sum+s.length,0));
+        el('end-led').max = Math.max(1, maximum);
+        if (Number.isFinite(draft.end) && maximum > 0 && draft.end > maximum) {
+            draft.end = maximum;
+            draft.start = Math.min(draft.start, maximum);
+            el('end-led').value = draft.end; el('start-led').value = draft.start;
+            commissioningDirty.add(selected);
+            commissioningCorrections.set(selected, maximum);
+            el('commission-status').textContent = `Letzte LED auf ${maximum} begrenzt (Summe der LED-Anzahlen).`;
+            return maximum;
+        }
+        return null;
     }
     async function stageCommissioning(force = false) {
         if (!force && !commissioningDirty.has(selected)) return true;
+        const clampedMaximum = clampCommissioningEnd() ?? commissioningCorrections.get(selected) ?? null;
         const invalid = [...el('commission-fields').querySelectorAll('input')].find(input => !input.checkValidity());
-        if (invalid) { invalid.reportValidity(); return false; }
+        if (invalid) { invalid.reportValidity(); status('Ungültige LED-Konfiguration · Eingabebereich prüfen.', true); return false; }
         const draft = commissioningDrafts.get(selected);
         if (draft.strips.some(s => s.length ? s.skip >= s.length : s.skip !== 0) || draft.start > draft.end || draft.end > draft.strips.reduce((sum,s) => sum+s.length,0)) {
             status('LED-Bereich und übersprungene LEDs müssen innerhalb der Streifen liegen.', true); return false;
@@ -803,13 +818,16 @@ static const char kNeoPixelStudioJs[] = R"JS(
         const submitted = JSON.stringify(draft);
         const result = await sendCommand('commissioning', clone(draft));
         if (result && JSON.stringify(commissioningDrafts.get(segmentId)) === submitted) { commissioningDirty.delete(segmentId); if (selected === segmentId) renderCommissioning(liveState.segments.find(s => s.id === segmentId)); }
+        if (result) commissioningCorrections.delete(segmentId);
+        if (clampedMaximum !== null && result) { const message = `Letzte LED auf ${clampedMaximum} begrenzt (Summe der LED-Anzahlen) · live angewendet.`; status(message); el('commission-status').textContent = message; }
         return result;
     }
     for (const key of ['start','end']) el(key + '-led').addEventListener('input', event => {
         commissioningDrafts.get(selected)[key] = Number(event.target.value); commissioningDirty.add(selected);
-        el('commission-status').textContent = 'Ungespeicherter Entwurf · mit Save to device für ETS sichern.'; scheduleCommissioning();
+        el('commission-status').textContent = 'Ungespeicherter Entwurf · mit Save to device für ETS sichern.';
+        clampCommissioningEnd(); scheduleCommissioning();
     });
-    for (const key of ['start','end']) el(key + '-led').addEventListener('change', () => scheduleCommissioning(0));
+    for (const key of ['start','end']) el(key + '-led').addEventListener('change', () => { if (!autoApply) clampCommissioningEnd(); scheduleCommissioning(0); });
     el('commission-apply').addEventListener('click', () => stageCommissioning(true));
     root.querySelectorAll('[data-test]').forEach(button => button.addEventListener('click', () => sendCommand('testStart', {pattern:button.dataset.test,level:Number(el('test-level').value)})));
     el('test-stop').addEventListener('click', () => sendCommand('testStop', null));

@@ -42,6 +42,8 @@ class NeoPixelStudio
     std::array<std::string, 16> _commissioning;
     std::string _testRestore;
     int _testSegment = -1;
+    std::string _testPattern;
+    bool transformTestPixel(uint16_t pixel, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* ww, uint8_t* cw);
     uint32_t _testUntil = 0;
     std::string commissioning(size_t index, bool downloaded = false, bool runtime = false) const;
     void writeCommissioning(OpenKNX::Format::JSON::Writer& json, size_t index, bool downloaded = false, bool runtime = false) const;

@@ -14,7 +14,7 @@ STUBS = STUBS.replace('    void setParameter(Segment*, uint8_t, uint32_t);',
                       '    uint32_t getParameter(const Segment*, uint8_t p) const { return p==0 ? 12 : 1; }\n    void setParameter(Segment*, uint8_t, uint32_t);')
 STUBS = STUBS.replace('    bool isRunning() const', '    uint8_t lastEmId() const { return 0; }\n    bool isRunning() const')
 STUBS = STUBS.replace('    int interrupts=0', '    struct Pixel { struct Manager { void flushFrame() {} } manager; Manager* getManager() { return &manager; } } _neoPixel;\n    uint8_t effectiveStartupBehavior(size_t) const { return 1; }\n    struct Persistence { bool present=false; bool hasSceneSnapshot() const { return present; } } persistence; Persistence* _flashPersistence=&persistence;\n    int interrupts=0')
-STUBS = STUBS.replace('    int interrupts=0', '    bool _liveLedLayout=false; uint16_t _liveSegmentStarts[16]={}, _liveSegmentEnds[16]={};\n    unsigned configuredStripLength(unsigned i) const { return 30+i; }\n    unsigned configuredStripSkip(unsigned) const { return 0; }\n    int interrupts=0')
+STUBS = STUBS.replace('    int interrupts=0', '    void updateHclTransformContext() {}\n    bool _liveLedLayout=false; uint16_t _liveSegmentStarts[16]={}, _liveSegmentEnds[16]={};\n    unsigned configuredStripLength(unsigned i) const { return 30+i; }\n    unsigned configuredStripSkip(unsigned) const { return 0; }\n    int interrupts=0')
 STUBS += r'''
 #define EM_NONE 0
 inline uint32_t fixtureMillis=0;
@@ -75,6 +75,23 @@ int main() {
     assert(!studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":1,"end":40,"strips":[{"id":1,"length":40,"skip":40},{"id":2,"length":20,"skip":0}]}})").empty());
     assert(!studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":1,"end":61,"strips":[{"id":1,"length":40,"skip":0},{"id":2,"length":20,"skip":0}]}})").empty());
     assert(std::equal(etsBytes.begin(),etsBytes.end(),knx.bytes));
+    const auto originalConfig=segment.config;
+    const auto originalSegmentConfig=module._segments[0];
+    segment.config.colours[3]=segment.config.colours[4]=segment.config.colours[8]=segment.config.colours[9]=0;
+    for (unsigned channels : {3u,4u,5u}) {
+        module.strip.channels=channels;
+        for (const char* pattern : {"white","warm","cool"}) {
+            const std::string command=std::string("{\"segment\":1,\"action\":\"testStart\",\"value\":{\"pattern\":\"")+pattern+"\",\"level\":32}}";
+            assert(studio.apply(command).empty());
+            if(channels==3) assert(segment.config.r()==255 && segment.config.ww()==0 && segment.config.cw()==0);
+            if(channels==4) assert(segment.config.r()==0 && segment.config.ww()==255 && segment.config.cw()==0);
+            if(channels==5 && std::string(pattern)=="warm") assert(segment.config.r()==0 && segment.config.ww()==255 && segment.config.cw()==0);
+            if(channels==5 && std::string(pattern)=="cool") assert(segment.config.r()==0 && segment.config.ww()==0 && segment.config.cw()==255);
+            assert(studio.stopTest().empty());
+        }
+    }
+    module.strip.channels=5;
+    segment.config=originalConfig; module._segments[0]=originalSegmentConfig;
     module._globalPowerOn=false;
     assert(!studio.apply(R"({"segment":1,"action":"testStart","value":{"pattern":"red","level":32}})").empty());
     module._globalPowerOn=true;

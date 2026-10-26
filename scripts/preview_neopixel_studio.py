@@ -145,7 +145,11 @@ class Device:
             if pattern not in ('red','green','blue','white','warm','cool','chase','cycle') or not 1<=value['level']<=64: raise ValueError('Invalid test')
             self.test_restore=copy.deepcopy(segment); self.test_until=time.monotonic()+60
             segment.update(testing=True,ownPower=True,power=True,brightness=value['level'],effect=1 if pattern=='chase' else 0)
-            segment['primary']=dict(rgb={'red':'#ff0000','green':'#00ff00','blue':'#0000ff'}.get(pattern,'#ffffff'),ww=0,cw=0)
+            channels=self.state['channels']
+            if pattern in ('white','warm','cool'):
+                segment['primary']=dict(rgb='#ffffff' if channels==3 else '#000000',ww=(255 if channels==4 or pattern=='warm' else 127 if pattern=='white' else 0) if channels>=4 else 0,cw=(255 if pattern=='cool' else 128 if pattern=='white' else 0) if channels==5 else 0)
+            else:
+                segment['primary']=dict(rgb={'red':'#ff0000','green':'#00ff00','blue':'#0000ff'}.get(pattern,'#ffffff'),ww=0,cw=0)
             return
         if action == 'restoreEts':
             defaults = next(s for s in self.ets_segments if s['id'] == segment['id'])

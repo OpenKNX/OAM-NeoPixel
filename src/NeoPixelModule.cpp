@@ -5727,6 +5727,17 @@ void NeoPixelBusModule::updateHclTransformContext()
         }
     }
 
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    if (_studio && _studio->_testSegment >= 0)
+    {
+        _virtualStrip->setPixelTransformCallback([](uint16_t pixel, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* ww, uint8_t* cw, void* context) {
+            auto& module = *static_cast<NeoPixelBusModule*>(context);
+            if (!module._studio->transformTestPixel(pixel, r, g, b, ww, cw))
+                HclPixelTransform::Callback(pixel, r, g, b, ww, cw, &module._hclTransformContext);
+        }, this);
+    }
+    else
+#endif
     if (hclActive)
     {
         _virtualStrip->setPixelTransformCallback(HclPixelTransform::Callback, &_hclTransformContext);

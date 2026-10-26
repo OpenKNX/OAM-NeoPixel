@@ -54,6 +54,8 @@ std::string NeoPixelStudio::stopTest()
     const int index = _testSegment;
     _testRestore.clear();
     _testSegment = -1;
+    _testPattern.clear();
+    if (index >= 0) _module.updateHclTransformContext();
     if (previous.empty() || index < 0) return {};
     _refresh.store(true);
     // Internal cleanup restores the pre-test state even if a KNX lock arrived
@@ -118,7 +120,7 @@ std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc
     const unsigned effect = pattern == "chase" ? 1 : pattern == "cycle" ? 7
                                                                         : 0;
     if (pattern != "red" && pattern != "green" && pattern != "blue" && pattern != "white" && pattern != "warm" && pattern != "cool" && pattern != "chase" && pattern != "cycle") return "Unknown test pattern";
-    if ((pattern == "warm" || pattern == "cool") && channels != 5) return "Separate white channels require RGBCCT";
+
     if (getTypeFromEffect(getEffectFromType(effect)) != effect) return "Test effect is not compiled into this firmware";
     if (!_testRestore.empty())
     {
@@ -134,14 +136,15 @@ std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc
         batch.beginObject().field("segment", uint32_t(index + 1)).field("action", action).field("value", n).endObject();
     };
     item("effect", effect);
-    const char* rgb = pattern == "red" ? "#FF0000" : pattern == "green"                                                              ? "#00FF00"
-                                                 : pattern == "blue"                                                                 ? "#0000FF"
-                                                 : (pattern == "white" && channels == 3) || pattern == "chase" || pattern == "cycle" ? "#FFFFFF"
-                                                                                                                                     : "#000000";
-    const unsigned warm = pattern == "warm" ? 255 : pattern == "white" && channels >= 4 ? channels == 5 ? 127 : 255
-                                                                                        : 0;
-    const unsigned cool = pattern == "cool" ? 255 : pattern == "white" && channels == 5 ? 128
-                                                                                        : 0;
+    const char* rgb = pattern == "red" ? "#FF0000" : pattern == "green"                                                                                                          ? "#00FF00"
+                                                 : pattern == "blue"                                                                                                             ? "#0000FF"
+                                                 : ((pattern == "white" || pattern == "warm" || pattern == "cool") && channels == 3) || pattern == "chase" || pattern == "cycle" ? "#FFFFFF"
+                                                                                                                                                                                 : "#000000";
+    const unsigned warm = pattern == "warm" && channels >= 4 ? 255 : pattern == "cool" && channels == 4 ? 255
+                                                                 : pattern == "white" && channels >= 4  ? channels == 5 ? 127 : 255
+                                                                                                        : 0;
+    const unsigned cool = pattern == "cool" && channels == 5 ? 255 : pattern == "white" && channels == 5 ? 128
+                                                                                                         : 0;
     batch.beginObject().field("segment", uint32_t(index + 1)).field("action", "primaryChannels").key("value").beginObject().field("rgb", rgb).field("ww", uint32_t(warm)).field("cw", uint32_t(cool)).endObject().endObject();
     batch.beginObject().field("segment", uint32_t(index + 1)).field("action", "secondaryChannels").key("value").beginObject().field("rgb", "#000000").field("ww", uint32_t(0)).field("cw", uint32_t(0)).endObject().endObject();
     item("brightness", value.get("level").toUInt());
@@ -160,6 +163,8 @@ std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc
     if (!error.empty()) return error;
     _testRestore = previous;
     _testSegment = index;
+    _testPattern = pattern;
+    _module.updateHclTransformContext();
     _testUntil = millis() + 60000;
     return {};
 }
