@@ -132,6 +132,30 @@ Use `--port` or `--state-file` to override the port or simulated persistent-save
 Reload after editing assets. Multiple tabs share the simulated state. The preview does
 not execute LED drivers or KNX timing.
 
+ETS parameter scripts target Windows Active Scripting JScript / ECMAScript 3.
+They do not require a global `JSON` object, ES5 array helpers or browser APIs.
+Device responses use a bounded data-only JSON parser. Optional ETS/COM methods
+are detected without assuming that `typeof` returns `function`.
+
+Check syntax and the simulated legacy runtime with Node.js:
+
+```sh
+node --expose-internals scripts/test_ets_js_syntax.cjs
+node scripts/test_neopixel_studio_ets.cjs
+```
+
+The syntax check uses Acorn bundled with Node.js (or an installed `acorn` package).
+For an actual Windows JScript engine check, run this from the project directory:
+
+```bat
+cscript //nologo scripts\test_neopixel_studio_ets_wsh.js
+```
+
+The Windows smoke test loads the production script as UTF-8 and checks import,
+comparison, paging, Unicode and a real COM method. It uses a simulated device;
+an end-to-end test against the ETS host and a physical device remains separate.
+An optional first argument selects a generated `NeoPixel.script.js` file to test.
+
 Host checks:
 
 ```sh

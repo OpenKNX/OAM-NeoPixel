@@ -258,7 +258,7 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
                 " ist mehrfach zugeordnet (Position " + firstPos +
                 " und Position " + secondPos + ").";
 
-      if (context && typeof context.addInfo === "function") {
+      if (NEO_hasHostMethod(context, "addInfo")) {
         context.addInfo(msg);
       } else {
         info("WARNUNG: " + msg);
@@ -378,7 +378,7 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
   for (var i = 1; i <= numSeg; i++) {
     if (start[i] > 0 && end[i] > 0 && start[i] > end[i]) {
       hasError = 1;
-      if (context && typeof context.addInfo === "function") {
+      if (NEO_hasHostMethod(context, "addInfo")) {
         context.addInfo("Segment " + i + ": Start LED (" + start[i] +
                         ") ist größer als Ende LED (" + end[i] + ").");
       } else {
@@ -499,6 +499,101 @@ var NEO_SceneEffectDefaults = {};
 function NEO_SetSceneEffectDefaults(input, output, context) { }
 // END AUTO-GENERATED: Scene Effect Defaults Function
 
+// Active Scripting exposes callable COM methods as object/unknown as well as function.
+function NEO_hasHostMethod(object, name) {
+    if (!object) return false;
+    try {
+        var type = typeof object[name];
+        return type === "function" || type === "unknown" ||
+            (type === "object" && object[name] !== null);
+    } catch (error) { return false; }
+}
+
+// ETS parameter scripts can run without ES5's JSON object or Array helpers.
+// Parse the device's bounded JSON response without evaluating executable script.
+function NEO_parseStudioJson(text) {
+    var at = 0, depth = 0;
+    function fail() { throw new Error("NeoPixel: Ungültige Studio-JSON-Daten."); }
+    function space() { while (at < text.length && /[ \t\r\n]/.test(text.charAt(at))) at++; }
+    function string() {
+        if (text.charAt(at++) !== '"') fail();
+        var result = '';
+        while (at < text.length) {
+            var ch = text.charAt(at++);
+            if (ch === '"') return result;
+            if (ch === '\\') {
+                ch = text.charAt(at++);
+                var escapes = {'"':'"', '\\':'\\', '/':'/', b:'\b', f:'\f', n:'\n', r:'\r', t:'\t'};
+                if (ch === 'u') {
+                    var hex = text.substr(at, 4);
+                    if (!/^[0-9a-fA-F]{4}$/.test(hex)) fail();
+                    result += String.fromCharCode(parseInt(hex, 16)); at += 4;
+                } else if (Object.prototype.hasOwnProperty.call(escapes, ch)) result += escapes[ch];
+                else fail();
+            } else {
+                if (ch.charCodeAt(0) < 32) fail();
+                result += ch;
+            }
+        }
+        fail();
+    }
+    function value() {
+        space();
+        if (++depth > 32) fail();
+        var ch = text.charAt(at), result, key, match;
+        if (ch === '"') result = string();
+        else if (ch === '{') {
+            at++; result = {}; space();
+            if (text.charAt(at) !== '}') {
+                while (true) {
+                    space(); key = string(); space();
+                    if (key === '__proto__' || key === 'constructor' || key === 'prototype' || Object.prototype.hasOwnProperty.call(result, key)) fail();
+                    if (text.charAt(at++) !== ':') fail();
+                    result[key] = value(); space();
+                    if (text.charAt(at) !== ',') break;
+                    at++;
+                }
+            }
+            if (text.charAt(at++) !== '}') fail();
+        } else if (ch === '[') {
+            at++; result = []; space();
+            if (text.charAt(at) !== ']') {
+                while (true) {
+                    result.push(value()); space();
+                    if (text.charAt(at) !== ',') break;
+                    at++;
+                }
+            }
+            if (text.charAt(at++) !== ']') fail();
+        } else if (text.substr(at, 4) === 'true') { result = true; at += 4; }
+        else if (text.substr(at, 5) === 'false') { result = false; at += 5; }
+        else if (text.substr(at, 4) === 'null') { result = null; at += 4; }
+        else {
+            match = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/.exec(text.slice(at));
+            if (!match) fail();
+            result = Number(match[0]); at += match[0].length;
+            if (!isFinite(result)) fail();
+        }
+        depth--; return result;
+    }
+    var result = value(); space();
+    if (at !== text.length) fail();
+    return result;
+}
+
+function NEO_studioValueText(value) {
+    if (typeof value !== 'string') return String(value);
+    return '"' + value.replace(/["\\\x00-\x1f]/g, function(ch) {
+        if (ch === '"' || ch === '\\') return '\\' + ch;
+        return '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4);
+    }) + '"';
+}
+
+function NEO_studioContains(values, value) {
+    for (var i = 0; i < values.length; i++) if (values[i] === value) return true;
+    return false;
+}
+
 // Studio online functions import only visual settings; strip/segment/power configuration stays in ETS.
 function NEO_readStudioSettings(device, online, progress, context, source) {
     var segment = toInt(context && context.segment, 0);
@@ -522,8 +617,8 @@ function NEO_readStudioSettings(device, online, progress, context, source) {
     } finally { online.disconnect(); }
     var encoded = "";
     for (var i = 0; i < bytes.length; i++) encoded += "%" + ("0" + bytes[i].toString(16)).slice(-2);
-    var settings = JSON.parse(decodeURIComponent(encoded));
-    if (settings.version !== 1 || settings.segment !== segment || !settings.parameters || !(settings.parameters instanceof Array))
+    var settings = NEO_parseStudioJson(decodeURIComponent(encoded));
+    if (!settings || typeof settings !== "object" || settings.version !== 1 || settings.segment !== segment || !settings.parameters || !(settings.parameters instanceof Array))
         throw new Error("NeoPixel: Unbekanntes Studio-Format.");
     return settings;
 }
@@ -538,7 +633,7 @@ function NEO_studioBindings(device, context, settings) {
     if (settings.parameters.length !== allowed.length) throw new Error("NeoPixel: Unvollständige Studio-Parameterliste.");
     for (var i = 0; i < settings.parameters.length; i++) {
         var entry = settings.parameters[i];
-        if (!entry || allowed.indexOf(entry.name) < 0 || seen[entry.name]) throw new Error("NeoPixel: Ungültige Studio-Parameterliste.");
+        if (!entry || !NEO_studioContains(allowed, entry.name) || seen[entry.name]) throw new Error("NeoPixel: Ungültige Studio-Parameterliste.");
         seen[entry.name] = true;
         if (typeof entry.value !== "number" && typeof entry.value !== "string") throw new Error("NeoPixel: Ungültiger Parameterwert.");
         if (typeof entry.value === "number" && (entry.value < 0 || entry.value > 255 || Math.floor(entry.value) !== entry.value))
@@ -584,7 +679,7 @@ function NEO_compareStudioSettings(device, online, progress, context) {
         }
         var equal = typeof expected === "number" ? Number(actual) === expected : String(actual).toUpperCase() === String(expected).toUpperCase();
         if (binding.name.indexOf("Color") < 0 && typeof expected === "string") equal = String(actual) === expected;
-        if (!equal) different.push("- " + binding.name + ": ETS = " + JSON.stringify(actual) + "; Gerät = " + JSON.stringify(expected));
+        if (!equal) different.push("- " + binding.name + ": ETS = " + NEO_studioValueText(actual) + "; Gerät = " + NEO_studioValueText(expected));
     }
     progress.setProgress(100);
     if (different.length) {
@@ -611,7 +706,11 @@ function NEO_studioSceneBindings(device, context, settings) {
         bindings.push({parameter:parameter, name:name, value:value, compare:!optional});
         return parameter;
     }
-    function rgb(at) { return '#' + data.slice(at,at+3).map(function(v){return ('0'+v.toString(16)).slice(-2);}).join('').toUpperCase(); }
+    function rgb(at) {
+        var result = '#';
+        for (var i = 0; i < 3; i++) result += ('0' + data[at+i].toString(16)).slice(-2);
+        return result.toUpperCase();
+    }
     function latin(at) {
         var special={164:8364,166:352,168:353,180:381,184:382,188:338,189:339,190:376}, result='';
         for(var i=0;i<14 && data[at+i];i++) result+=String.fromCharCode(special[data[at+i]] || data[at+i]);
@@ -626,7 +725,7 @@ function NEO_studioSceneBindings(device, context, settings) {
         add(name+'SecondaryColor',rgb(at+6)); add(name+'SecondaryWW',data[at+9]); add(name+'SecondaryCW',data[at+10]);
         add(name+'Brightness',data[at+11]);
         var textParameter=add(name+'EffectText',latin(at+22));
-        if (textParameter.parameterRefId && typeof device.getParameterById==='function') {
+        if (textParameter.parameterRefId && NEO_hasHostMethod(device, 'getParameterById')) {
             for (var textEffectId in NEO_StudioEffectParameters) {
                 if (!Object.prototype.hasOwnProperty.call(NEO_StudioEffectParameters,textEffectId) || Number(textEffectId)===0) continue;
                 var textSuffix=String(Number(textEffectId)+2); if(textSuffix.length<2)textSuffix='0'+textSuffix;
@@ -637,7 +736,7 @@ function NEO_studioSceneBindings(device, context, settings) {
         }
         for (var slot=0;slot<10;slot++) {
             var parameter=add(name+'Slot'+slot,data[at+12+slot]);
-            if (parameter.parameterRefId && typeof device.getParameterById==='function') {
+            if (parameter.parameterRefId && NEO_hasHostMethod(device, 'getParameterById')) {
                 for (var effectId in NEO_StudioEffectParameters) {
                     if (!Object.prototype.hasOwnProperty.call(NEO_StudioEffectParameters,effectId) || Number(effectId)===0) continue;
                     var suffix=String(Number(effectId)+2); if(suffix.length<2)suffix='0'+suffix;

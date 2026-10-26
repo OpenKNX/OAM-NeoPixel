@@ -5,7 +5,21 @@ const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const source = fs.readFileSync(path.join(__dirname, '../src/NeoPixel.script.js'), 'utf8');
-const context = vm.createContext({});
+const context = vm.createContext({
+    JSON: undefined,
+    encodeFixtureJson: value => JSON.stringify(value)
+});
+vm.runInContext(`
+['indexOf','lastIndexOf','map','filter','forEach','every','some','reduce','reduceRight'].forEach(function(name) {
+    Array.prototype[name] = undefined;
+});
+JSON = undefined;
+Array.isArray = undefined;
+String.prototype.trim = undefined;
+Object.keys = Object.create = Object.defineProperty = undefined;
+Function.prototype.bind = undefined;
+Date.now = undefined;
+`, context);
 vm.runInContext(source, context);
 // The tracked ETS script has empty generated maps after -Clean. These names are
 // transport fixtures; the build-cycle regression checks generation of the real map.
@@ -24,7 +38,7 @@ var settings = {version:1, segment:1, channels:5, effect:19, parameters:[
  {name:'LaufschriftSpeed',value:100}, {name:'LaufschriftGap',value:1},
  {name:'LaufschriftLoop',value:1}, {name:'LaufschriftText',value:'Grüße €'}, {name:'LaufschriftFont',value:2}]};
 var parameters = {}, connected = false, lastSource=-1, pageCount=0, changingToken=false;
-settings.parameters.forEach(function(p) {parameters['NEO_NEO1'+p.name] = {value:p.value};});
+for(var pi=0;pi<settings.parameters.length;pi++) {var p=settings.parameters[pi];parameters['NEO_NEO1'+p.name] = {value:p.value};}
 parameters.NEO_NEO1NEOEffectTypeNo2D={value:19};
 parameters.NEO_NEO1SegmentStart={value:12};
 var device={getParameterByName:function(name) {return parameters[name] || null;}};
@@ -35,7 +49,7 @@ function BASE_invokeFunctionPropertyWrapper(object,property,data) {
  if(object!==158 || property!==10 || data[0]!==32) throw new Error('wrong protocol');
  if(!connected) throw new Error('not connected');
  lastSource=data[2]; pageCount++;
- var encoded=unescape(encodeURIComponent(JSON.stringify(settings))), bytes=[];
+ var encoded=unescape(encodeURIComponent(encodeFixtureJson(settings))), bytes=[];
  for(var i=0;i<encoded.length;i++)bytes.push(encoded.charCodeAt(i));
  var offset=data[3]*256+data[4],token=changingToken&&offset>0?2:1;
  return [0,1,0,token,bytes.length>>8,bytes.length&255].concat(bytes.slice(offset,offset+42));
@@ -76,10 +90,11 @@ settings.effect=25;
 settings.parameters=settings.parameters.slice(0,9);
 settings.parameters[0].value=25;
 settings.parameters[2].name='SegmentStartupColor';
-NEO_StudioEffectParameters['25'].forEach(function(name) {
+var names=NEO_StudioEffectParameters['25'];
+for(var ni=0;ni<names.length;ni++) {var name=names[ni];
     settings.parameters.push({name:name,value:1});
     parameters['NEO_NEO1'+name]={value:0};
-});
+}
 NEO_importStudioSettings(device,online,progress,eventContext);
 `, context);
 assert.equal(context.parameters.NEO_NEO1StarfieldWarpColorMode.value, 1, 'numeric ColorMode is not an RGB string');
@@ -89,7 +104,8 @@ settings.scenes[1]=1;settings.scenes[2]=1;settings.scenes[3]=2;settings.scenes[4
 settings.scenes[12]=150;settings.scenes[13]=33;settings.scenes[14]=2;settings.scenes[15]=1;
 var text=[71,114,252,223,101];for(var i=0;i<text.length;i++)settings.scenes[23+i]=text[i];
 parameters.NEO_NEO1SceneCount={value:0};
-['EffectType','PrimaryColor','PrimaryWW','PrimaryCW','SecondaryColor','SecondaryWW','SecondaryCW','Brightness','EffectText'].forEach(function(name){parameters['NEO_NEO1SceneA'+name]={value:0};});
+var sceneNames=['EffectType','PrimaryColor','PrimaryWW','PrimaryCW','SecondaryColor','SecondaryWW','SecondaryCW','Brightness','EffectText'];
+for(var si=0;si<sceneNames.length;si++) parameters['NEO_NEO1SceneA'+sceneNames[si]]={value:0};
 for(var i=0;i<10;i++)parameters['NEO_NEO1SceneASlot'+i]={value:0};
 parameters.NEO_NEO1SceneASlot0.parameterRefId='slot0_01';
 parameters.NEO_NEO1SceneAEffectText.parameterRefId='text_01';
@@ -108,3 +124,24 @@ assert.throws(()=>vm.runInContext('NEO_compareStudioSettings(device,online,progr
 assert.equal(context.parameters.NEO_NEO1SceneABrightness.value,9);
 assert.match(context.progress.text, /SceneABrightness: ETS = 9; Gerät = 150/);
 console.log('ETS paged readback, import, comparison, UTF-8 and configuration-scope regressions passed');
+
+// The legacy ETS runtime has no JSON global. Validate strict data-only parsing,
+// escaped text and malformed payload rejection in that same environment.
+for (const value of [null, true, false, -123, 1.25e-3, 'Grüße €\n"\\', [], {a:[1,null,{b:'\t'}]}]) {
+    const parsed = context.NEO_parseStudioJson(JSON.stringify(value));
+    assert.equal(JSON.stringify(parsed), JSON.stringify(value));
+}
+assert.equal(context.NEO_parseStudioJson('"\\u20ac"'), '€');
+for (const invalid of ['', '{"a":1,}', '[1,]', '01', '1e', '1e999', 'true false',
+    '{"a":1,"a":2}', '{"__proto__":{}}', '"\\x41"', '"line\nbreak"',
+    '(function(){throw 1;})()', '['.repeat(33) + '0' + ']'.repeat(33)]) {
+    assert.throws(() => context.NEO_parseStudioJson(invalid), /Studio-JSON/);
+}
+assert.equal(context.NEO_studioValueText('Grüße "\n\\'), JSON.stringify('Grüße "\n\\').replace('\\n', '\\u000a'));
+assert.equal(vm.runInContext('typeof JSON', context), 'undefined');
+console.log('Legacy ETS runtime without JSON, Array.indexOf or Array.map passed');
+// Run the same ES3-only smoke harness supplied for native Windows cscript.
+vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'test_neopixel_studio_ets_wsh.js'), 'utf8'), {
+    NEO_TestSource: source,
+    WScript: {Echo: text => console.log(text)}
+});
