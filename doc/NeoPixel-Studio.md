@@ -30,8 +30,16 @@ switching between segments. **Apply live** validates and applies the selected se
 complete draft in one main-loop operation. Enabling automatic apply also applies the
 selected segment's pending draft. Automatic apply changes runtime values; saving to
 flash still requires **Save to device**. **Reset draft** discards that segment's pending changes.
-The change review shows the values and scene action that will be applied. **Load from device** discards the selected
-draft and refreshes the actual runtime values, including changes made through KNX.
+The change review shows the values and scene action that will be applied.
+**Reload live values** discards the selected draft and refreshes the actual runtime
+values, including changes made through KNX or Studio. It does not undo live edits.
+**Restore ETS settings** discards the selected draft and immediately applies the
+colours (including white and secondary channels), brightness, effect and its
+parameters from the downloaded ETS parameter table. It also restores that segment's
+ETS scenes, stops its running effect manager and takes direct control. Segment and
+global power states, locks and hardware configuration remain unchanged.
+Neither action overwrites the saved Studio snapshot. Press **Save to device** explicitly
+to replace that snapshot; ETS import continues to read the last explicit save.
 
 Changing a colour, effect or parameter takes manual control from an effect manager.
 A standalone brightness change can dim an effect manager; applying a full visual
@@ -99,9 +107,10 @@ reimport the ETS product for these fields and the online buttons.
   queueing; poll state for `completedId` and `error` to confirm execution.
 
 Commands include effect, brightness, RGB/white channels, parameter, power,
-sceneRecall/sceneStore/sceneAdd/sceneDelete, save and load. A batch contains up to 32
+sceneRecall/sceneStore/sceneAdd/sceneDelete, save, load (reload live values) and
+restoreEts (restore downloaded settings). A batch contains up to 32
 commands for one segment, with at most one final scene action. All values are validated
-before mutation. Nested batches, saves and loads are rejected. The first version retains
+before mutation. Nested batches, saves, loads and ETS restores are rejected. The first version retains
 only the latest result and serializes commands across browsers.
 
 HTTP callbacks queue commands or copy immutable snapshots. Effects and filesystem

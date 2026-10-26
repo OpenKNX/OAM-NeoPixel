@@ -7,7 +7,7 @@ static const char kNeoPixelStudioHtml[] = R"HTML(
 <p id="studio-status" role="status" aria-live="polite">Connecting…</p>
 <noscript>JavaScript is required to control NeoPixel Studio.</noscript>
 <form id="studio-form" hidden>
-<div class="studio-actions"><button type="button" id="studio-auto-apply" aria-pressed="true">Automatic apply: On</button><button type="button" id="studio-apply">Apply live</button><button type="button" id="studio-reset">Reset draft</button><button type="button" id="studio-save">Save to device</button><button type="button" id="studio-load">Load from device</button></div>
+<div class="studio-actions"><button type="button" id="studio-auto-apply" aria-pressed="true">Automatic apply: On</button><button type="button" id="studio-apply">Apply live</button><button type="button" id="studio-reset">Reset draft</button><button type="button" id="studio-save">Save to device</button><button type="button" id="studio-load">Reload live values</button><button type="button" id="studio-restore-ets">Restore ETS settings</button></div>
 <h2>Segment</h2>
 <label for="studio-segment">Select segment</label>
 <select id="studio-segment"></select>
@@ -26,7 +26,7 @@ static const char kNeoPixelStudioHtml[] = R"HTML(
 <h2>Scenes</h2><div id="studio-scenes"></div>
 </fieldset>
 <p id="studio-draft" class="meta"></p><details><summary>Review pending changes</summary><pre id="studio-payload"></pre></details>
-<p class="meta">Automatic apply updates the live output after each edit. When disabled, use Apply live to preview the draft. Save applies it and persists visual settings and scenes for ETS import. Load discards its draft and refreshes device values. ETS remains the configuration source.</p>
+<p class="meta">Automatic apply updates the live output after each edit. When disabled, use Apply live to preview the draft. Save applies it and persists visual settings and scenes for ETS import. Reload live values discards the draft and reads current output settings. Restore ETS settings applies the downloaded colours, brightness, effect, parameters and scenes. Neither overwrites the saved Studio snapshot. ETS remains the configuration source.</p>
 </form>
 </div>
 <style>
@@ -121,6 +121,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
         el('segment').disabled = busy;
         el('save').disabled = busy || !segment;
         el('load').disabled = busy || !segment;
+        el('restore-ets').disabled = busy || !segment || segment.locked || segment.detailsLoaded === false;
         el('apply').disabled = busy || !segment || segment.locked || !dirty.has(selected);
         el('reset').disabled = busy || !dirty.has(selected);
         for (const square of root.querySelectorAll('.studio-spectrum')) {
@@ -540,10 +541,10 @@ static const char kNeoPixelStudioJs[] = R"JS(
                 await new Promise(resolve => setTimeout(resolve, 150));
                 const next = await request('state?segment=' + Math.max(selected, 1));
                 if (next.completedId >= queued.id) {
-                    if (!next.error && (action === 'batch' || action === 'load')) { dirty.delete(selected); visualDirty.delete(selected); sceneActions.delete(selected); if (action === 'load') pickerMemory.clear(); signature = ''; }
+                    if (!next.error && (action === 'batch' || action === 'load' || action === 'restoreEts')) { dirty.delete(selected); visualDirty.delete(selected); sceneActions.delete(selected); if (action === 'load' || action === 'restoreEts') pickerMemory.clear(); signature = ''; }
                     accept(next);
                     if (next.completedId === queued.id && next.error) throw new Error(next.error);
-                    const message = action === 'save' ? 'Saved to device · import this segment’s saved Studio settings in ETS' : action === 'load' ? 'Loaded current device values' : 'Applied';
+                    const message = action === 'save' ? 'Saved to device · import this segment’s saved Studio settings in ETS' : action === 'load' ? 'Reloaded current live values' : action === 'restoreEts' ? 'Restored downloaded ETS settings · saved Studio snapshot unchanged' : 'Applied';
                     status(next.completedId === queued.id ? message : 'Device state refreshed; another browser also changed it');
                     return true;
                 }
@@ -592,6 +593,7 @@ static const char kNeoPixelStudioJs[] = R"JS(
         sendCommand('save', null);
     });
     el('load').addEventListener('click', () => sendCommand('load', null));
+    el('restore-ets').addEventListener('click', () => sendCommand('restoreEts', null));
     el('form').addEventListener('submit', event => event.preventDefault());
     el('segment').addEventListener('change', () => { selected = Number(el('segment').value); signature = ''; render(); clearTimeout(timer); poll(); });
     el('effect').addEventListener('change', () => command('effect', Number(el('effect').value)));

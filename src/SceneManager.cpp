@@ -21,20 +21,27 @@ SceneManager::SceneManager(NeoPixelBusModule* module)
 {
 }
 
+SceneManager::SceneCache SceneManager::readEtsCache(uint8_t channel)
+{
+    SceneCache cache;
+    const uint16_t base = NEO_ParamBlockOffset + channel * NEO_ParamBlockSize;
+    cache.count = std::min<uint8_t>(MAX_SCENES, (knx.paramByte(base + SCENE_COUNT_OFFSET) >> 4) & 15);
+    for (size_t scene = 0; scene < MAX_SCENES; ++scene)
+        for (size_t byte = 0; byte < SCENE_SIZE; ++byte)
+            cache.scenes[scene][byte] = knx.paramByte(base + SCENE_DATA_START + scene * SCENE_SIZE + byte);
+    return cache;
+}
+
 void SceneManager::ensureCache(uint8_t channel)
 {
     if (channel >= 16) return;
-    while (_cache.size() <= channel)
-    {
-        const size_t current = _cache.size();
-        SceneCache cache;
-        const uint16_t base = NEO_ParamBlockOffset + current * NEO_ParamBlockSize;
-        cache.count = std::min<uint8_t>(MAX_SCENES, (knx.paramByte(base + SCENE_COUNT_OFFSET) >> 4) & 15);
-        for (size_t scene = 0; scene < MAX_SCENES; ++scene)
-            for (size_t byte = 0; byte < SCENE_SIZE; ++byte)
-                cache.scenes[scene][byte] = knx.paramByte(base + SCENE_DATA_START + scene * SCENE_SIZE + byte);
-        _cache.push_back(cache);
-    }
+    while (_cache.size() <= channel) _cache.push_back(readEtsCache(_cache.size()));
+}
+
+void SceneManager::restoreEtsScenes(uint8_t channel)
+{
+    ensureCache(channel);
+    if (channel < _cache.size()) _cache[channel] = readEtsCache(channel);
 }
 
 void SceneManager::resetCache() { _cache.clear(); }

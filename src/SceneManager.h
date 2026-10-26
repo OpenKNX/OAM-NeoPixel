@@ -98,6 +98,7 @@ class SceneManager
     bool importScenes(uint8_t channel, const uint8_t* data, size_t length);
     std::vector<uint8_t> exportScenes(uint8_t channel);
     void resetCache();
+    void restoreEtsScenes(uint8_t channel);
 
   private:
     struct SceneCache
@@ -106,6 +107,7 @@ class SceneManager
         std::array<SceneData, MAX_SCENES> scenes{};
     };
     std::vector<SceneCache> _cache;
+    SceneCache readEtsCache(uint8_t channel);
     void ensureCache(uint8_t channel);
     NeoPixelBusModule* _module;
 

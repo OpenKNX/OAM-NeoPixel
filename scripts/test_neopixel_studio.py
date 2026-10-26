@@ -85,7 +85,7 @@ struct NeoPixelBusModule {
     bool _localTestMode=false;
     VirtualStrip strip;
     VirtualStrip* _virtualStrip=&strip;
-    int interrupts=0, captures=0, hides=0, statuses=0, syncs=0;
+    int interrupts=0, captures=0, hides=0, statuses=0, syncs=0, restores=0;
     void segmentOn(size_t i) { _segments[i].savedPower=1; if(!_segments[i].savedBrightness)_segments[i].savedBrightness=255; } void segmentOff(size_t i,bool) { _segments[i].savedPower=0; }
     struct SceneDouble {
         static constexpr uint8_t MAX_SCENES=10;
@@ -94,12 +94,20 @@ struct NeoPixelBusModule {
         std::vector<uint8_t> exportScenes(size_t) { return bytes; }
         bool importScenes(size_t,const uint8_t* data,size_t length) { bytes.assign(data,data+length); return true; }
         void resetCache() { bytes={0}; }
+        void restoreEtsScenes(size_t) { bytes={1,42}; }
         bool addScene(size_t,Segment*) { return true; } bool deleteScene(size_t,uint8_t) { return true; }
         bool storeScene(size_t,uint8_t,Segment*) { return true; } bool recallScene(size_t,uint8_t,Segment*) { return true; }
     } scenes;
     SceneDouble* _sceneManager=&scenes;
     void interruptEmIfRunning(size_t i) { ++interrupts; _segments[i].emController.running=false; }
     void applyEffectToSegment(Segment* s,uint8_t id) { s->effect=getEffectFromType(id); }
+    void applySegmentDefaultState(size_t i) {
+        ++restores;
+        auto& c=_segments[i]; c.segment->setPrimaryColor(255,0,0,0,0);
+        c.segment->setSecondaryColor(0,0,255,0,0); c.segment->effect=&effects[0];
+        c.savedBrightness=180; c.segment->params[0]=42;
+    }
+    void reEnterEffect(size_t) {}
     void captureDirectColor(size_t) { ++captures; }
     void hideIfNotVisible(size_t) { ++hides; }
     void statusAfterCommand(uint8_t) { ++statuses; }
@@ -107,7 +115,8 @@ struct NeoPixelBusModule {
 };
 struct NeoPixelStudio {
     NeoPixelBusModule& _module;
-    std::string saveSegment(size_t) { return {}; }
+    int saves=0;
+    std::string saveSegment(size_t) { ++saves; return {}; }
     std::string apply(const std::string&);
     std::string applyDoc(const Reader&,bool=false,uint8_t=255);
 };
@@ -191,6 +200,22 @@ int main() {
     cfg.savedBrightness=0;
     assert(studio.apply(R"({"segment":1,"action":"power","value":1})").empty());
     assert(cfg.savedBrightness==0 && segment.master==0 && cfg.savedPower==1);
+    assert(studio.apply(R"({"segment":1,"action":"load"})").empty());
+    assert(module.restores==0);
+    cfg.locked=true;
+    bad(R"({"segment":1,"action":"restoreEts"})");
+    cfg.locked=false;
+    bad(R"({"segment":1,"action":"batch","value":[{"segment":1,"action":"restoreEts"}]})");
+    assert(module.restores==0);
+    cfg.emController.running=true;cfg.savedPower=0;cfg.savedSceneNumber=2;
+    assert(studio.apply(R"({"segment":1,"action":"restoreEts"})").empty());
+    assert(module.restores==1 && segment.config.r()==255 && segment.config.g()==0);
+    assert(segment.config.b2()==255 && segment.params[0]==42 && cfg.savedBrightness==180);
+    assert(!cfg.emController.running && cfg.savedSceneNumber==0 && !cfg.hsvTracked);
+    assert(cfg.savedPower==0 && cfg.savedLastWasEffect && cfg.localOverride);
+    assert(module.scenes.bytes==std::vector<uint8_t>({1,42}));
+    assert(studio.saves==0 && module._channelIndex==7);
+
 }
 '''
 

@@ -230,7 +230,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
         {
             if (count >= 32) return "Batch too large";
             const Reader item = value.get(count);
-            if (item.get("segment").toUInt() != index + 1 || item.get("action").equals("save") || item.get("action").equals("load") || item.get("action").equals("batch")) return "Invalid batch action";
+            if (item.get("segment").toUInt() != index + 1 || item.get("action").equals("save") || item.get("action").equals("load") || item.get("action").equals("restoreEts") || item.get("action").equals("batch")) return "Invalid batch action";
             const std::string error = applyDoc(item, true, stagedEffect);
             if (!error.empty()) return error;
             if (item.get("action").equals("effect")) stagedEffect = static_cast<uint32_t>(item.get("value").toFloat());
@@ -316,7 +316,11 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     uint8_t white = 0, cool = 0;
     const bool primary = action == "primary";
     const bool secondary = action == "secondary";
-    if (action == "effect")
+    if (action == "restoreEts")
+    {
+        if (validateOnly) return "Restore ETS settings cannot be nested";
+    }
+    else if (action == "effect")
     {
         if (!integer(value, 0, 254)) return "Invalid effect";
         number = static_cast<uint32_t>(value.toFloat());
@@ -389,7 +393,15 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     if (action != "brightness") _module.interruptEmIfRunning(index);
     cfg.activeDimming = NeoPixelBusModule::SegmentConfig::NONE;
     if (cfg.syncMode == 2) cfg.localOverride = true;
-    if (action == "effect")
+    if (action == "restoreEts")
+    {
+        _module.applySegmentDefaultState(index);
+        _module.reEnterEffect(index);
+        if (_module._sceneManager) _module._sceneManager->restoreEtsScenes(index);
+        cfg.savedLastWasEffect = true;
+        cfg.hsvTracked = false;
+    }
+    else if (action == "effect")
     {
         _module.applyEffectToSegment(segment, number);
         cfg.savedEffectType = number;

@@ -64,6 +64,12 @@ int main() {
     assert(!restored.importScenes(0,saved.data(),saved.size()-1));
     assert(restored.getSceneCount(0)==2);
     assert(std::equal(original.begin(),original.end(),knx.data));
+    assert(scenes.importScenes(1,saved.data(),saved.size()));
+    scenes.restoreEtsScenes(0);
+    assert(scenes.getSceneCount(0)==1 && scenes.sceneData(0,1)[1]==0);
+    assert(scenes.exportScenes(1)==saved); // another segment's edits remain untouched
+    scenes.restoreEtsScenes(255); // invalid channels cannot read outside ETS parameters
+    assert(std::equal(original.begin(),original.end(),knx.data));
     strcpy(segment.config.effectText,"Longer than fourteen bytes");
     assert(!scenes.storeScene(0,1,&segment));
     assert(std::equal(original.begin(),original.end(),knx.data));

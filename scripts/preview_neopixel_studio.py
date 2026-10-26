@@ -80,13 +80,15 @@ class Device:
                           channels=channels,
                           segments=[] if scenario in ('empty', 'startup', 'unconfigured', 'programming') else [segment, second])
 
+        self.ets_segments = copy.deepcopy(self.state['segments'])
+
     def apply(self, command):
         segment = next((s for s in self.state['segments'] if s['id'] == command.get('segment')), None)
         if not segment:
             raise ValueError('Unknown segment')
         action, value = command.get('action'), command.get('value')
         if action == 'batch':
-            if not isinstance(value, list) or not 1 <= len(value) <= 32 or any(not isinstance(c,dict) or c.get('segment') != segment['id'] or c.get('action') in ('batch','save','load') for c in value):
+            if not isinstance(value, list) or not 1 <= len(value) <= 32 or any(not isinstance(c,dict) or c.get('segment') != segment['id'] or c.get('action') in ('batch','save','load','restoreEts') for c in value):
                 raise ValueError('Invalid batch')
             original = copy.deepcopy(self.state)
             try:
@@ -109,6 +111,13 @@ class Device:
             return
         if segment['locked']:
             raise ValueError('Segment is locked by KNX')
+        if action == 'restoreEts':
+            defaults = next(s for s in self.ets_segments if s['id'] == segment['id'])
+            for key in ('effect', 'brightness', 'primary', 'secondary', 'parameters', 'scenes'):
+                segment[key] = copy.deepcopy(defaults[key])
+            segment['em'] = False
+            segment['activeScene'] = 0
+            return
         if action == 'power':
             if type(value) is not int or value not in (0,1): raise ValueError('Invalid power value')
             segment['ownPower'] = bool(value)
