@@ -132,7 +132,8 @@ void NeoPixelWeb::setup(bool configured, uint32_t startMs)
     _routesAdded = true;
 
     Webserver& ws = openknxNetwork.webserver;
-    ws.addMenuItem("NeoPixel", "/neo", -100);
+    ws.addMenuItem("NeoPixel", "/neo", 70);
+    ws.setDefaultPage("/neo");
     // Referenced only by /neo: addStylesheet()/addJavaScript() would put them on every page.
     ws.addRoute(WEB_GET, "/assets/neopixel.css", Webserver::Asset(WebAssets::neopixel_css_mime, WebAssets::neopixel_css_gz, sizeof(WebAssets::neopixel_css_gz)));
     ws.addRoute(WEB_GET, "/assets/neopixel.js", Webserver::Asset(WebAssets::neopixel_js_mime, WebAssets::neopixel_js_gz, sizeof(WebAssets::neopixel_js_gz)));
