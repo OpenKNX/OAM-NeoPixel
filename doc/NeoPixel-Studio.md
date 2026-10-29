@@ -25,22 +25,36 @@ until Studio is ready.
 - Segment power switches output on/off without changing its hardware/power configuration.
   Existing global power, brightness, KNX locks and output limits continue to apply.
 
-**Automatic apply** is enabled by default: completing an edit immediately updates
-the live device output, without pressing Apply live. The button switches automatic
-apply off so edits remain browser drafts, independently retained per segment while
-switching between segments. **Apply live** validates and applies the selected segment's
-complete draft in one main-loop operation. Enabling automatic apply also applies the
-selected segment's pending draft. Automatic apply changes runtime values; saving to
-flash still requires **Save to device**. **Reset draft** discards that segment's pending changes.
-The change review shows the values and scene action that will be applied.
-**Reload live values** discards the selected draft and refreshes the actual runtime
+The status band at the top shows the selected segment as the device runs it: state
+(Ein / Aus / Gesperrt / Global aus / Test), effect, brightness, active scene, a running
+effect manager, the mode and **Hinweise** (progress, results and errors). Its left edge
+takes the colour of the worst state: red for an error or a lock, orange for pending draft
+changes or global OFF, blue during an LED test.
+
+The segment is chosen with its /neo plate (same number and tone as on the status page):
+the plate with ▾ opens a list with plate, name, effect and state of every segment. Esc or a
+click beside it closes the list. While an LED test runs the picker is locked and shows the
+segment under test, so its Stop button is always reachable.
+
+**Modus: Live** is the default: completing an edit immediately updates the live device
+output. Clicking the mode pill, or the switch **Änderungen sofort live** in the ⋯ menu,
+switches to **Entwurf**: edits remain browser drafts, independently retained per segment
+while switching between segments. While changes are pending, the band turns orange,
+**Übernehmen** validates and applies the selected segment's complete draft in one
+main-loop operation, and the **Entwurf** card lists every changed value as device value →
+draft value plus the pending scene action; its **Verwerfen** button discards the draft.
+Switching back to Live also applies the selected segment's pending draft. Live changes
+runtime values; saving to flash still requires **Im Gerät speichern**, which shows
+„Speichert …“ and „Gespeichert ✓“.
+The ⋯ menu also holds the rarely used actions; Esc or a click beside it closes it.
+**Live-Werte neu laden** discards the selected draft and refreshes the actual runtime
 values, including changes made through KNX or Studio. It does not undo live edits.
-**Restore ETS settings** discards the selected draft and immediately applies the
+**Gerätekonfiguration wiederherstellen** discards the selected draft and immediately applies the
 colours (including white and secondary channels), brightness, effect and its
 parameters from the downloaded ETS parameter table. It also restores that segment's
 ETS scenes, stops its running effect manager and takes direct control. Segment and
 global power states, locks and hardware configuration remain unchanged.
-Neither action overwrites the saved Studio snapshot. Press **Save to device** explicitly
+Neither action overwrites the saved Studio snapshot. Press **Im Gerät speichern** explicitly
 to replace that snapshot; ETS import continues to read the last explicit save.
 
 Changing a colour, effect or parameter takes manual control from an effect manager.
@@ -49,28 +63,37 @@ draft selects a direct effect. Global OFF continues to hide switched-on segments
 
 ## Responsive layout and commissioning
 
-The page uses the same white cards, framed tabs, green active controls and compact
-sliders as the NeoPixel status page. At Full-HD width both colour pickers and effect
-parameters sit side by side. Phones use a compact navigation bar, a small action
-menu, a single colour picker selected by Primary/Secondary tabs and separate
-Steuern / Szenen / Inbetriebnahme panels. These overrides are scoped to Studio.
+The page shares tokens, status band, pills, tabs, cards, notes and buttons with the
+NeoPixel status page through `web/assets/np-base.css`; `studio.css` adds only the
+Studio parts (colour pickers, sliders, menu, draft card, commissioning). At Full-HD width both
+colour pickers and effect parameters sit side by side. Phones keep the shared OpenKNX
+navigation (top bar with burger, footer at the bottom); the band hides effect and scene,
+the save button and the ⋯ menu move into their own row above the tabs, all touch targets
+are at least 40 px, the Farbe 1 / Farbe 2 buttons select a single colour picker, and
+Steuern / Szenen / Inbetriebnahme stay separate panels.
 
-In **Inbetriebnahme**, edit the number of LEDs (or addressable LED groups) for each
-existing strip, skipped leading LEDs (0–255), and the selected segment's first/last
+The page body lives in `src/WebUi/NeoPixelStudioAssets.h`; style and script are
+`web/assets/np-base.css`, `web/assets/studio.css` and `web/assets/studio.js`, embedded gzip-compressed by the web
+asset build step and served as `/assets/np-base.css`, `/assets/studio.css` and `/assets/studio.js` with the
+build timestamp as cache key. All texts on the page and the API error messages are German
+and name the ETS application "Gerätekonfiguration".
+
+In **Inbetriebnahme**, each strip is one row with its /neo plate (S1, S2 … in the strip's
+tone). Edit the number of LEDs (or addressable LED groups) for each existing strip, skipped leading LEDs (0–255), and the selected segment's first/last
 LED. LED numbers start at 1; a strip count of 0 disables that existing strip. The
 segment range must fit the combined strips. An end beyond the total is clamped
-to the maximum immediately on input, including with Auto apply off. The correction
-is reported in the page and applied live when Auto apply is on. The form does not add strips or change
+to the maximum immediately on input, including in draft mode. The correction
+is reported in the page and applied live in Live mode. The form does not add strips or change
 pins, LED protocol, matrix dimensions or power settings.
 
-With **Auto apply: On**, editing a number field applies the layout after a short
-typing pause; confirming the field applies it immediately. **LED-Konfiguration live anwenden** also applies it
-manually when Auto apply is off. The firmware waits for an idle frame, blanks the
+In Live mode, editing a number field applies the layout after a short
+typing pause; confirming the field applies it immediately. **Live anwenden** also applies it
+manually in draft mode. The firmware waits for an idle frame, blanks the
 old output, rebuilds the buffers and restores colours, effects and power states.
 A shared layout change is rejected if a segment is locked or another segment would
 extend past the new total. Failed driver initialization attempts restore the old layout.
 
-**Save to device** stores the selected segment's layout with its Studio snapshot.
+**Im Gerät speichern** stores the selected segment's layout with its Studio snapshot.
 Import it with the existing ETS button and download the ETS application to make
 it the authoritative startup configuration. A restart uses the downloaded ETS LED
 layout; a saved plan remains available for manual live application and ETS import.
@@ -86,8 +109,11 @@ white). HCL is temporarily bypassed inside the test segment so it cannot alter t
 wiring test colours; other segments retain HCL. Test brightness is limited to
 1–64 / 255; global power must be on, the segment unlocked and an effect manager
 stopped. A compiled-in Wipe/Test effect is required for the respective pattern.
-**Stop** restores the previous visual state and segment power. Tests stop after
-60 seconds, on a lock/global-off, and before normal flash persistence. Saving a
+While a test runs, another pattern or a new test brightness applies directly on that
+segment without restoring in between; the active pattern is marked. **Stop** restores the previous visual state and segment power. A test runs until Stop
+while the page stays open: every Studio state request keeps it alive, and it stops 60 s
+after the last one (tab closed, connection lost, phone locked). It also stops on a
+lock/global-off and before normal flash persistence. Saving a
 Studio snapshot while testing is rejected, so patterns cannot replace that save.
 
 ## Scenes
@@ -115,7 +141,7 @@ ran since the learn, so learned scenes survive a power loss.
 
 ## Save, restart and ETS synchronization
 
-**Save to device** applies the selected draft, saves a versioned Studio snapshot to
+**Im Gerät speichern** applies the selected draft, saves a versioned Studio snapshot to
 LittleFS (`/neopixel-studio-N.json`) using temporary-file replacement, and requests
 normal OpenKNX flash persistence. Saving waits for in-flight LED output to finish.
 
@@ -159,7 +185,7 @@ ETS verification and the subsequent live check. Old snapshots without scene or
 commissioning data explicitly report that those fields were not checked.
 
 The Studio On/Off switch and temporary test patterns are runtime controls. They
-do not modify or import ETS startup behaviour. Picker mode, Auto apply, drafts
+do not modify or import ETS startup behaviour. Picker mode, Live/draft mode, drafts
 and the test brightness control are not independent ETS parameters; colour
 channels, final values and stored scene data are the synchronised settings.
 
