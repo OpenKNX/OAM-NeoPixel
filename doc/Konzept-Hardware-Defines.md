@@ -92,7 +92,7 @@ Warum man die ID *braucht*, obwohl die GPIO-Infos vorliegen:
                                    ▼
  ┌────────────────────────────────────────────────────────────────────────────┐
  │ 3) PRODUCER — erzeugt .knxprod + include/knxprod.h                         │
- │    knxprod.h liefert Makros NUR für die einkompilierten Varianten:         │
+ │    knxprod.h liefert Makros für alle Varianten des Produkts:               │
  │    #define ParamNEOSTRIP_NEOGPIODataPortHW0 …  (pro HW-Index)              │
  │    #define ParamNEO_NeoPixelHardwareSelect …   (ETS-Dropdown „Hardware")   │
  └─────────────────────────────────┬──────────────────────────────────────────┘
@@ -114,14 +114,21 @@ aktiven Variante – je nach Build-Modus:
 ```cpp
 #ifdef DEVICE_HW_ID
     // (A) Single-Hardware-Build (eine .ini-Variante fest kompiliert):
-    //     Index direkt aus der Device-ID ableiten.
-    return HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
+    //     der Compiler sucht DEVICE_HW_ID in der Tabelle (OWN_HARDWARE_INDEX).
+    return OWN_HARDWARE_INDEX;
 #else
-    // (B) Multi-Hardware-ETS-Build: der Anwender wählt in der ETS
-    //     „Hardware Auswahl" → liefert den Index als Parameter.
-    return (uint8_t)ParamNEO_NeoPixelHardwareSelect;
+    // (B) Multi-Hardware-ETS-Build: die ETS-„Hardware Auswahl" speichert die
+    //     DEVICE_HW_ID; die Tabelle bildet sie auf den Index ab.
+    return HardwareMapping::mapDeviceHwIdToIndex((uint16_t)ParamNEO_NeoPixelHardwareSelect);
 #endif
 ```
+
+Im Modus (A) liest nur der Compiler die Tabelle: Eine Release-Firmware (optimiert) enthält
+keinen Eintrag anderer Hardware; Debug-Builds (`-O0`) können die Namen weiter enthalten.
+Der eigene Name kommt aus `DEVICE_NAME`, andere Hardware (z. B. eine abweichende
+ETS-Auswahl) wird nur mit ihrer ID angezeigt. Fehlt die eigene `DEVICE_HW_ID`
+in der Tabelle, bricht der Build ab (`static_assert`). Das ETS-Produkt enthält immer
+alle Hardware (`HardwareListMode = 'Full'`), die Firmware wächst damit nicht.
 
 ### Ausblick: Auto-Detection statt Dropdown
 

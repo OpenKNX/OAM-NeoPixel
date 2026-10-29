@@ -18,21 +18,226 @@ constexpr uint8_t DUMMY_GPIO_PORT_SELECTION = 15;
 constexpr uint8_t HARDWARE_PORT_SWITCH_CASES = 50;
 static_assert(HardwareMapping::NUM_HARDWARE_VARIANTS <= HARDWARE_PORT_SWITCH_CASES, "More hardware variants than port-selection cases in HardwareMappingLogic.h");
 
+#ifdef DEVICE_HW_ID
+namespace HardwareMappingDetail
+{
+/// @brief hwIndex of a DEVICE_HW_ID in the generated list, 255 if it is missing (compile time only)
+constexpr uint8_t indexOf(uint16_t deviceHwId, uint8_t i = 0)
+{
+    return i >= HardwareMapping::NUM_HARDWARE_VARIANTS                ? 255
+           : HardwareMapping::HARDWARE_ID_MAP[i].deviceHwId == deviceHwId ? HardwareMapping::HARDWARE_ID_MAP[i].hwIndex
+                                                                         : indexOf(deviceHwId, i + 1);
+}
+} // namespace HardwareMappingDetail
+
+/// Index of this firmware's hardware for the per-hardware ETS port parameters (HW{N}); the generated
+/// list is only read by the compiler, so an optimized firmware carries no entry of other hardware
+constexpr uint8_t OWN_HARDWARE_INDEX = HardwareMappingDetail::indexOf(DEVICE_HW_ID);
+static_assert(OWN_HARDWARE_INDEX != 255, "DEVICE_HW_ID is missing in src/HardwareMappingData.h - regenerate it with scripts/Build-Release.ps1");
+
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW0
+namespace HardwareMappingDetail
+{
+/// @brief knxprod.h has the per-hardware port parameters of this index (compile time only)
+constexpr bool hasPortParameters(uint8_t index)
+{
+    return false
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW0
+           || index == 0
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW1
+           || index == 1
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW2
+           || index == 2
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW3
+           || index == 3
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW4
+           || index == 4
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW5
+           || index == 5
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW6
+           || index == 6
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW7
+           || index == 7
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW8
+           || index == 8
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW9
+           || index == 9
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW10
+           || index == 10
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW11
+           || index == 11
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW12
+           || index == 12
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW13
+           || index == 13
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW14
+           || index == 14
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW15
+           || index == 15
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW16
+           || index == 16
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW17
+           || index == 17
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW18
+           || index == 18
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW19
+           || index == 19
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW20
+           || index == 20
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW21
+           || index == 21
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW22
+           || index == 22
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW23
+           || index == 23
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW24
+           || index == 24
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW25
+           || index == 25
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW26
+           || index == 26
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW27
+           || index == 27
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW28
+           || index == 28
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW29
+           || index == 29
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW30
+           || index == 30
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW31
+           || index == 31
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW32
+           || index == 32
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW33
+           || index == 33
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW34
+           || index == 34
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW35
+           || index == 35
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW36
+           || index == 36
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW37
+           || index == 37
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW38
+           || index == 38
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW39
+           || index == 39
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW40
+           || index == 40
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW41
+           || index == 41
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW42
+           || index == 42
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW43
+           || index == 43
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW44
+           || index == 44
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW45
+           || index == 45
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW46
+           || index == 46
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW47
+           || index == 47
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW48
+           || index == 48
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW49
+           || index == 49
+    #endif
+        ;
+}
+} // namespace HardwareMappingDetail
+
+// A knxprod.h older than HardwareMappingData.h lacks the own port parameters: the firmware would
+// ignore the ETS port selection and allocate pins automatically
+static_assert(HardwareMappingDetail::hasPortParameters(OWN_HARDWARE_INDEX), "include/knxprod.h lacks the port parameters of this hardware - run the producer (scripts/Build-Release.ps1)");
+    #endif
+#endif
+
+/**
+ * @brief Name of a hardware by its DEVICE_HW_ID
+ *
+ * Compile-time mode: DEVICE_NAME for the own hardware, nullptr for any other (shown by its ID).
+ * Runtime mode: the generated table; nullptr if the ID is not listed.
+ */
+inline const char* hardwareNameForId(uint16_t deviceHwId)
+{
+#ifdef DEVICE_HW_ID
+    #ifdef DEVICE_NAME
+    if (deviceHwId == DEVICE_HW_ID) return DEVICE_NAME;
+    #endif
+    return nullptr;
+#else
+    for (uint8_t i = 0; i < HardwareMapping::NUM_HARDWARE_VARIANTS; i++)
+    {
+        if (HardwareMapping::HARDWARE_ID_MAP[i].deviceHwId == deviceHwId) return HardwareMapping::HARDWARE_ID_MAP[i].name;
+    }
+    return nullptr;
+#endif
+}
+
 /**
  * @brief Get the currently selected hardware index from ETS parameters
  *
  * In runtime mode, reads the NEO_NeoPixelHardwareSelect parameter (which stores the
  * selected DEVICE_HW_ID) and maps that stable ID to the build-local hardware index.
- * In compile-time mode (DEVICE_HW_ID defined), converts DEVICE_HW_ID to the
- * generated hardware index.
+ * In compile-time mode (DEVICE_HW_ID defined), the index of DEVICE_HW_ID, resolved by the
+ * compiler (OWN_HARDWARE_INDEX).
  *
  * @return Hardware index (0-based)
  */
 inline uint8_t getCurrentHardwareIndex()
 {
 #ifdef DEVICE_HW_ID
-    // Compile-time mode: Use DEVICE_HW_ID from hardware config
-    return HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID);
+    return OWN_HARDWARE_INDEX;
 #else
     // Runtime mode: the ETS parameter stores the selected DEVICE_HW_ID (16-bit, build-stable).
     // Map it to the build-local hardware index that addresses the per-hardware GPIO blocks.

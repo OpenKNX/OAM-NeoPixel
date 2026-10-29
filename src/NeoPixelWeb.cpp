@@ -11,7 +11,7 @@
 
     #include "NeoPixelModule.h" // first: knxprod.h defines the PT_ types the generated headers use
     #include "EffectTypeMapping.h"
-    #include "HardwareMappingData.h"
+    #include "HardwareMappingLogic.h"
     #include "NeoPixelTimingSelection.h"
     #include "OpenKNX/Network/Module.h"
     #include "SceneManager.h"
@@ -435,14 +435,14 @@ void NeoPixelWeb::appendHead(std::string& j)
     #else
     const uint16_t hwId = 0;
     #endif
-    const char* board = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(hwId));
+    const char* board = hardwareNameForId(hwId);
     uint16_t etsId = 0;
     const char* etsName = "";
     #ifdef ParamNEO_NeoPixelHardwareSelect
     if (m._hwConfigMismatch)
     {
         etsId = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
-        etsName = etsId == 255 ? "" : HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(etsId));
+        etsName = etsId == 255 ? "" : hardwareNameForId(etsId);
     }
     #endif
     uint8_t build = 0; // 0 = KNX TP, 1 = TP + WLAN, 2 = IP over WLAN, 3 = IP over LAN
@@ -778,7 +778,7 @@ void NeoPixelWeb::sendUnconfigured(WebResponse& res)
     #else
     const uint16_t hwId = 0;
     #endif
-    const char* board = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(hwId));
+    const char* board = hardwareNameForId(hwId);
     std::string j;
     addf(j, "{\"v\":1,\"unconf\":1,\"up\":%lu,\"hwid\":%u,\"board\":", (unsigned long)uptime(), (unsigned)hwId);
     addJsonStr(j, board ? board : "", 48);

@@ -287,18 +287,18 @@ void NeoPixelBusModule::loop(bool configured)
             if (selectedHwId == 255)
             {
                 // ETS has dummy value - user hasn't configured hardware yet
-                const char* compiledHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID));
+                const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
                 logErrorP("*** No hardware configured! Use 'Hardware auto-detect' button in ETS or manually select: %s (ID: 0x%04X)",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
             }
             else
             {
                 // Hardware configured but mismatched - compare the stable DEVICE_HW_IDs directly
-                const char* compiledHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID));
-                const char* etsHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(selectedHwId));
+                const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
+                const char* etsHwName = hardwareNameForId(selectedHwId);
                 logErrorP("!!! HW MISMATCH: Firmware=%s (ID 0x%04X) vs ETS=%s (ID 0x%04X) - Update ETS config!",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID,
-                          etsHwName ? etsHwName : "Unknown", selectedHwId);
+                          etsHwName ? etsHwName : "other hardware", selectedHwId);
             }
     #endif
 #endif
@@ -3512,7 +3512,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 // Log hardware configuration and check for mismatch
 #ifdef DEVICE_HW_ID
     uint8_t hwIndex = getCurrentHardwareIndex();
-    const char* hwName = HardwareMapping::getHardwareName(hwIndex);
+    const char* hwName = hardwareNameForId(DEVICE_HW_ID);
     logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - Compile-time mode",
              hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
 
@@ -3526,13 +3526,13 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     if (selectedHwId != DEVICE_HW_ID)
     {
         _hwConfigMismatch = true;
-        const char* compiledHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(DEVICE_HW_ID));
-        const char* etsHwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(selectedHwId));
+        const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
+        const char* etsHwName = hardwareNameForId(selectedHwId);
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
         logErrorP("  Compiled for:  %s (ID: 0x%04X)",
                   compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
         logErrorP("  ETS configured: %s (ID: 0x%04X)",
-                  etsHwName ? etsHwName : "Unknown", selectedHwId);
+                  etsHwName ? etsHwName : (selectedHwId == 255 ? "no hardware selected" : "other hardware"), selectedHwId);
         logErrorP("  GPIO Port configuration from ETS will be IGNORED, to prevent damage and unexpected behaviors!");
         logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
@@ -3556,7 +3556,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 #else
     #ifdef ParamNEO_NeoPixelHardwareSelect
     uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
-    const char* hwName = HardwareMapping::getHardwareName(HardwareMapping::mapDeviceHwIdToIndex(selectedHwId));
+    const char* hwName = hardwareNameForId(selectedHwId);
     logInfoP("Hardware: %s (ID: 0x%04X) - ETS runtime selection",
              hwName ? hwName : "Unknown", selectedHwId);
     _hwConfigMismatch = false; // No mismatch in runtime mode
@@ -5891,7 +5891,7 @@ void NeoPixelBusModule::debugShowConfiguration()
 
     #ifdef DEVICE_HW_ID
     uint8_t hwIndex = getCurrentHardwareIndex();
-    const char* hwName = HardwareMapping::getHardwareName(hwIndex);
+    const char* hwName = hardwareNameForId(DEVICE_HW_ID);
     logInfoP("  Mode:             Compile-time (DEVICE_HW_ID defined)");
     logInfoP("  Device HW ID:     0x%04X (%d decimal)", DEVICE_HW_ID, DEVICE_HW_ID);
     logInfoP("  Hardware Index:   %d", hwIndex);
@@ -5900,7 +5900,7 @@ void NeoPixelBusModule::debugShowConfiguration()
         #ifdef ParamNEO_NeoPixelHardwareSelect
     uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
     uint8_t hwIndex = getCurrentHardwareIndex();
-    const char* hwName = HardwareMapping::getHardwareName(hwIndex);
+    const char* hwName = hardwareNameForId(selectedHwId);
     logInfoP("  Mode:             ETS Runtime Selection");
     logInfoP("  Selected HW ID:   0x%04X", selectedHwId);
     logInfoP("  Hardware Index:   %d", hwIndex);

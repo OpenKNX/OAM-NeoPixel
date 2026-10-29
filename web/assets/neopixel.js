@@ -95,7 +95,7 @@
       rmt: used, temp: w.temp / 10, up: upStr(j.up), start: start ? 'abgeschlossen' : w.startLeft > 0 ? 'Startverzögerung · noch ca. ' + Math.ceil(w.startLeft / 1000) + ' s · ' + w.deferred + ' Telegramme gepuffert' : 'Wiederherstellung läuft · ' + w.deferred + ' Telegramme gepuffert',
       saved: !nv ? 'keine Segmente' : (w.savedValid || 0) + ' / ' + nv + (nv > 1 ? ' Segmente' : ' Segment'),
       err: j.bar.err ? 'Fehler ' + j.bar.err + ': ' + (ERRN[j.bar.err] || '') : WARNN[j.bar.warn] || WARNN[j.bar.warn2] || '' };
-    if (w.ets) L.hw.ets = w.ets === 255 ? 'eine Auswahl (keine Hardware gewählt)' : esc(w.etsName || 'unbekannt') + ' (' + hex4(w.ets) + ')';
+    if (w.ets) L.hw.ets = w.ets === 255 ? 'eine Auswahl (keine Hardware gewählt)' : (w.etsName ? esc(w.etsName) + ' (' + hex4(w.ets) + ')' : 'HW-ID ' + hex4(w.ets));
     // Effektkette: this device knows its own part only; the rest of the band is shown as unknown
     L.chain = null;
     for (i = 0; i < L.segs.length && !L.chain; i++) {
