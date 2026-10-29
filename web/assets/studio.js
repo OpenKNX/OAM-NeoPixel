@@ -324,10 +324,16 @@
     function render(force = false) {
         root.dataset.ready = String(state.ready);
         const segment = current();
+        // Not ready: a note like on /neo instead of band and form.
+        el('bar').hidden = !state.ready;
+        el('unconf').hidden = state.ready;
         if (!state.ready) {
             el('form').hidden = true;
-            if (state.configured === false && !state.programming) status('Das Gerät ist noch nicht konfiguriert. Erst nach dem Laden der Gerätekonfiguration sind Segmente angelegt.', 'warn');
-            else status(state.programming ? 'Die Gerätekonfiguration wird geladen. Studio ist nach dem Neustart des Geräts verfügbar.' : 'Warte auf den Start des Geräts …', 'info');
+            const unconfigured = state.configured === false && !state.programming;
+            el('unconf').className = 'np-note ' + (unconfigured ? 'bad' : 'info');
+            el('unconf').innerHTML = unconfigured ? '<b>Gerät nicht konfiguriert – bitte Gerätekonfiguration laden.</b><br>Ohne geladene Konfiguration sind keine Segmente angelegt; das Studio steht bereit, sobald die Applikation geladen ist.'
+                : state.programming ? '<b>Gerätekonfiguration wird geladen …</b><br>Das Studio steht nach dem Neustart des Geräts bereit.'
+                : '<b>Gerät startet …</b><br>Das Studio steht bereit, sobald der Start abgeschlossen ist.';
             return;
         }
         el('form').hidden = !segment;
