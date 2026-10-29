@@ -74,5 +74,7 @@ Pro aktiviertem Relais gibt es zwei KOs:
 
 Werden keine Relais benötigt, die Auswahl einfach auf **Deaktiviert** stellen. Es entstehen dann keinerlei Einschränkungen für die übrige LED-Steuerung.
 
+**Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX), den Save-Pin, seine Taster oder seine Status-LEDs benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“).
+
 **Hinweis:** Für komplexere Automatisierungen (z. B. zeitgesteuerte oder verknüpfte Schaltungen) empfiehlt sich ein separates KNX-Schaltaktor-Modul.
 

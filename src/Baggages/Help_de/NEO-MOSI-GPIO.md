@@ -26,6 +26,8 @@ Der GPIO-Pin für das MOSI-Signal (Master Out Slave In) bei SPI-basierten LEDs. 
 - Clock des Controllers → CI (Clock In) der ersten LED
 - Verwenden Sie geschirmte Kabel bei langen Verbindungen
 
+**Reservierte Pins:** Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion) oder seine Status-LEDs benutzt, lehnt die Firmware ab; der Streifen bleibt dann aus (Log: „REFUSED“).
+
 **Troubleshooting:**
 Keine LED-Funktion bei SPI-LEDs deutet meist auf falsche MOSI/Clock-Pin Zuordnung hin.
 

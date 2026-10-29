@@ -26,6 +26,7 @@ Ermöglicht die manuelle Auswahl des GPIO-Pins für SPI-basierte LED-Chips anste
 - Nur für SPI-basierte LED-Typen (APA102, WS2801, etc.) verfügbar
 - Stellen Sie sicher, dass der gewählte Pin als GPIO verwendbar ist
 - Vermeiden Sie GPIOs, die für andere Funktionen reserviert sind
+- Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion) oder seine Status-LEDs benutzt, lehnt die Firmware ab: der Streifen bleibt dann aus (Log: „REFUSED“)
 
 **Empfehlung:**
 Nur aktivieren wenn spezielle Hardware-Anforderungen vorliegen oder Pin-Konflikte auftreten.

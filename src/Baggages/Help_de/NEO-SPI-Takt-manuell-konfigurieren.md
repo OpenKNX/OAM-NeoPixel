@@ -23,3 +23,5 @@ Ermöglicht die manuelle Konfiguration der SPI-Taktfrequenz für SPI-basierte LE
 
 **Empfehlung:**
 Für die meisten Installationen sollte diese Option **deaktiviert** bleiben, da die automatische Einstellung optimal funktioniert.
+
+**Reservierte Pins:** Ein manuell gewählter Clock-GPIO, den das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion) oder seine Status-LEDs benutzt, wird abgelehnt: der Streifen bleibt dann aus (Log: „REFUSED“).

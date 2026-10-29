@@ -3601,10 +3601,12 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     };
 
     // CRITICAL SAFETY GUARD: Pins reserved by the KNX/BCU subsystem must NEVER be driven by a LED strip.
-    // On KNeoPix XIAO hardware KNX_UART_TX_PIN == GPIO0 and KNX_UART_RX_PIN == GPIO1. The ETS defaults
-    // (manual GPIO mode + DataGPIO=0) would otherwise let an unconfigured strip take over the KNX TX line,
+    // On KNeoPix XIAO hardware KNX_UART_TX_PIN == GPIO0 and KNX_UART_RX_PIN == GPIO1. A manual data
+    // GPIO 0 (or any other KNX pin) would otherwise let a strip take over the KNX TX line,
     // which kills the TPUart bus initialization (endless "Try Initialize", never "BCU connected").
     // This check rejects such strips regardless of the configuration mode (manual / hardware port / auto).
+    // The buttons and status LEDs of the board are reserved as well (a value < 0 = not present,
+    // > 255 = IO expander pin, not a GPIO).
     auto isReservedPin = [](uint8_t pin) -> bool {
 #if defined(KNX_UART_TX_PIN)
         if (pin == (uint8_t)KNX_UART_TX_PIN) return true;
@@ -3614,6 +3616,45 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 #endif
 #if defined(SAVE_INTERRUPT_PIN)
         if (pin == (uint8_t)SAVE_INTERRUPT_PIN) return true;
+#endif
+#if defined(PROG_BUTTON_PIN)
+        if ((int)(PROG_BUTTON_PIN) >= 0 && (int)(PROG_BUTTON_PIN) <= 255 && pin == (uint8_t)(PROG_BUTTON_PIN)) return true;
+#endif
+#if defined(FUNC1_BUTTON_PIN)
+        if ((int)(FUNC1_BUTTON_PIN) >= 0 && (int)(FUNC1_BUTTON_PIN) <= 255 && pin == (uint8_t)(FUNC1_BUTTON_PIN)) return true;
+#endif
+#if defined(FUNC2_BUTTON_PIN)
+        if ((int)(FUNC2_BUTTON_PIN) >= 0 && (int)(FUNC2_BUTTON_PIN) <= 255 && pin == (uint8_t)(FUNC2_BUTTON_PIN)) return true;
+#endif
+#if defined(FUNC3_BUTTON_PIN)
+        if ((int)(FUNC3_BUTTON_PIN) >= 0 && (int)(FUNC3_BUTTON_PIN) <= 255 && pin == (uint8_t)(FUNC3_BUTTON_PIN)) return true;
+#endif
+#if defined(PROG_LED_PIN)
+        if ((int)(PROG_LED_PIN) >= 0 && (int)(PROG_LED_PIN) <= 255 && pin == (uint8_t)(PROG_LED_PIN)) return true;
+#endif
+#if defined(INFO_LED_PIN)
+        if ((int)(INFO_LED_PIN) >= 0 && (int)(INFO_LED_PIN) <= 255 && pin == (uint8_t)(INFO_LED_PIN)) return true;
+#endif
+#if defined(INFO1_LED_PIN)
+        if ((int)(INFO1_LED_PIN) >= 0 && (int)(INFO1_LED_PIN) <= 255 && pin == (uint8_t)(INFO1_LED_PIN)) return true;
+#endif
+#if defined(INFO2_LED_PIN)
+        if ((int)(INFO2_LED_PIN) >= 0 && (int)(INFO2_LED_PIN) <= 255 && pin == (uint8_t)(INFO2_LED_PIN)) return true;
+#endif
+#if defined(INFO3_LED_PIN)
+        if ((int)(INFO3_LED_PIN) >= 0 && (int)(INFO3_LED_PIN) <= 255 && pin == (uint8_t)(INFO3_LED_PIN)) return true;
+#endif
+#if defined(OPENKNX_SERIALLED_PIN)
+        if ((int)(OPENKNX_SERIALLED_PIN) >= 0 && (int)(OPENKNX_SERIALLED_PIN) <= 255 && pin == (uint8_t)(OPENKNX_SERIALLED_PIN)) return true;
+#endif
+#if defined(OPENKNX_SERIALLED_POWER_PIN)
+        if ((int)(OPENKNX_SERIALLED_POWER_PIN) >= 0 && (int)(OPENKNX_SERIALLED_POWER_PIN) <= 255 && pin == (uint8_t)(OPENKNX_SERIALLED_POWER_PIN)) return true;
+#endif
+#if defined(NEOPIX_LED_PIN)
+        if ((int)(NEOPIX_LED_PIN) >= 0 && (int)(NEOPIX_LED_PIN) <= 255 && pin == (uint8_t)(NEOPIX_LED_PIN)) return true;
+#endif
+#if defined(NEOPIX_LED_POWER_PIN)
+        if ((int)(NEOPIX_LED_POWER_PIN) >= 0 && (int)(NEOPIX_LED_POWER_PIN) <= 255 && pin == (uint8_t)(NEOPIX_LED_POWER_PIN)) return true;
 #endif
         return false;
     };
@@ -3692,6 +3733,13 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                     if (gpio == 255)
                     {
                         logWarningP("Relay %d: No valid GPIO selected in ETS", i + 1);
+                        continue;
+                    }
+
+                    if (isReservedPin(gpio))
+                    {
+                        logErrorP("Relay %d: REFUSED - GPIO %d is a reserved KNX/button/LED pin", i + 1, gpio);
+                        _relayPins[i] = 255;
                         continue;
                     }
 
@@ -4020,8 +4068,8 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                         sckGpio = availablePins[nextPinIndex];
                         mosiGpio = availablePins[nextPinIndex + 1];
 
-                        // Check if both pins are free
-                        if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio))
+                        // Check if both pins are free and not reserved
+                        if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio) && !isReservedPin(sckGpio) && !isReservedPin(mosiGpio))
                         {
                             foundPins = true;
                             // Mark pins as used immediately
@@ -4074,7 +4122,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
             if (isReservedPin(mosiGpio) || isReservedPin(sckGpio))
             {
-                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/system pins (MOSI=%d, SCK=%d). Strip disabled to protect KNX bus.",
+                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/button/LED pins (MOSI=%d, SCK=%d). Strip disabled.",
                           i, mosiGpio, sckGpio);
                 continue; // Skip this strip completely
             }
@@ -4180,8 +4228,8 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                     {
                         dataGpioPin = availablePins[nextPinIndex];
 
-                        // Check if pin is free
-                        if (!isPinUsed(dataGpioPin))
+                        // Check if pin is free and not reserved
+                        if (!isPinUsed(dataGpioPin) && !isReservedPin(dataGpioPin))
                         {
                             foundPin = true;
                             // Mark pin as used immediately
@@ -4206,7 +4254,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
             if (isReservedPin(dataGpioPin))
             {
-                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with reserved KNX/system pin. Strip disabled to protect KNX bus.",
+                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with a reserved KNX/button/LED pin. Strip disabled.",
                           i, dataGpioPin);
                 continue; // Skip this strip completely
             }
