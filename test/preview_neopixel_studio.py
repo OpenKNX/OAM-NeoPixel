@@ -125,7 +125,7 @@ class Device:
             if any(type(s.get('length')) is not int or not 0<=s['length']<=16383 or type(s.get('skip')) is not int or not 0<=s['skip']<min(256,max(1,s['length'])) for s in value['strips']): raise ValueError('Invalid LED count or skipped LEDs')
             if not 1<=value['start']<=value['end']<=sum(s['length'] for s in value['strips']): raise ValueError('Invalid segment range')
             for other in self.state['segments']:
-                if other['id'] != segment['id'] and other['commissioning']['end'] > sum(s['length'] for s in value['strips']): raise ValueError('Another segment exceeds the new LED count')
+                if other['id'] != segment['id'] and other['commissioning']['end'] > sum(s['length'] for s in value['strips']): raise ValueError('Ein anderes Segment reicht über die neue LED-Anzahl hinaus; zuerst dessen Bereich anpassen')
                 if other['locked']: raise ValueError('A segment is locked by KNX')
             self.stop_test()
             for other in self.state['segments']:

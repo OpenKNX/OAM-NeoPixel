@@ -112,7 +112,7 @@ void NeoPixelStudio::setup(bool configured)
             const unsigned long id = strtoul(selected.c_str(), &end, 10);
             if (!end || *end || id < 1 || id > 16)
             {
-                sendJson(res, 400, "{\"error\":\"Invalid segment\"}");
+                sendJson(res, 400, "{\"error\":\"Ungültiges Segment\"}");
                 return;
             }
             _requestedSegment.store(id);
@@ -121,7 +121,7 @@ void NeoPixelStudio::setup(bool configured)
         _refresh.store(true);
         if (_guard.exchange(1, std::memory_order_acquire))
         {
-            sendJson(res, 503, "{\"error\":\"Studio busy; retry shortly\"}");
+            sendJson(res, 503, "{\"error\":\"Studio beschäftigt; gleich noch einmal versuchen\"}");
             return;
         }
         const std::string state = _state;
@@ -131,23 +131,23 @@ void NeoPixelStudio::setup(bool configured)
     web.addRoute(WEB_POST, "/neopixel/api/control", [this](WebRequest& req, WebResponse& res) {
         if (!_acceptCommands.load())
         {
-            sendJson(res, 503, "{\"error\":\"ETS download in progress\"}");
+            sendJson(res, 503, "{\"error\":\"Gerätekonfiguration wird geladen\"}");
             return;
         }
         if (!req.body() || req.bodyLength() == 0 || req.bodyLength() > 4096)
         {
-            sendJson(res, 413, "{\"error\":\"Invalid command size\"}");
+            sendJson(res, 413, "{\"error\":\"Ungültige Befehlsgröße\"}");
             return;
         }
         if (_guard.exchange(1, std::memory_order_acquire))
         {
-            sendJson(res, 503, "{\"error\":\"Studio busy; retry shortly\"}");
+            sendJson(res, 503, "{\"error\":\"Studio beschäftigt; gleich noch einmal versuchen\"}");
             return;
         }
         if (!_pending.empty() || _processing)
         {
             _guard.store(0, std::memory_order_release);
-            sendJson(res, 409, "{\"error\":\"Another command is pending\"}");
+            sendJson(res, 409, "{\"error\":\"Ein anderer Befehl ist noch offen\"}");
             return;
         }
         _pending.assign(reinterpret_cast<const char*>(req.body()), req.bodyLength());
@@ -235,28 +235,28 @@ std::string NeoPixelStudio::apply(const std::string& command)
 
 std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8_t expectedEffect)
 {
-    if (!doc.isObject() || !integer(doc.get("segment"), 1, _module._segments.size())) return "Unknown segment";
+    if (!doc.isObject() || !integer(doc.get("segment"), 1, _module._segments.size())) return "Unbekanntes Segment";
     const size_t index = static_cast<uint32_t>(doc.get("segment").toFloat()) - 1;
     auto& cfg = _module._segments[index];
     Segment* segment = cfg.segment;
-    if (!segment) return "Segment unavailable";
+    if (!segment) return "Segment nicht verfügbar";
     const std::string action = doc.get("action").toString();
     if (action == "load") return {};
-    if (action == "save" && _testSegment >= 0) return "Stop the commissioning test before saving";
-    if (action == "save") return validateOnly ? "Save cannot be nested" : saveSegment(index);
-    if (cfg.locked) return "Segment is locked by KNX";
+    if (action == "save" && _testSegment >= 0) return "Vor dem Speichern den Test beenden";
+    if (action == "save") return validateOnly ? "Speichern lässt sich nicht verschachteln" : saveSegment(index);
+    if (cfg.locked) return "Segment über KNX gesperrt";
     if (action == "commissioning" || action == "testStart" || action == "testStop") return commissioningControl(index, doc, validateOnly);
     const Reader value = doc.get("value");
     if (action == "batch")
     {
-        if (validateOnly || !value.isArray() || !value.get(size_t(0)).isObject()) return "Invalid batch";
+        if (validateOnly || !value.isArray() || !value.get(size_t(0)).isObject()) return "Ungültiger Befehlsblock";
         uint8_t stagedEffect = getTypeFromEffect(segment->getEffect());
         size_t count = 0;
         for (; value.get(count).valid(); ++count)
         {
-            if (count >= 32) return "Batch too large";
+            if (count >= 32) return "Befehlsblock zu groß";
             const Reader item = value.get(count);
-            if (item.get("segment").toUInt() != index + 1 || item.get("action").equals("save") || item.get("action").equals("load") || item.get("action").equals("restoreEts") || item.get("action").equals("batch")) return "Invalid batch action";
+            if (item.get("segment").toUInt() != index + 1 || item.get("action").equals("save") || item.get("action").equals("load") || item.get("action").equals("restoreEts") || item.get("action").equals("batch")) return "Ungültige Aktion im Befehlsblock";
             const std::string error = applyDoc(item, true, stagedEffect);
             if (!error.empty()) return error;
             if (item.get("action").equals("effect")) stagedEffect = static_cast<uint32_t>(item.get("value").toFloat());
@@ -264,7 +264,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
         size_t sceneActions = 0;
         for (size_t i = 0; i < count; ++i)
             if (value.get(i).get("action").toString().find("scene") == 0) ++sceneActions;
-        if (sceneActions > 1 || (sceneActions == 1 && value.get(count - 1).get("action").toString().find("scene") != 0)) return "A batch supports one final scene action";
+        if (sceneActions > 1 || (sceneActions == 1 && value.get(count - 1).get("action").toString().find("scene") != 0)) return "Ein Befehlsblock erlaubt nur eine Szenenaktion am Ende";
         bool capturesScene = false;
         for (size_t i = 0; i < count; ++i)
             if (value.get(i).get("action").equals("sceneAdd") || value.get(i).get("action").equals("sceneStore")) capturesScene = true;
@@ -279,10 +279,10 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
                 {
                     const std::string input = item.get("value").toString();
                     captureText.clear();
-                    if (!OpenKNX::Charset::decodeUtf8(captureText, input.c_str(), input.size())) return "Invalid scene text";
+                    if (!OpenKNX::Charset::decodeUtf8(captureText, input.c_str(), input.size())) return "Ungültiger Szenentext";
                 }
             }
-            if (captureText.size() > 14) return "Scenes support at most 14 bytes of effect text";
+            if (captureText.size() > 14) return "Szenen speichern höchstens 14 Byte Effekttext";
         }
         if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
         for (size_t i = 0; i < count; ++i)
@@ -294,7 +294,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     }
     if (action == "power")
     {
-        if (!integer(value, 0, 1)) return "Invalid power value";
+        if (!integer(value, 0, 1)) return "Ungültiger Ein/Aus-Wert";
         if (validateOnly) return {};
         if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
         if (static_cast<uint32_t>(value.toFloat()))
@@ -316,14 +316,14 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     }
     if (action == "sceneRecall" || action == "sceneStore" || action == "sceneAdd" || action == "sceneDelete")
     {
-        if (!_module._sceneManager) return "Scenes unavailable";
+        if (!_module._sceneManager) return "Szenen nicht verfügbar";
         const uint8_t count = _module._sceneManager->getSceneCount(index);
         if (action == "sceneAdd")
         {
-            if (count >= SceneManager::MAX_SCENES) return "Maximum scene count reached";
+            if (count >= SceneManager::MAX_SCENES) return "Höchstzahl an Szenen erreicht";
         }
         else if (!integer(value, 1, count) || (action == "sceneDelete" && static_cast<uint32_t>(value.toFloat()) != count))
-            return "Invalid scene; only the highest scene can be deleted";
+            return "Ungültige Szene; nur die letzte Szene lässt sich löschen";
         if (validateOnly) return {};
         if (!_testRestore.empty()) { const std::string error = stopTest(); if (!error.empty()) return error; }
         const uint8_t previous = _module._channelIndex;
@@ -334,7 +334,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
         if (success && action == "sceneRecall") cfg.savedSceneNumber = static_cast<uint32_t>(value.toFloat());
         _module._channelIndex = previous;
         if (success && !_module._localTestMode) _module.statusAfterCommand(index + 1);
-        return success ? std::string() : "Scene action failed";
+        return success ? std::string() : "Szenenaktion fehlgeschlagen";
     }
     Effect* effect = validateOnly && expectedEffect != 255 ? getEffectFromType(expectedEffect) : segment->getEffect();
     uint32_t number = 0;
@@ -347,52 +347,52 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     const bool secondary = action == "secondary";
     if (action == "restoreEts")
     {
-        if (validateOnly) return "Restore ETS settings cannot be nested";
+        if (validateOnly) return "Wiederherstellen lässt sich nicht verschachteln";
     }
     else if (action == "effect")
     {
-        if (!integer(value, 0, 254)) return "Invalid effect";
+        if (!integer(value, 0, 254)) return "Ungültiger Effekt";
         number = static_cast<uint32_t>(value.toFloat());
-        if (getTypeFromEffect(getEffectFromType(number)) != number) return "Effect unavailable";
+        if (getTypeFromEffect(getEffectFromType(number)) != number) return "Effekt nicht verfügbar";
     }
     else if (action == "brightness" || action == "primaryWhite" || action == "secondaryWhite" || action == "primaryCool" || action == "secondaryCool")
     {
-        if (!integer(value, 0, 255)) return "Value must be between 0 and 255";
+        if (!integer(value, 0, 255)) return "Der Wert muss zwischen 0 und 255 liegen";
         number = static_cast<uint32_t>(value.toFloat());
         const uint8_t channels = _module._virtualStrip ? _module._virtualStrip->getBytesPerLed() : 3;
-        if (action != "brightness" && channels < (action == "primaryCool" || action == "secondaryCool" ? 5 : 4)) return "White channel unavailable";
+        if (action != "brightness" && channels < (action == "primaryCool" || action == "secondaryCool" ? 5 : 4)) return "Weißkanal nicht vorhanden";
     }
     else if (primary || secondary || channelColour)
     {
         const Reader rgb = channelColour ? value.get("rgb") : value;
         text = rgb.toString();
-        if (!rgb.isString() || text.size() != 7 || text[0] != '#') return "Expected #RRGGBB";
+        if (!rgb.isString() || text.size() != 7 || text[0] != '#') return "Erwartet #RRGGBB";
         for (size_t i = 1; i < text.size(); ++i)
-            if (!isxdigit(static_cast<unsigned char>(text[i]))) return "Invalid RGB colour";
+            if (!isxdigit(static_cast<unsigned char>(text[i]))) return "Ungültige RGB-Farbe";
         number = strtoul(text.c_str() + 1, nullptr, 16);
         r = number >> 16;
         g = number >> 8;
         b = number;
         if (channelColour)
         {
-            if (!value.isObject() || !integer(value.get("ww"), 0, 255) || !integer(value.get("cw"), 0, 255)) return "Expected RGB and white channels";
+            if (!value.isObject() || !integer(value.get("ww"), 0, 255) || !integer(value.get("cw"), 0, 255)) return "Erwartet RGB- und Weißkanäle";
             white = static_cast<uint32_t>(value.get("ww").toFloat());
             cool = static_cast<uint32_t>(value.get("cw").toFloat());
             const uint8_t channels = _module._virtualStrip ? _module._virtualStrip->getBytesPerLed() : 3;
-            if ((channels < 4 && white != 0) || (channels < 5 && cool != 0)) return "White channel unavailable";
+            if ((channels < 4 && white != 0) || (channels < 5 && cool != 0)) return "Weißkanal nicht vorhanden";
         }
     }
     else if (action == "parameter")
     {
-        if (!effect || !integer(doc.get("effect"), 0, 254) || static_cast<uint32_t>(doc.get("effect").toFloat()) != getTypeFromEffect(effect)) return "Effect changed; refresh the page";
-        if (!effect->getParameterCount() || !integer(doc.get("parameter"), 0, effect->getParameterCount() - 1)) return "Unknown parameter";
+        if (!effect || !integer(doc.get("effect"), 0, 254) || static_cast<uint32_t>(doc.get("effect").toFloat()) != getTypeFromEffect(effect)) return "Effekt wurde geändert; Seite neu laden";
+        if (!effect->getParameterCount() || !integer(doc.get("parameter"), 0, effect->getParameterCount() - 1)) return "Unbekannter Parameter";
         parameter = static_cast<uint32_t>(doc.get("parameter").toFloat());
         const ParameterType type = effect->getParameterType(parameter);
         if (type == ParameterType::PARAM_STRING)
         {
-            if (!value.isString()) return "Expected text";
+            if (!value.isString()) return "Erwartet Text";
             const std::string input = value.toString();
-            if (input.find('\0') != std::string::npos || !OpenKNX::Charset::decodeUtf8(text, input.c_str(), input.size()) || text.size() > 240) return "Text must fit 240 Latin-15 characters";
+            if (input.find('\0') != std::string::npos || !OpenKNX::Charset::decodeUtf8(text, input.c_str(), input.size()) || text.size() > 240) return "Der Text darf höchstens 240 Zeichen (Latin-15) haben";
         }
         else
         {
@@ -407,12 +407,12 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
                 min = 0;
                 max = effect->getEnumValueCount(parameter) - 1;
             }
-            if (!integer(value, min, max)) return "Parameter outside allowed range";
+            if (!integer(value, min, max)) return "Parameter außerhalb des erlaubten Bereichs";
             number = static_cast<uint32_t>(value.toFloat());
         }
     }
     else
-        return "Unknown control action";
+        return "Unbekannte Aktion";
 
     if (validateOnly) return {};
 

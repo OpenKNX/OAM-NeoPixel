@@ -19,7 +19,7 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
     _commissioning[index] = previousDraft;
     Reader plan(planText.c_str());
     auto* manager = _module._neoPixel.getManager();
-    if (!manager || manager->isAnyBusy() || manager->isFrameInFlight()) return "LED output is busy; retry the configuration";
+    if (!manager || manager->isAnyBusy() || manager->isFrameInFlight()) return "LED-Ausgabe beschäftigt; Konfiguration noch einmal anwenden";
     unsigned total = 0, expectedStrips = 0;
     for (size_t i = 0; plan.get("strips").get(i).valid(); ++i)
     {
@@ -29,15 +29,15 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
     }
     for (size_t i = 0; i < _module._segments.size(); ++i)
     {
-        if (_module._segments[i].locked) return "A segment is locked by KNX; shared LED configuration cannot change";
-        if (i != index && _module._segments[i].endLed >= total) return "Another segment exceeds the new LED count; adjust its range first";
+        if (_module._segments[i].locked) return "Ein Segment ist über KNX gesperrt; die gemeinsame LED-Konfiguration bleibt unverändert";
+        if (i != index && _module._segments[i].endLed >= total) return "Ein anderes Segment reicht über die neue LED-Anzahl hinaus; zuerst dessen Bereich anpassen";
     }
     #if defined(ARDUINO_ARCH_ESP32)
     // Driver, physical and virtual buffers coexist during initialization. Keep
     // headroom for KNX/web tasks rather than risking an allocation panic.
     if (total * 32u + 32768u > heap_caps_get_free_size(MALLOC_CAP_INTERNAL) ||
         total * 8u + 8192u > heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL))
-        return "Insufficient memory for this LED count";
+        return "Zu wenig Speicher für diese LED-Anzahl";
     #endif
     if (!(error = stopTest()).empty()) return error;
 
@@ -50,7 +50,7 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
     std::vector<State> states;
     for (const auto& cfg : _module._segments)
     {
-        if (!cfg.segment) return "Segment unavailable";
+        if (!cfg.segment) return "Segment nicht verfügbar";
         states.push_back({cfg.segment->getConfig(), cfg.segment->getEffect(), cfg.segment->isPaused()});
     }
     const auto previousSegments = _module._segments;
@@ -148,7 +148,7 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
         }
         const bool restored = rebuild(previousLive, previousStripCount);
         _module._channelIndex = previousChannel;
-        return restored ? "LED initialization failed; previous configuration restored" : "LED initialization failed; restart the device to restore ETS configuration";
+        return restored ? "LED-Initialisierung fehlgeschlagen; vorherige Konfiguration wiederhergestellt" : "LED-Initialisierung fehlgeschlagen; Gerät neu starten, um die Gerätekonfiguration wiederherzustellen";
     }
     _module._channelIndex = previousChannel;
     // Strip counts are shared by every segment. Discard cached plans so all

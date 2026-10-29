@@ -80,7 +80,7 @@ int main() {
     const char* good=R"({"start":4,"end":100,"strips":[{"id":1,"length":80,"skip":3},{"id":2,"length":30,"skip":0}]})";
     Reader plan(good);
     module.failures=1;
-    assert(studio.applyLiveCommissioning(0,plan).find("previous configuration restored")!=std::string::npos);
+    assert(studio.applyLiveCommissioning(0,plan).find("vorherige Konfiguration wiederhergestellt")!=std::string::npos);
     assert(!module._liveLedLayout && module._segments[0].endLed==29);
     assert(module._segments[0].segment->getConfig().brightness==71);
     module.manager.blanks=0; module.powerUpdates=0;
@@ -101,15 +101,15 @@ int main() {
     assert(module._virtualStripConfiguration[1].virtualStartPosition==80);
     const char* larger=R"({"start":1,"end":120,"strips":[{"id":1,"length":100,"skip":0},{"id":2,"length":30,"skip":0}]})";
     module.failures=1; Reader failed(larger);
-    assert(studio.applyLiveCommissioning(0,failed).find("previous configuration restored")!=std::string::npos);
+    assert(studio.applyLiveCommissioning(0,failed).find("vorherige Konfiguration wiederhergestellt")!=std::string::npos);
     assert(module._liveStripLengths[0]==80 && module._segments[0].endLed==99);
     assert(module._segments[0].segment->getConfig().brightness==71);
     Reader tooSmall(R"({"start":1,"end":10,"strips":[{"id":1,"length":10,"skip":0},{"id":2,"length":0,"skip":0}]})");
     const int blanks=module.manager.blanks;
-    assert(studio.applyLiveCommissioning(0,tooSmall).find("Another segment")!=std::string::npos);
+    assert(studio.applyLiveCommissioning(0,tooSmall).find("Ein anderes Segment")!=std::string::npos);
     assert(module.manager.blanks==blanks);
     module.failures=2;
-    assert(studio.applyLiveCommissioning(0,failed).find("restart the device")!=std::string::npos);
+    assert(studio.applyLiveCommissioning(0,failed).find("Gerät neu starten")!=std::string::npos);
     assert(module._segments[0].segment==nullptr && module._segments[1].segment==nullptr);
 }
 '''

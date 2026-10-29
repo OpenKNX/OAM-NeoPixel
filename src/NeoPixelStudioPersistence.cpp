@@ -53,12 +53,12 @@ std::string NeoPixelStudio::exportSegment(size_t index, bool forSave, std::strin
     Effect* effect = segment ? segment->getEffect() : nullptr;
     if (!effect)
     {
-        error = "Segment has no active effect";
+        error = "Segment hat keinen aktiven Effekt";
         return {};
     }
     if (forSave && cfg.emController.isRunning())
     {
-        error = "Choose a direct effect before saving; effect manager is running";
+        error = "Vor dem Speichern einen direkten Effekt wählen; ein Effektmanager läuft";
         return {};
     }
     const uint8_t id = getTypeFromEffect(effect);
@@ -83,14 +83,14 @@ std::string NeoPixelStudio::exportSegment(size_t index, bool forSave, std::strin
         const char* name = effectParameterEtsName(id, p);
         if (!name)
         {
-            error = "ETS effect mapping is unavailable; regenerate effect parameters";
+            error = "Effektzuordnung der Gerätekonfiguration fehlt; Effektparameter neu erzeugen";
             return {};
         }
         if (effect->getParameterType(p) == ParameterType::PARAM_STRING)
         {
             if (forSave && strlen(c.effectText) > 14)
             {
-                error = "ETS supports at most 14 bytes of effect text; shorten the text before saving";
+                error = "Die Gerätekonfiguration speichert höchstens 14 Byte Effekttext; Text vor dem Speichern kürzen";
                 return {};
             }
             std::string utf8;
@@ -141,31 +141,31 @@ std::string NeoPixelStudio::saveSegment(size_t index)
     std::string error;
     const std::string json = exportSegment(index, true, error);
     if (!error.empty()) return error;
-    if (!LittleFS.begin()) return "Device filesystem unavailable";
+    if (!LittleFS.begin()) return "Dateisystem des Geräts nicht verfügbar";
     if (LittleFS.exists("/neopixel-studio-invalidated"))
     {
         for (size_t i = 0; i < 16; ++i)
         {
             const auto old = savedPath(i);
-            if (LittleFS.exists(old.c_str()) && !LittleFS.remove(old.c_str())) return "Unable to clear stale Studio snapshots";
+            if (LittleFS.exists(old.c_str()) && !LittleFS.remove(old.c_str())) return "Alte Studio-Stände lassen sich nicht löschen";
         }
-        if (!LittleFS.remove("/neopixel-studio-invalidated")) return "Unable to clear Studio invalidation marker";
+        if (!LittleFS.remove("/neopixel-studio-invalidated")) return "Studio-Ungültig-Markierung lässt sich nicht löschen";
     }
     const std::string path = savedPath(index), temporary = path + ".tmp";
     File file = LittleFS.open(temporary.c_str(), "w");
-    if (!file) return "Unable to open Studio save file";
+    if (!file) return "Studio-Speicherdatei lässt sich nicht öffnen";
     const bool written = file.write(reinterpret_cast<const uint8_t*>(json.data()), json.size()) == json.size();
     file.flush();
     file.close();
     if (!written || !LittleFS.rename(temporary.c_str(), path.c_str()))
     {
         LittleFS.remove(temporary.c_str());
-        return "Unable to save Studio settings; previous save retained";
+        return "Studio-Einstellungen nicht gespeichert; der vorherige Stand bleibt";
     }
     openknx.flash.save();
     return {};
     #else
-    return "Device filesystem is not enabled";
+    return "Dateisystem des Geräts ist nicht aktiviert";
     #endif
 }
 

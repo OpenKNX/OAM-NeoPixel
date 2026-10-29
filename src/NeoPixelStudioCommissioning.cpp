@@ -88,7 +88,7 @@ std::string NeoPixelStudio::stageCommissioning(size_t index, const Reader& value
 {
     const Reader strips = value.get("strips");
     const unsigned count = std::min<unsigned>(8, ParamNEO_NEONumberOfLEDStrips);
-    if (!value.isObject() || !strips.isArray() || strips.get(count).valid()) return "Invalid strip configuration";
+    if (!value.isObject() || !strips.isArray() || strips.get(count).valid()) return "Ungültige Streifenkonfiguration";
     unsigned total = 0;
     Writer json;
     json.beginObject().field("start", value.get("start").toUInt()).field("end", value.get("end").toUInt()).key("strips").beginArray();
@@ -96,32 +96,32 @@ std::string NeoPixelStudio::stageCommissioning(size_t index, const Reader& value
     {
         const Reader strip = strips.get(i);
         if (!strip.isObject() || !bounded(strip.get("id"), i + 1, i + 1) || !bounded(strip.get("length"), 0, 16383) ||
-            !bounded(strip.get("skip"), 0, (strip.get("length").toUInt() ? std::min<unsigned>(255, strip.get("length").toUInt() - 1) : 0))) return "Invalid LED count or skipped LEDs";
+            !bounded(strip.get("skip"), 0, (strip.get("length").toUInt() ? std::min<unsigned>(255, strip.get("length").toUInt() - 1) : 0))) return "Ungültige LED-Anzahl oder übersprungene LEDs";
         total += strip.get("length").toUInt();
         json.beginObject().field("id", strip.get("id").toUInt()).field("length", strip.get("length").toUInt()).field("skip", strip.get("skip").toUInt()).endObject();
     }
-    if (total > 65535 || !bounded(value.get("start"), 1, std::min<unsigned>(total, 16383)) || !bounded(value.get("end"), value.get("start").toUInt(), std::min<unsigned>(total, 16383))) return "Segment range must fit the configured strips (LED numbers start at 1)";
+    if (total > 65535 || !bounded(value.get("start"), 1, std::min<unsigned>(total, 16383)) || !bounded(value.get("end"), value.get("start").toUInt(), std::min<unsigned>(total, 16383))) return "Der Segmentbereich muss in die konfigurierten Streifen passen (LED-Nummern beginnen bei 1)";
     _commissioning[index] = json.endArray().endObject().str();
     return {};
 }
 
 std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc, bool validateOnly)
 {
-    if (validateOnly) return "Commissioning commands cannot be nested";
+    if (validateOnly) return "Inbetriebnahme-Befehle lassen sich nicht verschachteln";
     const std::string action = doc.get("action").toString();
     if (action == "commissioning") return applyLiveCommissioning(index, doc.get("value"));
     if (action == "testStop") return stopTest();
-    if (!_module._globalPowerOn) return "Switch global power on before starting an LED test";
-    if (_module._segments[index].emController.isRunning()) return "Choose a direct effect before testing; an effect manager is running";
+    if (!_module._globalPowerOn) return "Vor dem LED-Test global einschalten";
+    if (_module._segments[index].emController.isRunning()) return "Vor dem Test einen direkten Effekt wählen; ein Effektmanager läuft";
     const Reader value = doc.get("value");
-    if (!bounded(value.get("level"), 1, 64)) return "Test brightness must be between 1 and 64";
+    if (!bounded(value.get("level"), 1, 64)) return "Die Test-Helligkeit muss zwischen 1 und 64 liegen";
     const std::string pattern = value.get("pattern").toString();
     const uint8_t channels = _module._virtualStrip ? _module._virtualStrip->getBytesPerLed() : 3;
     const unsigned effect = pattern == "chase" ? 1 : pattern == "cycle" ? 7
                                                                         : 0;
-    if (pattern != "red" && pattern != "green" && pattern != "blue" && pattern != "white" && pattern != "warm" && pattern != "cool" && pattern != "chase" && pattern != "cycle") return "Unknown test pattern";
+    if (pattern != "red" && pattern != "green" && pattern != "blue" && pattern != "white" && pattern != "warm" && pattern != "cool" && pattern != "chase" && pattern != "cycle") return "Unbekanntes Testmuster";
 
-    if (getTypeFromEffect(getEffectFromType(effect)) != effect) return "Test effect is not compiled into this firmware";
+    if (getTypeFromEffect(getEffectFromType(effect)) != effect) return "Der Testeffekt ist in dieser Firmware nicht enthalten";
     // A new pattern or level on the segment already under test applies directly: the pre-test state stays saved
     // (Stop still returns to it) and is not restored in between, which would flash it and send KNX status twice.
     const bool restart = !_testRestore.empty() && _testSegment == int(index);
