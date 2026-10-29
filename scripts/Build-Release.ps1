@@ -163,16 +163,6 @@ if ($isClean) {
     exit 0
 }
 
-# Verify Git before the shared postprocess removes and regenerates dependencies.txt.
-# Dot-sourcing keeps the native Git fallback visible to its child scripts.
-try {
-    . "$PSScriptRoot/Initialize-BuildGit.ps1"
-}
-catch {
-    Write-Host "Build setup failed: $_" -ForegroundColor Red
-    exit 1
-}
-
 # ============================================================================
 # BUILD TARGET CONFIGURATION - Add new hardware variants here
 # ============================================================================

@@ -55,9 +55,7 @@ with tempfile.TemporaryDirectory(prefix='neopixel-build-clean-') as directory:
     else:
         run(fixture, '-File', 'scripts/Build-HardwareConfig.ps1', '-UniversalBuild')
         run(fixture, '-File', 'scripts/Build-EffectParameters.ps1', '-SkipOpenKNXproducer')
-        run(fixture, '-Command',
-            '. ./scripts/Initialize-BuildGit.ps1; '
-            '& ./lib/OGM-Common/scripts/setup/reusable/Build-Dependencies.ps1')
+        run(fixture, '-File', 'lib/OGM-Common/scripts/setup/reusable/Build-Dependencies.ps1')
     assert b'var NEO_StudioEffectParameters = {};' not in script.read_bytes()
     assert (fixture / 'dependencies.txt').read_bytes() == dependencies, 'dependency snapshot changed'
 
