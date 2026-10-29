@@ -104,6 +104,7 @@ Scenes include both RGB/white colours, brightness, effect, ten parameter slots a
 14 Latin-15 text bytes. Existing ETS scenes that start an effect manager can be recalled.
 The page does not edit effect-manager sequences. Long live text remains supported,
 but a scene or ETS-importable save requires text to fit its 14-byte ETS field.
+A scene learned over the KNX scene object cuts a longer text to 14 bytes instead.
 
 Scene edits and KNX scene learning use an OAM-owned cache, never the downloaded
 KNX parameter table. Bounds are checked before cache imports. Regular module flash

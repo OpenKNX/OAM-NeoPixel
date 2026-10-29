@@ -127,7 +127,7 @@ bool SceneManager::deleteScene(uint8_t channel, uint8_t scene)
     return true;
 }
 
-bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment)
+bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment, bool cutText)
 {
     if (!segment)
     {
@@ -190,7 +190,7 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
              secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW,
              brightness);
 
-    if (effect && !emRunning)
+    if (!cutText && effect && !emRunning)
         for (uint8_t p = 0; p < effect->getParameterCount(); ++p)
             if (effect->getParameterType(p) == ParameterType::PARAM_STRING && strlen(config.effectText) > EFFECT_TEXT_SIZE) return false;
     for (uint8_t field = SCENE_EFFECT_PARAM_OFFSET; field < SCENE_SIZE; ++field)
@@ -228,8 +228,9 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
             writeSceneField(channelIndex, sceneIndex, SCENE_EFFECT_PARAM_OFFSET + i, (uint8_t)paramValue);
         }
 
-        // Effect text (14 bytes, zero-padded, cut at a UTF-8 character boundary); empty without a text parameter
-        const size_t length = hasText ? std::min<size_t>(EFFECT_TEXT_SIZE, strlen(config.effectText)) : 0;
+        // Effect text (14 bytes, zero-padded); empty without a text parameter
+        // ISO 8859-1/-15, one byte per character: a cut at 14 bytes never splits a character
+        const size_t length = hasText ? std::min<size_t>(EFFECT_TEXT_SIZE, strnlen(config.effectText, sizeof(config.effectText))) : 0;
         for (size_t i = 0; i < EFFECT_TEXT_SIZE; ++i)
             writeSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TEXT + i, i < length ? config.effectText[i] : 0);
     }

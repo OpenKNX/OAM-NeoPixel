@@ -86,9 +86,10 @@ class SceneManager
      * @param channelIndex Segment index (0-15)
      * @param sceneNumber Scene number (1-based, as received via DPT 18.001)
      * @param segment Pointer to source segment
-     * @return true if scene was stored, false if invalid scene number
+     * @param cutText true: cut an effect text over 14 bytes; false: reject the scene (ETS export)
+     * @return true if scene was stored, false if invalid scene number or text too long
      */
-    bool storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment);
+    bool storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment, bool cutText = false);
 
     static constexpr uint8_t MAX_SCENES = 10;
     using SceneData = std::array<uint8_t, SCENE_SIZE>;

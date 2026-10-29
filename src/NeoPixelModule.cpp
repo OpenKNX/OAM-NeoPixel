@@ -2212,7 +2212,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 {
                     // Store current segment state into the scene slot
                     const SceneManager::SceneData before = _sceneManager->sceneData(channel, sceneNumber);
-                    bool stored = _sceneManager->storeScene(channel, sceneNumber, targetSegment);
+                    bool stored = _sceneManager->storeScene(channel, sceneNumber, targetSegment, true); // KO learn: cut a long text
                     if (stored)
                     {
                         logInfoP("Segment %d: Scene %d stored successfully", channel, sceneNumber);
