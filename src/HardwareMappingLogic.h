@@ -13,6 +13,10 @@ constexpr uint8_t INVALID_GPIO = 255;
 constexpr uint8_t MAX_HARDWARE_PORT_INDEX = 9;
 constexpr uint8_t MANUAL_GPIO_PORT_SELECTION = 10;
 constexpr uint8_t DUMMY_GPIO_PORT_SELECTION = 15;
+// The port-selection switches below have a case for every index the generator can emit
+// (Build-HardwareConfig.ps1 $MAX_HARDWARE_VARIANTS = 50); a larger list needs more cases.
+constexpr uint8_t HARDWARE_PORT_SWITCH_CASES = 50;
+static_assert(HardwareMapping::NUM_HARDWARE_VARIANTS <= HARDWARE_PORT_SWITCH_CASES, "More hardware variants than port-selection cases in HardwareMappingLogic.h");
 
 /**
  * @brief Get the currently selected hardware index from ETS parameters
@@ -134,6 +138,90 @@ inline uint8_t getDataPortSelectionForHardwareIndex(uint8_t stripIndex, uint8_t 
     #ifdef ParamNEOSTRIP_NEOGPIODataPortHW21
         case 21: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW21;
     #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW22
+        case 22: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW22;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW23
+        case 23: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW23;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW24
+        case 24: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW24;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW25
+        case 25: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW25;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW26
+        case 26: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW26;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW27
+        case 27: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW27;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW28
+        case 28: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW28;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW29
+        case 29: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW29;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW30
+        case 30: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW30;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW31
+        case 31: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW31;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW32
+        case 32: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW32;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW33
+        case 33: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW33;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW34
+        case 34: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW34;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW35
+        case 35: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW35;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW36
+        case 36: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW36;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW37
+        case 37: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW37;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW38
+        case 38: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW38;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW39
+        case 39: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW39;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW40
+        case 40: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW40;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW41
+        case 41: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW41;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW42
+        case 42: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW42;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW43
+        case 43: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW43;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW44
+        case 44: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW44;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW45
+        case 45: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW45;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW46
+        case 46: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW46;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW47
+        case 47: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW47;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW48
+        case 48: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW48;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW49
+        case 49: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW49;
+    #endif
         default: return DUMMY_GPIO_PORT_SELECTION;
     }
 #else
@@ -231,6 +319,90 @@ inline uint8_t getClockPortSelectionForHardwareIndex(uint8_t stripIndex, uint8_t
     #endif
     #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW21
         case 21: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW21;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW22
+        case 22: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW22;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW23
+        case 23: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW23;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW24
+        case 24: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW24;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW25
+        case 25: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW25;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW26
+        case 26: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW26;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW27
+        case 27: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW27;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW28
+        case 28: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW28;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW29
+        case 29: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW29;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW30
+        case 30: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW30;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW31
+        case 31: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW31;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW32
+        case 32: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW32;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW33
+        case 33: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW33;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW34
+        case 34: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW34;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW35
+        case 35: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW35;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW36
+        case 36: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW36;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW37
+        case 37: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW37;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW38
+        case 38: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW38;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW39
+        case 39: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW39;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW40
+        case 40: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW40;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW41
+        case 41: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW41;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW42
+        case 42: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW42;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW43
+        case 43: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW43;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW44
+        case 44: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW44;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW45
+        case 45: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW45;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW46
+        case 46: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW46;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW47
+        case 47: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW47;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW48
+        case 48: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW48;
+    #endif
+    #ifdef ParamNEOSTRIP_NEOGPIOClockPortHW49
+        case 49: return (uint8_t)ParamNEOSTRIP_NEOGPIOClockPortHW49;
     #endif
         default: return DUMMY_GPIO_PORT_SELECTION;
     }
