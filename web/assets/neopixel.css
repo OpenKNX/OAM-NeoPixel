@@ -1,37 +1,11 @@
-/* neopixel.css - NeoPixel status page /neo. Tables, h1/h2, .meta come from base.css; this file adds page classes only. */
+/* neopixel.css - NeoPixel status page /neo. Tables, h1/h2, .meta come from base.css; tokens, band, pills, tabs, cards, notes and buttons from np-base.css. */
 :root {
-    /* Structure: OpenKNX green plus soft neutrals. */
-    --np-green: #449841; --np-green-b: #367534; --np-green-d: #2f6b2d; --np-green-t: #e7f1e5;
-    --np-ink: #1f2421; --np-mute: #535a55; --np-faint: #6b716c;
-    --np-line: #e3e6e1; --np-line2: #d2d6cf; --np-panel: #f8f9f7; --np-stage: #fbfcfa;
-    --np-off: #dcdfd9; --np-offedge: #c9cdc6;
-    /* Pastel tones for strips, segments, sections, cues (fill / edge). Text on them is always --np-ink. */
-    --np-t0: #d6e7cd; --np-e0: #86ad78;  /* sage   */
-    --np-t1: #cfdeec; --np-e1: #7fa2c2;  /* mist   */
-    --np-t2: #f4dcc6; --np-e2: #d1a27a;  /* apricot*/
-    --np-t3: #e2d9ef; --np-e3: #a594c6;  /* lilac  */
-    --np-t4: #cce8e1; --np-e4: #79b3a6;  /* seafoam*/
-    --np-t5: #f3d6da; --np-e5: #cf929b;  /* blush  */
-    --np-t6: #f0e7c0; --np-e6: #c4b366;  /* butter */
-    --np-t7: #e0ddd5; --np-e7: #aaa597;  /* stone  */
-    /* Status tints: soft background, dark readable text, saturated dot. */
-    --np-ok-bg: #e6f2e3; --np-ok-fg: #2f6b2d; --np-ok: #449841;
-    --np-warn-bg: #fbf0d4; --np-warn-fg: #82560a; --np-warn: #d9a326;
-    --np-bad-bg: #f8e1dc; --np-bad-fg: #a3341f; --np-bad: #d0634f;
-    --np-idle-bg: #edefeb; --np-idle-fg: #565c57;
     /* Accent of the cue progress outline. */
     --np-accent: #7c64a8;
 }
 .neo { max-width: 1180px; color: var(--np-ink) }
 .neo h1 { margin-bottom: .4em }
 .neo .meta { margin-bottom: 1em }
-.t0 { --f: var(--np-t0); --e: var(--np-e0) } .t1 { --f: var(--np-t1); --e: var(--np-e1) }
-.t2 { --f: var(--np-t2); --e: var(--np-e2) } .t3 { --f: var(--np-t3); --e: var(--np-e3) }
-.t4 { --f: var(--np-t4); --e: var(--np-e4) } .t5 { --f: var(--np-t5); --e: var(--np-e5) }
-.t6 { --f: var(--np-t6); --e: var(--np-e6) } .t7 { --f: var(--np-t7); --e: var(--np-e7) }
-.np-num { font-variant-numeric: tabular-nums; white-space: nowrap }
-.np-m { color: var(--np-mute) }
-.np-f { color: var(--np-faint); font-size: .85em }
 
 /* Header: title and status line. */
 .np-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px }
@@ -40,23 +14,7 @@
 /* Preview (example data): lilac frame, sticky banner, never mixed with live values. */
 .np-foot { margin-top: 18px; font-size: .76em; color: var(--np-faint); line-height: 1.5 }
 
-/* Pills. */
-.np-pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 10px; font-size: .78rem; font-weight: 600; white-space: nowrap; line-height: 1.5 }
-.np-pill.ok { background: var(--np-ok-bg); color: var(--np-ok-fg) }
-.np-pill.warn { background: var(--np-warn-bg); color: var(--np-warn-fg) }
-.np-pill.bad { background: var(--np-bad-bg); color: var(--np-bad-fg) }
-.np-pill.idle { background: var(--np-idle-bg); color: var(--np-idle-fg); font-weight: 500 }
-.np-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; background: var(--np-faint) }
-.ok > .np-dot { background: var(--np-ok) } .warn > .np-dot { background: var(--np-warn) } .bad > .np-dot { background: var(--np-bad) }
 
-/* Status bar. */
-.np-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding: 9px 14px; border: 1px solid var(--np-line); border-left: 3px solid var(--np-green); background: var(--np-panel); border-radius: 0 6px 6px 0; font-size: .85em }
-.np-bar.warn { border-left-color: var(--np-warn) } .np-bar.bad { border-left-color: var(--np-bad) }
-.np-b { display: flex; align-items: baseline; gap: 6px; white-space: nowrap }
-.np-b > span { color: var(--np-mute); font-size: .88em }
-.np-b > b { font-weight: 600; font-variant-numeric: tabular-nums }
-.np-b > em { font-style: normal; color: var(--np-mute); font-size: .88em }
-.np-b.notes { flex-wrap: wrap; white-space: normal; gap: 4px 6px; align-items: center }
 
 /* Meters. */
 .np-meter { display: inline-block; position: relative; width: 74px; height: 7px; border-radius: 4px; background: #eceee9; vertical-align: 1px; margin-right: 7px; overflow: visible }
@@ -65,35 +23,15 @@
 .np-meter > s { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--np-faint); border-radius: 1px; opacity: .8 }
 .np-meter.lg { width: 140px }
 
-/* Tabs (same as the IP-Interface page). */
-.np-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 1.3em 0 16px; border-bottom: 1px solid var(--np-line2) }
-.np-tab { padding: 7px 15px; color: #555; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 5px 5px 0 0; margin-bottom: -1px; font-size: .92em; background: none }
-.np-tab:hover { background: #f1f3f0 }
-.np-tab.active { color: #222; background: #fff; border-color: var(--np-line2); border-bottom: 1px solid #fff; font-weight: 600 }
 .np-pane[hidden], .np-editor[hidden] { display: none !important }
 
 /* Cards and stages. */
-.np-card { border: 1px solid var(--np-line); border-radius: 8px; background: #fff; margin-bottom: 14px }
-.np-card-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 14px; border-bottom: 1px solid var(--np-line) }
-.np-card-h h3 { font-size: .95em; font-weight: 600; margin: 0 }
-.np-card-h .np-sp { flex: 1 }
-.np-card-b { padding: 12px 14px }
 .np-stage { display: block; width: 100%; background: var(--np-stage) }
 .np-cap { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 8px 14px; border-top: 1px solid var(--np-line); font-size: .8em; color: var(--np-mute) }
 .np-cap b { color: var(--np-ink); font-weight: 600 }
 .np-key { display: inline-flex; align-items: center; gap: 5px }
 .np-key i { width: 10px; height: 10px; border-radius: 50%; display: inline-block }
-.np-note { font-size: .8em; color: var(--np-mute); line-height: 1.5; padding: 8px 12px; background: var(--np-panel); border-left: 3px solid var(--np-line2); border-radius: 0 4px 4px 0; margin: 8px 0 }
-.np-note b { color: var(--np-ink) }
-.np-note.info { border-left-color: var(--np-e1) }
-.np-note.warn { background: var(--np-warn-bg); border-left-color: var(--np-warn); color: var(--np-warn-fg) }
-.np-note.bad { background: var(--np-bad-bg); border-left-color: var(--np-bad); color: var(--np-bad-fg) }
 
-/* Buttons. */
-.np-btn { padding: 4px 11px; margin: 0; font-size: .85em; background: #fff; border: 1px solid var(--np-line2); border-radius: 5px; cursor: pointer; color: #333 }
-.np-btn:hover { border-color: var(--np-green); color: var(--np-green-d) }
-.np-btn.pri { background: var(--np-green-b); border-color: var(--np-green-b); color: #fff }
-.np-btn[disabled] { opacity: .55; cursor: not-allowed }
 
 /* Arrangement editor. */
 .np-editor { border: 1px solid var(--np-line); border-top: 3px solid var(--np-e1); border-radius: 8px; background: #fff; margin-bottom: 14px }
@@ -132,7 +70,6 @@
 .np-rng.sm { width: 120px }
 .np-col { width: 52px; height: 40px; padding: 2px; margin: 0; border: 1px solid var(--np-line2); border-radius: 7px; background: #fff; cursor: pointer }
 .np-wl { display: inline-flex; align-items: center; gap: 6px; color: var(--np-mute) }
-.np-sel { min-height: 40px; padding: 4px 8px; margin: 0; border: 1px solid var(--np-line2); border-radius: 7px; background: #fff; color: var(--np-ink); max-width: 100% }
 .np-ctl-em { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; flex-basis: 100% }
 .np-ctl-em > span:first-child { flex: 1 1 100% }
 .np-ctl-msg { min-height: 1.2em; padding-top: 6px; font-size: .8em; color: var(--np-warn-fg) }
@@ -140,9 +77,8 @@
 .np-ctl-log pre { background: var(--np-panel); border: 1px solid var(--np-line); border-radius: 4px; padding: 6px 8px; overflow-x: auto; font-size: .95em; margin-top: 4px }
 @media (max-width: 640px) {
     .np-ctl-r > i { flex-basis: 100% } .np-rng { width: 100% } .np-ctl-c { flex-basis: 100% }
-    /* touch targets >= 40 px on phones */
-    .np-tab { min-height: 40px }
-    .np-btn, .np-tpl { min-height: 40px }
+    /* touch targets >= 40 px on phones (tabs, buttons: np-base.css) */
+    .np-tpl { min-height: 40px }
     .np-ed-l input, .np-ed-l select, .np-map select, .np-map input { min-height: 40px }
     .np-chk input { width: 22px; height: 22px } .np-ed-f summary { padding: 10px 0 }
 }
@@ -162,7 +98,6 @@
 .np-tbl td, .np-tbl th { padding: 7px 10px; vertical-align: middle }
 .np-tbl th { font-size: .9em; font-weight: 600 }
 .np-tbl td small { display: block; color: var(--np-mute); font-size: .85em }
-.np-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 20px; padding: 0 6px; border-radius: 4px; background: var(--f); border: 1px solid var(--e); color: var(--np-ink); font-size: .78rem; font-weight: 600; margin-right: 6px }
 .np-sw { display: inline-block; width: 18px; height: 18px; border-radius: 50%; margin-right: 4px; vertical-align: -4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18) }
 .np-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .78em; color: var(--np-mute); margin: 8px 0 }
 .np-legend span { display: inline-flex; align-items: center; gap: 5px }
@@ -230,10 +165,6 @@
     .np-r > i { flex-basis: 9.5em }
 }
 @media (max-width: 640px) {
-    main { padding: 1.2em 16px }
-    .np-bar { gap: 6px 14px }
-    .np-b { flex-wrap: wrap; white-space: normal }
-    .np-tab { padding: 6px 10px; font-size: .86em }
     .np-tl { flex-direction: column }
     .np-tl > .np-cue { flex: 0 0 auto !important; min-width: 0 }
     .np-tail { padding: 6px 9px }

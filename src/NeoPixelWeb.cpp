@@ -135,6 +135,7 @@ void NeoPixelWeb::setup(bool configured, uint32_t startMs)
     ws.addMenuItem("NeoPixel", "/neo", 70);
     ws.setDefaultPage("/neo");
     // Referenced only by /neo: addStylesheet()/addJavaScript() would put them on every page.
+    ws.addRoute(WEB_GET, "/assets/np-base.css", Webserver::Asset(WebAssets::np_base_css_mime, WebAssets::np_base_css_gz, sizeof(WebAssets::np_base_css_gz)));
     ws.addRoute(WEB_GET, "/assets/neopixel.css", Webserver::Asset(WebAssets::neopixel_css_mime, WebAssets::neopixel_css_gz, sizeof(WebAssets::neopixel_css_gz)));
     ws.addRoute(WEB_GET, "/assets/neopixel.js", Webserver::Asset(WebAssets::neopixel_js_mime, WebAssets::neopixel_js_gz, sizeof(WebAssets::neopixel_js_gz)));
     ws.addRoute(WEB_GET, "/neo", [this](WebRequest& q, WebResponse& r) { handlePage(q, r); });
@@ -742,6 +743,7 @@ void NeoPixelWeb::handlePage(WebRequest&, WebResponse& res)
     snprintf(v, sizeof(v), "?v=%lu", (unsigned long)BUILD_TIMESTAMP);
     std::string html;
     html.reserve(256);
+    html.append("<link rel='stylesheet' href='/assets/np-base.css").append(v).append("'>");
     html.append("<link rel='stylesheet' href='/assets/neopixel.css").append(v).append("'>");
     html.append("<div class='container neo' id='neo'></div><script src='/assets/neopixel.js").append(v).append("'></script>");
     res.setLayout(true);
