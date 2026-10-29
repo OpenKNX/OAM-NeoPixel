@@ -2190,6 +2190,12 @@ function Generate-ConflictDetectionJS {
     $portCountEntries += "$($hwCfg.DeviceIdBit): $($hwCfg.GPIOPorts.Count)"
   }
 
+  # Single-hardware builds leave HardwareSelection out of the calculation inputs; their only relay alias is RelayNHW0
+  $jsSingleHwIndex = ""
+  if ($HardwareConfigs.Count -eq 1) {
+    $jsSingleHwIndex = "  if (hwIndex === undefined) hwIndex = 0;`n"
+  }
+
   # Full JavaScript function with helper
   $fullJS = "`n// ============================================================================================================`n"
   $fullJS += "// HELPER: Copy a hardware-specific GPIO port selection into the shared (hidden) port parameter.`n"
@@ -2204,14 +2210,16 @@ function Generate-ConflictDetectionJS {
   $fullJS += "`n"
   $fullJS += "// ============================================================================================================`n"
   $fullJS += "// HELPER: RESOLVE RELAY PORT`n"
-  $fullJS += "// Resolves relay port from shared param (RelayNPort) or hardware-specific fallback (RelayNHWx)`n"
+  $fullJS += "// The device receives the per-hardware parameter (RelayNHW<index>, same byte as the shared RelayNPort).`n"
+  $fullJS += "// The shared copy keeps the value of an earlier hardware after a hardware change, so it is only the`n"
+  $fullJS += "// fallback when no hardware is selected.`n"
   $fullJS += "// ============================================================================================================`n"
   $fullJS += "function NEO_ResolveRelayPort(input, hwSel, relayIdx) {`n"
-  $fullJS += "  var sharedPortParam = 'Relay' + relayIdx + 'Port';`n"
-  $fullJS += "  var hwSpecificParam = 'Relay' + relayIdx + 'HW' + hwSel;`n"
-  $fullJS += "  var port = toInt(input[sharedPortParam], -1);`n"
-  $fullJS += "  if (port === -1 || port === $GPIO_DUMMY_VALUE) {`n"
-  $fullJS += "    port = toInt(input[hwSpecificParam], $GPIO_DUMMY_VALUE);`n"
+  $fullJS += "  var hwIndex = (typeof hardwareIdMap !== 'undefined') ? hardwareIdMap[hwSel] : undefined;`n"
+  $fullJS += $jsSingleHwIndex
+  $fullJS += "  var port = toInt(input['Relay' + relayIdx + 'HW' + hwIndex], -1);`n"
+  $fullJS += "  if (port < 0) {`n"
+  $fullJS += "    port = toInt(input['Relay' + relayIdx + 'Port'], $GPIO_DUMMY_VALUE);`n"
   $fullJS += "  }`n"
   $fullJS += "  return port;`n"
   $fullJS += "}`n"
