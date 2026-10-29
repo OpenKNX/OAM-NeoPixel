@@ -23,7 +23,8 @@
 .np-meter > s { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--np-faint); border-radius: 1px; opacity: .8 }
 .np-meter.lg { width: 140px }
 
-.np-pane[hidden], .np-editor[hidden] { display: none !important }
+/* hidden must win over display: flex of band, tabs and panes (unconfigured device hides band and tabs). */
+.neo [hidden] { display: none !important }
 
 /* Cards and stages. */
 .np-stage { display: block; width: 100%; background: var(--np-stage) }
