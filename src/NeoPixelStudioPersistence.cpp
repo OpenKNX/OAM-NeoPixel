@@ -234,7 +234,7 @@ void NeoPixelStudio::invalidateSaved()
             LittleFS.remove(savedPath(i).c_str());
     }
     #endif
-    if (_module._sceneManager) _module._sceneManager->resetCache();
+    // The scene cache stays: the flash save follows, the ETS scene signature decides at the next start
     _etsExport.clear();
 }
 

@@ -44,7 +44,20 @@ void SceneManager::restoreEtsScenes(uint8_t channel)
     if (channel < _cache.size()) _cache[channel] = readEtsCache(channel);
 }
 
-void SceneManager::resetCache() { _cache.clear(); }
+uint32_t SceneManager::etsSignature(uint8_t channel)
+{
+    if (channel >= 16) return 0;
+    if (_etsSignatureTaken & (1u << channel)) return _etsSignature[channel];
+    const uint16_t base = NEO_ParamBlockOffset + channel * NEO_ParamBlockSize;
+    uint32_t signature = 2166136261u;
+    signature = (signature ^ ((knx.paramByte(base + SCENE_COUNT_OFFSET) >> 4) & 15)) * 16777619u;
+    for (uint16_t byte = 0; byte < MAX_SCENES * SCENE_SIZE; ++byte)
+        signature = (signature ^ knx.paramByte(base + SCENE_DATA_START + byte)) * 16777619u;
+    _etsSignature[channel] = signature;
+    _etsSignatureTaken |= 1u << channel;
+    return signature;
+}
+
 uint8_t SceneManager::getSceneCount(uint8_t channel)
 {
     ensureCache(channel);

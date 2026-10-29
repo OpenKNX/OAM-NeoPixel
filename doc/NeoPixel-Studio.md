@@ -122,8 +122,10 @@ segments whose ETS startup policy is **Last state**. ETS defaults remain authori
 for other startup policies. Newer automatic runtime saves take precedence over older
 Studio visual snapshots. A configured startup EM keeps its normal higher priority.
 
-An ETS parameter download invalidates the learned scenes and all Studio saves, including
-an identical download. Segment and relay states ("Letzter Zustand") are kept. A filesystem invalidation marker prevents stale
+An ETS parameter download invalidates all Studio saves, including an identical download.
+Segment and relay states ("Letzter Zustand") are kept. Learned and Studio-edited scenes
+(also unsaved edits) are kept while the ETS scenes of their segment are unchanged;
+otherwise the ETS scenes apply. A filesystem invalidation marker prevents stale
 snapshots from being reused. A changed segment parameter hash also rejects old imports.
 
 On the segment's main ETS page, below Beschreibung:

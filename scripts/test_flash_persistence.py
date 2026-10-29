@@ -76,6 +76,9 @@ struct Em {
 };
 class SceneManager {
 public:
+    static constexpr uint8_t MAX_SCENES = 10, SCENE_SIZE = 36;
+    uint32_t signature = 7;
+    uint32_t etsSignature(size_t) const { return signature; }
     std::vector<uint8_t> scenes{0};
     std::vector<uint8_t> exportScenes(size_t) { return scenes; }
     bool importScenes(size_t,const uint8_t* data,size_t length) { scenes.assign(data,data+length);return true; }
@@ -144,7 +147,7 @@ static State snapshot(bool globalOn, uint8_t segmentOn, uint8_t brightness, bool
     NeoPixelFlashPersistence persistence(&module);
     openknx.flash.bytes.clear();
     persistence.writeToFlash();
-    assert(openknx.flash.bytes.size() == sizeof(State) + 3 + 6 + 366);
+    assert(openknx.flash.bytes.size() == sizeof(State) + 3 + 6 + 370);
     State state;
     memcpy(&state, openknx.flash.bytes.data(), sizeof(state));
     assert(state.brightness == brightness); // retain level for subsequent power-on
@@ -232,16 +235,56 @@ int main(int argc, char** argv) {
         assert(persistence.hasSceneSnapshot() && scenes.scenes.size()==37 && scenes.scenes[0]==1);
         assert(cfg.savedSecondaryR==10 && cfg.savedSecondaryCW==50);
         assert(seg.secondary[0]==10 && seg.secondary[4]==50);
-        // ETS download: segment state, relay state and secondary colour survive, the learned scenes do not
-        persistence.invalidateScenesForEtsDownload();
+        // ETS download without scene changes: the learned scenes stay
         openknx.flash.bytes.clear();persistence.writeToFlash();
-        State kept;memcpy(&kept,openknx.flash.bytes.data(),sizeof(kept));assert(kept.validFlags!=0 && kept.brightness==120);
-        assert(openknx.flash.bytes[sizeof(State)+2]==0xA5); // relay signature
+        const auto unchanged=openknx.flash.bytes;
+        assert(unchanged[sizeof(State)+2]==0xA5); // relay signature
         scenes.scenes={0};
-        seg.setSecondaryColor(0,0,0,0,0);
-        persistence.readFromFlash(openknx.flash.bytes.data(),openknx.flash.bytes.size());
-        assert(!persistence.hasSceneSnapshot() && scenes.scenes.size()==1);
-        assert(seg.secondary[0]==10 && seg.secondary[4]==50);
+        persistence.readFromFlash(unchanged.data(),unchanged.size());
+        assert(persistence.hasSceneSnapshot() && scenes.scenes.size()==37 && scenes.scenes[12]==120);
+        // ETS scenes changed: the ETS scenes apply, segment state and secondary colour stay
+        scenes.signature=8;scenes.scenes={0};
+        seg.setSecondaryColor(0,0,0,0,0);cfg.savedBrightness=0;
+        persistence.readFromFlash(unchanged.data(),unchanged.size());
+        assert(persistence.hasSceneSnapshot() && scenes.scenes.size()==1);
+        assert(cfg.savedBrightness==120 && seg.secondary[0]==10 && seg.secondary[4]==50);
+        // v1 extension (no signature): imported unless written during an ETS download (header byte 5)
+        std::vector<uint8_t> v1(unchanged.begin(),unchanged.begin()+sizeof(State)+3);
+        const uint8_t header[6]={'N','S','C',1,1,0};
+        v1.insert(v1.end(),header,header+6);
+        v1.insert(v1.end(),unchanged.begin()+sizeof(State)+3+6,unchanged.begin()+sizeof(State)+3+6+5);
+        v1.insert(v1.end(),unchanged.begin()+sizeof(State)+3+6+9,unchanged.end());
+        assert(v1.size()==sizeof(State)+3+6+366);
+        scenes.scenes={0};
+        persistence.readFromFlash(v1.data(),v1.size());
+        assert(persistence.hasSceneSnapshot() && scenes.scenes.size()==37 && scenes.scenes[12]==120);
+        // v1 written during an ETS download: empty extension, the secondary colour must not become 0
+        v1[sizeof(State)+3+5]=1;for(int b=0;b<5;++b) v1[sizeof(State)+3+6+b]=0;scenes.scenes={0};
+        persistence.readFromFlash(v1.data(),v1.size());
+        assert(!persistence.hasSceneSnapshot() && scenes.scenes.size()==1 && seg.secondary[0]==10 && cfg.savedSecondaryR==10);
+        // Corrupt header: nothing restored, warning
+        auto bad=unchanged;bad[sizeof(State)+3+3]=9;cfg.savedBrightness=0;scenes.scenes={0};seg.setSecondaryColor(0,0,0,0,0);
+        persistence.readFromFlash(bad.data(),bad.size());
+        assert(cfg.savedBrightness==0 && scenes.scenes.size()==1 && seg.secondary[0]==0);
+    } else if (test == "scene-extension-two-segments") {
+        // The second segment's extension starts one v2 record (370 bytes) after the first
+        NeoPixelBusModule module;
+        Segment seg[2];
+        module.segments.resize(2);
+        for (int i=0;i<2;++i){module.segments[i].segment=&seg[i];module.segments[i].savedValid=true;}
+        SceneManager scenes;scenes.scenes.resize(37);scenes.scenes[0]=1;scenes.scenes[12]=77;
+        module._sceneManager=&scenes;
+        seg[0].setSecondaryColor(1,2,3,4,5);seg[1].setSecondaryColor(6,7,8,9,10);
+        NeoPixelFlashPersistence persistence(&module);
+        openknx.flash.bytes.clear();persistence.writeToFlash();
+        const auto saved=openknx.flash.bytes;
+        assert(saved.size()==2*sizeof(State)+3+6+2*370);
+        const size_t second=2*sizeof(State)+3+6+370;
+        assert(saved[second]==6 && saved[second+4]==10 && saved[second+9]==1 && saved[second+9+12]==77);
+        behavior[0]=2;behavior[1]=2;
+        seg[0].setSecondaryColor(0,0,0,0,0);seg[1].setSecondaryColor(0,0,0,0,0);
+        persistence.readFromFlash(saved.data(),saved.size());
+        assert(seg[0].secondary[0]==1 && seg[1].secondary[0]==6 && seg[1].secondary[4]==10);
     } else { assert(false && "unknown test"); }
     std::cout << test << " passed\n";
 }
@@ -266,7 +309,8 @@ def verify(source=None):
                             "-fno-omit-frame-pointer", *mode,
                             str(path / "production.cpp"), str(path / "test.cpp"),
                             "-o", str(path / "test")], check=True)
-            for case in ("segment-off", "global-off", "on-and-dark", "startup-matrix", "solid-off-roundtrip", "scene-extension"):
+            for case in ("segment-off", "global-off", "on-and-dark", "startup-matrix", "solid-off-roundtrip", "scene-extension",
+                         "scene-extension-two-segments"):
                 subprocess.run([str(path / "test"), case], check=True)
 
 

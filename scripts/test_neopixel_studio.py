@@ -94,7 +94,6 @@ struct NeoPixelBusModule {
         uint8_t getSceneCount(size_t) { return 1; }
         std::vector<uint8_t> exportScenes(size_t) { return bytes; }
         bool importScenes(size_t,const uint8_t* data,size_t length) { bytes.assign(data,data+length); return true; }
-        void resetCache() { bytes={0}; }
         void restoreEtsScenes(size_t) { bytes={1,42}; }
         bool addScene(size_t,Segment*) { return true; } bool deleteScene(size_t,uint8_t) { return true; }
         bool storeScene(size_t,uint8_t,Segment*) { return true; } bool recallScene(size_t,uint8_t,Segment*) { return true; }
