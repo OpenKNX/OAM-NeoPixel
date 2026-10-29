@@ -6,6 +6,7 @@ Der GPIO-Pin, der für die Datenübertragung zu den LEDs verwendet wird. Bei PWM
 
 - Geben Sie die GPIO-Nummer ein (z.B. 16 für GPIO16)
 - Der Pin muss als Ausgang konfigurierbar sein
+- Ohne Auswahl („Wählen Sie bitte ein Port aus“) bleibt der Streifen aus; „Manuell“ verwendet den GPIO aus dem Feld darunter
 - Vermeiden Sie Pins, die für andere Funktionen reserviert sind
 - Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion) oder seine Status-LEDs benutzt, lehnt die Firmware ab: der Streifen bleibt dann aus (Log: „REFUSED“)
 

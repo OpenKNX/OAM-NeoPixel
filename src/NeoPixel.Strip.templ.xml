@@ -11,29 +11,23 @@
               <!-- Strip Name -->
               <Parameter Id="%AID%_P-%TT%9%C%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <!-- Strip Parameters -->
-              <Union SizeInBit="192">
+              <Union SizeInBit="200">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
                 <!-- Byte 0: 0..7 (8b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%030" Offset="0" BitOffset="0" Name="NEO%C%LEDType" ParameterType="%AID%_PT-NEOLedType" Text="LED Typ" Value="0"/>
-                <!-- Byte 1: 0..3 (4b), 4..6 (3b) -->
+                <!-- Byte 1: 0..3 (4b) colour order, 4..6 (3b) swap, 7 (1b) off refresh -->
                 <Parameter Id="%AID%_UP-%TT%9%C%031" Offset="1" BitOffset="0" Name="NEO%C%ColourOrder" ParameterType="%AID%_PT-NEOColourOrder" Text="LED Farbordnung" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%032" Offset="1" BitOffset="4" Name="NEO%C%Swap" ParameterType="%AID%_PT-NEOSwap" Text="Kanal-Tausch" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%075" Offset="1" BitOffset="7" Name="NEO%C%OffRefresh" ParameterType="%AID%_PT-Boolean" Text="Auffrischen im Aus-Zustand" Value="0"/>
                 <!-- Byte 2: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%033" Offset="2" BitOffset="0" Name="NEO%C%DataGPIO" ParameterType="%AID%_PT-NEODataGPIO" Text="Daten GPIO" Value="6"/>
-                <!-- Byte 2: Bit 7 frei -->
-                <!-- Byte 3: 0..5 (6b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%034" Offset="3" BitOffset="0" Name="NEO%C%ClockGPIO" ParameterType="%AID%_PT-NEOSPICLKGPIO" Text="Clock GPIO" Value="2"/>
+                <!-- Byte 2: Bit 7 = WhiteMode (below) -->
+                <!-- Byte 3: hardware Clock Port (8b, NeoPixel.Hardware.templ.xml) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%073" Offset="4" BitOffset="6" Name="NEO%C%SignalPolarity" ParameterType="%AID%_PT-NEOSignalPolarity" Text="Signal-Polarität" Value="0"/>
-                <!-- Byte 4: 0..5 (6b) -->
+                <!-- Byte 4: 0..5 (6b) MOSI GPIO, 6..7 (2b) signal polarity -->
                 <Parameter Id="%AID%_UP-%TT%9%C%035" Offset="4" BitOffset="0" Name="NEO%C%SPIMOSIGPIO" ParameterType="%AID%_PT-NEOSPIMOSIGPIO" Text="Daten GPIO" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%074" Offset="2" BitOffset="7" Name="NEO%C%WhiteMode" ParameterType="%AID%_PT-NEOWhiteMode" Text="Weiß-Berechnung" Value="0"/>
-                <!-- Byte 5: 0..2 (3b) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%036" Offset="5" BitOffset="0" Name="NEO%C%SPICLK" ParameterType="%AID%_PT-NEOSPICLK" Text="SPI Clock" Value="0"/>
-                <!-- Byte 5: Bit 3 = SPI Clock Mode -->
-                <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="5" BitOffset="3" Name="NEO%C%SPICLKMode" ParameterType="%AID%_PT-SPIClockMode" Text="SPI Takt" Value="0"/>
-                <!-- Byte 5: Bit 4 = GPIO manuell -->
-                <Parameter Id="%AID%_UP-%TT%9%C%071" Offset="5" BitOffset="4" Name="NEO%C%GPIOManual" ParameterType="%AID%_PT-Boolean" Text="GPIO manuell konfigurieren" Value="0"/>
+                <!-- Byte 5: hardware Data Port (8b, NeoPixel.Hardware.templ.xml); 0-9 = port, 10 = manual, 15 = not selected -->
                 
                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
                      HARDWARE GPIO PARAMETERS (from Hardware.templ.xml)
@@ -77,8 +71,11 @@
                 <!-- Byte 22: -->
                 <Parameter Id="%AID%_UP-%TT%9%C%069" Offset="22" BitOffset="0" Name="NEO%C%WhiteBalanceBlue" ParameterType="%AID%_PT-NEOPercent" Text="Weißabgleich Blau (%)" Value="100"/>
                 
-                <!-- Byte 23: Manual Clock GPIO Pin (when hardware="Manuell" for SPI) -->
-                <Parameter Id="%AID%_UP-%TT%9%C%233" Offset="23" BitOffset="0" Name="NEO%C%ClockGPIOManual" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Clock GPIO Pin" Value="255"/>
+                <!-- Byte 23: 0..5 (6b) = manual Clock GPIO (Clock Port "Manuell"); own byte, the Clock Port uses byte 3 -->
+                <Parameter Id="%AID%_UP-%TT%9%C%034" Offset="23" BitOffset="0" Name="NEO%C%ClockGPIO" ParameterType="%AID%_PT-NEOSPICLKGPIO" Text="Clock GPIO" Value="2"/>
+                <!-- Byte 24: 0..2 (3b) = SPI Clock, Bit 3 = SPI Clock Mode; own byte, the Data Port uses byte 5 -->
+                <Parameter Id="%AID%_UP-%TT%9%C%036" Offset="24" BitOffset="0" Name="NEO%C%SPICLK" ParameterType="%AID%_PT-NEOSPICLK" Text="SPI Clock" Value="0"/>
+                <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="24" BitOffset="3" Name="NEO%C%SPICLKMode" ParameterType="%AID%_PT-SPIClockMode" Text="SPI Takt" Value="0"/>
                 
                 <!-- NOTE: GPIO Conflict Parameters live in Share.xml (namespace 00, parameters 00091-00096, 00117-00122)
                      They are directly referenced in the UI via ParameterRefRef - NO Strip-specific parameters needed! -->
@@ -94,7 +91,6 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%033_R-%TT%9%C%03301" RefId="%AID%_UP-%TT%9%C%033" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%034_R-%TT%9%C%03401" RefId="%AID%_UP-%TT%9%C%034" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%035_R-%TT%9%C%03501" RefId="%AID%_UP-%TT%9%C%035" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%233_R-%TT%9%C%23301" RefId="%AID%_UP-%TT%9%C%233" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%036_R-%TT%9%C%03601" RefId="%AID%_UP-%TT%9%C%036" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%037_R-%TT%9%C%03701" RefId="%AID%_UP-%TT%9%C%037" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%038_R-%TT%9%C%03801" RefId="%AID%_UP-%TT%9%C%038" />
@@ -114,7 +110,6 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%068_R-%TT%9%C%06801" RefId="%AID%_UP-%TT%9%C%068" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%069_R-%TT%9%C%06901" RefId="%AID%_UP-%TT%9%C%069" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%070_R-%TT%9%C%07001" RefId="%AID%_UP-%TT%9%C%070" />
-              <ParameterRef Id="%AID%_UP-%TT%9%C%071_R-%TT%9%C%07101" RefId="%AID%_UP-%TT%9%C%071" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%072_R-%TT%9%C%07201" RefId="%AID%_UP-%TT%9%C%072" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%073_R-%TT%9%C%07301" RefId="%AID%_UP-%TT%9%C%073" />
               <ParameterRef Id="%AID%_UP-%TT%9%C%074_R-%TT%9%C%07401" RefId="%AID%_UP-%TT%9%C%074" />

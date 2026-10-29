@@ -3569,32 +3569,6 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // Track used GPIO pins to avoid conflicts
     std::vector<uint8_t> usedPins;
 
-// Available GPIO pins in order (PIN1-PIN8)
-#if defined(OKNXHW_OPENKNXIAO_RP2040_V1_COMMON)
-    const uint8_t availablePins[] = {
-        KNXIAO_RP2040_PIN1, KNXIAO_RP2040_PIN2, KNXIAO_RP2040_PIN3, KNXIAO_RP2040_PIN4,
-        KNXIAO_RP2040_PIN5, KNXIAO_RP2040_PIN6, KNXIAO_RP2040_PIN7, KNXIAO_RP2040_PIN8};
-#elif defined(OKNXHW_OPENKNXIAO_ESP32S3_V1_COMMON)
-    const uint8_t availablePins[] = {
-        KNXIAO_ESP32S3_PIN1, KNXIAO_ESP32S3_PIN2, KNXIAO_ESP32S3_PIN3, KNXIAO_ESP32S3_PIN4,
-        KNXIAO_ESP32S3_PIN5, KNXIAO_ESP32S3_PIN6, KNXIAO_ESP32S3_PIN7, KNXIAO_ESP32S3_PIN8};
-#else
-    const uint8_t availablePins[] = {27, 28, 29, 6, 7, 2, 4, 3}; // Fallback
-#endif
-    const uint8_t numAvailablePins = sizeof(availablePins) / sizeof(availablePins[0]);
-    uint8_t nextPinIndex = 0; // Index into availablePins array
-
-    // Helper lambda to get next available pin(s)
-    auto getNextPin = [&](uint8_t count = 1) -> bool {
-        // Check if we have enough pins available
-        if (nextPinIndex + count > numAvailablePins)
-        {
-            return false; // Not enough pins
-        }
-        nextPinIndex += count;
-        return true;
-    };
-
     // Helper lambda to check if a pin is already used
     auto isPinUsed = [&usedPins](uint8_t pin) {
         return std::find(usedPins.begin(), usedPins.end(), pin) != usedPins.end();
@@ -3657,6 +3631,30 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
         if ((int)(NEOPIX_LED_POWER_PIN) >= 0 && (int)(NEOPIX_LED_POWER_PIN) <= 255 && pin == (uint8_t)(NEOPIX_LED_POWER_PIN)) return true;
 #endif
         return false;
+    };
+
+    // GPIO of one strip signal from its ETS port selection (0-9 port, 10 manual, else not selected);
+    // 255 = no GPIO, the strip stays off. log = false for the pre-scan, which runs before the build.
+    auto resolveStripGpio = [&](uint8_t stripIdx, const char* signal, uint8_t portSelection, uint8_t manualGpio, bool log) -> uint8_t {
+        switch (classifyPortSelection(portSelection))
+        {
+            case PortSelectionKind::Manual:
+                return manualGpio;
+            case PortSelectionKind::HardwarePort:
+            {
+                if (_hwConfigMismatch)
+                {
+                    if (log) logErrorP("Strip %d: %s port ignored - hardware mismatch, select the GPIO manually", stripIdx, signal);
+                    return 255;
+                }
+                const uint8_t gpio = mapPortIndexToGpio(portSelection);
+                if (gpio == 255 && log) logErrorP("Strip %d: %s port %d does not exist on this hardware", stripIdx, signal, portSelection + 1);
+                return gpio;
+            }
+            default:
+                if (log) logWarningP("Strip %d: no %s port selected in ETS (value %d) - strip disabled", stripIdx, signal, portSelection);
+                return 255;
+        }
     };
 
     // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
@@ -3831,9 +3829,9 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
 
-    // PRE-SCAN: Mark all manually configured GPIO pins as used BEFORE auto-allocation starts
-    // This prevents auto-allocation from using pins that are manually configured on other strips
-    logInfoP("Pre-scanning %d strips for manual GPIO configurations...", maxStrips);
+    // PRE-SCAN: mark the GPIOs of all strips (hardware port or manual) as used before any strip is built,
+    // so a pin conflict between strips is reported
+    logInfoP("Pre-scanning %d strips for their GPIOs...", maxStrips);
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         // CRITICAL: Set module _channelIndex so ParamNEOSTRIP_* macros read from correct strip
@@ -3853,112 +3851,33 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = StripConfiguration::mapProtocol(ledTypeParam);
-        const bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
-
-        if (gpioManualConfig)
-        {
-            if (isSpiProtocol(proto))
+        // Reserve the strip's GPIOs (hardware port or manual) before any strip is built
+        auto preMark = [&](const char* signal, uint8_t gpio) {
+            if (gpio == 255) return;
+            if (!isPinUsed(gpio))
             {
-                // SPI protocols need 2 pins - read from manual GPIO parameters
-                uint8_t mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
-                uint8_t sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
-
-                if (!isPinUsed(sckGpio))
-                {
-                    usedPins.push_back(sckGpio);
-                    logInfoP("Strip %d: Pre-marked manual SCK GPIO %d as used", i, sckGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual SCK GPIO %d already marked as used!", i, sckGpio);
-                }
-
-                if (!isPinUsed(mosiGpio))
-                {
-                    usedPins.push_back(mosiGpio);
-                    logInfoP("Strip %d: Pre-marked manual MOSI GPIO %d as used", i, mosiGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual MOSI GPIO %d already marked as used!", i, mosiGpio);
-                }
+                usedPins.push_back(gpio);
+                logInfoP("Strip %d: Pre-marked %s GPIO %d as used", i, signal, gpio);
             }
             else
             {
-                // 1-Wire protocols need 1 pin - read from manual GPIO parameter
-                const uint8_t dataGpio = (uint8_t)ParamNEOSTRIP_NEODataGPIO;
-
-                if (!isPinUsed(dataGpio))
-                {
-                    usedPins.push_back(dataGpio);
-                    logInfoP("Strip %d: Pre-marked manual Data GPIO %d as used", i, dataGpio);
-                }
-                else
-                {
-                    logWarningP("Strip %d: Manual Data GPIO %d already marked as used!", i, dataGpio);
-                }
+                logWarningP("Strip %d: %s GPIO %d already marked as used!", i, signal, gpio);
             }
+        };
+        const uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
+        if (isSpiProtocol(proto))
+        {
+            preMark("SCK", resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false));
+            preMark("MOSI", resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, false));
         }
         else
         {
-            // Hardware-assisted mode: Get GPIO from hardware-specific port selection
-            // CRITICAL: Ignore hardware port config if there's a hardware mismatch!
-            if (_hwConfigMismatch)
-            {
-                logErrorP("Strip %d: Hardware mismatch detected - ignoring hardware port selection", i);
-                // Don't pre-mark any hardware ports, force manual configuration
-            }
-            else
-            {
-                uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
-
-                if (isHardwarePortSelected(dataPortSelection))
-                {
-                    uint8_t dataGpio = mapPortIndexToGpio(dataPortSelection);
-
-                    if (dataGpio != 255) // Valid GPIO
-                    {
-                        if (!isPinUsed(dataGpio))
-                        {
-                            usedPins.push_back(dataGpio);
-                            logInfoP("Strip %d: Pre-marked hardware Data GPIO %d (port %d) as used", i, dataGpio, dataPortSelection);
-                        }
-                        else
-                        {
-                            logErrorP("Strip %d: Hardware Data GPIO %d (port %d) already marked as used!", i, dataGpio, dataPortSelection);
-                        }
-
-                        // For SPI protocols, also mark clock GPIO
-                        if (isSpiProtocol(proto))
-                        {
-                            uint8_t clockPortSelection = getClockPortSelectionForHardwareIndex(i);
-
-                            if (isHardwarePortSelected(clockPortSelection))
-                            {
-                                uint8_t sckGpio = mapPortIndexToGpio(clockPortSelection);
-
-                                if (sckGpio != 255) // Valid GPIO
-                                {
-                                    if (!isPinUsed(sckGpio))
-                                    {
-                                        usedPins.push_back(sckGpio);
-                                        logInfoP("Strip %d: Pre-marked hardware SCK GPIO %d (port %d) as used", i, sckGpio, clockPortSelection);
-                                    }
-                                    else
-                                    {
-                                        logErrorP("Strip %d: Hardware SCK GPIO %d (port %d) already marked as used!", i, sckGpio, clockPortSelection);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            preMark("Data", resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEODataGPIO, false));
         }
     }
-    logInfoP("Pre-scan complete: %d manual GPIO pins marked as used", (int)usedPins.size());
+    logInfoP("Pre-scan complete: %d GPIO pins marked as used", (int)usedPins.size());
 
-    // 2) Create all physical strips in configuration order (auto-allocation will skip pre-marked pins)
+    // 2) Create all physical strips in configuration order
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
         // Set channel index for strip parameter access
@@ -4011,88 +3930,18 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
         {
             uint8_t mosiGpio, sckGpio;
 
-            // Check if manual GPIO configuration is enabled
-            bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
-
             if (physicalOnly && _livePinKnown[i])
             {
                 mosiGpio = _liveDataPins[i];
                 sckGpio = _liveClockPins[i];
             }
-            else if (gpioManualConfig)
-            {
-                // Use ETS configured GPIO pins (already pre-marked as used during pre-scan)
-                mosiGpio = (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO;
-                sckGpio = (uint8_t)ParamNEOSTRIP_NEOClockGPIO;
-            }
             else
             {
-                // Hardware-assisted mode: Use hardware-specific port mapping
-                // CRITICAL: Block hardware port usage if there's a hardware mismatch!
-                if (_hwConfigMismatch)
-                {
-                    logErrorP("Strip %d: Hardware mismatch - cannot use hardware ports! Please configure GPIO manually.", i);
-                    continue; // Skip this strip completely
-                }
-
-                uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
-                uint8_t clockPortSelection = getClockPortSelectionForHardwareIndex(i);
-
-                if (isHardwarePortSelected(dataPortSelection) && isHardwarePortSelected(clockPortSelection))
-                {
-                    // Map port indices to actual GPIO numbers
-                    mosiGpio = mapPortIndexToGpio(dataPortSelection);
-                    sckGpio = mapPortIndexToGpio(clockPortSelection);
-
-                    if (mosiGpio == 255 || sckGpio == 255)
-                    {
-                        logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d, clock:%d->%d)",
-                                  i, dataPortSelection, mosiGpio, clockPortSelection, sckGpio);
-                        // Fallback to automatic allocation
-                        mosiGpio = 19;
-                        sckGpio = 18;
-                    }
-                    else
-                    {
-                        logInfoP("Strip %d: Using hardware ports (MOSI:%d, SCK:%d)", i, mosiGpio, sckGpio);
-                    }
-                }
-                else
-                {
-                    // Fallback to automatic pin allocation if hardware ports not selected
-                    logWarningP("Strip %d: No hardware ports selected, using automatic allocation", i);
-
-                    bool foundPins = false;
-                    while (nextPinIndex + 1 < numAvailablePins)
-                    {
-                        sckGpio = availablePins[nextPinIndex];
-                        mosiGpio = availablePins[nextPinIndex + 1];
-
-                        // Check if both pins are free and not reserved
-                        if (!isPinUsed(sckGpio) && !isPinUsed(mosiGpio) && !isReservedPin(sckGpio) && !isReservedPin(mosiGpio))
-                        {
-                            foundPins = true;
-                            // Mark pins as used immediately
-                            usedPins.push_back(sckGpio);
-                            usedPins.push_back(mosiGpio);
-                            nextPinIndex += 2; // Consume both pins
-                            break;
-                        }
-                        // If conflict, skip to next pin and try again
-                        nextPinIndex++;
-                    }
-
-                    if (!foundPins)
-                    {
-                        logErrorP("Strip %d: No available GPIO pins for SPI strip!", i);
-                        // Fallback to last resort pins
-                        sckGpio = 18;
-                        mosiGpio = 19;
-                        // Mark fallback pins as used
-                        usedPins.push_back(sckGpio);
-                        usedPins.push_back(mosiGpio);
-                    }
-                }
+                // Data Port -> MOSI, Clock Port -> SCK; each "Manuell" uses its own manual GPIO parameter
+                mosiGpio = resolveStripGpio(i, "data", getDataPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, true);
+                sckGpio = resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, true);
+                if (mosiGpio == 255 || sckGpio == 255) continue; // strip stays off, logged above
+                logInfoP("Strip %d: SPI pins MOSI:%d, SCK:%d", i, mosiGpio, sckGpio);
             }
 
             // Read SPI frequency from ETS (if manual config enabled)
@@ -4173,82 +4022,19 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
                      i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
-                     spiFrequency, gpioManualConfig ? " (Manual)" : " (Auto)");
+                     spiFrequency, classifyPortSelection(getDataPortSelectionForHardwareIndex(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
         }
         else
         {
             // 1-Wire protocols use Data GPIO
             uint8_t dataGpioPin;
 
-            // Check if manual GPIO configuration is enabled
-            bool gpioManualConfig = (bool)ParamNEOSTRIP_NEOGPIOManual;
-
             if (physicalOnly && _livePinKnown[i]) dataGpioPin = _liveDataPins[i];
-            else if (gpioManualConfig)
-            {
-                // Use ETS configured GPIO pin (already pre-marked as used during pre-scan)
-                dataGpioPin = dataGpio;
-            }
             else
             {
-                // Hardware-assisted mode: Use hardware-specific port mapping
-                // CRITICAL: Block hardware port usage if there's a hardware mismatch!
-                if (_hwConfigMismatch)
-                {
-                    logErrorP("Strip %d: Hardware mismatch - cannot use hardware ports! Please configure GPIO manually.", i);
-                    continue; // Skip this strip completely
-                }
-
-                uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
-
-                if (isHardwarePortSelected(dataPortSelection))
-                {
-                    // Map port index to actual GPIO number
-                    dataGpioPin = mapPortIndexToGpio(dataPortSelection);
-
-                    if (dataGpioPin == 255)
-                    {
-                        logErrorP("Strip %d: Invalid hardware port mapping (data:%d->%d)",
-                                  i, dataPortSelection, dataGpioPin);
-                        // Fallback to automatic allocation
-                        dataGpioPin = dataGpio;
-                    }
-                    else
-                    {
-                        logInfoP("Strip %d: Using hardware port (Data:%d)", i, dataGpioPin);
-                    }
-                }
-                else
-                {
-                    // Fallback to automatic pin allocation if hardware port not selected
-                    logWarningP("Strip %d: No hardware port selected, using automatic allocation", i);
-
-                    bool foundPin = false;
-                    while (nextPinIndex < numAvailablePins)
-                    {
-                        dataGpioPin = availablePins[nextPinIndex];
-
-                        // Check if pin is free and not reserved
-                        if (!isPinUsed(dataGpioPin) && !isReservedPin(dataGpioPin))
-                        {
-                            foundPin = true;
-                            // Mark pin as used immediately
-                            usedPins.push_back(dataGpioPin);
-                            nextPinIndex++; // Consume this pin
-                            break;
-                        }
-                        // If conflict, skip to next pin
-                        nextPinIndex++;
-                    }
-
-                    if (!foundPin)
-                    {
-                        logErrorP("Strip %d: No available GPIO pins for 1-Wire strip!", i);
-                        // Fallback to ETS parameter
-                        dataGpioPin = dataGpio;
-                        usedPins.push_back(dataGpioPin);
-                    }
-                }
+                dataGpioPin = resolveStripGpio(i, "data", getDataPortSelectionForHardwareIndex(i), dataGpio, true);
+                if (dataGpioPin == 255) continue; // strip stays off, logged above
+                logInfoP("Strip %d: Data GPIO %d", i, dataGpioPin);
             }
 
             // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
@@ -4262,7 +4048,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             phys = _neoPixel.addStrip(dataGpioPin, pixels, proto, order);
             logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s",
                      i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
-                     gpioManualConfig ? " (Manual)" : " (Auto)");
+                     classifyPortSelection(getDataPortSelectionForHardwareIndex(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
             if (phys)
             {
                 auto* cfg = phys->getConfig();
@@ -6033,64 +5819,39 @@ void NeoPixelBusModule::debugShowConfiguration()
         const char* colorOrderName = (colorOrderParam < 30) ? colorOrderNames[colorOrderParam] : "Unknown";
         logInfoP("  │    Color Order:      %d (%s)", colorOrderParam, colorOrderName);
 
-        // GPIO Configuration Mode
-        bool gpioManual = (bool)ParamNEOSTRIP_NEOGPIOManual;
-        logInfoP("  │    GPIO Mode:        %s", gpioManual ? "Manual" : "Hardware-assisted");
-
-        if (gpioManual)
-        {
-            // Manual mode: show configured pins
-            if (isSpiProtocol(strip->getProtocol()))
+        // GPIO selection per signal: ETS port value 0-9 = hardware port, 10 = manual GPIO, else not selected
+        auto showPort = [&](const char* label, uint8_t portSelection, uint8_t manualGpio) {
+            switch (classifyPortSelection(portSelection))
             {
-                logInfoP("  │      MOSI GPIO:      %d", (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO);
-                logInfoP("  │      SCK GPIO:       %d", (uint8_t)ParamNEOSTRIP_NEOClockGPIO);
-
-                // SPI Frequency
-                bool spiClkManual = (ParamNEOSTRIP_NEOSPICLKMode == 1);
-                if (spiClkManual)
-                {
-                    uint8_t spiClkValue = (uint8_t)ParamNEOSTRIP_NEOSPICLK;
-                    const char* spiFreqNames[] = {"1 MHz", "2 MHz", "4 MHz", "8 MHz", "12 MHz", "16 MHz", "20 MHz"};
-                    const char* spiFreqName = (spiClkValue < 7) ? spiFreqNames[spiClkValue] : "Unknown";
-                    logInfoP("  │      SPI Frequency:  %d (%s)", spiClkValue, spiFreqName);
-                }
-                else
-                {
-                    logInfoP("  │      SPI Frequency:  Auto (10 MHz)");
-                }
+                case PortSelectionKind::HardwarePort:
+                    logInfoP("  │    %-18s port %d -> GPIO %d", label, portSelection + 1, mapPortIndexToGpio(portSelection));
+                    break;
+                case PortSelectionKind::Manual:
+                    logInfoP("  │    %-18s manual GPIO %d", label, manualGpio);
+                    break;
+                default:
+                    logInfoP("  │    %-18s not selected (value %d)", label, portSelection);
+                    break;
+            }
+        };
+        if (isSpiProtocol(strip->getProtocol()))
+        {
+            showPort("Data (MOSI):", getDataPortSelectionForHardwareIndex(_channelIndex), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO);
+            showPort("Clock (SCK):", getClockPortSelectionForHardwareIndex(_channelIndex), (uint8_t)ParamNEOSTRIP_NEOClockGPIO);
+            if (ParamNEOSTRIP_NEOSPICLKMode == 1)
+            {
+                const uint8_t spiClkValue = (uint8_t)ParamNEOSTRIP_NEOSPICLK;
+                const char* spiFreqNames[] = {"1 MHz", "2 MHz", "4 MHz", "8 MHz", "12 MHz", "16 MHz", "20 MHz"};
+                logInfoP("  │    SPI Frequency:    %d (%s)", spiClkValue, spiClkValue < 7 ? spiFreqNames[spiClkValue] : "10 MHz");
             }
             else
             {
-                logInfoP("  │      Data GPIO:      %d", (uint8_t)ParamNEOSTRIP_NEODataGPIO);
+                logInfoP("  │    SPI Frequency:    Auto (10 MHz)");
             }
         }
         else
         {
-            // Hardware-assisted mode: show port selection
-            uint8_t hwIndex = getCurrentHardwareIndex();
-            uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i, hwIndex);
-
-            if (isHardwarePortSelected(dataPortSelection))
-            {
-                logInfoP("  │      Data Port:      %d (ETS selection)", dataPortSelection);
-            }
-            else
-            {
-                logInfoP("  │      Data Port:      Auto (not selected in ETS)");
-            }
-
-            if (isSpiProtocol(strip->getProtocol()))
-            {
-                uint8_t clockPortSelection = getClockPortSelectionForHardwareIndex(i, hwIndex);
-                if (isHardwarePortSelected(clockPortSelection))
-                {
-                    logInfoP("  │      Clock Port:     %d (ETS selection)", clockPortSelection);
-                }
-                else
-                {
-                    logInfoP("  │      Clock Port:     Auto (not selected in ETS)");
-                }
-            }
+            showPort("Data:", getDataPortSelectionForHardwareIndex(_channelIndex), (uint8_t)ParamNEOSTRIP_NEODataGPIO);
         }
 
         // Timing (bitrate): ETS value -> kHz, from the single persisted-value mapping.

@@ -259,7 +259,7 @@ inline uint8_t getCurrentHardwareIndex()
  * - 10: Manual GPIO configuration
  * - 0-9: Hardware-specific port index (maps to actual GPIO via platformio.hardware.ini)
  *
- * @param stripIndex Strip index (1-based, as used in knxprod.h macros)
+ * @param stripIndex Strip index (0-based, the _channelIndex of the knxprod.h macros)
  * @param hardwareIndex Hardware index (0-based), if 255 (default) uses current hardware
  * @return Port-selection value for the selected hardware
  */
@@ -441,7 +441,7 @@ inline uint8_t getDataPortSelectionForHardwareIndex(uint8_t stripIndex, uint8_t 
  * SPI-style LED protocols. The returned value is a port-selection code, not a
  * hardware index.
  *
- * @param stripIndex Strip index (1-based, as used in knxprod.h macros)
+ * @param stripIndex Strip index (0-based, the _channelIndex of the knxprod.h macros)
  * @param hardwareIndex Hardware index (0-based), if 255 (default) uses current hardware
  * @return Port-selection value for the selected hardware clock pin
  */
@@ -683,59 +683,22 @@ inline bool isHardwarePortSelected(uint8_t portSelection)
     return portSelection <= MAX_HARDWARE_PORT_INDEX;
 }
 
-/**
- * @brief Get actual GPIO number for data port
- *
- * High-level function that:
- * 1. Checks if manual mode is enabled
- * 2. If not manual, reads hardware-specific port index
- * 3. Maps port index to actual GPIO number
- *
- * @param stripIndex Strip index (1-based)
- * @param manualGpio Manual GPIO number (from ParamNEOSTRIP_NEODataGPIO)
- * @param isManual Manual mode flag (from ParamNEOSTRIP_NEOGPIOManual)
- * @return Actual GPIO pin number
- */
-inline uint8_t getActualDataGpio(uint8_t stripIndex, uint8_t manualGpio, bool isManual)
+/// What a strip port selection value (ETS "Daten Port" / "Clock Port") selects
+enum class PortSelectionKind : uint8_t
 {
-    if (isManual)
-    {
-        return manualGpio;
-    }
-
-    uint8_t portIndex = getDataPortSelectionForHardwareIndex(stripIndex);
-    if (isHardwarePortSelected(portIndex))
-    {
-        return mapPortIndexToGpio(portIndex);
-    }
-
-    // Fallback to manual GPIO if hardware port not properly selected
-    return manualGpio;
-}
+    HardwarePort, ///< 0-9: port of this hardware (mapPortIndexToGpio)
+    Manual,       ///< 10: the manual GPIO parameter of the strip
+    NotSelected   ///< 15 ("please select") or any other value
+};
 
 /**
- * @brief Get actual GPIO number for clock port (SPI only)
+ * @brief Classify a strip port selection value
  *
- * Similar to getActualDataGpio but for clock pins.
- *
- * @param stripIndex Strip index (1-based)
- * @param manualGpio Manual GPIO number (from ParamNEOSTRIP_NEOClockGPIO)
- * @param isManual Manual mode flag (from ParamNEOSTRIP_NEOGPIOManual)
- * @return Actual GPIO pin number
+ * The value alone decides; no other parameter shares its byte.
  */
-inline uint8_t getActualClockGpio(uint8_t stripIndex, uint8_t manualGpio, bool isManual)
+inline PortSelectionKind classifyPortSelection(uint8_t portSelection)
 {
-    if (isManual)
-    {
-        return manualGpio;
-    }
-
-    uint8_t portIndex = getClockPortSelectionForHardwareIndex(stripIndex);
-    if (isHardwarePortSelected(portIndex))
-    {
-        return mapPortIndexToGpio(portIndex);
-    }
-
-    // Fallback to manual GPIO if hardware port not properly selected
-    return manualGpio;
+    if (portSelection <= MAX_HARDWARE_PORT_INDEX) return PortSelectionKind::HardwarePort;
+    if (portSelection == MANUAL_GPIO_PORT_SELECTION) return PortSelectionKind::Manual;
+    return PortSelectionKind::NotSelected;
 }

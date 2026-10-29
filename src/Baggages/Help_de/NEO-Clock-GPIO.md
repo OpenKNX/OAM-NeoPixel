@@ -23,6 +23,7 @@ Der GPIO-Pin für das Clock-Signal bei SPI-basierten LEDs (APA102, SK9822). Nur 
 **Wichtig:**
 
 - Clock und Daten-GPIO müssen zum gleichen SPI-Controller gehören
+- Ohne Auswahl des Clock-Ports bleibt der SPI-Streifen aus; „Manuell“ verwendet den Clock-GPIO aus dem Feld darunter
 - Kurze, gleichlange Leitungen für Clock und Daten verwenden
 - Clock-Signal ist kritisch für SPI-LED Funktion
 - Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion) oder seine Status-LEDs benutzt, lehnt die Firmware ab; der Streifen bleibt dann aus (Log: „REFUSED“)

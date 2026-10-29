@@ -9,8 +9,8 @@
   <op:nowarn id="3" regex="NEO_ResetClockGPIOOnLedTypeChange_Impl" />
   <!-- Suppress intended Union-Integrity overlaps for UI-limited selectors and hardware-specific GPIO unions -->
   <op:nowarn id="10" regex="Parameter NEO_VirtualStripPos[1-7](_[1-7])?" />
-  <op:nowarn id="10" regex="Parameter NEO_(NEOExternalRelay[1-4]Port|NEORelay[1-4]GPIOPortHW(10|11|[0-9]))" />
-  <op:nowarn id="10" regex="Parameter NEOSTRIP_NEO[1-8](GPIO(Data|Clock)PortHW(10|11|[0-9])|SPICLK|SPICLKMode|GPIOManual|ClockGPIO)" />
+  <op:nowarn id="10" regex="Parameter NEO_(NEOExternalRelay[1-4]Port|NEORelay[1-4]GPIOPortHW\d+)" />
+  <op:nowarn id="10" regex="Parameter NEOSTRIP_NEO[1-8]GPIO(Data|Clock)PortHW\d+" />
   <!-- Typed cue params overlay the generic cue slot bytes and intentionally default to 0 (full-byte, matching the runtime read), so a value below the type MinInclusive is expected here. -->
   <op:nowarn id="4" regex="Parameter NEOEM_NEOEM\d+Cue\d+" />
 

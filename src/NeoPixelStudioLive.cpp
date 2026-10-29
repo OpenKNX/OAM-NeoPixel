@@ -104,7 +104,7 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
         _module.updateHclTransformContext();
         return true;
     };
-    // Retain the pins actually selected at boot, including automatic allocation.
+    // Retain the pins actually selected at boot.
     // Disabling another strip must never move an existing output to another pin.
     for (size_t i = 0; i < _module._physicalStrips.size(); ++i)
     {
