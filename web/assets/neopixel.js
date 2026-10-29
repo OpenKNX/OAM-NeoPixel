@@ -1099,6 +1099,9 @@
   sc = fromState(EMPTY, []);
   render();
   qa('.np-pane').forEach(foldApply);
+  // Loading overlay (base.css) until the first snapshot; until then a failed request is repeated even with polling off.
+  var ld = document.createElement('div'); ld.className = 'ld'; ld.textContent = 'Lade Daten …';
+  (document.querySelector('main') || document.body).appendChild(ld);
   livePoll();
   pixPoll();
 
@@ -1106,6 +1109,7 @@
   function liveSig(L) { return [L.segs.length, L.strips.length, L.bar.layout, L.emCount, L.chain ? L.chain.seg : -1, L.segs.map(function (s) { return s.a + '-' + s.b + ':' + s.geo.join('x'); }).join(',')].join('|'); }
   var ctlHtml = '';
   function onState(j) {
+    if (ld) { ld.remove(); ld = null; }
     LIVE.rxAt = performance.now(); LIVE.ok = 1; LIVE.err = '';
     if (j.unconf) { // no configuration loaded: hint only, nothing to show or control
       var was = LIVE.unconf; LIVE.unconf = j; LIVE.st = null; LIVE.sig = ''; LIVE.pend = {};
@@ -1154,7 +1158,7 @@
       if (j.busy) { wait = 300; LIVE.err = 'Gerät beschäftigt, erneut versuchen …'; renderMode(); return; }
       if (j.pending) { wait = 300; return; }
       onState(j);
-    }).catch(function () { LIVE.ok = 0; LIVE.err = 'keine Verbindung'; renderMode(); }).then(function () { if (wait) pollT = setTimeout(livePoll, wait); });
+    }).catch(function () { LIVE.ok = 0; LIVE.err = 'keine Verbindung'; renderMode(); if (ld) { wait = 1500; ld.textContent = 'Keine Verbindung, neuer Versuch …'; } }).then(function () { if (wait) pollT = setTimeout(livePoll, wait); });
   }
   function pixPoll() { // LED image while a tab with LEDs is open
     if (LIVE.unconf || document.hidden || !refresh || !/setup|ctl|chain/.test(tab)) { setTimeout(pixPoll, 500); return; }
