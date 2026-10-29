@@ -438,6 +438,8 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     // Flash persistence handler
     class NeoPixelFlashPersistence* _flashPersistence;
+    bool _sceneSavePending = false; ///< KO-learned scene not yet in flash: save once the write protection allows
+    uint32_t _sceneLearnLastWrite = 0; ///< openknx.flash.lastWrite() at the learn; a change means it was saved
 
     // Power monitoring for KO updates
     unsigned long _lastPowerMonitoringMs = 0;   // Last time power stats were sent

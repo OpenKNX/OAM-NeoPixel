@@ -316,6 +316,23 @@ void NeoPixelBusModule::loop(bool configured)
 
         // Process relay timers for delayed on/off switching
         processRelayTimers();
+
+        // KO-learned scenes live in RAM until a flash save: a regular save as soon as the write
+        // protection of OGM-Common allows it (same condition as Flash::Default::save), none if
+        // another save (cyclic, save object, ...) has run since the learn
+        if (_sceneSavePending)
+        {
+            const uint32_t lastWrite = openknx.flash.lastWrite();
+            if (lastWrite != _sceneLearnLastWrite)
+            {
+                _sceneSavePending = false;
+            }
+            else if (lastWrite == 0 || delayCheck(lastWrite, FLASH_DATA_WRITE_LIMIT))
+            {
+                _sceneSavePending = false;
+                openknx.flash.save();
+            }
+        }
     }
 
     // Do not render the ETS startup defaults before flash persistence has restored the
@@ -2194,10 +2211,17 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                 if (learn)
                 {
                     // Store current segment state into the scene slot
+                    const SceneManager::SceneData before = _sceneManager->sceneData(channel, sceneNumber);
                     bool stored = _sceneManager->storeScene(channel, sceneNumber, targetSegment);
                     if (stored)
                     {
                         logInfoP("Segment %d: Scene %d stored successfully", channel, sceneNumber);
+                        // An unchanged scene needs no flash write (a cyclic learn telegram)
+                        if (_sceneManager->sceneData(channel, sceneNumber) != before && !_sceneSavePending)
+                        {
+                            _sceneSavePending = true;
+                            _sceneLearnLastWrite = openknx.flash.lastWrite();
+                        }
                     }
                     else
                     {

@@ -108,7 +108,9 @@ but a scene or ETS-importable save requires text to fit its 14-byte ETS field.
 Scene edits and KNX scene learning use an OAM-owned cache, never the downloaded
 KNX parameter table. Bounds are checked before cache imports. Regular module flash
 saves include the cache and secondary colours in a versioned extension; old 14-byte
-segment records remain readable.
+segment records remain readable. After a KNX scene learn the module requests a regular
+save as soon as the OpenKNX 3-minute write protection allows it, unless another save
+ran since the learn, so learned scenes survive a power loss.
 
 ## Save, restart and ETS synchronization
 
