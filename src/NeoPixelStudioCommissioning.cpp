@@ -77,7 +77,7 @@ std::string NeoPixelStudio::stopTest()
 
 void NeoPixelStudio::tickTest(uint32_t now)
 {
-    if (_testSegment >= 0 && (int32_t(now - _testUntil) >= 0 || !_module._globalPowerOn || _module._segments[_testSegment].locked))
+    if (_testSegment >= 0 && (int32_t(now - _pageSeen.load()) >= int32_t(TEST_KEEPALIVE_MS) || !_module._globalPowerOn || _module._segments[_testSegment].locked))
     {
         _error = stopTest();
         _refresh.store(true);
@@ -122,14 +122,22 @@ std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc
     if (pattern != "red" && pattern != "green" && pattern != "blue" && pattern != "white" && pattern != "warm" && pattern != "cool" && pattern != "chase" && pattern != "cycle") return "Unknown test pattern";
 
     if (getTypeFromEffect(getEffectFromType(effect)) != effect) return "Test effect is not compiled into this firmware";
-    if (!_testRestore.empty())
+    // A new pattern or level on the segment already under test applies directly: the pre-test state stays saved
+    // (Stop still returns to it) and is not restored in between, which would flash it and send KNX status twice.
+    const bool restart = !_testRestore.empty() && _testSegment == int(index);
+    std::string previous, error;
+    if (restart)
+        previous.swap(_testRestore); // the batch below stops a test it finds running
+    else
     {
-        const std::string error = stopTest();
+        if (!_testRestore.empty())
+        {
+            error = stopTest();
+            if (!error.empty()) return error;
+        }
+        previous = exportSegment(index, false, error);
         if (!error.empty()) return error;
     }
-    std::string error;
-    const std::string previous = exportSegment(index, false, error);
-    if (!error.empty()) return error;
     Writer batch;
     batch.beginObject().field("segment", uint32_t(index + 1)).field("action", "batch").key("value").beginArray();
     auto item = [&](const char* action, uint32_t n) {
@@ -160,12 +168,20 @@ std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc
     item("power", 1);
     batch.endArray().endObject();
     error = apply(batch.str());
-    if (!error.empty()) return error;
+    if (!error.empty())
+    {
+        if (restart)
+        {
+            _testRestore = previous; // back to the pre-test state, not to a half-applied test
+            stopTest();
+        }
+        return error;
+    }
     _testRestore = previous;
     _testSegment = index;
     _testPattern = pattern;
     _module.updateHclTransformContext();
-    _testUntil = millis() + 60000;
+    _pageSeen.store(millis());
     return {};
 }
 #endif

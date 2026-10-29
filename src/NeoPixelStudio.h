@@ -44,9 +44,9 @@ class NeoPixelStudio
     int _testSegment = -1;
     std::string _testPattern;
     bool transformTestPixel(uint16_t pixel, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* ww, uint8_t* cw);
-    uint32_t _testUntil = 0;
-    /** @brief Time of the last Studio state request (0 = none since boot): keeps the change push active (WATCH_MS). */
+    /** @brief Time of the last Studio state request: keeps a running LED test alive (TEST_KEEPALIVE_MS) and the change push active (WATCH_MS). */
     std::atomic<uint32_t> _pageSeen{0};
+    static constexpr uint32_t TEST_KEEPALIVE_MS = 60000;
     static constexpr uint32_t WATCH_MS = 30000;
     /** @brief Hash of the last published state and the change counter pushed as "studio:<rev>" on the UI socket. */
     uint32_t _stateHash = 0, _rev = 0;

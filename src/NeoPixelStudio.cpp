@@ -117,7 +117,7 @@ void NeoPixelStudio::setup(bool configured)
             }
             _requestedSegment.store(id);
         }
-        _pageSeen.store(millis()); // keeps the change push alive while the page is open
+        _pageSeen.store(millis()); // keeps a running LED test and the change push alive while the page is open
         _refresh.store(true);
         if (_guard.exchange(1, std::memory_order_acquire))
         {
@@ -503,6 +503,7 @@ std::string NeoPixelStudio::snapshot()
         json.beginObject().field("id", uint32_t(i + 1)).field("locked", cfg.locked);
         const bool details = selected == i + 1;
         json.field("detailsLoaded", details).field("testing", _testSegment == int(i));
+        if (_testSegment == int(i)) json.field("testPattern", _testPattern);
         if (details) {
             json.field("commissioningPending", commissioning(i) != commissioning(i, true));
             json.field("commissioningApplied", commissioning(i) == commissioning(i, false, true));
