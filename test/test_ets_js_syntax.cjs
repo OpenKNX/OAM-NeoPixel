@@ -1,4 +1,4 @@
-// Run: node --expose-internals scripts/test_ets_js_syntax.cjs [script.js ...]
+// Run: node --expose-internals test/test_ets_js_syntax.cjs [script.js ...]
 // Uses Acorn bundled with Node.js, or an installed acorn package.
 const fs = require('node:fs');
 const path = require('node:path');

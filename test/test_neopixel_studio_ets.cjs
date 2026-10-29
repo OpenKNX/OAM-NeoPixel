@@ -1,4 +1,4 @@
-// Run with Node.js: node scripts/test_neopixel_studio_ets.cjs
+// Run with Node.js: node test/test_neopixel_studio_ets.cjs
 // Executes the production ETS functions with an in-memory device and paged online transport.
 const fs = require('node:fs');
 const path = require('node:path');

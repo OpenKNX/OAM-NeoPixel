@@ -128,7 +128,8 @@ Studio visual snapshots. A configured startup EM keeps its normal higher priorit
 An ETS parameter download invalidates all Studio saves, including an identical download.
 Segment and relay states ("Letzter Zustand") are kept. Learned and Studio-edited scenes
 (also unsaved edits) are kept while the ETS scenes of their segment are unchanged;
-otherwise the ETS scenes apply. A filesystem invalidation marker prevents stale
+otherwise the ETS scenes apply.
+A filesystem invalidation marker prevents stale
 snapshots from being reused. A changed segment parameter hash also rejects old imports.
 
 On the segment's main ETS page, below Beschreibung:
@@ -203,7 +204,7 @@ The generated ETS/C++ mappings share effect IDs and parameter ordering.
 ## Local preview and validation
 
 ```sh
-python3 scripts/preview_neopixel_studio.py
+python3 test/preview_neopixel_studio.py
 ```
 
 Open <http://127.0.0.1:8765/neopixel>. The dependency-free server binds to loopback and
@@ -222,15 +223,15 @@ are detected without assuming that `typeof` returns `function`.
 Check syntax and the simulated legacy runtime with Node.js:
 
 ```sh
-node --expose-internals scripts/test_ets_js_syntax.cjs
-node scripts/test_neopixel_studio_ets.cjs
+node --expose-internals test/test_ets_js_syntax.cjs
+node test/test_neopixel_studio_ets.cjs
 ```
 
 The syntax check uses Acorn bundled with Node.js (or an installed `acorn` package).
 For an actual Windows JScript engine check, run this from the project directory:
 
 ```bat
-cscript //nologo scripts\test_neopixel_studio_ets_wsh.js
+cscript //nologo test\test_neopixel_studio_ets_wsh.js
 ```
 
 The Windows smoke test loads the production script as UTF-8 and checks import,
@@ -241,11 +242,11 @@ An optional first argument selects a generated `NeoPixel.script.js` file to test
 Host checks:
 
 ```sh
-python3 scripts/test_neopixel_studio.py
-python3 scripts/test_neopixel_scenes.py
-python3 scripts/test_neopixel_studio_persistence.py
-python3 scripts/test_flash_persistence.py
-node scripts/test_neopixel_studio_ets.cjs
+python3 test/test_neopixel_studio.py
+python3 test/test_neopixel_scenes.py
+python3 test/test_neopixel_studio_persistence.py
+python3 test/test_flash_persistence.py
+node test/test_neopixel_studio_ets.cjs
 ```
 
 C++ host checks run production handlers against hardware doubles under ASan/UBSan.

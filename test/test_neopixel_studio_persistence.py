@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-STUBS = runpy.run_path(str(ROOT / 'scripts/test_neopixel_studio.py'))['STUBS']
+STUBS = runpy.run_path(str(ROOT / 'test/test_neopixel_studio.py'))['STUBS']
 STUBS = STUBS[:STUBS.index('struct NeoPixelStudio {')]
 STUBS = STUBS.replace('char effectText[241] = {};', 'char effectText[241] = "Hello";')
 STUBS = STUBS.replace('    void setParameter(Segment*, uint8_t, uint32_t);',

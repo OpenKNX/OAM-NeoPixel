@@ -1,5 +1,5 @@
 // Native Windows Active Scripting smoke test (ES3 syntax, ASCII source).
-// Run from the project: cscript //nologo scripts\test_neopixel_studio_ets_wsh.js
+// Run from the project: cscript //nologo test\test_neopixel_studio_ets_wsh.js
 // Optional first argument: path to a generated NeoPixel.script.js.
 var neoSource;
 if (typeof NEO_TestSource === 'string') {
