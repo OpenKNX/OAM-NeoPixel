@@ -391,10 +391,10 @@ void NeoPixelWeb::mapStrips()
     NeoPixelBusModule& m = openknxNeoPixelModule;
     memset(_stripChannel, 0xFF, sizeof(_stripChannel));
     memset(_stripTiming, 0, sizeof(_stripTiming));
-    const size_t count = std::min(m._physicalStrips.size(), m._physicalStripChannel.size());
+    const size_t count = std::min(m._physicalStrips.size(), m._physicalStripEtsIds.size());
     for (size_t k = 0; k < count && k < kMaxStrips; k++)
     {
-        const uint8_t _channelIndex = m._physicalStripChannel[k]; // read by the ParamNEOSTRIP_* macros; the module's index stays untouched
+        const uint8_t _channelIndex = m._physicalStripEtsIds[k]; // read by the ParamNEOSTRIP_* macros; the module's index stays untouched
         if (!m._physicalStrips[k] || _channelIndex >= NEOPIXEL_MAX_PHYSICAL_STRIPS) continue;
         _stripChannel[k] = _channelIndex;
         _stripTiming[k] = NeoPixelTimingSelection::sanitize((uint8_t)ParamNEOSTRIP_NEOTiming & 0x0F);

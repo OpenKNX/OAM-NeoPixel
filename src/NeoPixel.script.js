@@ -258,7 +258,7 @@ function NEO_UpdateVirtualStripStartIndices(input, output, context) {
                 " ist mehrfach zugeordnet (Position " + firstPos +
                 " und Position " + secondPos + ").";
 
-      if (context && typeof context.addInfo === "function") {
+      if (NEO_hasHostMethod(context, "addInfo")) {
         context.addInfo(msg);
       } else {
         info("WARNUNG: " + msg);
@@ -378,7 +378,7 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
   for (var i = 1; i <= numSeg; i++) {
     if (start[i] > 0 && end[i] > 0 && start[i] > end[i]) {
       hasError = 1;
-      if (context && typeof context.addInfo === "function") {
+      if (NEO_hasHostMethod(context, "addInfo")) {
         context.addInfo("Segment " + i + ": Start LED (" + start[i] +
                         ") ist größer als Ende LED (" + end[i] + ").");
       } else {
@@ -498,3 +498,381 @@ var NEO_SceneEffectDefaults = {};
 // BEGIN AUTO-GENERATED: Scene Effect Defaults Function
 function NEO_SetSceneEffectDefaults(input, output, context) { }
 // END AUTO-GENERATED: Scene Effect Defaults Function
+
+// Active Scripting exposes callable COM methods as object/unknown as well as function.
+function NEO_hasHostMethod(object, name) {
+    if (!object) return false;
+    try {
+        var type = typeof object[name];
+        return type === "function" || type === "unknown" ||
+            (type === "object" && object[name] !== null);
+    } catch (error) { return false; }
+}
+
+// ETS parameter scripts can run without ES5's JSON object or Array helpers.
+// Parse the device's bounded JSON response without evaluating executable script.
+function NEO_parseStudioJson(text) {
+    var at = 0, depth = 0;
+    function fail() { throw new Error("NeoPixel: Ungültige Studio-JSON-Daten."); }
+    function space() { while (at < text.length && /[ \t\r\n]/.test(text.charAt(at))) at++; }
+    function string() {
+        if (text.charAt(at++) !== '"') fail();
+        var result = '';
+        while (at < text.length) {
+            var ch = text.charAt(at++);
+            if (ch === '"') return result;
+            if (ch === '\\') {
+                ch = text.charAt(at++);
+                var escapes = {'"':'"', '\\':'\\', '/':'/', b:'\b', f:'\f', n:'\n', r:'\r', t:'\t'};
+                if (ch === 'u') {
+                    var hex = text.substr(at, 4);
+                    if (!/^[0-9a-fA-F]{4}$/.test(hex)) fail();
+                    result += String.fromCharCode(parseInt(hex, 16)); at += 4;
+                } else if (Object.prototype.hasOwnProperty.call(escapes, ch)) result += escapes[ch];
+                else fail();
+            } else {
+                if (ch.charCodeAt(0) < 32) fail();
+                result += ch;
+            }
+        }
+        fail();
+    }
+    function value() {
+        space();
+        if (++depth > 32) fail();
+        var ch = text.charAt(at), result, key, match;
+        if (ch === '"') result = string();
+        else if (ch === '{') {
+            at++; result = {}; space();
+            if (text.charAt(at) !== '}') {
+                while (true) {
+                    space(); key = string(); space();
+                    if (key === '__proto__' || key === 'constructor' || key === 'prototype' || Object.prototype.hasOwnProperty.call(result, key)) fail();
+                    if (text.charAt(at++) !== ':') fail();
+                    result[key] = value(); space();
+                    if (text.charAt(at) !== ',') break;
+                    at++;
+                }
+            }
+            if (text.charAt(at++) !== '}') fail();
+        } else if (ch === '[') {
+            at++; result = []; space();
+            if (text.charAt(at) !== ']') {
+                while (true) {
+                    result.push(value()); space();
+                    if (text.charAt(at) !== ',') break;
+                    at++;
+                }
+            }
+            if (text.charAt(at++) !== ']') fail();
+        } else if (text.substr(at, 4) === 'true') { result = true; at += 4; }
+        else if (text.substr(at, 5) === 'false') { result = false; at += 5; }
+        else if (text.substr(at, 4) === 'null') { result = null; at += 4; }
+        else {
+            match = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/.exec(text.slice(at));
+            if (!match) fail();
+            result = Number(match[0]); at += match[0].length;
+            if (!isFinite(result)) fail();
+        }
+        depth--; return result;
+    }
+    var result = value(); space();
+    if (at !== text.length) fail();
+    return result;
+}
+
+function NEO_studioValueText(value) {
+    if (typeof value !== 'string') return String(value);
+    return '"' + value.replace(/["\\\x00-\x1f]/g, function(ch) {
+        if (ch === '"' || ch === '\\') return '\\' + ch;
+        return '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4);
+    }) + '"';
+}
+
+function NEO_studioContains(values, value) {
+    for (var i = 0; i < values.length; i++) if (values[i] === value) return true;
+    return false;
+}
+
+// Read one selected segment, including its scenes and the allowed commissioning fields.
+// Wrap page-local transport progress: the Common wrapper restarts its sequence counter
+// for every 42-byte page, which is not the progress of the complete Studio readback.
+function NEO_readStudioSettings(device, online, progress, context, source, progressStart, progressEnd) {
+    var segment = toInt(context && context.segment, 0);
+    if (segment < 1 || segment > 16) throw new Error("NeoPixel: Ungültiger Segmentkontext.");
+    var bytes = [], offset = 0, token = -1, total = 0, page = 1;
+    if (progressStart === undefined) progressStart = 0;
+    if (progressEnd === undefined) progressEnd = 95;
+    var label = "NeoPixel Segment " + segment + (source === 1 ? " · Studio-Speicherstand" : " · aktuelle Gerätewerte");
+    function showProgress() {
+        var count = total ? Math.ceil(total / 42) : 0;
+        progress.setText(label + ": Block " + page + (count ? "/" + count : "/?") +
+            " · " + offset + (total ? "/" + total : "") + " Bytes");
+        progress.setProgress(progressStart + (total ? Math.floor((progressEnd-progressStart)*offset/total) : 0));
+    }
+    var transferProgress = {
+        setText:function(text) { showProgress(); },
+        setProgress:function(value) { } // Page-local percentages must not reset overall progress.
+    };
+    online.connect();
+    try {
+        do {
+            page = Math.floor(offset / 42) + 1;
+            showProgress();
+            var response = BASE_invokeFunctionPropertyWrapper(158, 10,
+                [32, segment, source, (offset >> 8) & 255, offset & 255], device, online, transferProgress, 0, 100);
+            if (!response || response.length < 7 || response[0] !== 0 || response[1] !== 1)
+                throw new Error(source === 1 ? "NeoPixel: Kein gültiger Studio-Speicherstand. In Studio erneut speichern; nach einem ETS-Download ist der alte Stand ungültig." : "NeoPixel: Gerät unterstützt den Studio-Vergleich nicht oder ist noch nicht bereit.");
+            var nextToken = response[2] * 256 + response[3];
+            var nextTotal = response[4] * 256 + response[5];
+            if (offset === 0) { token = nextToken; total = nextTotal; }
+            if (token !== nextToken || total !== nextTotal || total < 1 || total > 8192 || offset + response.length - 6 > total)
+                throw new Error("NeoPixel: Segmentdaten haben sich während der Übertragung geändert. Erneut versuchen.");
+            bytes = bytes.concat(response.slice(6));
+            offset = bytes.length;
+            showProgress();
+        } while (offset < total);
+    } finally { online.disconnect(); }
+    var encoded = "";
+    for (var i = 0; i < bytes.length; i++) encoded += "%" + ("0" + bytes[i].toString(16)).slice(-2);
+    var settings = NEO_parseStudioJson(decodeURIComponent(encoded));
+    if (!settings || typeof settings !== "object" || settings.version !== 1 || settings.segment !== segment || !settings.parameters || !(settings.parameters instanceof Array))
+        throw new Error("NeoPixel: Unbekanntes Studio-Format.");
+    return settings;
+}
+
+function NEO_studioBindings(device, context, settings) {
+    var base = ["NEOEffectType", "SegmentStartupBrightness", "SegmentStartupColor", "SegmentStartupW", "SegmentStartupCW",
+        "SegmentStartupSeparateWhite", "SegmentStartupSecondaryColor", "SegmentStartupSecondaryWW", "SegmentStartupSecondaryCW"];
+    var effectNames = NEO_StudioEffectParameters[String(settings.effect)];
+    if (!effectNames) throw new Error("NeoPixel: Effekt ist dieser ETS-Applikation nicht bekannt. Applikation aktualisieren.");
+    var allowed = base.concat(effectNames), seen = {}, bindings = [];
+    var prefix = "NEO_NEO" + toInt(context.segment, 0);
+    if (settings.parameters.length !== allowed.length) throw new Error("NeoPixel: Unvollständige Studio-Parameterliste.");
+    for (var i = 0; i < settings.parameters.length; i++) {
+        var entry = settings.parameters[i];
+        if (!entry || !NEO_studioContains(allowed, entry.name) || seen[entry.name]) throw new Error("NeoPixel: Ungültige Studio-Parameterliste.");
+        seen[entry.name] = true;
+        if (typeof entry.value !== "number" && typeof entry.value !== "string") throw new Error("NeoPixel: Ungültiger Parameterwert.");
+        if (typeof entry.value === "number" && (entry.value < 0 || entry.value > 255 || Math.floor(entry.value) !== entry.value))
+            throw new Error("NeoPixel: Parameterwert außerhalb des Wertebereichs.");
+        if (entry.name === "SegmentStartupColor" || entry.name === "SegmentStartupSecondaryColor") {
+            if (typeof entry.value !== "string" || !/^#[0-9a-fA-F]{6}$/.test(entry.value)) throw new Error("NeoPixel: Ungültige RGB-Farbe.");
+        } else if (entry.name.indexOf("Text") >= 0) {
+            if (typeof entry.value !== "string") throw new Error("NeoPixel: Ungültiger Effekt-Text.");
+        } else if (typeof entry.value !== "number") throw new Error("NeoPixel: Numerischer Parameter erwartet.");
+        if (entry.name === "NEOEffectType" && entry.value !== settings.effect) throw new Error("NeoPixel: Widersprüchlicher Effekt.");
+        var parameter = device.getParameterByName(prefix + entry.name);
+        if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + prefix + entry.name + ". Applikation aktualisieren.");
+        bindings.push({ parameter: parameter, name: entry.name, value: entry.value });
+    }
+    var reducedEffect = device.getParameterByName(prefix + "NEOEffectTypeNo2D");
+    if (reducedEffect) bindings.push({parameter:reducedEffect, name:"NEOEffectTypeNo2D", value:settings.effect, compare:false});
+    return bindings.concat(NEO_studioSceneBindings(device, context, settings), NEO_studioCommissioningBindings(device, context, settings));
+}
+
+// Commissioning edits are a plan for the next ETS download, never writes to KNX tables.
+function NEO_studioCommissioningBindings(device, context, settings) {
+    var plan = settings.commissioning;
+    if (plan === undefined) return []; // compatibility with existing saved snapshots
+    function integer(value, low, high) { return typeof value === "number" && Math.floor(value) === value && value >= low && value <= high; }
+    if (!plan || !(plan.strips instanceof Array) || plan.strips.length < 1 || plan.strips.length > 8) throw new Error("NeoPixel: Ungültiger Inbetriebnahme-Entwurf.");
+    var bindings = [], total = 0;
+    function add(fullName, name, value) {
+        var parameter = device.getParameterByName(fullName);
+        if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + fullName);
+        bindings.push({parameter:parameter, name:name, value:value, commissioning:true});
+    }
+    for (var i = 0; i < plan.strips.length; i++) {
+        var strip = plan.strips[i];
+        if (!strip || strip.id !== i+1 || !integer(strip.length,0,16383) || !integer(strip.skip,0,(strip.length ? Math.min(255,strip.length-1) : 0))) throw new Error("NeoPixel: Ungültige LED-Anzahl oder übersprungene LEDs.");
+        total += strip.length;
+        add("NEOSTRIP_NEO"+strip.id+"Length", "Strip"+strip.id+"Length", strip.length);
+        add("NEOSTRIP_NEO"+strip.id+"SkipFirstLEDs", "Strip"+strip.id+"SkipFirstLEDs", strip.skip);
+    }
+    if (total>65535 || !integer(plan.start,1,Math.min(total,16383)) || !integer(plan.end,plan.start,Math.min(total,16383))) throw new Error("NeoPixel: Segmentbereich liegt außerhalb der Streifen.");
+    var prefix="NEO_NEO"+toInt(context.segment,0);
+    add(prefix+"SegmentStart","SegmentStart",plan.start); add(prefix+"SegmentEnd","SegmentEnd",plan.end);
+    return bindings;
+}
+
+function NEO_studioIsColor(name) {
+    return name === "SegmentStartupColor" || name === "SegmentStartupSecondaryColor" ||
+        /^Scene[A-J](Primary|Secondary)Color$/.test(name);
+}
+
+// ETS TypeColor may be a signed ARGB integer (red = -65536), not a #RRGGBB string.
+function NEO_studioRgb(value) {
+    var text = String(value);
+    if (/^#[0-9a-fA-F]{6}$/.test(text)) return text.toUpperCase();
+    if (/^#[0-9a-fA-F]{8}$/.test(text)) return '#' + text.slice(-6).toUpperCase();
+    if ((typeof value === "number" || /^-?[0-9]+$/.test(text)) && isFinite(Number(value)))
+        return '#' + ('000000' + (Number(value) & 0xFFFFFF).toString(16)).slice(-6).toUpperCase();
+    return text;
+}
+
+function NEO_studioEtsValue(binding) {
+    if (!NEO_studioIsColor(binding.name)) return binding.value;
+    var current = binding.parameter.value;
+    if (typeof current === "number") return parseInt(binding.value.slice(1), 16) | 0xFF000000;
+    if (/^-?[0-9]+$/.test(String(current))) return String(parseInt(binding.value.slice(1), 16) | 0xFF000000);
+    return binding.value;
+}
+
+function NEO_studioDifferences(device, context, settings, bindings, verifyImport) {
+    var different = [], prefix = "NEO_NEO" + toInt(context.segment, 0);
+    for (var i = 0; i < bindings.length; i++) {
+        var binding = bindings[i], actual = binding.parameter.value, expected = binding.value;
+        if (verifyImport ? binding.verify === false : binding.compare === false) continue;
+        if (binding.name === "SegmentStartupSeparateWhite" && !verifyImport) continue;
+        if (!verifyImport && settings.channels === 5 && !Number(device.getParameterByName(prefix + "SegmentStartupSeparateWhite").value)) {
+            var legacyWhite = Number(device.getParameterByName(prefix + "SegmentStartupW").value);
+            if (binding.name === "SegmentStartupW") actual = Math.floor(legacyWhite / 2);
+            if (binding.name === "SegmentStartupCW") actual = legacyWhite - Math.floor(legacyWhite / 2);
+        }
+        if (NEO_studioIsColor(binding.name)) {
+            actual = NEO_studioRgb(actual); expected = NEO_studioRgb(expected);
+        }
+        var equal = typeof expected === "number" ? Number(actual) === expected : String(actual) === String(expected);
+        if (!equal) different.push("- " + binding.name + ": ETS = " + NEO_studioValueText(actual) + (verifyImport ? "; Studio-Speicherstand = " : "; Gerät = ") + NEO_studioValueText(expected));
+    }
+    return different;
+}
+
+function NEO_studioReport(progress, report) {
+    progress.setProgress(100);
+    progress.setText(report);
+    // ETS task summaries can truncate multiline messages. Keep every difference
+    // as its own log record, with an index so missing lines are immediately visible.
+    if (typeof Log !== "undefined" && NEO_hasHostMethod(Log, "info")) {
+        var lines = report.split("\n");
+        for (var i = 0; i < lines.length; i++) {
+            try { Log.info("[" + (i+1) + "/" + lines.length + "] " + lines[i]); } catch (logError) { }
+        }
+    }
+}
+
+function NEO_studioCheckedCount(bindings) {
+    var count = 0;
+    for (var i = 0; i < bindings.length; i++) {
+        if (bindings[i].compare !== false && bindings[i].name !== "SegmentStartupSeparateWhite") count++;
+    }
+    return count;
+}
+
+function NEO_studioScope(context, bindings, settings) {
+    var fields = "Farben, Helligkeit, Effekt und alle aktuellen Effektparameter";
+    if (settings.scenes !== undefined) fields += ", Szenen";
+    if (settings.commissioning !== undefined) fields += ", LED-Konfiguration einschließlich gemeinsamer Streifendaten";
+    var report = "Nur Segment " + toInt(context.segment, 0) + ": " + NEO_studioCheckedCount(bindings) +
+        " Werte geprüft (" + fields + "). Live-Ein/Aus und LED-Tests ändern das ETS-Startverhalten nicht. Vollständige Liste: ETS-Protokoll.";
+    if (settings.scenes === undefined || settings.commissioning === undefined)
+        report += " Fehlende Daten im älteren Speicherstand/Geräteformat: " +
+            (settings.scenes === undefined ? "Szenen " : "") + (settings.commissioning === undefined ? "LED-Konfiguration " : "") +
+            "wurden nicht geprüft. Firmware aktualisieren und gegebenenfalls erneut speichern.";
+    return report;
+}
+
+function NEO_importStudioSettings(device, online, progress, context) {
+    progress.setText("NeoPixel: Lese gespeicherte Studio-Einstellungen...");
+    var settings = NEO_readStudioSettings(device, online, progress, context, 1, 0, 40);
+    progress.setText("NeoPixel: Übernehme und prüfe alle Studio-Werte in ETS...");
+    progress.setProgress(45);
+    var bindings = NEO_studioBindings(device, context, settings), previous = [];
+    // Resolve every target before changing anything. Verify what ETS actually accepted,
+    // including numeric TypeColor conversion, instead of reporting an unchecked success.
+    for (var i = 0; i < bindings.length; i++) previous.push(bindings[i].parameter.value);
+    try {
+        for (var j = 0; j < bindings.length; j++) bindings[j].parameter.value = NEO_studioEtsValue(bindings[j]);
+        var rejected = NEO_studioDifferences(device, context, settings, bindings, true);
+        if (rejected.length) throw new Error("NeoPixel: ETS hat diese Studio-Werte nicht übernommen:\n" + rejected.join("\n"));
+    } catch (error) {
+        for (var undo = bindings.length - 1; undo >= 0; undo--) {
+            try { bindings[undo].parameter.value = previous[undo]; } catch (ignored) { }
+        }
+        throw error;
+    }
+    var report = "Gespeicherte Studio-Werte in ETS übernommen und geprüft. Jetzt die ETS-Applikation in das Gerät laden.";
+    // A saved snapshot and current runtime are different sources. Report changes since
+    // Save explicitly, without silently substituting live values for the requested save.
+    try {
+        progress.setText("Studio-Import geprüft. Vergleiche mit aktuellen Gerätewerten...");
+        var live = NEO_readStudioSettings(device, online, progress, context, 0, 50, 95);
+        var changed = NEO_studioDifferences(device, context, live, NEO_studioBindings(device, context, live), false);
+        if (changed.length) report = "Gespeicherter Studio-Stand vollständig in ETS übernommen und geprüft. Der aktuelle Geräte-Stand weicht davon ab (" + changed.length + " Wert(e)):\n" + changed.join("\n") +
+            "\nFür aktuelle Änderungen erneut in Studio speichern und anschließend importieren. Der ETS-Download legt den dauerhaften Startzustand fest.";
+        else report = "Studio-Import geprüft: ETS, gespeicherter Studio-Stand und aktuelle Gerätewerte stimmen überein. Jetzt die ETS-Applikation in das Gerät laden.";
+    } catch (liveError) {
+        report += "\nAktueller Geräte-Stand konnte nicht geprüft werden: " + liveError.message;
+    }
+    NEO_studioReport(progress, report + "\n" + NEO_studioScope(context, bindings, settings));
+}
+
+function NEO_compareStudioSettings(device, online, progress, context) {
+    progress.setText("NeoPixel: Vergleiche ETS mit aktuellen Gerätewerten...");
+    var settings = NEO_readStudioSettings(device, online, progress, context, 0);
+    var bindings = NEO_studioBindings(device, context, settings);
+    var different = NEO_studioDifferences(device, context, settings, bindings, false);
+    var report = different.length ? "NeoPixel Segment " + toInt(context.segment, 0) + ": " + different.length + " abweichende Studio-Wert(e).\n" + different.join("\n")
+        : "Identisch: Alle geprüften Werte stimmen mit ETS überein.";
+    // Differences are a successful comparison result, not a parameter script failure.
+    NEO_studioReport(progress, report + "\n" + NEO_studioScope(context, bindings, settings));
+}
+
+// BEGIN AUTO-GENERATED: Studio ETS parameter names
+var NEO_StudioEffectParameters = {};
+// END AUTO-GENERATED: Studio ETS parameter names
+
+function NEO_studioSceneBindings(device, context, settings) {
+    if (settings.scenes === undefined) return [];
+    var data = settings.scenes;
+    if (!(data instanceof Array) || data.length < 1 || data[0] > 10 || data.length !== 1 + data[0] * 36) throw new Error("NeoPixel: Ungültige Szenendaten.");
+    for (var b = 0; b < data.length; b++) if (typeof data[b] !== 'number' || data[b] < 0 || data[b] > 255 || Math.floor(data[b]) !== data[b]) throw new Error("NeoPixel: Ungültiges Szenenbyte.");
+    var prefix = 'NEO_NEO' + toInt(context.segment, 0), bindings = [];
+    function add(name, value, optional) {
+        var parameter = device.getParameterByName(prefix + name);
+        if (!parameter) { if (optional) return null; throw new Error('NeoPixel: ETS-Szenenparameter fehlt: ' + prefix + name); }
+        bindings.push({parameter:parameter, name:name, value:value, compare:!optional});
+        return parameter;
+    }
+    function rgb(at) {
+        var result = '#';
+        for (var i = 0; i < 3; i++) result += ('0' + data[at+i].toString(16)).slice(-2);
+        return result.toUpperCase();
+    }
+    function latin(at) {
+        var special={164:8364,166:352,168:353,180:381,184:382,188:338,189:339,190:376}, result='';
+        for(var i=0;i<14 && data[at+i];i++) result+=String.fromCharCode(special[data[at+i]] || data[at+i]);
+        return result;
+    }
+    // Generic scene slots and their visible effect-specific ParameterRefs can
+    // contain different project values. Compare the visible alias; verify every
+    // value written during import, including its generic backing reference.
+    function activeAlias(parameter, value, effect) {
+        if (!parameter.parameterRefId || !NEO_hasHostMethod(device, 'getParameterById') || effect >= 200) return;
+        var suffix=String(effect+2); if(suffix.length<2)suffix='0'+suffix;
+        var alias=null;
+        try { alias=device.getParameterById(parameter.parameterRefId.slice(0,-2)+suffix); } catch(e) { }
+        if(alias) {
+            var original=bindings[bindings.length-1];
+            original.compare=false;
+            bindings.push({parameter:alias,name:original.name,value:value});
+        }
+    }
+    add('SceneCount', data[0]);
+    for (var scene=0;scene<data[0];scene++) {
+        var at=1+scene*36, name='Scene'+String.fromCharCode(65+scene), effect=data[at];
+        if (!NEO_StudioEffectParameters[String(effect)] && !(effect>=200 && effect<=215)) throw new Error('NeoPixel: Unbekannter Szeneneffekt.');
+        add(name+'EffectType',effect); add(name+'EffectTypeNo2D',effect,true);
+        add(name+'PrimaryColor',rgb(at+1)); add(name+'PrimaryWW',data[at+4]); add(name+'PrimaryCW',data[at+5]);
+        add(name+'SecondaryColor',rgb(at+6)); add(name+'SecondaryWW',data[at+9]); add(name+'SecondaryCW',data[at+10]);
+        add(name+'Brightness',data[at+11]);
+        var textParameter=add(name+'EffectText',latin(at+22));
+        activeAlias(textParameter,latin(at+22),effect);
+        for (var slot=0;slot<10;slot++) {
+            var parameter=add(name+'Slot'+slot,data[at+12+slot]);
+            activeAlias(parameter,data[at+12+slot],effect);
+        }
+    }
+    return bindings;
+}

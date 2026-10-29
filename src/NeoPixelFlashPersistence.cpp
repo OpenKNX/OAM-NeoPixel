@@ -27,6 +27,8 @@ uint16_t NeoPixelFlashPersistence::calculateFlashSize() const
         size += sizeof(RelayFlashState);
     }
 
+    size += 6 + numSegments * 366; // versioned secondary-colour and scene-cache extension
+
     logInfoP("Flash size calculated: %d bytes for %d segments", size, numSegments);
     return size;
 }
@@ -63,7 +65,7 @@ void NeoPixelFlashPersistence::writeToFlash()
     for (size_t i = 0; i < segments.size(); i++)
     {
         SegmentFlashState state;
-        if (saveSegmentState(i, state))
+        if (!_invalidated && saveSegmentState(i, state))
         {
             // Write state structure to flash (14 bytes)
             openknx.flash.write((uint8_t*)&state, sizeof(SegmentFlashState));
@@ -95,7 +97,7 @@ void NeoPixelFlashPersistence::writeToFlash()
         RelayFlashState relayState = {};
         relayState.count = _module->_relayCount;
         relayState.statesMask = 0;
-        relayState.signature = 0xA5;
+        relayState.signature = _invalidated ? 0 : 0xA5;
 
         uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
         if (!_module->_startupRestoreDone && _relayFlashValid)
@@ -119,6 +121,39 @@ void NeoPixelFlashPersistence::writeToFlash()
         }
 
         openknx.flash.write((uint8_t*)&relayState, sizeof(RelayFlashState));
+    }
+
+    uint8_t extension[6] = {'N', 'S', 'C', 1, uint8_t(segments.size()), uint8_t(_invalidated)};
+    openknx.flash.write(extension, sizeof(extension));
+    for (size_t i = 0; i < segments.size(); ++i)
+    {
+        const auto& cfg = segments[i];
+        uint8_t secondary[5] = {};
+        if (!_invalidated && cfg.segment)
+        {
+            const auto& c = cfg.segment->getConfig();
+            secondary[0] = c.r2();
+            secondary[1] = c.g2();
+            secondary[2] = c.b2();
+            secondary[3] = c.ww2();
+            secondary[4] = c.cw2();
+            if (cfg.emController.isRunning())
+            {
+                secondary[0] = cfg.savedSecondaryR;
+                secondary[1] = cfg.savedSecondaryG;
+                secondary[2] = cfg.savedSecondaryB;
+                secondary[3] = cfg.savedSecondaryWW;
+                secondary[4] = cfg.savedSecondaryCW;
+            }
+        }
+        openknx.flash.write(secondary, sizeof(secondary));
+        uint8_t scenes[361] = {};
+        if (!_invalidated && _module->_sceneManager)
+        {
+            const auto data = _module->_sceneManager->exportScenes(i);
+            if (data.size() <= sizeof(scenes)) memcpy(scenes, data.data(), data.size());
+        }
+        openknx.flash.write(scenes, sizeof(scenes));
     }
 
 #ifdef OPENKNX_DEBUG
@@ -163,7 +198,9 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     {
         expectedTotalSize += sizeof(RelayFlashState);
     }
-    if (size != expectedSegmentSize && size != expectedTotalSize)
+    const bool hasExtension = size == expectedTotalSize + 6 + segments.size() * 366;
+    if (hasExtension && (memcmp(data + expectedTotalSize, "NSC\1", 4) != 0 || data[expectedTotalSize + 4] != segments.size())) return;
+    if (size != expectedSegmentSize && size != expectedTotalSize && !hasExtension)
     {
         logWarningP("Flash size mismatch (%d B vs %d B for %d seg) - ignoring saved data, using ETS defaults",
                     size, expectedSegmentSize, (int)segments.size());
@@ -281,7 +318,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     }
 
 #ifdef OPENKNX_DEBUG
-    if (size == expectedTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
+    if ((size == expectedTotalSize || hasExtension) && NeoPixelBusModule::kMaxExternalRelays > 0)
     {
         RelayFlashState relayState;
         memcpy(&relayState, data + expectedSegmentSize, sizeof(RelayFlashState));
@@ -295,7 +332,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         _relayFlashValid = false;
     }
 #else
-    if (size == expectedTotalSize && NeoPixelBusModule::kMaxExternalRelays > 0)
+    if ((size == expectedTotalSize || hasExtension) && NeoPixelBusModule::kMaxExternalRelays > 0)
     {
         RelayFlashState relayState;
         memcpy(&relayState, data + expectedSegmentSize, sizeof(RelayFlashState));
@@ -307,6 +344,24 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
         _relayFlashValid = false;
     }
 #endif
+
+    _hasSceneSnapshot = hasExtension && data[expectedTotalSize + 5] == 0;
+    if (_hasSceneSnapshot)
+    {
+        for (size_t i = 0; i < segments.size(); ++i)
+        {
+            const uint8_t* extension = data + expectedTotalSize + 6 + i * 366;
+            auto& cfg = _module->getSegments()[i];
+            cfg.savedSecondaryR = extension[0];
+            cfg.savedSecondaryG = extension[1];
+            cfg.savedSecondaryB = extension[2];
+            cfg.savedSecondaryWW = extension[3];
+            cfg.savedSecondaryCW = extension[4];
+            if (cfg.segment && _module->effectiveStartupBehavior(i) == 1)
+                cfg.segment->setSecondaryColor(extension[0], extension[1], extension[2], extension[3], extension[4]);
+            if (_module->_sceneManager && extension[5] <= 10) _module->_sceneManager->importScenes(i, extension + 5, 1 + extension[5] * 36);
+        }
+    }
 
 #ifdef OPENKNX_DEBUG
     logInfoP("========================================");
@@ -394,6 +449,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
             {
                 if (cfg.savedEffectValid) _module->applyEffectToSegment(seg, cfg.savedEffectType);
                 seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
+                seg->setSecondaryColor(cfg.savedSecondaryR, cfg.savedSecondaryG, cfg.savedSecondaryB, cfg.savedSecondaryWW, cfg.savedSecondaryCW);
             }
 
             // Check if a scene was active — if so, recall it directly
@@ -482,6 +538,7 @@ void NeoPixelFlashPersistence::restoreStatesAfterStartup()
 
             // Restore color from flash
             seg->setPrimaryColor(cfg.savedR, cfg.savedG, cfg.savedB, cfg.savedWW, cfg.savedCW);
+            seg->setSecondaryColor(cfg.savedSecondaryR, cfg.savedSecondaryG, cfg.savedSecondaryB, cfg.savedSecondaryWW, cfg.savedSecondaryCW);
 
             // Restore brightness/power state. Drive the MASTER (intent) layer like the boot seed
             // (EffectConfiguration.cpp:48-51) so the restored brightness survives a later global-

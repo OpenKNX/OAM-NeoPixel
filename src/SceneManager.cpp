@@ -2,6 +2,7 @@
 #include "NeoPixelModule.h"
 #include "OpenKNX.h"
 #include "knxprod.h"
+#include <algorithm>
 #include <cstring>
 
 // Include auto-generated effect parameter mappings (for loadSceneEffectParameters)
@@ -20,49 +21,97 @@ SceneManager::SceneManager(NeoPixelBusModule* module)
 {
 }
 
-uint8_t SceneManager::getSceneCount(uint8_t channelIndex)
+SceneManager::SceneCache SceneManager::readEtsCache(uint8_t channel)
 {
-    uint16_t addr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_COUNT_OFFSET;
-    return (knx.paramByte(addr) & 0xF0) >> 4;
+    SceneCache cache;
+    const uint16_t base = NEO_ParamBlockOffset + channel * NEO_ParamBlockSize;
+    cache.count = std::min<uint8_t>(MAX_SCENES, (knx.paramByte(base + SCENE_COUNT_OFFSET) >> 4) & 15);
+    for (size_t scene = 0; scene < MAX_SCENES; ++scene)
+        for (size_t byte = 0; byte < SCENE_SIZE; ++byte)
+            cache.scenes[scene][byte] = knx.paramByte(base + SCENE_DATA_START + scene * SCENE_SIZE + byte);
+    return cache;
 }
 
-uint8_t SceneManager::readSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset)
+void SceneManager::ensureCache(uint8_t channel)
 {
-    uint16_t addr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + fieldOffset;
-    return knx.paramByte(addr);
+    if (channel >= 16) return;
+    while (_cache.size() <= channel) _cache.push_back(readEtsCache(_cache.size()));
 }
 
-void SceneManager::readSceneColorRGB(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset,
-                                     uint8_t& r, uint8_t& g, uint8_t& b)
+void SceneManager::restoreEtsScenes(uint8_t channel)
 {
-    // TypeColor RGB is stored as 3 consecutive bytes (R, G, B) - OpenKNXproducer format
-    // Note: PT-ColorRGB in ETS stores as 0x00RRGGBB (24-bit), but in Union it's 3 bytes
-    uint16_t baseAddr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + fieldOffset;
-
-    // Read the 3-byte color value (stored as big-endian RGB in EEPROM)
-    r = knx.paramByte(baseAddr);
-    g = knx.paramByte(baseAddr + 1);
-    b = knx.paramByte(baseAddr + 2);
+    ensureCache(channel);
+    if (channel < _cache.size()) _cache[channel] = readEtsCache(channel);
 }
 
-void SceneManager::writeSceneField(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset, uint8_t value)
+void SceneManager::resetCache() { _cache.clear(); }
+uint8_t SceneManager::getSceneCount(uint8_t channel)
 {
-    uint16_t addr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + fieldOffset;
-    uint8_t* data = knx.paramData(addr);
-    if (data) *data = value;
+    ensureCache(channel);
+    return channel < _cache.size() ? _cache[channel].count : 0;
 }
-
-void SceneManager::writeSceneColorRGB(uint8_t channelIndex, uint8_t sceneIndex, uint8_t fieldOffset,
-                                      uint8_t r, uint8_t g, uint8_t b)
+uint8_t SceneManager::readSceneField(uint8_t channel, uint8_t scene, uint8_t field)
 {
-    uint16_t baseAddr = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + fieldOffset;
-    uint8_t* data = knx.paramData(baseAddr);
-    if (data)
+    ensureCache(channel);
+    return channel < _cache.size() && scene < MAX_SCENES && field < SCENE_SIZE ? _cache[channel].scenes[scene][field] : 0;
+}
+void SceneManager::writeSceneField(uint8_t channel, uint8_t scene, uint8_t field, uint8_t value)
+{
+    ensureCache(channel);
+    if (channel < _cache.size() && scene < MAX_SCENES && field < SCENE_SIZE) _cache[channel].scenes[scene][field] = value;
+}
+void SceneManager::readSceneColorRGB(uint8_t channel, uint8_t scene, uint8_t field, uint8_t& r, uint8_t& g, uint8_t& b)
+{
+    r = readSceneField(channel, scene, field);
+    g = readSceneField(channel, scene, field + 1);
+    b = readSceneField(channel, scene, field + 2);
+}
+void SceneManager::writeSceneColorRGB(uint8_t channel, uint8_t scene, uint8_t field, uint8_t r, uint8_t g, uint8_t b)
+{
+    writeSceneField(channel, scene, field, r);
+    writeSceneField(channel, scene, field + 1, g);
+    writeSceneField(channel, scene, field + 2, b);
+}
+SceneManager::SceneData SceneManager::sceneData(uint8_t channel, uint8_t scene)
+{
+    ensureCache(channel);
+    return channel < _cache.size() && scene >= 1 && scene <= getSceneCount(channel) ? _cache[channel].scenes[scene - 1] : SceneData{};
+}
+std::vector<uint8_t> SceneManager::exportScenes(uint8_t channel)
+{
+    std::vector<uint8_t> result{getSceneCount(channel)};
+    for (uint8_t scene = 1; scene <= result[0]; ++scene)
     {
-        data[0] = r;
-        data[1] = g;
-        data[2] = b;
+        const auto data = sceneData(channel, scene);
+        result.insert(result.end(), data.begin(), data.end());
     }
+    return result;
+}
+bool SceneManager::importScenes(uint8_t channel, const uint8_t* data, size_t length)
+{
+    if (channel >= 16 || !data || !length || data[0] > MAX_SCENES || length != 1u + data[0] * SCENE_SIZE) return false;
+    ensureCache(channel);
+    _cache[channel] = SceneCache{};
+    _cache[channel].count = data[0];
+    for (uint8_t scene = 0; scene < data[0]; ++scene)
+        memcpy(_cache[channel].scenes[scene].data(), data + 1 + scene * SCENE_SIZE, SCENE_SIZE);
+    return true;
+}
+bool SceneManager::addScene(uint8_t channel, Segment* segment)
+{
+    if (channel >= 16 || !segment || getSceneCount(channel) >= MAX_SCENES) return false;
+    ++_cache[channel].count;
+    if (storeScene(channel, _cache[channel].count, segment)) return true;
+    --_cache[channel].count;
+    return false;
+}
+bool SceneManager::deleteScene(uint8_t channel, uint8_t scene)
+{
+    if (!scene || scene != getSceneCount(channel)) return false;
+    _cache[channel].scenes[scene - 1] = SceneData{};
+    --_cache[channel].count;
+    if (channel < _module->getSegments().size() && _module->getSegments()[channel].savedSceneNumber == scene) _module->getSegments()[channel].savedSceneNumber = 0;
+    return true;
 }
 
 bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment* segment)
@@ -128,7 +177,13 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
              secondaryR, secondaryG, secondaryB, secondaryWW, secondaryCW,
              brightness);
 
-    // Write scene fields to parameter memory
+    if (effect && !emRunning)
+        for (uint8_t p = 0; p < effect->getParameterCount(); ++p)
+            if (effect->getParameterType(p) == ParameterType::PARAM_STRING && strlen(config.effectText) > EFFECT_TEXT_SIZE) return false;
+    for (uint8_t field = SCENE_EFFECT_PARAM_OFFSET; field < SCENE_SIZE; ++field)
+        writeSceneField(channelIndex, sceneIndex, field, 0);
+
+    // Write scene fields to the OAM cache
     writeSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TYPE, effectType);
     writeSceneColorRGB(channelIndex, sceneIndex, FIELD_PRIMARY_R, primaryR, primaryG, primaryB);
     writeSceneField(channelIndex, sceneIndex, FIELD_PRIMARY_WW, primaryWW);
@@ -143,43 +198,28 @@ bool SceneManager::storeScene(uint8_t channelIndex, uint8_t sceneNumber, Segment
     {
         uint8_t paramCount = effect->getParameterCount();
         logInfoP("Storing effect '%s' with %d parameter(s):", effect->getName(), paramCount);
-        uint16_t effectParamBase = NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START + sceneIndex * SCENE_SIZE + SCENE_EFFECT_PARAM_OFFSET;
+
         bool hasText = false;
         for (uint8_t i = 0; i < paramCount && i < 10; i++)
         {
-            uint8_t* data = knx.paramData(effectParamBase + i);
+
             // A text parameter lives in the effect-text field; getParameter() returns a pointer
             if (effect->getParameterType(i) == ParameterType::PARAM_STRING)
             {
                 hasText = true;
-                if (data) *data = 0;
+                writeSceneField(channelIndex, sceneIndex, SCENE_EFFECT_PARAM_OFFSET + i, 0);
                 continue;
             }
             uint32_t paramValue = effect->getParameter(segment, i);
             logInfoP("  param[%d] '%s' = %lu", i, effect->getParameterName(i), (unsigned long)paramValue);
-            if (data) *data = (uint8_t)(paramValue & 0xFF);
+            writeSceneField(channelIndex, sceneIndex, SCENE_EFFECT_PARAM_OFFSET + i, (uint8_t)paramValue);
         }
 
         // Effect text (14 bytes, zero-padded, cut at a UTF-8 character boundary); empty without a text parameter
-        uint8_t* textData = knx.paramData(NEO_ParamBlockOffset + channelIndex * NEO_ParamBlockSize + SCENE_DATA_START +
-                                          sceneIndex * SCENE_SIZE + FIELD_EFFECT_TEXT);
-        if (textData)
-        {
-            const char* text = config.effectText;
-            size_t len = hasText ? strnlen(text, sizeof(config.effectText)) : 0;
-            if (len > EFFECT_TEXT_SIZE)
-            {
-                len = EFFECT_TEXT_SIZE;
-                while (len > 0 && (static_cast<uint8_t>(text[len]) & 0xC0) == 0x80) len--;
-            }
-            memset(textData, 0, EFFECT_TEXT_SIZE);
-            memcpy(textData, text, len);
-            if (hasText) logInfoP("  text = '%.*s'", (int)len, text);
-        }
+        const size_t length = hasText ? std::min<size_t>(EFFECT_TEXT_SIZE, strlen(config.effectText)) : 0;
+        for (size_t i = 0; i < EFFECT_TEXT_SIZE; ++i)
+            writeSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TEXT + i, i < length ? config.effectText[i] : 0);
     }
-
-    // Request flash save to persist the changed parameter table
-    knx.writeMemory();
 
     return true;
 }
@@ -209,7 +249,7 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
 
     uint8_t sceneIndex = sceneNumber - 1; // Convert to 0-based
 
-    // Read scene data from EEPROM using computed byte offsets
+    // Read scene data from the OAM cache
     uint8_t effectType = readSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TYPE);
 
     // EM action: scene starts an Effektmanager instead of applying a static effect
@@ -295,7 +335,32 @@ bool SceneManager::recallScene(uint8_t channelIndex, uint8_t sceneNumber, Segmen
     Effect* effect = segment->getEffect();
     if (effect && effect->getParameterCount() > 0)
     {
-        loadSceneEffectParameters(effect, segment, effectType, channelIndex, sceneIndex);
+        for (uint8_t p = 0; p < effect->getParameterCount() && p < 10; ++p)
+        {
+            if (effect->getParameterType(p) == ParameterType::PARAM_STRING)
+            {
+                char text[EFFECT_TEXT_SIZE + 1] = {};
+                for (uint8_t i = 0; i < EFFECT_TEXT_SIZE; ++i)
+                    text[i] = readSceneField(channelIndex, sceneIndex, FIELD_EFFECT_TEXT + i);
+                effect->setParameter(segment, p, (uint32_t)(uintptr_t)text);
+            }
+            else
+            {
+                uint32_t value = readSceneField(channelIndex, sceneIndex, SCENE_EFFECT_PARAM_OFFSET + p);
+                uint32_t min = effect->getParameterMin(p), max = effect->getParameterMax(p);
+                if (effect->getParameterType(p) == ParameterType::PARAM_BOOL)
+                {
+                    min = 0;
+                    max = 1;
+                }
+                if (effect->getParameterType(p) == ParameterType::PARAM_ENUM && effect->getEnumValueCount(p))
+                {
+                    min = 0;
+                    max = effect->getEnumValueCount(p) - 1;
+                }
+                effect->setParameter(segment, p, std::min(max, std::max(min, value)));
+            }
+        }
         uint8_t paramCount = effect->getParameterCount();
         logInfoP("Effect '%s' configured with %d parameter(s):", effect->getName(), paramCount);
         for (uint8_t i = 0; i < paramCount; i++)

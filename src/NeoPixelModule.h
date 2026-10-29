@@ -42,6 +42,7 @@ class EffectConfiguration;
 class ColorManagement;
 class SegmentController;
 class SceneManager;
+class NeoPixelStudio;
 
 /**
  * Thin adapter that maps ETS parameters to OFM-NeoPixel.
@@ -75,6 +76,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     friend class SegmentController;
     friend class SceneManager;
     friend class NeoPixelWeb;
+    friend class NeoPixelStudio;
 
   public:
     // Segment Configuration Structure
@@ -136,6 +138,7 @@ class NeoPixelBusModule : public OpenKNX::Module
         uint8_t savedG = 0;
         uint8_t savedB = 0;
         uint8_t savedWW = 0; // Warm White (or single white for RGBW)
+        uint8_t savedSecondaryR = 0, savedSecondaryG = 0, savedSecondaryB = 0, savedSecondaryWW = 0, savedSecondaryCW = 0;
         uint8_t savedCW = 0; // Cool White (RGBCCT only)
         uint8_t savedBrightness = 0;
 
@@ -308,10 +311,20 @@ class NeoPixelBusModule : public OpenKNX::Module
 
     bool _initialized = false;
     bool _clearLedsAfterSetup = false; // Flag to clear LEDs after hardware initialization
+#if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
+    NeoPixelStudio* _studio = nullptr;
+#endif
     bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
     std::vector<PhysicalStrip*> _physicalStrips;
-    std::vector<uint8_t> _physicalStripChannel; ///< ETS strip channel of each _physicalStrips entry
+    std::vector<uint8_t> _physicalStripEtsIds; ///< ETS strip channel of each _physicalStrips entry
+    bool _liveLedLayout = false;
+    bool _livePinKnown[8] = {};
+    uint8_t _liveDataPins[8] = {}, _liveClockPins[8] = {};
+    uint16_t _liveStripLengths[8] = {}, _liveStripSkips[8] = {};
+    uint16_t _liveSegmentStarts[16] = {}, _liveSegmentEnds[16] = {};
+    uint16_t configuredStripLength(uint8_t index) const;
+    uint16_t configuredStripSkip(uint8_t index) const;
     VirtualStrip* _virtualStrip = nullptr;
 
     // Virtual Strip Configuration (NEW)
@@ -447,7 +460,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool _powerKoDark = false; // round sampled while global OFF keeps every segment dark: report 0
 
     // Configuration & Setup
-    void configureFromETS(); // reads ETS params and builds phys+virt layout
+    void configureFromETS(bool physicalOnly = false); // reads ETS params and builds phys+virt layout
     bool executeEmChainAction(uint8_t action, int arg1, int arg2);
     // Console EM/cue authoring (runtime-only; lost on reboot — ETS is the permanent source)
     bool executeCueSet(uint8_t emId, uint8_t cueNum, uint8_t effectId,
@@ -523,6 +536,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     bool anySegmentVisible() const;
     void segmentOff(size_t segmentIndex, bool show); ///< own power OFF: pause the EM, stop and clear the segment
     void segmentOn(size_t segmentIndex);             ///< own power ON without the power-on EM edge
+    void applyStartupColors(Segment* segment);
     void captureDirectColor(size_t segmentIndex);    ///< live primary colour -> saved* (no EM running)
     static void setPrimaryColorOneWhite(Segment* seg, uint8_t r, uint8_t g, uint8_t b, uint8_t w); ///< one W value, split on RGBCCT
     void segmentPowerOn(size_t segmentIndex);        ///< ON command: power-on EM on the off->on edge, else segmentOn()
