@@ -4201,7 +4201,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
         }
     }
 
-    logInfoP("Created %d physical strips with total %d LEDs", maxStrips, _totalLeds);
+    logInfoP("Created %d of %d physical strips with total %d LEDs", static_cast<int>(_physicalStrips.size()), maxStrips, _totalLeds);
 
     if (physicalOnly) return;
 
@@ -4251,8 +4251,8 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
         }
     }
 
-    logInfoP("Configuration complete: %d physical strips, %d total LEDs, %d segments",
-             maxStrips, _totalLeds, _numberOfSegments);
+    logInfoP("Configuration complete: %d physical strips, %d virtual LEDs, %d segments",
+             static_cast<int>(_physicalStrips.size()), _totalLeds, _numberOfSegments);
 }
 
 void NeoPixelBusModule::loadEffektManagerFromETS()
@@ -4627,6 +4627,15 @@ void NeoPixelBusModule::configureVirtualStripOrder()
         static_cast<uint16_t>(ParamNEO_VirtualStripStart7),
         static_cast<uint16_t>(ParamNEO_VirtualStripStart8)};
 
+    // ETS derives the start positions from the lengths of strips 1..NumberOfLEDStrips, disabled ones included
+    const uint8_t etsStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
+    uint32_t etsLayoutLeds = 0;
+    for (uint8_t i = 0; i < etsStrips; ++i)
+    {
+        const uint8_t _channelIndex = i;
+        etsLayoutLeds += ParamNEOSTRIP_NEOLength;
+    }
+
     // Build the virtual strip configuration based on positions
     for (size_t pos = 0; pos < kMaxVirtualStripPositions; pos++)
     {
@@ -4647,6 +4656,12 @@ void NeoPixelBusModule::configureVirtualStripOrder()
             // Convert from 1-based (ETS user-friendly) to 0-based (internal indexing)
             // ETS shows "Start LED = 1" but internally we need offset 0
             uint16_t virtualStartZeroBased = (virtualStart > 0) ? (virtualStart - 1) : 0;
+            if (!_liveLedLayout && virtualStartZeroBased >= etsLayoutLeds)
+            {
+                logErrorP("Virtual position %d: start %d lies beyond the %lu LEDs of the ETS layout - not mapped",
+                          static_cast<int>(pos + 1), virtualStart, static_cast<unsigned long>(etsLayoutLeds));
+                continue;
+            }
 
             _virtualStripConfiguration.emplace_back(physStripIndex, virtualStartZeroBased, ledCount);
 
@@ -4669,7 +4684,31 @@ void NeoPixelBusModule::configureVirtualStripOrder()
     {
         logInfoP("Virtual strip configuration complete: %d physical strips mapped",
                  static_cast<int>(_virtualStripConfiguration.size()));
+        // Disabled strips keep their ETS range, also behind the last started strip, so the segment
+        // numbering of ETS stays valid. Studio live layouts repack afterwards and size themselves.
+        if (!_liveLedLayout)
+        {
+            uint32_t mapped = 0;
+            for (const auto& mapping : _virtualStripConfiguration)
+                mapped += mapping.ledCount;
+            applyVirtualStripLength(etsLayoutLeds);
+            if (_totalLeds > mapped)
+                logInfoP("Virtual strip spans %u LEDs, %lu of them on started strips", _totalLeds, static_cast<unsigned long>(mapped));
+            return;
+        }
     }
+    applyVirtualStripLength();
+}
+
+void NeoPixelBusModule::applyVirtualStripLength(uint32_t minLength)
+{
+    // A disabled strip leaves its range unmapped, so the virtual strip spans up to the end of the last
+    // mapped strip (at least minLength), not the sum of the strips the firmware started
+    uint32_t length = minLength;
+    for (const auto& mapping : _virtualStripConfiguration)
+        length = std::max<uint32_t>(length, uint32_t(mapping.virtualStartPosition) + mapping.ledCount);
+    if (length > UINT16_MAX) length = UINT16_MAX;
+    _totalLeds = static_cast<uint16_t>(length);
 }
 
 void NeoPixelBusModule::createVirtualStripWithOrder()
@@ -5629,7 +5668,7 @@ void NeoPixelBusModule::updateHclTransformContext()
     // Build Pixel→Segment Lookup Table for O(1) segment lookup
     // This eliminates the O(n) for-loop on EVERY pixel (8,280x/second)
     // Reduces segment lookups from ~24,840/sec to 0!
-    const uint16_t totalLEDs = _virtualStrip->getTotalPhysicalLeds();
+    const uint16_t totalLEDs = _virtualStrip->getLedCount(); // virtual pixel index, gaps of disabled strips included
     _hclTransformContext.pixelToSegmentIndex.clear();
     _hclTransformContext.pixelToSegmentIndex.resize(totalLEDs, 0xFF); // 0xFF = no segment
 

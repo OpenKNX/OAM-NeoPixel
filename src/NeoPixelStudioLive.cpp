@@ -86,6 +86,7 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
                 mapping.virtualStartPosition = offset;
                 offset += mapping.ledCount;
             }
+            _module.applyVirtualStripLength();
         }
         _module.createVirtualStripWithOrder();
         if (!_module._virtualStrip) return false;

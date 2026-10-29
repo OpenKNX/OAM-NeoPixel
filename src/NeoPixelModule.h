@@ -489,6 +489,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void configureVirtualStripOrder();     // Configure virtual strip order from ETS parameters
     void createDefaultVirtualStripOrder(); // Create default sequential strip order
     void createVirtualStripWithOrder();    // creates virtual strip with user-defined order
+    void applyVirtualStripLength(uint32_t minLength = 0); // sets _totalLeds to the end of the last mapped strip
 
     // Power Management Implementation
     uint16_t calculateCurrentConsumption() const;
