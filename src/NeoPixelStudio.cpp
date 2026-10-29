@@ -117,6 +117,7 @@ void NeoPixelStudio::setup(bool configured)
             }
             _requestedSegment.store(id);
         }
+        _pageSeen.store(millis()); // keeps the change push alive while the page is open
         _refresh.store(true);
         if (_guard.exchange(1, std::memory_order_acquire))
         {
@@ -202,15 +203,28 @@ void NeoPixelStudio::loop()
         _completedId = id;
         _refresh.store(true);
     }
-    if (!_refresh.load() || (command.empty() && uint32_t(millis() - _lastRefresh) < 250)) return;
+    const uint32_t now = millis(), seen = _pageSeen.load();
+    // An open Studio page (state request within WATCH_MS; 0 = none since boot) gets a rebuild every second and
+    // "studio:<rev>" on the UI socket when the state changed. hasClients() takes the socket lock: only behind the 1 s gate.
+    const bool recent = seen != 0 && int32_t(now - seen) < int32_t(WATCH_MS);
+    if (recent && uint32_t(now - _lastRefresh) >= 1000 && openknxNetwork.webserver.ui.hasClients()) _refresh.store(true);
+    if (!_refresh.load() || (command.empty() && uint32_t(now - _lastRefresh) < 250)) return;
     // Build outside the guard: callbacks only ever see a complete immutable snapshot.
     std::string state = snapshot();
+    uint32_t hash = 2166136261u; // FNV-1a
+    for (const char c : state) hash = (hash ^ uint8_t(c)) * 16777619u;
     if (_guard.exchange(1, std::memory_order_acquire)) return;
     _state.swap(state);
     _processing = false;
     _refresh.store(false);
     _lastRefresh = millis();
     _guard.store(0, std::memory_order_release);
+    if (hash == _stateHash) return;
+    _stateHash = hash;
+    if (!recent || !openknxNetwork.webserver.ui.hasClients()) return;
+    char rev[12];
+    snprintf(rev, sizeof(rev), "%lu", (unsigned long)++_rev);
+    openknxNetwork.webserver.ui.sendMessage("studio", rev);
 }
 
 std::string NeoPixelStudio::apply(const std::string& command)

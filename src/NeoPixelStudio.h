@@ -45,6 +45,11 @@ class NeoPixelStudio
     std::string _testPattern;
     bool transformTestPixel(uint16_t pixel, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t* ww, uint8_t* cw);
     uint32_t _testUntil = 0;
+    /** @brief Time of the last Studio state request (0 = none since boot): keeps the change push active (WATCH_MS). */
+    std::atomic<uint32_t> _pageSeen{0};
+    static constexpr uint32_t WATCH_MS = 30000;
+    /** @brief Hash of the last published state and the change counter pushed as "studio:<rev>" on the UI socket. */
+    uint32_t _stateHash = 0, _rev = 0;
     std::string commissioning(size_t index, bool downloaded = false, bool runtime = false) const;
     void writeCommissioning(OpenKNX::Format::JSON::Writer& json, size_t index, bool downloaded = false, bool runtime = false) const;
     std::string commissioningControl(size_t index, const OpenKNX::Format::JSON::Reader& doc, bool validateOnly);
