@@ -1076,7 +1076,7 @@
   // Unconfigured device (no configuration loaded): only the hint, no status bar, tabs or panels.
   function applyUnconf() {
     var u = !!LIVE.unconf, U = LIVE.unconf;
-    $('unconf').hidden = !u; $('bar').hidden = u; $('tabs').hidden = u;
+    $('unconf').hidden = !u; $('bar').hidden = u; $('bar').parentNode.hidden = u; $('tabs').hidden = u; // parent: band with refresh controls
     qa('.np-pane').forEach(function (p) { p.hidden = u || p.id !== 'p-' + tab; });
     if (u) $('unconf').innerHTML = '<b>Gerät nicht konfiguriert – bitte Gerätekonfiguration laden.</b><br>Ohne geladene Konfiguration sind keine Streifen, Segmente und Effekte angelegt; diese Seite zeigt den Status, sobald die Applikation geladen ist.' +
       '<br><span class="np-f">' + (U.board ? esc(U.board) + ' · ' : '') + 'HW-ID ' + hex4(U.hwid || 0) + ' · Laufzeit ' + upStr(U.up || 0) + '</span>';
