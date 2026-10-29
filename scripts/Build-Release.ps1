@@ -139,7 +139,9 @@ if ($isClean) {
         # Only known generated outputs: preserve hand-written source and release packages.
         foreach ($pattern in @(
             'include/knxprod.h', 'include/buildtime.h', 'include/versions.h', 'include/webassets.h',
-            'src/NeoPixel-*.debug.xml', 'src/NeoPixel-*.baggages'
+            'src/NeoPixel-*.debug.xml', 'src/*.baggages', 'src/*.knxprod',
+            # Older producer naming: no longer generated, left behind by earlier builds
+            'src/NeoPixel.debug.xml', 'src/NeoPixel.appl.debug.xml'
         )) {
             foreach ($item in Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue) {
                 Remove-Item -LiteralPath $item.FullName -Recurse -Force
