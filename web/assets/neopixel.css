@@ -72,6 +72,8 @@
 .np-wl { display: inline-flex; align-items: center; gap: 6px; color: var(--np-mute) }
 .np-ctl-em { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; flex-basis: 100% }
 .np-ctl-em > span:first-child { flex: 1 1 100% }
+.np-emlink { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px }
+.np-emlink:hover { color: var(--np-green-d) }
 .np-ctl-msg { min-height: 1.2em; padding-top: 6px; font-size: .8em; color: var(--np-warn-fg) }
 .np-ctl-log { font-size: .8em; color: var(--np-mute); margin-top: 6px }
 .np-ctl-log pre { background: var(--np-panel); border: 1px solid var(--np-line); border-radius: 4px; padding: 6px 8px; overflow-x: auto; font-size: .95em; margin-top: 4px }

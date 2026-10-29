@@ -818,7 +818,7 @@
       if (has(s, 'scene') && s.scenes && s.scenes.length) rows += ctlRow('Szene', s.scenes.map(function (q) { return cbtn(i, 'scene', q.n, 'Szene ' + q.n, s.scene === q.n); }).join(''));
       if (ems.length) rows += ctlRow('Effektmanager', ems.map(function (e) {
         var run = s.em === e.id && /run|pause/.test(s.ems || ''), act = e.st === 1;
-        return '<div class="np-ctl-em"><span><b>EM ' + e.id + '</b>' + (run ? ' · Cue ' + s.cue + '/' + e.cues.length : '') + '</span>' +
+        return '<div class="np-ctl-em"><span><b class="np-emlink" data-emgo="' + e.id + '" role="link" tabindex="0" title="Im Tab Effektmanager öffnen">EM ' + e.id + '</b>' + (run ? ' · Cue ' + s.cue + '/' + e.cues.length : '') + '</span>' +
           (act ? cbtn(i, 'emStart', e.id, '▶ Start', run) + (has(s, 'emStop') ? cbtn(i, 'emStop', 1, '■ Stop', 0) : '') + (has(s, 'cue') ? cbtn(i, 'cue', -1, 'Cue −', 0) + cbtn(i, 'cue', 1, 'Cue +', 0) : '')
             : '<span class="np-f">' + (e.st === 2 ? 'suspendiert: ein Start wird ignoriert' : 'deaktiviert') + '</span>') + '</div>';
       }).join(''));
@@ -836,6 +836,29 @@
   var ctlOpen = {};
   function ctlIsOpen(i) { return ctlOpen[i] !== undefined ? ctlOpen[i] : i === 0; }
   function ctlToggle(i) { ctlOpen[i] = !ctlIsOpen(i); renderCtl(); }
+  // "EM n" in Steuern: opens the tab Effektmanager with that EM unfolded.
+  function goEm(id) {
+    showTab('em');
+    var c = qa('.np-em', $('em')).filter(function (x) { var b = x.querySelector('.np-em-h b'); return b && b.textContent === 'EM ' + id; })[0];
+    if (!c) return;
+    if (c.dataset.fk) FOLD[c.dataset.fk] = true;
+    c.classList.remove('closed'); var h = c.querySelector('.np-em-h'); if (h) h.setAttribute('aria-expanded', 'true');
+    c.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+  // Top view: a click on a segment opens its card in "Steuern"; areas are in plan units, plan.ox/oy/s map them to CSS px.
+  function planSegAt(e) {
+    var P = planMain, r = $('plan').getBoundingClientRect(), hit = -1;
+    if (!P.G || TPL[lay.tpl].cube) return -1;
+    var x = (e.clientX - r.left - P.ox) / P.s, y = (e.clientY - r.top - P.oy) / P.s;
+    P.G.areas.forEach(function (a) { if (a.run && a.run.src === 'seg' && x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) hit = a.run.seg; });
+    return hit;
+  }
+  $('plan').addEventListener('click', function (e) {
+    var i = planSegAt(e); if (i < 0) return;
+    ctlOpen[i] = true; showTab('ctl'); renderCtl();
+    var h = document.querySelector('#ctl [data-tog="' + i + '"]'); if (h) h.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  $('plan').addEventListener('mousemove', function (e) { if (!TPL[lay.tpl].cube) this.style.cursor = planSegAt(e) >= 0 ? 'pointer' : 'default'; });
   function drawCtl(t) { // compact LED image per segment, same colours as the top view
     sc.segs.forEach(function (s, i) {
       var cv = $('ctlcv-' + i); if (!cv) return;
@@ -872,6 +895,7 @@
     return t;
   }
   $('ctl').addEventListener('click', function (e) {
+    var g = e.target.closest('[data-emgo]'); if (g) { goEm(+g.dataset.emgo); return; }
     var t = e.target.closest('[data-tog]'); if (t && t.dataset.tog !== undefined) { ctlToggle(+t.dataset.tog); return; }
     var b = e.target.closest('button[data-f]'); if (!b) return;
     var i = +b.dataset.seg;
@@ -881,6 +905,8 @@
     sendCtl(i, f, f === 'rgb' || f === 'rgbw' ? v : +v);
   });
   $('ctl').addEventListener('keydown', function (e) {
+    var g = e.target.closest && e.target.closest('[data-emgo]');
+    if (g && e.key === 'Enter') { e.preventDefault(); goEm(+g.dataset.emgo); return; }
     var t = e.target.closest && e.target.closest('[data-tog]');
     if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); ctlToggle(+t.dataset.tog); }
   });
