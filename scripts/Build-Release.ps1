@@ -200,8 +200,8 @@ if ($isClean) {
 
 # Mini Build Targets (the hardware physically on the desk)
 # Purpose: fast turnaround while developing - one RP2350 and one ESP32S3 board per
-# KNeoPiX revision (V1, V1.5), so both families stay covered. Not a shippable set: the
-# ETS product generated from it offers only these hardware entries (HardwareListMode 'Dynamic').
+# KNeoPiX revision (V1, V1.5), so both families stay covered. The ETS product still offers
+# all hardware (HardwareListMode 'Full').
 $miniTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
@@ -267,9 +267,10 @@ $fullTargets = @(
     )
 
 # Hardware identity list (ETS dropdown / JS auto-detect / HW map):
-#   'Dynamic' (default) = only hardware built here -> small files; mismatch-safe via stable HW-ID
-#   'Full'              = all of platformio.hardware.ini -> every product offers all hardware
-$HardwareListMode = 'Dynamic'
+#   'Full' (default) = all of platformio.hardware.ini -> every product offers all hardware, whatever
+#                      target set is built; a release firmware carries no entry of other hardware (HardwareMappingLogic.h)
+#   'Dynamic'        = only hardware built here -> smaller ETS/JS/XML; mismatch-safe via stable HW-ID
+$HardwareListMode = 'Full'
 
 # Generate dynamic GPIO templates before building
 # Collect exact hardware section names from all targets that will be built.

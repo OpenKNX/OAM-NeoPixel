@@ -119,16 +119,16 @@ param(
   [string[]]$EnvironmentFilter = @(),
 
   # Hardware identity list mode (master switch):
-  #   'Dynamic' (default) = only the hardware actually built (per $EnvironmentFilter) goes into
-  #                         the ETS dropdown, the JS auto-detect map and HardwareMappingData.h.
-  #                         Keeps ETS/JS/XML small. Mismatch-safe because the identity is the
-  #                         stable DEVICE_HW_ID (not a list index).
-  #   'Full'              = the complete platformio.hardware.ini set is emitted regardless of
+  #   'Full' (default)    = the complete platformio.hardware.ini set is emitted regardless of
   #                         build profile (every product offers all hardware, auto-detect knows
-  #                         all). Larger ETS/JS.
+  #                         all). A release firmware carries no entry of other hardware (HardwareMappingLogic.h).
+  #   'Dynamic'           = only the hardware actually built (per $EnvironmentFilter) goes into
+  #                         the ETS dropdown, the JS auto-detect map and HardwareMappingData.h.
+  #                         Smaller ETS/JS/XML. Mismatch-safe because the identity is the
+  #                         stable DEVICE_HW_ID (not a list index).
   [Parameter(Mandatory = $false)]
   [ValidateSet('Dynamic', 'Full')]
-  [string]$HardwareListMode = 'Dynamic'
+  [string]$HardwareListMode = 'Full'
 )
 
 $ErrorActionPreference = "Stop"
