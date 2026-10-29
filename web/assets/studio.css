@@ -1,0 +1,179 @@
+/* studio.css - NeoPixel Studio /neopixel. Layout and navigation: base.css; tokens, band, pills, tabs, cards, notes, buttons: np-base.css. */
+#neopixel-studio { max-width: 1680px; margin: 0 auto; width: 100%; font-size: 14px; color: var(--np-ink) }
+/* Shared components are sized from the 16 px page base like on /neo (Studio content itself uses 14 px). */
+#neopixel-studio .np-tabs, #neopixel-studio .st-acts, #neopixel-studio .np-card-h { font-size: 16px }
+#neopixel-studio .np-bar { font-size: 13.6px }
+#neopixel-studio .np-note { font-size: 12.8px }
+
+/* Elements. */
+#neopixel-studio [hidden] { display: none !important }
+#neopixel-studio fieldset { border: 0; padding: 0; margin: 0; min-width: 0 }
+#neopixel-studio h1 { font-size: 20px; margin: 0 0 16px }
+#neopixel-studio .np-card-b h3 { font-size: 13px; margin: 12px 0 6px }
+#neopixel-studio summary { cursor: pointer; font-size: 12px }
+#neopixel-studio output { font-size: .8em; color: var(--np-mute); min-width: 3.5em }
+#neopixel-studio .studio-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%) }
+
+/* Controls; :where() keeps the specificity and leaves np-* components and menu items to their own rules. */
+#neopixel-studio button:where(:not([class*=np-]):not([class*=st-])), #neopixel-studio select, #neopixel-studio input:not([type=range]):not([type=checkbox]) { font: inherit; border: 1px solid var(--np-line2); border-radius: 6px; background: #fff; color: var(--np-ink); padding: 7px 10px; margin: 0; min-height: 34px }
+#neopixel-studio input[type=text], #neopixel-studio select { max-width: 100%; min-width: 0 }
+#neopixel-studio input[type=text] { width: 340px }
+#neopixel-studio button:where(:not([class*=np-]):not([class*=st-])) { cursor: pointer; white-space: normal; line-height: 1.25; -webkit-appearance: none }
+#neopixel-studio button:where(:not([class*=np-]):not([class*=st-])):hover { background: #f2f6f1; border-color: var(--np-green) }
+#neopixel-studio button:where(:not([class*=np-]):not([class*=st-])):disabled { opacity: .45; cursor: default }
+#neopixel-studio .studio-numeric { width: 80px; min-width: 0 }
+/* Switch. */
+#neopixel-studio input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 34px; height: 20px; border-radius: 20px; background: var(--np-offedge); position: relative; cursor: pointer; flex-shrink: 0 }
+#neopixel-studio input[type=checkbox]:before { content: ""; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .15s }
+#neopixel-studio input[type=checkbox]:checked { background: var(--np-green) }
+#neopixel-studio input[type=checkbox]:checked:before { transform: translateX(14px) }
+/* Sliders: explicit tracks avoid native padding and thumb-centre endpoint gaps; --studio-fill is set by studio.js. */
+#neopixel-studio input[type=range] { flex: 1; min-width: 60px; max-width: none; height: 20px; margin: 0; accent-color: var(--np-green) }
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone) { appearance: none; -webkit-appearance: none; padding: 0; border: 0; background: transparent; cursor: pointer; --studio-track: linear-gradient(to right, var(--np-green) var(--studio-fill, 0%), var(--np-off) var(--studio-fill, 0%)) }
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-webkit-slider-runnable-track { height: 6px; border: 0; border-radius: 3px; background: var(--studio-track) }
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-moz-range-track { height: 6px; border: 0; border-radius: 3px; background: var(--studio-track) }
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-moz-range-progress { background: transparent }
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin-top: -5px; border: 0; border-radius: 50%; background: var(--np-green) }
+#neopixel-studio input[type=range]:not(.studio-hue):not(.studio-white-tone)::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: var(--np-green) }
+
+/* Band (np-bar): segment select and pills; segment items hide until the device is ready, effect/scene on phones. */
+#neopixel-studio[data-ready=false] .st-seg { display: none }
+/* Segment picker: the /neo plate with an arrow opens an own list (plate, name, effect, state per segment). */
+#neopixel-studio .st-sp { position: relative; display: inline-flex }
+#neopixel-studio .st-sp-btn { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 0; margin: 0; cursor: pointer; font: inherit; color: var(--np-faint) }
+#neopixel-studio .st-sp-btn .np-badge { margin: 0 }
+#neopixel-studio .st-sp-btn:disabled { cursor: default; opacity: .5 }
+#neopixel-studio .st-sp-pop { position: absolute; left: -8px; top: 28px; z-index: 5; display: block; width: 320px; max-width: 90vw; max-height: 60vh; overflow: auto; padding: 6px; border: 1px solid var(--np-line2); border-radius: 8px; background: #fff; box-shadow: 0 6px 18px #0002; color: var(--np-ink); font-size: 13px }
+#neopixel-studio .st-sp-it { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 6px 8px; margin: 0; border: 0; border-radius: 5px; background: none; font: inherit; color: var(--np-ink); text-align: left; white-space: nowrap; cursor: pointer }
+#neopixel-studio .st-sp-it:hover, #neopixel-studio .st-sp-it[aria-selected=true] { background: #f1f3f0 }
+#neopixel-studio .st-sp-it .np-badge { margin: 0 }
+#neopixel-studio .st-sp-it > span { flex: 1 }
+#neopixel-studio .st-sp-it > em { font-style: normal; color: var(--np-faint); font-size: 12px; overflow: hidden; text-overflow: ellipsis }
+#neopixel-studio button.np-pill { border: 0; cursor: pointer; font-family: inherit }
+#neopixel-studio .st-hint { white-space: normal }
+/* Tab row with the actions at its right end. */
+#neopixel-studio .st-row { display: flex; align-items: flex-end; gap: 8px; border-bottom: 1px solid var(--np-line2); margin: 14px 0 14px }
+#neopixel-studio .st-row .np-tabs { border: 0; margin: 0; flex: 1 }
+#neopixel-studio .st-acts { display: flex; align-items: center; gap: 6px; padding-bottom: 6px }
+#neopixel-studio .st-acts .np-btn { min-height: 32px }
+#neopixel-studio .st-menu { position: relative }
+#neopixel-studio .st-menu summary { list-style: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; border: 1px solid var(--np-line2); border-radius: 6px; background: #fff; font-size: 17px; cursor: pointer }
+#neopixel-studio .st-menu summary::-webkit-details-marker { display: none }
+#neopixel-studio .st-menu[open] summary { border-color: var(--np-green) }
+#neopixel-studio .st-menu > div { position: absolute; right: 0; top: 38px; z-index: 4; width: 290px; padding: 6px; border: 1px solid var(--np-line2); border-radius: 8px; background: #fff; box-shadow: 0 6px 18px #0002 }
+#neopixel-studio .st-mi { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; border: 0; background: none; min-height: 40px; padding: 6px 10px; margin: 0; border-radius: 5px; font: inherit; font-size: 13px; color: var(--np-ink); cursor: pointer }
+#neopixel-studio .st-mi:hover { background: #f1f3f0 }
+#neopixel-studio .st-mi small { display: block; color: var(--np-faint); font-size: 11px; margin-top: 2px }
+#neopixel-studio .st-menu hr { border: 0; border-top: 1px solid var(--np-line); margin: 4px 6px }
+#neopixel-studio .st-menu p { font-size: 11px; color: var(--np-faint); line-height: 1.45; margin: 4px 10px 6px }
+
+/* Cards. */
+#neopixel-studio .studio-live-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 16px; align-items: start }
+#neopixel-studio .studio-live-grid > .np-card { min-width: 0; margin: 0 }
+#neopixel-studio .np-card-b { padding: 4px 14px 14px }
+#neopixel-studio .studio-power-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 400 }
+#neopixel-studio .studio-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--np-line); min-height: 42px }
+#neopixel-studio .studio-row label { width: 110px; flex-shrink: 0; color: var(--np-mute); font-size: 13px }
+#neopixel-studio .studio-row select { flex: 1; width: 100% }
+
+/* Colour pickers. */
+#neopixel-studio #studio-colours { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 10px; align-items: start }
+#neopixel-studio .studio-colour-select { display: none }
+#neopixel-studio .studio-picker { border: 1px solid var(--np-line2); border-radius: 7px; padding: 10px; min-width: 0 }
+#neopixel-studio .studio-picker-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px }
+#neopixel-studio .studio-picker h3 { font-size: .9em; font-weight: 600; margin: 0 }
+#neopixel-studio .studio-swatch { width: 32px; height: 24px; border: 1px solid var(--np-line2) }
+#neopixel-studio .studio-picker-tabs { display: flex; margin-bottom: 10px }
+#neopixel-studio .studio-picker-tabs button { flex: 1; border-radius: 0; min-height: 32px; padding: 5px 8px }
+#neopixel-studio .studio-picker-tabs button:first-child { border-radius: 6px 0 0 6px }
+#neopixel-studio .studio-picker-tabs button:last-child { border-radius: 0 6px 6px 0 }
+#neopixel-studio .studio-spectrum { position: relative; touch-action: none; cursor: crosshair; background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent); outline-offset: 3px }
+#neopixel-studio .studio-spectrum, #neopixel-studio .studio-white-preview { height: 125px; border-radius: 4px }
+#neopixel-studio .studio-spectrum[aria-disabled=true] { opacity: .5; cursor: default }
+#neopixel-studio .studio-picker-cursor { position: absolute; width: 12px; height: 12px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 2px 1px #333; transform: translate(-50%, -50%); pointer-events: none }
+#neopixel-studio .studio-picker-label { display: block; font-size: 12px; color: var(--np-mute); margin: 9px 0 5px }
+#neopixel-studio .studio-picker input[type=range] { display: block; width: 100%; max-width: none; margin: 0 }
+#neopixel-studio .studio-picker output { float: right }
+#neopixel-studio .studio-hue, #neopixel-studio .studio-white-tone { appearance: none; padding: 0; border: 1px solid var(--np-line2); border-radius: 0; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00) }
+#neopixel-studio .studio-white-tone { background: var(--studio-white-gradient) }
+#neopixel-studio .studio-hue::-webkit-slider-thumb, #neopixel-studio .studio-white-tone::-webkit-slider-thumb { appearance: none; width: 12px; height: 22px; background: #fff; border: 1px solid var(--np-mute); border-radius: 2px }
+#neopixel-studio .studio-hue::-moz-range-thumb, #neopixel-studio .studio-white-tone::-moz-range-thumb { width: 12px; height: 22px; background: #fff; border: 1px solid var(--np-mute); border-radius: 2px }
+#neopixel-studio .studio-hex-row { display: flex; align-items: center; gap: 10px; margin-top: 9px }
+#neopixel-studio .studio-hex-row input[type=text] { width: 110px; min-width: 0; font-family: monospace }
+#neopixel-studio .studio-hex-row input[type=color] { width: 64px; height: 36px; padding: 2px; cursor: pointer }
+#neopixel-studio .studio-rgb-numbers { display: flex; gap: 6px; margin-top: 8px }
+#neopixel-studio .studio-rgb-numbers label { flex: 1; min-width: 0; font-size: .8em; color: var(--np-mute) }
+#neopixel-studio .studio-rgb-numbers input[type=number] { display: block; width: 100%; min-width: 0; margin-top: 5px }
+#neopixel-studio .studio-white-preview { border: 1px solid var(--np-line2); display: flex; align-items: flex-end; padding: 10px; font-size: .75em }
+#neopixel-studio .studio-picker[data-mode=mixed] .studio-white-preview { height: 32px }
+#neopixel-studio .studio-picker-ends { display: flex; justify-content: space-between; font-size: .75em; color: var(--np-mute); margin-top: 6px }
+#neopixel-studio .studio-white-help, #neopixel-studio .studio-mixed { margin: 8px 0 0; line-height: 1.4; font-size: 12px }
+
+/* Scenes. */
+#neopixel-studio .studio-scene { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--np-line); font-size: .88em }
+#neopixel-studio .studio-scene strong { margin-right: auto }
+
+/* Commissioning. */
+/* Strips and segment range as rows: plate + name, then the two numbers (same plates and tones as /neo). */
+#neopixel-studio .st-strip { display: grid; grid-template-columns: minmax(120px, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 6px 10px; align-items: center; padding: 3px 0 }
+#neopixel-studio .st-head { padding: 12px 0 2px; font-size: 12px; color: var(--np-mute) }
+#neopixel-studio .st-head:first-of-type { padding-top: 4px }
+#neopixel-studio .st-sname { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; min-width: 0 }
+#neopixel-studio .st-sname .np-badge { margin: 0 }
+#neopixel-studio .st-strip input[type=number] { width: 100%; min-width: 0 }
+#neopixel-studio .st-cfoot { display: flex; align-items: center; gap: 10px; margin-top: 14px }
+#neopixel-studio .st-cfoot .np-note { flex: 1; margin: 0 }
+#neopixel-studio .studio-test-level { display: flex; align-items: center; gap: 10px; font-size: 13px }
+#neopixel-studio .studio-test-level input { flex: 1; min-width: 40px }
+#neopixel-studio .studio-test-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 }
+#neopixel-studio [data-test=red] { border-bottom: 3px solid #d84949 }
+#neopixel-studio [data-test=green] { border-bottom: 3px solid var(--np-green) }
+#neopixel-studio [data-test=blue] { border-bottom: 3px solid #477dc2 }
+#neopixel-studio #studio-test-stop { width: 100% }
+/* A running test (blue "Test aktiv" pill) makes Stop the prominent action. */
+#neopixel-studio #studio-test-stop:not(:disabled) { background: var(--np-info); border-color: var(--np-info); color: #fff; font-weight: 600 }
+#neopixel-studio #studio-test-stop:not(:disabled):hover { background: var(--np-info-fg); border-color: var(--np-info-fg) }
+
+/* Draft card: only while live mode is off and changes are pending. */
+#neopixel-studio .st-draft { margin-top: 14px; border-top: 3px solid var(--np-warn) }
+#neopixel-studio .st-draft ul { margin: 0; padding: 0; list-style: none; font-size: 13px }
+#neopixel-studio .st-draft li { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 5px 0; border-bottom: 1px dashed var(--np-line); overflow-wrap: anywhere }
+#neopixel-studio .st-draft li i { font-style: normal; flex: 0 0 120px; color: var(--np-mute) }
+#neopixel-studio .st-draft li s { color: var(--np-faint) }
+
+/* Pressed state last: it overrides the component backgrounds above. */
+#neopixel-studio button:where(:not([class*=np-]))[aria-pressed=true] { background: var(--np-green-t); border-color: var(--np-green); color: var(--np-green-d) }
+
+@media (max-width: 1100px) {
+    #neopixel-studio .studio-live-grid { grid-template-columns: 1fr }
+}
+@media (max-width: 800px) {
+    #neopixel-studio #studio-colours { grid-template-columns: 1fr }
+}
+@media (max-width: 640px) {
+    main { padding: 1.2em 16px }
+    #neopixel-studio .st-hs { display: none }
+    #neopixel-studio .st-sp-btn { min-height: 40px }
+    #neopixel-studio .st-sp-it { min-height: 44px }
+    #neopixel-studio .st-sp-pop { position: fixed; left: 16px; right: 16px; top: auto; width: auto; max-width: none; margin-top: 30px }
+    #neopixel-studio .st-row { flex-wrap: wrap }
+    #neopixel-studio .st-acts { order: -1; width: 100%; justify-content: flex-end; padding: 0 0 8px }
+    #neopixel-studio .st-acts .np-btn { min-height: 40px }
+    #neopixel-studio .st-menu summary { width: 42px; height: 40px }
+    #neopixel-studio .st-menu > div { top: 46px }
+    #neopixel-studio input[type=text] { width: 100% }
+    #neopixel-studio input:not([type=range]):not([type=checkbox]), #neopixel-studio select { font-size: 16px }
+    #neopixel-studio input.studio-numeric[type=number] { width: 62px; padding: 5px }
+    #neopixel-studio .np-card-b { padding: 4px 10px 10px }
+    #neopixel-studio .st-strip { grid-template-columns: minmax(96px, 1.1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px }
+    #neopixel-studio .st-cfoot { flex-wrap: wrap }
+    #neopixel-studio .st-cfoot .np-btn { margin-left: auto }
+    #neopixel-studio .studio-row { gap: 8px }
+    #neopixel-studio .studio-row label { width: 85px }
+    #neopixel-studio .studio-colour-select { display: flex; margin-top: 10px }
+    #neopixel-studio .studio-colour-select button { flex: 1; font-size: 12px }
+    #neopixel-studio #studio-colours { display: block; margin-top: 8px }
+    #neopixel-studio[data-active-colour=primary] .studio-picker[data-key=secondary], #neopixel-studio[data-active-colour=secondary] .studio-picker[data-key=primary] { display: none }
+    #neopixel-studio .studio-spectrum, #neopixel-studio .studio-white-preview { height: 110px }
+    #neopixel-studio .studio-test-buttons { grid-template-columns: repeat(2, 1fr) }
+}

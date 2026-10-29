@@ -8,7 +8,9 @@
     #include "OpenKNX/Charset.hpp"
     #include "OpenKNX/Format/JSON/Reader.h"
     #include "OpenKNX/Format/JSON/Writer.h"
+    #include "NeoPixelWeb.h"
     #include "WebUi/NeoPixelStudioAssets.h"
+    #include "webassets.h"
     #include <cctype>
     #include <cmath>
     #include <cstdlib>
@@ -91,11 +93,11 @@ void NeoPixelStudio::setup(bool configured)
         res.sendStatic(kNeoPixelStudioHtml);
     });
     web.addRoute(WEB_GET, "/neopixel/", Webserver::Redirect("/neopixel"));
-    web.addRoute(WEB_GET, "/neopixel/studio.js", [](WebRequest&, WebResponse& res) {
-        res.setContentType("application/javascript; charset=utf-8");
-        res.setHeader("Cache-Control", "no-cache");
-        res.sendStatic(kNeoPixelStudioJs);
-    });
+#ifndef NEOPIXEL_WEB // otherwise NeoPixelWeb serves it for /neo
+    web.addRoute(WEB_GET, "/assets/np-base.css", Webserver::Asset(WebAssets::np_base_css_mime, WebAssets::np_base_css_gz, sizeof(WebAssets::np_base_css_gz)));
+#endif
+    web.addRoute(WEB_GET, "/assets/studio.css", Webserver::Asset(WebAssets::studio_css_mime, WebAssets::studio_css_gz, sizeof(WebAssets::studio_css_gz)));
+    web.addRoute(WEB_GET, "/assets/studio.js", Webserver::Asset(WebAssets::studio_js_mime, WebAssets::studio_js_gz, sizeof(WebAssets::studio_js_gz)));
     web.addRoute(WEB_GET, "/neopixel/api/effects", [this](WebRequest&, WebResponse& res) {
         sendJson(res, 200, _effects.c_str());
     });

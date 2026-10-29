@@ -43,12 +43,14 @@ EFFECTS = {
 }
 
 
-def asset(token):
-    source = (ROOT / 'src/WebUi/NeoPixelStudioAssets.h').read_text()
-    match = re.search(r'R"' + token + r'\((.*?)\)' + token + '"', source, re.S)
+def studio_html():
+    """Production page body: the concatenated string pieces of kNeoPixelStudioHtml, version macro as 'preview'."""
+    source = (ROOT / 'src/WebUi/NeoPixelStudioAssets.h').read_text(encoding='utf-8')
+    match = re.search(r'kNeoPixelStudioHtml\[\] =(.*?);\s*$', source, re.S)
     if not match:
-        raise RuntimeError('Production asset not found: ' + token)
-    return match.group(1)
+        raise RuntimeError('Production asset not found: kNeoPixelStudioHtml')
+    pieces = re.findall(r'R"HTML\((.*?)\)HTML"|"((?:[^"\\]|\\.)*)"|(NEOPIXEL_STUDIO_VERSION)', match.group(1), re.S)
+    return ''.join(raw or plain or ('preview' if macro else '') for raw, plain, macro in pieces)
 
 
 class Device:
@@ -269,7 +271,7 @@ def page(scenario):
 <main><details style="font-size:12px;margin-bottom:12px"><summary>Local preview · simulated device</summary>
 <form method="get" action="/neopixel" style="margin-top:8px"><label for="preview-scenario">Scenario </label>
 <select id="preview-scenario" name="scenario">{options}</select> <button>Load / reset</button></form>
-</details>{asset('HTML')}</main></body></html>'''
+</details>{studio_html()}</main></body></html>'''
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -293,8 +295,9 @@ class Handler(BaseHTTPRequestHandler):
                 if 'scenario' in parse_qs(url.query):
                     device.reset(scenario)
                 return self.send(200, page(scenario), 'text/html; charset=utf-8')
-            if url.path == '/neopixel/studio.js':
-                return self.send(200, asset('JS'), 'application/javascript; charset=utf-8')
+            if url.path in ('/assets/np-base.css', '/assets/studio.css', '/assets/studio.js'):
+                mime = 'text/css; charset=utf-8' if url.path.endswith('.css') else 'text/javascript; charset=utf-8'
+                return self.send(200, (ROOT / 'web/assets' / Path(url.path).name).read_bytes(), mime)
             if url.path in ('/assets/base.css', '/assets/logo.svg', '/assets/favicon.svg'):
                 mime = 'text/css; charset=utf-8' if url.path.endswith('.css') else 'image/svg+xml'
                 return self.send(200, (NETWORK_ASSETS / Path(url.path).name).read_bytes(), mime)
