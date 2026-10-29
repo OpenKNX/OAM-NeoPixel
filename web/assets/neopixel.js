@@ -67,7 +67,7 @@
   function fromState(j, ems) {
     var L = { emCount: j.emCount || 0 }, i, k;
     var layout = j.bpl === 5 ? 'RGBCCT' : j.bpl === 4 ? 'RGBW' : 'RGB', start = !!j.hw.start;
-    L.bar = { power: j.bar.pw, bri: j.bar.bri, layout: layout, fps: j.bar.fps, fpsT: j.bar.fpsT, hcl: j.bar.hcl, notes: [] };
+    L.bar = { power: j.bar.pw, bri: j.bar.bri, layout: layout, vleds: j.leds || 0, fps: j.bar.fps, fpsT: j.bar.fpsT, hcl: j.bar.hcl, notes: [] };
     L.pw = { mode: j.pwr.mode === 1 ? 'fix' : j.pwr.mode === 2 ? 'led' : 'off', lim: j.pwr.lim, thr: j.pwr.thr, abl: j.pwr.abl, perLed: j.pwr.perLed };
     L.strips = j.strips.filter(Boolean).map(function (s) {
       var pm = ['none', 'global', 'fix', 'led'][s.pm] || 'global', lim = s.sl || (pm === 'fix' ? s.lim : pm === 'led' ? s.n * s.perLed : 0);
@@ -162,6 +162,7 @@
   // Returns [R,G,B shown (white mixed in), intensity, r,g,b,w,cw as in the buffer] or null; other chain devices are not visible from here.
   function segPx(s, li, t, po) { return po === own(s) && li <= s.b - s.a ? livePx(s.a + li) : null; }
   function own(s) { return s.ch.m ? s.ch.off : 0; }
+  function virtLeds() { return sc.bar.vleds || sc.strips.reduce(function (a, s) { return a + s.leds; }, 0); } // virtual length, gaps included
   function stripStart(i) { if (sc.strips[i] && sc.strips[i].vs >= 0) return sc.strips[i].vs; var a = 0; for (var j = 0; j < i; j++) a += sc.strips[j].leds; return a; }
   function segAt(v) { for (var j = 0; j < sc.segs.length; j++) { var s = sc.segs[j]; if (v >= s.a && v <= s.b) return s; } return null; }
   function runLen(run) {
@@ -585,12 +586,16 @@
   }
 
   function renderPipe() {
-    var tot = sc.strips.reduce(function (a, s) { return a + s.leds; }, 0), h = '', a = 0;
+    var tot = virtLeds(), h = '', a = 0;
     function row(l, sub, parts) { return '<div class="np-pipe-l"><b>' + l + '</b><span>' + sub + '</span></div><div class="np-row">' + parts + '</div>'; }
     function part(w, cls, t1, t2, tip) { return '<div class="' + cls + '" style="flex:' + w + ' 1 0" title="' + (tip || '') + '">' + t1 + '<small>' + t2 + '</small></div>'; }
     h += row('Physikalische Streifen', sc.strips.length + ' Anschlüsse', sc.strips.map(function (s, i) { return part(s.leds, 't' + (i % 8), '<b>S' + (i + 1) + '</b> ' + stripLabel(i), s.leds + ' LEDs', s.chip + ' an ' + s.port); }).join(''));
     h += '<div class="np-arrow">↓ hintereinander gehängt</div>';
-    h += row('Virtueller Streifen', fmt(tot) + ' LEDs · ' + sc.bar.layout, sc.strips.map(function (s, i) { var r = part(s.leds, 't' + (i % 8), a + '–' + (a + s.leds - 1), 'S' + (i + 1)); a += s.leds; return r; }).join(''));
+    // Order and gaps as in the device: a strip the firmware left off keeps its ETS range unlit
+    var vparts = sc.strips.map(function (s, i) { return { s: s, i: i, v: stripStart(i) }; }).filter(function (e) { return !sc.bar.vleds || e.s.vs >= 0; }).sort(function (x, y) { return x.v - y.v; }).map(function (e) {
+      var r = (e.v > a ? part(e.v - a, 'peer', a + '–' + (e.v - 1), 'ohne Streifen') : '') + part(e.s.leds, 't' + (e.i % 8), e.v + '–' + (e.v + e.s.leds - 1), 'S' + (e.i + 1)); a = Math.max(a, e.v + e.s.leds); return r;
+    }).join('') + (tot > a ? part(tot - a, 'peer', a + '–' + (tot - 1), 'ohne Streifen') : '');
+    h += row('Virtueller Streifen', fmt(tot) + ' LEDs · ' + sc.bar.layout, vparts);
     h += '<div class="np-arrow">↓ aufgeteilt in Segmente</div>';
     h += row('Segmente', sc.segs.length + (sc.segs.length > 1 ? ' Segmente' : ' Segment'), sc.segs.map(function (s, i) {
       var g = s.geo; return part(s.b - s.a + 1, 't' + SEGT(i), '<b>' + (i + 1) + '</b> ' + segLabel(i), s.a + '–' + s.b + ' · ' + geoShort(g) + (!is1D(g) ? ' · ' + TOPO[g[3]] : ''));
@@ -742,7 +747,7 @@
 
   function renderHw() {
     var w = sc.hw, b = sc.bar, budget = b.fpsT ? 1000 / b.fpsT : 0, cpu = Math.round(w.ft / budget * 100), used = w.heapTot - w.heap, hp = Math.round(used / w.heapTot * 100), low = w.heapMin < 32;
-    var bpp = { RGB: 3, RGBW: 4, RGBCCT: 5 }[b.layout] || 3, buf = sc.strips.reduce(function (a, s) { return a + s.leds; }, 0) * bpp;
+    var bpp = { RGB: 3, RGBW: 4, RGBCCT: 5 }[b.layout] || 3, buf = virtLeds() * bpp;
     function row(l, v, wide) { return '<div class="np-r"' + (wide ? ' style="grid-column:1/-1"' : '') + '><i>' + l + '</i><b>' + v + '</b></div>'; }
     function chips(a, lab) { return '<span class="np-chips">' + a.map(function (u, i) { return '<span class="' + (u ? 'u' : '') + '">' + lab(i) + '</span>'; }).join('') + '</span>'; }
     var h = '<div class="np-grid"><div class="np-sub">Gerät</div>' + row('Prozessor', w.chip) +
