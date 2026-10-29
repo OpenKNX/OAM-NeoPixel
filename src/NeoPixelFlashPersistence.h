@@ -108,7 +108,8 @@ class NeoPixelFlashPersistence
      */
     void writeToFlash();
     bool hasSceneSnapshot() const { return _hasSceneSnapshot; }
-    void invalidateForEtsDownload() { _invalidated = true; }
+    /// @brief ETS download: drop the learned scenes, the ETS scenes apply; segment and relay states are kept
+    void invalidateScenesForEtsDownload() { _scenesInvalidated = true; }
 
     /**
      * @brief Read LED states from flash
@@ -131,7 +132,7 @@ class NeoPixelFlashPersistence
     void restoreRelaysAfterStartup();
 
   private:
-    bool _invalidated = false;
+    bool _scenesInvalidated = false;
     bool _hasSceneSnapshot = false;
     NeoPixelBusModule* _module; // Parent module reference
     uint8_t _channelIndex = 0;  // Current channel index for ParamNEO_NEO* macros

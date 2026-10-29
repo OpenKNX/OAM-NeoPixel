@@ -553,7 +553,7 @@ void NeoPixelBusModule::processBeforeRestart()
 
 void NeoPixelBusModule::processBeforeTablesUnload()
 {
-    if (_flashPersistence) _flashPersistence->invalidateForEtsDownload();
+    if (_flashPersistence) _flashPersistence->invalidateScenesForEtsDownload();
 #if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
     if (_studio) _studio->invalidateSaved();
 #endif

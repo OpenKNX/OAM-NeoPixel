@@ -232,11 +232,16 @@ int main(int argc, char** argv) {
         assert(persistence.hasSceneSnapshot() && scenes.scenes.size()==37 && scenes.scenes[0]==1);
         assert(cfg.savedSecondaryR==10 && cfg.savedSecondaryCW==50);
         assert(seg.secondary[0]==10 && seg.secondary[4]==50);
-        persistence.invalidateForEtsDownload();
+        // ETS download: segment state, relay state and secondary colour survive, the learned scenes do not
+        persistence.invalidateScenesForEtsDownload();
         openknx.flash.bytes.clear();persistence.writeToFlash();
-        State cleared;memcpy(&cleared,openknx.flash.bytes.data(),sizeof(cleared));assert(cleared.validFlags==0);
+        State kept;memcpy(&kept,openknx.flash.bytes.data(),sizeof(kept));assert(kept.validFlags!=0 && kept.brightness==120);
+        assert(openknx.flash.bytes[sizeof(State)+2]==0xA5); // relay signature
+        scenes.scenes={0};
+        seg.setSecondaryColor(0,0,0,0,0);
         persistence.readFromFlash(openknx.flash.bytes.data(),openknx.flash.bytes.size());
-        assert(!persistence.hasSceneSnapshot());
+        assert(!persistence.hasSceneSnapshot() && scenes.scenes.size()==1);
+        assert(seg.secondary[0]==10 && seg.secondary[4]==50);
     } else { assert(false && "unknown test"); }
     std::cout << test << " passed\n";
 }

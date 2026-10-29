@@ -65,7 +65,7 @@ void NeoPixelFlashPersistence::writeToFlash()
     for (size_t i = 0; i < segments.size(); i++)
     {
         SegmentFlashState state;
-        if (!_invalidated && saveSegmentState(i, state))
+        if (saveSegmentState(i, state))
         {
             // Write state structure to flash (14 bytes)
             openknx.flash.write((uint8_t*)&state, sizeof(SegmentFlashState));
@@ -97,7 +97,7 @@ void NeoPixelFlashPersistence::writeToFlash()
         RelayFlashState relayState = {};
         relayState.count = _module->_relayCount;
         relayState.statesMask = 0;
-        relayState.signature = _invalidated ? 0 : 0xA5;
+        relayState.signature = 0xA5;
 
         uint8_t maxRelays = std::min<uint8_t>(_module->_relayCount, NeoPixelBusModule::kMaxExternalRelays);
         if (!_module->_startupRestoreDone && _relayFlashValid)
@@ -123,13 +123,13 @@ void NeoPixelFlashPersistence::writeToFlash()
         openknx.flash.write((uint8_t*)&relayState, sizeof(RelayFlashState));
     }
 
-    uint8_t extension[6] = {'N', 'S', 'C', 1, uint8_t(segments.size()), uint8_t(_invalidated)};
+    uint8_t extension[6] = {'N', 'S', 'C', 1, uint8_t(segments.size()), uint8_t(_scenesInvalidated)};
     openknx.flash.write(extension, sizeof(extension));
     for (size_t i = 0; i < segments.size(); ++i)
     {
         const auto& cfg = segments[i];
         uint8_t secondary[5] = {};
-        if (!_invalidated && cfg.segment)
+        if (cfg.segment)
         {
             const auto& c = cfg.segment->getConfig();
             secondary[0] = c.r2();
@@ -148,7 +148,7 @@ void NeoPixelFlashPersistence::writeToFlash()
         }
         openknx.flash.write(secondary, sizeof(secondary));
         uint8_t scenes[361] = {};
-        if (!_invalidated && _module->_sceneManager)
+        if (!_scenesInvalidated && _module->_sceneManager)
         {
             const auto data = _module->_sceneManager->exportScenes(i);
             if (data.size() <= sizeof(scenes)) memcpy(scenes, data.data(), data.size());
@@ -345,8 +345,9 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
     }
 #endif
 
+    // Header byte 5 set: the learned scenes were dropped for an ETS download, the secondary colours stay valid
     _hasSceneSnapshot = hasExtension && data[expectedTotalSize + 5] == 0;
-    if (_hasSceneSnapshot)
+    if (hasExtension)
     {
         for (size_t i = 0; i < segments.size(); ++i)
         {
@@ -359,7 +360,7 @@ void NeoPixelFlashPersistence::readFromFlash(const uint8_t* data, uint16_t size)
             cfg.savedSecondaryCW = extension[4];
             if (cfg.segment && _module->effectiveStartupBehavior(i) == 1)
                 cfg.segment->setSecondaryColor(extension[0], extension[1], extension[2], extension[3], extension[4]);
-            if (_module->_sceneManager && extension[5] <= 10) _module->_sceneManager->importScenes(i, extension + 5, 1 + extension[5] * 36);
+            if (_hasSceneSnapshot && _module->_sceneManager && extension[5] <= 10) _module->_sceneManager->importScenes(i, extension + 5, 1 + extension[5] * 36);
         }
     }
 
