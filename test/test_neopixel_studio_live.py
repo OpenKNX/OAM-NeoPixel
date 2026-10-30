@@ -57,6 +57,7 @@ struct NeoPixelBusModule {
         for(unsigned i=0;i<2;++i) if(!_liveLedLayout || _liveStripLengths[i]) { _physicalStrips.push_back(new PhysicalStrip); _physicalStripEtsIds.push_back(i); }
     }
     void configureVirtualStripOrder() { _virtualStripConfiguration={{0,_liveLedLayout?_liveStripLengths[0]:30u},{30,_liveLedLayout?_liveStripLengths[1]:30u}}; }
+    void applyVirtualStripLength(uint32_t=0) {}
     void createVirtualStripWithOrder() { _virtualStrip=new VirtualStrip; for(auto& c:_segments) { c.segment=new Segment; _virtualStrip->segments.push_back(c.segment); } }
     void hideIfNotVisible(size_t i) { if(!_segments[i].savedPower) _segments[i].segment->pause(); }
     void configurePowerManagement() { ++powerUpdates; }
