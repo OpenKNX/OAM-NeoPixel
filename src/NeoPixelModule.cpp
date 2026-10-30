@@ -53,6 +53,12 @@
 #include <vector>
 #ifdef ARDUINO_ARCH_ESP32
     #include <esp_system.h>
+    #include <sdkconfig.h>
+    #if __has_include(<soc/spi_pins.h>)
+        #include <soc/spi_pins.h> // MSPI_IOMUX_PIN_NUM_*: pins of the SPI flash/PSRAM bus
+    #else
+        #warning "soc/spi_pins.h not found: the ESP32 flash pins are not reserved for strips and relays"
+    #endif
 #endif
 // #define NEOPIXEL_MODULE_TEST_ENV
 #ifdef NEOPIXEL_MODULE_TEST_ENV
@@ -3580,7 +3586,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // which kills the TPUart bus initialization (endless "Try Initialize", never "BCU connected").
     // This check rejects such strips regardless of the configuration mode (manual / hardware port / auto).
     // The buttons and status LEDs of the board are reserved as well (a value < 0 = not present,
-    // > 255 = IO expander pin, not a GPIO).
+    // > 255 = IO expander pin, not a GPIO), and so are the ESP32 flash/PSRAM bus and an Ethernet PHY.
     auto isReservedPin = [](uint8_t pin) -> bool {
 #if defined(KNX_UART_TX_PIN)
         if (pin == (uint8_t)KNX_UART_TX_PIN) return true;
@@ -3629,6 +3635,49 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 #endif
 #if defined(NEOPIX_LED_POWER_PIN)
         if ((int)(NEOPIX_LED_POWER_PIN) >= 0 && (int)(NEOPIX_LED_POWER_PIN) <= 255 && pin == (uint8_t)(NEOPIX_LED_POWER_PIN)) return true;
+#endif
+        // SPI flash bus of the ESP32 family (ESP32 6-11, ESP32-S3 27-32, C3 12-17, C6 24-26/28-30): driving one stops the chip
+#if defined(MSPI_IOMUX_PIN_NUM_CLK)
+        if (pin == MSPI_IOMUX_PIN_NUM_CLK || pin == MSPI_IOMUX_PIN_NUM_MISO || pin == MSPI_IOMUX_PIN_NUM_MOSI ||
+            pin == MSPI_IOMUX_PIN_NUM_HD || pin == MSPI_IOMUX_PIN_NUM_WP || pin == MSPI_IOMUX_PIN_NUM_CS0) return true;
+#endif
+        // ESP32-S3: PSRAM chip select, and the upper data lines of an octal flash/PSRAM (33-37)
+#if defined(MSPI_IOMUX_PIN_NUM_CS1) && defined(CONFIG_SPIRAM)
+        if (pin == MSPI_IOMUX_PIN_NUM_CS1) return true;
+#endif
+#if defined(MSPI_IOMUX_PIN_NUM_D4) && (defined(CONFIG_SPIRAM_MODE_OCT) || defined(CONFIG_ESPTOOLPY_OCT_FLASH))
+        if (pin == MSPI_IOMUX_PIN_NUM_D4 || pin == MSPI_IOMUX_PIN_NUM_D5 || pin == MSPI_IOMUX_PIN_NUM_D6 ||
+            pin == MSPI_IOMUX_PIN_NUM_D7 || pin == MSPI_IOMUX_PIN_NUM_DQS) return true;
+#endif
+        // Ethernet PHY wiring of the QuinLED Ethernet boards (OGM-HardwareConfig QuinLed.h)
+#if defined(QUINLED_HAS_ETHERNET) && QUINLED_HAS_ETHERNET
+        static const int ethPins[] = {
+    #if defined(QUINLED_ETHERNET_POWER_GPIO)
+            QUINLED_ETHERNET_POWER_GPIO,
+    #endif
+    #if defined(QUINLED_ETHERNET_CLK_MODE)
+            QUINLED_ETHERNET_CLK_MODE, // GPIO17 clock output (QUINLED_ETHERNET_CLK_OUT_GPIO on the Octa)
+    #endif
+    #if defined(QUINLED_ETHERNET_CLK_OUT_GPIO)
+            QUINLED_ETHERNET_CLK_OUT_GPIO,
+    #endif
+    #if defined(QUINLED_ETHERNET_TX_EN_GPIO)
+            QUINLED_ETHERNET_TX_EN_GPIO,
+    #endif
+    #if defined(QUINLED_ETHERNET_TXEN_GPIO)
+            QUINLED_ETHERNET_TXEN_GPIO,
+    #endif
+            QUINLED_ETHERNET_MDC_GPIO, QUINLED_ETHERNET_MDIO_GPIO, QUINLED_ETHERNET_TXD0_GPIO, QUINLED_ETHERNET_TXD1_GPIO,
+            QUINLED_ETHERNET_RXD0_GPIO, QUINLED_ETHERNET_RXD1_GPIO, QUINLED_ETHERNET_CRS_DV_GPIO};
+        for (const int ethPin : ethPins)
+            if (pin == ethPin) return true;
+#endif
+        // Ethernet PHY wiring of the Gledopto GL-C-620WL (OGM-HardwareConfig Gledopto.h; clock input ETH_CLOCK_GPIO0_IN)
+#if defined(GLEDOPTO_ETHERNET_TXEN_GPIO)
+        if (pin == 0 || pin == GLEDOPTO_ETHERNET_POWER_GPIO || pin == GLEDOPTO_ETHERNET_MDC_GPIO ||
+            pin == GLEDOPTO_ETHERNET_MDIO_GPIO || pin == GLEDOPTO_ETHERNET_TXEN_GPIO || pin == GLEDOPTO_ETHERNET_TXD0_GPIO ||
+            pin == GLEDOPTO_ETHERNET_TXD1_GPIO || pin == GLEDOPTO_ETHERNET_RXD0_GPIO || pin == GLEDOPTO_ETHERNET_RXD1_GPIO ||
+            pin == GLEDOPTO_ETHERNET_CRS_DV_GPIO) return true;
 #endif
         return false;
     };
@@ -3736,7 +3785,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
                     if (isReservedPin(gpio))
                     {
-                        logErrorP("Relay %d: REFUSED - GPIO %d is a reserved KNX/button/LED pin", i + 1, gpio);
+                        logErrorP("Relay %d: REFUSED - GPIO %d is a reserved pin (KNX, button, LED, flash or Ethernet)", i + 1, gpio);
                         _relayPins[i] = 255;
                         continue;
                     }
@@ -3971,7 +4020,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
             if (isReservedPin(mosiGpio) || isReservedPin(sckGpio))
             {
-                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved KNX/button/LED pins (MOSI=%d, SCK=%d). Strip disabled.",
+                logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved pins (KNX, button, LED, flash or Ethernet) (MOSI=%d, SCK=%d). Strip disabled.",
                           i, mosiGpio, sckGpio);
                 continue; // Skip this strip completely
             }
@@ -4040,7 +4089,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             // SAFETY: never drive KNX/system-reserved pins (e.g. GPIO0/1 = KNX TX/RX on KNeoPix)
             if (isReservedPin(dataGpioPin))
             {
-                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with a reserved KNX/button/LED pin. Strip disabled.",
+                logErrorP("Strip %d: REFUSED - Data GPIO %d collides with a reserved pin (KNX, button, LED, flash or Ethernet). Strip disabled.",
                           i, dataGpioPin);
                 continue; // Skip this strip completely
             }

@@ -74,7 +74,7 @@ Pro aktiviertem Relais gibt es zwei KOs:
 
 Werden keine Relais benötigt, die Auswahl einfach auf **Deaktiviert** stellen. Es entstehen dann keinerlei Einschränkungen für die übrige LED-Steuerung.
 
-**Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX), den Save-Pin, seine Taster oder seine Status-LEDs benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“).
+**Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX), den Save-Pin, seine Taster, seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“).
 
 **Hinweis:** Für komplexere Automatisierungen (z. B. zeitgesteuerte oder verknüpfte Schaltungen) empfiehlt sich ein separates KNX-Schaltaktor-Modul.
 
