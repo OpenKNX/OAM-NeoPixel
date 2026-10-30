@@ -3573,6 +3573,15 @@ $hardwareConfigs = $hardwareConfigsFiltered
 # Script block, not -Property: Windows PowerShell 5.1 does not sort hashtables by key name
 $hardwareConfigs = @($hardwareConfigs | Sort-Object -Property @{ Expression = { $_.DeviceIdBit } })
 
+# Two hardware with one DEVICE_HW_ID would share an ETS enum value and its <when test> gates
+$duplicateHwIds = @($hardwareConfigs | Group-Object -Property { $_.DeviceIdBit } | Where-Object { $_.Count -gt 1 })
+if ($duplicateHwIds.Count -gt 0) {
+  foreach ($dup in $duplicateHwIds) {
+    Write-ErrorMsg ("Duplicate DEVICE_HW_ID 0x{0}: {1}" -f ([int]$dup.Name).ToString('X4'), (($dup.Group | ForEach-Object { $_.Name }) -join ', '))
+  }
+  exit 1
+}
+
 if ($hardwareConfigsSkipped.Count -gt 0) {
   Write-Host "  Skipped $($hardwareConfigsSkipped.Count) hardware(s) without HW_ID" -ForegroundColor DarkYellow
 }
