@@ -153,6 +153,8 @@
   function partName(src, idx) { var r = lay && lay.runs.filter(function (x) { return x.src === src && x[src === 'seg' ? 'seg' : 'strip'] === idx && x.on !== 0; })[0]; return r && r.name ? r.name : ''; }
   function segLabel(i) { var n = partName('seg', i); return n ? esc(n) : 'Segment ' + (i + 1); } // HTML: names come from imported files
   function stripLabel(i) { var n = partName('strip', i); return n ? esc(n) : 'Streifen ' + (i + 1); }
+  // Segment table: next to the badge only an own name adds anything; the default part name "Segment n" repeats it.
+  function segName(i) { var n = partName('seg', i); return n && n !== 'Segment ' + (i + 1) ? esc(n) : ''; }
   function emOf(id) { return sc.ems.filter(function (e) { return e.id === id; })[0]; }
   function emOn(s) { return !!s.em && /run|pause/.test(s.ems || ''); }
   // What a segment shows now: the active cue while an EM runs, else the direct state.
@@ -628,7 +630,7 @@
     sc.segs.forEach(function (s, i) {
       var ch = '<span class="np-f">—</span>', lk = lookOf(s);
       if (s.ch.m) ch = (s.ch.timeout ? pill('bad', 'Slave · Timeout') : bandSuspended(s) ? (s.ch.m === 1 ? 'Master' : 'Slave') + ' ' + pill('warn', 'ausgesetzt (EM)') : (s.ch.m === 1 ? 'Master' : 'Slave')) + '<small>' + fmt(s.ch.total) + ' LEDs · Teil ' + s.ch.off + '–' + (s.ch.off + s.b - s.a) + '</small>';
-      h += '<tr><td>' + badge(SEGT(i), i + 1) + segLabel(i) + '</td><td class="np-num">' + s.a + '–' + s.b + '<small>' + (s.b - s.a + 1) + ' LEDs</small></td><td>' + geoShort(s.geo) + (!is1D(s.geo) ? '<small>' + TOPO[s.geo[3]] + '</small>' : '') + '</td>' +
+      h += '<tr><td>' + badge(SEGT(i), i + 1) + segName(i) + '</td><td class="np-num">' + s.a + '–' + s.b + '<small>' + (s.b - s.a + 1) + ' LEDs</small></td><td>' + geoShort(s.geo) + (!is1D(s.geo) ? '<small>' + TOPO[s.geo[3]] + '</small>' : '') + '</td>' +
         '<td>' + stPill(s) + '</td><td class="np-num">' + s.bri + ' %</td>' +
         '<td>' + swatch(s.c1, s.w, s.cw) + (s.c2 ? swatch(s.c2) : '') + '<small>' + s.c1.toUpperCase() + (s.w ? ' + W ' + s.w : '') + (s.cw ? ' · CW ' + s.cw : '') + '</small></td>' +
         '<td>' + (emOn(s) ? lk.fx + '<small>aus Cue ' + s.cue + '</small>' : s.fx + (s.scenes ? '<small>Szenen ' + s.scenes.map(function (q) { return q.n; }).join(', ') + ' angelegt</small>' : '')) + '</td><td>' + emText(s) + '</td><td>' + ch + '</td><td>' + (s.hcl ? fmt(s.hcl) + ' K<small>' + (s.hclSrc || '') + '</small>' : '<span class="np-f">—</span>') + '</td></tr>';
