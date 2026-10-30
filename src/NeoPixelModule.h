@@ -316,6 +316,7 @@ class NeoPixelBusModule : public OpenKNX::Module
 #endif
     bool _localTestMode = false;       // 'neo init': run loop()/console WITHOUT an ETS download (local bench tests only)
     uint16_t _totalLeds = 0;
+    uint8_t _stripsWithoutGpio = 0; // strips with LEDs the last configureFromETS left off on purpose (no, reserved or taken GPIO)
     std::vector<PhysicalStrip*> _physicalStrips;
     std::vector<uint8_t> _physicalStripEtsIds; ///< ETS strip channel of each _physicalStrips entry
     bool _liveLedLayout = false;

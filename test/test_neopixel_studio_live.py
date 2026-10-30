@@ -41,7 +41,7 @@ struct NeoPixelBusModule {
     Manager manager;
     struct Pixel { Manager* m; Manager* getManager() { return m; } } _neoPixel{&manager};
     bool _livePinKnown[8]={}; uint8_t _liveDataPins[8]={},_liveClockPins[8]={};
-    bool _liveLedLayout=false; uint8_t _channelIndex=3;
+    bool _liveLedLayout=false; uint8_t _channelIndex=3, _stripsWithoutGpio=0;
     uint16_t _liveStripLengths[8]={},_liveStripSkips[8]={},_liveSegmentStarts[16]={},_liveSegmentEnds[16]={};
     std::vector<Config> _segments{2};
     std::vector<PhysicalStrip*> _physicalStrips;

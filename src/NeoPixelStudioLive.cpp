@@ -76,7 +76,8 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
     };
     auto rebuild = [&](bool sequential, unsigned expected) {
         _module.configureFromETS(true);
-        if (_module._physicalStrips.size() != expected || !manager->init()) return false;
+        // Strips left off on purpose (no, reserved or taken GPIO) are no initialization failure
+        if (_module._physicalStrips.size() + _module._stripsWithoutGpio != expected || !manager->init()) return false;
         _module.configureVirtualStripOrder();
         if (sequential)
         {
@@ -107,6 +108,8 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
     };
     // Retain the pins actually selected at boot.
     // Disabling another strip must never move an existing output to another pin.
+    // Only strips running now keep a pin; a flag from an earlier apply would claim a pin twice.
+    std::fill_n(_module._livePinKnown, 8, false);
     for (size_t i = 0; i < _module._physicalStrips.size(); ++i)
     {
         const auto slot = _module._physicalStripEtsIds[i];
@@ -114,7 +117,7 @@ std::string NeoPixelStudio::applyLiveCommissioning(size_t index, const Reader& v
         _module._liveDataPins[slot] = _module._physicalStrips[i]->getDataPin();
         _module._liveClockPins[slot] = _module._physicalStrips[i]->getClockPin();
     }
-    unsigned previousStripCount = _module._physicalStrips.size();
+    unsigned previousStripCount = _module._physicalStrips.size() + _module._stripsWithoutGpio;
     destroy();
     _module._liveLedLayout = true;
     for (size_t i = 0; i < 8; ++i)

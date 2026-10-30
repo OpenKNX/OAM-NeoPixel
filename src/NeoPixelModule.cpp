@@ -3792,13 +3792,12 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
                     if (isPinUsed(gpio))
                     {
-                        logErrorP("Relay %d: GPIO %d already in use", i + 1, gpio);
+                        logErrorP("Relay %d: REFUSED - GPIO %d is already used by an earlier relay", i + 1, gpio);
+                        _relayPins[i] = 255;
+                        continue;
                     }
-                    else
-                    {
-                        usedPins.push_back(gpio);
-                        logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
-                    }
+                    usedPins.push_back(gpio);
+                    logInfoP("Relay %d: Reserved GPIO %d", i + 1, gpio);
 
     // Read output logic (invert) setting per relay; needed before the first write below
     #if defined(ParamNEO_NEOExternalRelay1OutputLogic)
@@ -3865,6 +3864,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // Determine number of strips from ETS (match the runtime strip limit).
     const uint8_t maxStrips = std::max<uint8_t>(1, std::min<uint8_t>(NEOPIXEL_MAX_PHYSICAL_STRIPS, ParamNEO_NEONumberOfLEDStrips));
     _totalLeds = 0;
+    _stripsWithoutGpio = 0;
 
     // CRITICAL: Delete old PhysicalStrip objects before clearing vector!
     // This prevents memory leaks and deregisters old DMA handlers
@@ -3878,8 +3878,27 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // Clear virtual strip configuration
     _virtualStripConfiguration.clear();
 
-    // PRE-SCAN: mark the GPIOs of all strips (hardware port or manual) as used before any strip is built,
-    // so a pin conflict between strips is reported
+    // PRE-SCAN: claim the GPIOs of all strips (hardware port or manual) before any strip is built. A strip
+    // whose GPIO is already claimed by a relay or an earlier strip is refused; an SPI strip claims MOSI and SCK
+    // together or not at all. A strip with a reserved pin claims nothing (the build refuses it).
+    bool stripGpioTaken[NEOPIXEL_MAX_PHYSICAL_STRIPS] = {};
+    // Studio live layout: running strips keep their pins, so they are claimed before any other strip
+    if (physicalOnly)
+    {
+        for (uint8_t i = 0; i < maxStrips; ++i)
+        {
+            if (!_livePinKnown[i] || configuredStripLength(i) == 0) continue;
+            const uint8_t data = _liveDataPins[i], clock = _liveClockPins[i];
+            if ((data != 255 && isPinUsed(data)) || (clock != 255 && (isPinUsed(clock) || clock == data)))
+            {
+                logErrorP("Strip %d: REFUSED - running GPIO %d/%d is already used by a relay or another strip. Strip disabled.", i, data, clock);
+                stripGpioTaken[i] = true;
+                continue;
+            }
+            if (data != 255) usedPins.push_back(data);
+            if (clock != 255) usedPins.push_back(clock);
+        }
+    }
     logInfoP("Pre-scanning %d strips for their GPIOs...", maxStrips);
     for (uint8_t i = 0; i < maxStrips; ++i)
     {
@@ -3887,12 +3906,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
         setChannelIndex(i);
         logInfoP("PRE-SCAN Strip %d: Set _channelIndex = %d", i, _channelIndex);
 
-        if (physicalOnly && _livePinKnown[i])
-        {
-            usedPins.push_back(_liveDataPins[i]);
-            if (_liveClockPins[i] != 255) usedPins.push_back(_liveClockPins[i]);
-            continue;
-        }
+        if (physicalOnly && _livePinKnown[i]) continue; // claimed above
 
         const uint16_t pixels = configuredStripLength(_channelIndex);
         logInfoP("PRE-SCAN Strip %d: Read pixels = %d (from offset %d)", i, pixels, NEOSTRIP_ParamBlockOffset + _channelIndex * NEOSTRIP_ParamBlockSize + NEOSTRIP_NEOLength);
@@ -3900,28 +3914,42 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = StripConfiguration::mapProtocol(ledTypeParam);
-        // Reserve the strip's GPIOs (hardware port or manual) before any strip is built
-        auto preMark = [&](const char* signal, uint8_t gpio) {
-            if (gpio == 255) return;
-            if (!isPinUsed(gpio))
-            {
-                usedPins.push_back(gpio);
-                logInfoP("Strip %d: Pre-marked %s GPIO %d as used", i, signal, gpio);
-            }
-            else
-            {
-                logWarningP("Strip %d: %s GPIO %d already marked as used!", i, signal, gpio);
-            }
-        };
         const uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
-        if (isSpiProtocol(proto))
+        const bool spi = isSpiProtocol(proto);
+        const char* signals[2] = {spi ? "SCK" : "Data", "MOSI"};
+        uint8_t gpios[2] = {255, 255};
+        if (spi)
         {
-            preMark("SCK", resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false));
-            preMark("MOSI", resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, false));
+            gpios[0] = resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false);
+            gpios[1] = resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, false);
+            if (gpios[0] == 255 || gpios[1] == 255) continue; // the build leaves the strip off
         }
         else
         {
-            preMark("Data", resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEODataGPIO, false));
+            gpios[0] = resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEODataGPIO, false);
+            if (gpios[0] == 255) continue;
+        }
+        const uint8_t count = spi ? 2 : 1;
+        bool reserved = false;
+        for (uint8_t s = 0; s < count; ++s)
+            reserved = reserved || isReservedPin(gpios[s]);
+        if (reserved) continue; // refused by the build with its own log line
+        for (uint8_t s = 0; s < count; ++s)
+        {
+            const bool sameAsSck = (s == 1 && gpios[1] == gpios[0]);
+            if (isPinUsed(gpios[s]) || sameAsSck)
+            {
+                logErrorP("Strip %d: REFUSED - %s GPIO %d is already used by %s. Strip disabled.", i, signals[s], gpios[s],
+                          sameAsSck ? "its own SCK" : "a relay or another strip");
+                stripGpioTaken[i] = true;
+                break;
+            }
+        }
+        if (stripGpioTaken[i]) continue;
+        for (uint8_t s = 0; s < count; ++s)
+        {
+            usedPins.push_back(gpios[s]);
+            logInfoP("Strip %d: Pre-marked %s GPIO %d as used", i, signals[s], gpios[s]);
         }
     }
     logInfoP("Pre-scan complete: %d GPIO pins marked as used", (int)usedPins.size());
@@ -3972,6 +4000,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             logInfoP("Strip %d: Skipped (0 LEDs configured)", i);
             continue;
         }
+        if (stripGpioTaken[i]) { ++_stripsWithoutGpio; continue; } // GPIO claimed by a relay or another strip, logged by the pre-scan
 
         // Determine if this is an SPI protocol and get appropriate GPIO pins
         PhysicalStrip* phys = nullptr;
@@ -3989,7 +4018,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                 // Data Port -> MOSI, Clock Port -> SCK; each "Manuell" uses its own manual GPIO parameter
                 mosiGpio = resolveStripGpio(i, "data", getDataPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, true);
                 sckGpio = resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, true);
-                if (mosiGpio == 255 || sckGpio == 255) continue; // strip stays off, logged above
+                if (mosiGpio == 255 || sckGpio == 255) { ++_stripsWithoutGpio; continue; } // strip stays off, logged above
                 logInfoP("Strip %d: SPI pins MOSI:%d, SCK:%d", i, mosiGpio, sckGpio);
             }
 
@@ -4022,6 +4051,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             {
                 logErrorP("Strip %d: REFUSED - SPI GPIO(s) collide with reserved pins (KNX, button, LED, flash or Ethernet) (MOSI=%d, SCK=%d). Strip disabled.",
                           i, mosiGpio, sckGpio);
+                ++_stripsWithoutGpio;
                 continue; // Skip this strip completely
             }
 
@@ -4082,7 +4112,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             else
             {
                 dataGpioPin = resolveStripGpio(i, "data", getDataPortSelectionForHardwareIndex(i), dataGpio, true);
-                if (dataGpioPin == 255) continue; // strip stays off, logged above
+                if (dataGpioPin == 255) { ++_stripsWithoutGpio; continue; } // strip stays off, logged above
                 logInfoP("Strip %d: Data GPIO %d", i, dataGpioPin);
             }
 
@@ -4091,6 +4121,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             {
                 logErrorP("Strip %d: REFUSED - Data GPIO %d collides with a reserved pin (KNX, button, LED, flash or Ethernet). Strip disabled.",
                           i, dataGpioPin);
+                ++_stripsWithoutGpio;
                 continue; // Skip this strip completely
             }
 
