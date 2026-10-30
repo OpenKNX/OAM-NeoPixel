@@ -255,12 +255,13 @@
     line: {
       name: 'Linien', icon: '<path d="M4 14h12M20 14h12M36 14h8"/>',
       prm: [['n', 'Teile', 1, 8], ['dens', 'LEDs pro Meter', 10, 144], ['gap', 'Abstand (cm)', 0, 500]],
-      runs: function (p) { return p.n; }, part: 'Teil',
-      build: function (p, runs) { // part length from the LED count of its source
+      runs: function (p) { return p.n; }, part: 'Teil', wrap: 1,
+      build: function (p, runs, cols) { // part length from the LED count of its source; cols wraps the parts into rows (wrapRows sets y)
         var G = { lines: [], areas: [] }, x = 0;
-        runs.forEach(function (r) {
-          var n = runLen(r) || 60, len = n / p.dens * 100;
-          G.areas.push({ x: x - 10, y: -16, w: len + 20, h: 32, run: r }); G.lines.push({ run: r, x1: x, y1: 0, x2: x + len, y2: 0, n: n, i0: 0 });
+        runs.forEach(function (r, i) {
+          var n = runLen(r) || 60, len = n / p.dens * 100, row = cols ? Math.floor(i / cols) : 0;
+          if (cols && i % cols === 0) x = 0;
+          G.areas.push({ x: x - 10, y: -16, w: len + 20, h: 32, run: r, row: row }); G.lines.push({ run: r, x1: x, y1: 0, x2: x + len, y2: 0, n: n, i0: 0 });
           x += len + Math.max(p.gap, 30);
         });
         return G;
@@ -317,18 +318,34 @@
     onPlan(planMain, function () { drawPlan0(t); });
     if (edOpen() && planEd.sz) onPlan(planEd, function () { drawPlan0(t); });
   }
+  function areaLabel(a) { return a.run.name + (a.run.src === 'none' ? ' · nicht belegt' : ''); }
+  // Linien: as many parts per row as leave every name room up to the next part; rows share one scale.
+  function wrapRows(T, cv, w, maxH, pad) {
+    var c = cv.getContext('2d'), n = lay.runs.length, G, b, s, ox, k, y = 0;
+    c.font = '600 11px sans-serif';
+    for (k = n; k >= 1; k--) {
+      G = T.build(lay.p, lay.runs, k); G.rows = Math.ceil(n / k); b = bounds(G); s = Math.min((w - 2 * pad) / Math.max(1, b.w), maxH / (32 * G.rows)); ox = pad + ((w - 2 * pad) - b.w * s) / 2 - b.x * s;
+      if (G.areas.every(function (a, i) { if (nodeOf(a.run)) return true; var nx = G.areas[i + 1], room = nx && nx.row === a.row ? (nx.x - a.x) * s : w - 4 - ox - a.x * s; return c.measureText(areaLabel(a)).width + 8 <= room; })) break;
+    }
+    if (!k) { G = T.build(lay.p, lay.runs, n); G.rows = 1; } // nothing fits: one row, names cut as before
+    G.areas.forEach(function (a, i) { // row gap in px: label line, or bus and pill of a chained part
+      if (i && a.row !== G.areas[i - 1].row) y += 32 + (G.areas.some(function (q) { return q.row === a.row && nodeOf(q.run); }) ? 76 : 30) / s;
+      a.y += y; G.lines[i].y1 = G.lines[i].y2 = y;
+    });
+    return G;
+  }
   function layoutPlan0(cv, maxH) {
     var T = TPL[lay.tpl], w = cv.clientWidth || 800;
     plan.cv = cv; plan.G = null; plan.chained = false;
     if (cv.id === 'plan') { cv.style.cursor = T.cube ? 'grab' : 'default'; cv.style.touchAction = T.cube ? 'none' : 'auto'; }
     if (T.cube) { plan.sz = sizeCanvas(cv, Math.round(Math.min(maxH + 40, clamp(w * .5, 300, 420)))); return; }
-    var G = T.build(lay.p, lay.runs), b;
+    var pad = 22, G = T.wrap ? wrapRows(T, cv, w, maxH, pad) : T.build(lay.p, lay.runs), b;
     G.lines.forEach(function (L) { L.run.N = 0; });
     G.lines.forEach(function (L) { L.run.N = Math.max(L.run.N, L.map ? L.n * lay.p.rows : L.i0 + L.n); });
     G.lines.forEach(function (L) { L.runN = L.run.N; });
-    b = bounds(G); var chained = G.areas.some(function (a) { return a.run && nodeOf(a.run); });
-    var top = chained ? (lay.edge ? 96 : 76) : (lay.edge ? 36 : 30), bot = lay.edge ? 34 : 22, pad = 22;
-    var s = Math.min((w - 2 * pad) / Math.max(1, b.w), maxH / Math.max(1, b.h));
+    b = bounds(G); var chained = G.areas.some(function (a) { return a.run && nodeOf(a.run); }), chained0 = G.areas.some(function (a) { return !a.row && a.run && nodeOf(a.run); });
+    var top = chained0 ? (lay.edge ? 96 : 76) : (lay.edge ? 36 : 30), bot = lay.edge ? 34 : 22;
+    var s = Math.min((w - 2 * pad) / Math.max(1, b.w), maxH / Math.max(1, T.wrap ? 32 * G.rows : b.h)); // wrapped: all rows together share maxH
     plan.s = s; plan.ox = pad + ((w - 2 * pad) - b.w * s) / 2 - b.x * s; plan.oy = top - b.y * s; plan.b = b; plan.top = top; plan.G = G; plan.chained = chained;
     plan.sz = sizeCanvas(cv, Math.round(b.h * s + top + bot));
   }
@@ -365,43 +382,52 @@
       }
     }
   }
-  // KNX group telegrams from the master to all slaves; returns the slaves a telegram just reached
+  // KNX group telegrams from the master to all slaves; marks the slaves a telegram just reached (p.arr).
+  // A point may carry its own bus height (p.yb, one per row of the top view); rows are joined by a trunk at the left edge.
   function pillsAndBus(c, pts, yBus, t) {
-    var master = pts.filter(function (p) { return p.node.role === 'Master'; })[0], xs = pts.map(function (p) { return p.x; });
+    pts.forEach(function (p) { if (p.yb === undefined) p.yb = yBus; p.arr = 0; });
+    var master = pts.filter(function (p) { return p.node.role === 'Master'; })[0], TX = 8;
+    var ys = pts.map(function (p) { return p.yb; }).filter(function (y, i, a) { return a.indexOf(y) === i; }).sort(function (a, b) { return a - b; });
+    function xsAt(y) { return pts.filter(function (p) { return p.yb === y; }).map(function (p) { return p.x; }); }
     c.strokeStyle = LINE; c.lineWidth = 2; c.setLineDash([]);
-    c.beginPath(); c.moveTo(Math.min.apply(null, xs), yBus); c.lineTo(Math.max.apply(null, xs), yBus); c.stroke();
+    ys.forEach(function (y) { var xs = xsAt(y); c.beginPath(); c.moveTo(ys.length > 1 ? TX : Math.min.apply(null, xs), y); c.lineTo(Math.max.apply(null, xs), y); c.stroke(); });
+    if (ys.length > 1) { c.beginPath(); c.moveTo(TX, ys[0]); c.lineTo(TX, ys[ys.length - 1]); c.stroke(); }
     pts.forEach(function (p) {
       var broken = p.node.timeout, unk = p.node.unk && !broken;
       c.strokeStyle = broken ? BAD : unk ? LINE : FAINT; c.setLineDash(broken || unk ? [4, 4] : []);
-      c.beginPath(); c.moveTo(p.x, yBus); c.lineTo(p.x, p.y); c.stroke(); c.setLineDash([]);
-      if (broken) { var my = (yBus + p.y) / 2; c.strokeStyle = BAD; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 5, my - 5); c.lineTo(p.x + 5, my + 5); c.moveTo(p.x + 5, my - 5); c.lineTo(p.x - 5, my + 5); c.stroke(); }
+      c.beginPath(); c.moveTo(p.x, p.yb); c.lineTo(p.x, p.y); c.stroke(); c.setLineDash([]);
+      if (broken) { var my = (p.yb + p.y) / 2; c.strokeStyle = BAD; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 5, my - 5); c.lineTo(p.x + 5, my + 5); c.moveTo(p.x + 5, my - 5); c.lineTo(p.x - 5, my + 5); c.stroke(); }
     });
     c.font = '11px sans-serif'; c.fillStyle = FAINT; c.textAlign = 'left'; c.textBaseline = 'bottom';
-    if (xs.length > 1) c.fillText(fit(c, 'KNX · Sync-KO (Gruppenadresse)', Math.max(60, Math.abs(xs[1] - xs[0]) - 20)), Math.min.apply(null, xs) + 6, yBus - 3);
-    var arrived = {};
+    var x0 = xsAt(ys[0]);
+    if (ys.length > 1) c.fillText(fit(c, 'KNX · Sync-KO (Gruppenadresse)', Math.max(60, Math.max.apply(null, x0) - TX - 20)), TX + 6, ys[0] - 3);
+    else if (x0.length > 1) c.fillText(fit(c, 'KNX · Sync-KO (Gruppenadresse)', Math.max(60, Math.abs(x0[1] - x0[0]) - 20)), Math.min.apply(null, x0) + 6, ys[0] - 3);
+    function dot(a, b, f) { // position f (0..1) on the way pill a -> bus -> pill b
+      var P = a.yb === b.yb ? [[a.x, a.y], [a.x, a.yb], [b.x, b.yb], [b.x, b.y]] : [[a.x, a.y], [a.x, a.yb], [TX, a.yb], [TX, b.yb], [b.x, b.yb], [b.x, b.y]], L = 0, i, l, d;
+      for (i = 1; i < P.length; i++) L += Math.abs(P[i][0] - P[i - 1][0]) + Math.abs(P[i][1] - P[i - 1][1]);
+      for (d = f * L, i = 1; i < P.length; i++) {
+        l = Math.abs(P[i][0] - P[i - 1][0]) + Math.abs(P[i][1] - P[i - 1][1]);
+        if (d <= l || i === P.length - 1) { var g = l ? Math.min(1, d / l) : 0, x = P[i - 1][0] + (P[i][0] - P[i - 1][0]) * g, y = P[i - 1][1] + (P[i][1] - P[i - 1][1]) * g; break; }
+        d -= l;
+      }
+      c.fillStyle = GREEN; c.globalAlpha = .22; c.beginPath(); c.arc(x, y, 9, 0, 6.283); c.fill(); c.globalAlpha = 1; c.beginPath(); c.arc(x, y, 4, 0, 6.283); c.fill();
+    }
+    var ph = (t % 3) / 1.1; // heartbeat every 3 s; a change is sent at once (min. 300 ms apart)
     if (master && !master.node.unk) {
-      var ph = (t % 3) / 1.1; // heartbeat every 3 s; a change is sent at once (min. 300 ms apart)
       pts.forEach(function (p) {
         if (p === master) return;
-        var l1 = master.y - yBus, l2 = Math.abs(p.x - master.x), l3 = p.y - yBus, L = l1 + l2 + l3, d = clamp(ph, 0, 1) * L, x, y;
-        if (ph > 1) { if (ph < 1.35) arrived[p.x] = 1; return; }
-        if (d < l1) { x = master.x; y = master.y - d; } else if (d < l1 + l2) { x = master.x + Math.sign(p.x - master.x) * (d - l1); y = yBus; } else { x = p.x; y = yBus + (d - l1 - l2); }
-        c.fillStyle = GREEN; c.globalAlpha = .22; c.beginPath(); c.arc(x, y, 9, 0, 6.283); c.fill(); c.globalAlpha = 1; c.beginPath(); c.arc(x, y, 4, 0, 6.283); c.fill();
+        if (ph > 1) { if (ph < 1.35) p.arr = 1; return; }
+        dot(master, p, clamp(ph, 0, 1));
       });
     } else {
       // This device is a receiving slave and the master is not known by name: the telegram still
       // arrives here, so it runs from the other part of the chain to this device.
       var me = pts.filter(function (p) { return p.node.me; })[0], src = pts.filter(function (p) { return !p.node.me; })[0], cs0 = sc.segs[sc.chain.seg];
       if (me && src && me.node.role !== 'Master' && !me.node.timeout && !me.node.wait && cs0 && !cs0.ch.none) {
-        var ph2 = (t % 3) / 1.1, m1 = src.y - yBus, m2 = Math.abs(me.x - src.x), m3 = me.y - yBus, M = m1 + m2 + m3, e = clamp(ph2, 0, 1) * M, ex, ey;
-        if (ph2 > 1) { if (ph2 < 1.35) arrived[me.x] = 1; }
-        else {
-          if (e < m1) { ex = src.x; ey = src.y - e; } else if (e < m1 + m2) { ex = src.x + Math.sign(me.x - src.x) * (e - m1); ey = yBus; } else { ex = me.x; ey = yBus + (e - m1 - m2); }
-          c.fillStyle = GREEN; c.globalAlpha = .22; c.beginPath(); c.arc(ex, ey, 9, 0, 6.283); c.fill(); c.globalAlpha = 1; c.beginPath(); c.arc(ex, ey, 4, 0, 6.283); c.fill();
-        }
+        if (ph > 1) { if (ph < 1.35) me.arr = 1; }
+        else dot(src, me, clamp(ph, 0, 1));
       }
     }
-    return arrived;
   }
   function nodeBox(c, p, x, y, w, h, lines, arrived) {
     var n = p.node;
@@ -418,6 +444,10 @@
     c.setTransform(z.dpr, 0, 0, z.dpr, 0, 0); c.fillStyle = STAGE; c.fillRect(0, 0, z.w, z.h);
     if (!G) return drawCube(c, z, t);
     var s = plan.s, X = function (x) { return plan.ox + x * s; }, Y = function (y) { return plan.oy + y * s; };
+    function labRoom(a) { // Linien: a name may run up to the next part of its row (wrapRows reserved that room)
+      if (!TPL[lay.tpl].wrap) return a.w * s - 4;
+      var nx = G.areas[G.areas.indexOf(a) + 1]; return nx && nx.row === a.row ? (nx.x - a.x) * s - 8 : z.w - 8 - X(a.x);
+    }
     c.textBaseline = 'middle';
     G.areas.forEach(function (a) {
       if (a.drive) { c.fillStyle = '#f1f2ee'; c.fillRect(X(a.x), Y(a.y), a.w * s, a.h * s); c.fillStyle = MUTE; c.font = '11px sans-serif'; c.textAlign = 'left'; c.fillText('Zufahrt', X(a.x) + 8, Y(a.y) + 12); return; }
@@ -435,7 +465,7 @@
         var g0 = sc.segs[sc.chain.seg].geo; c.fillStyle = MUTE; c.font = '11px sans-serif'; c.textAlign = 'center';
         c.fillText(fit(c, 'EM ' + sc.segs[sc.chain.seg].em + ' · eigene ' + (is2D(g0) ? 'Matrix ' + g0[0] + ' × ' + g0[1] : 'LEDs'), a.w * s - 8), X(a.x + a.w / 2), Y(a.y) + 8);
       }
-      if (!nd) { c.fillStyle = INK; c.font = '600 11px sans-serif'; c.textAlign = 'left'; c.fillText(fit(c, a.run.name + (a.run.src === 'none' ? ' · nicht belegt' : ''), Math.max(30, a.w * s - 4)), X(a.x) + 4, Y(a.y) - 9); }
+      if (!nd) { c.fillStyle = INK; c.font = '600 11px sans-serif'; c.textAlign = 'left'; c.fillText(fit(c, areaLabel(a), Math.max(30, labRoom(a))), X(a.x) + 4, Y(a.y) - 9); }
     });
     if (lay.edge) { c.fillStyle = FAINT; c.font = '11px sans-serif'; c.textAlign = 'center'; c.fillText('↑ ' + lay.edge[0], X(plan.b.x + plan.b.w / 2), plan.top - 14); c.fillText('↓ ' + lay.edge[1], X(plan.b.x + plan.b.w / 2), Y(plan.b.y + plan.b.h) + 18); }
     G.lines.forEach(function (L) {
@@ -449,16 +479,17 @@
       }
     });
     if (plan.chained) {
-      var pts = G.areas.filter(function (a) { return a.run && nodeOf(a.run); }).map(function (a) { return { x: X(a.x + a.w / 2), y: 38, node: nodeOf(a.run), w: a.w * s + 20 }; });
-      pts.forEach(function (p, i) { var d = Math.min(i ? p.x - pts[i - 1].x : 1e9, i < pts.length - 1 ? pts[i + 1].x - p.x : 1e9); p.w = Math.min(p.w, d - 8, 2 * Math.min(p.x, z.w - p.x) - 4); });
-      var arrived = pillsAndBus(c, pts, 22, t);
+      var pts = G.areas.filter(function (a) { return a.run && nodeOf(a.run); }).map(function (a) { var o = a.row ? Y(a.y) - 76 : 0; return { x: X(a.x + a.w / 2), y: 38 + o, yb: 22 + o, node: nodeOf(a.run), w: a.w * s + 20 }; });
+      var multi = pts.some(function (p) { return p.yb !== pts[0].yb; }); // rows joined by the trunk at x = 8
+      pts.forEach(function (p) { var d = 1e9; pts.forEach(function (q) { if (q !== p && q.yb === p.yb) d = Math.min(d, Math.abs(q.x - p.x)); }); p.w = Math.min(p.w, d - 8, 2 * Math.min(p.x - (multi ? 12 : 0), z.w - p.x) - 4); });
+      pillsAndBus(c, pts, 22, t);
       pts.forEach(function (p) {
         var n = p.node, txt = n.n + ' · ' + n.role + (n.me ? ' · dieses Gerät' : n.unk ? ' · unbekannt' : ''), w;
         c.font = '600 11px sans-serif';
         if (c.measureText(txt).width + 18 > p.w) txt = n.n + ' · ' + n.role;
         w = Math.min(c.measureText(txt).width + 18, p.w);
-        nodeBox(c, p, p.x - w / 2, 38, w, 22, [], arrived[p.x]);
-        c.font = '600 11px sans-serif'; c.fillStyle = n.timeout ? BADFG : INK; c.textAlign = 'center'; c.fillText(fit(c, txt, w - 10), p.x, 49);
+        nodeBox(c, p, p.x - w / 2, p.y, w, 22, [], p.arr);
+        c.font = '600 11px sans-serif'; c.fillStyle = n.timeout ? BADFG : INK; c.textAlign = 'center'; c.fillText(fit(c, txt, w - 10), p.x, p.y + 11);
       });
     }
   }
@@ -516,7 +547,7 @@
     c.setTransform(z.dpr, 0, 0, z.dpr, 0, 0); c.fillStyle = STAGE; c.fillRect(0, 0, z.w, z.h);
     var yBus = 26, yNode = 56, nh = 52, yBand = 156, bh = 64, H2 = is2D(cs.geo) && ch.total % cs.geo[1] === 0 ? cs.geo[1] : 0, gapX = susp ? 8 : 1;
     var pts = ch.nodes.map(function (n) { var x0 = pad + n.off / ch.total * bw, x1 = pad + (n.off + n.len) / ch.total * bw; return { x: (x0 + x1) / 2, x0: x0, x1: x1, y: yNode, node: n }; });
-    var arrived = pillsAndBus(c, pts, yBus, t);
+    pillsAndBus(c, pts, yBus, t);
     // The sync payload (sent by this master or received by this slave) is the state the whole band follows:
     // the other parts are drawn from it, marked as derived - nothing from those devices is measured here.
     var spl = cs.ch.pl, splOn = spl && (spl[0] & 1), splTxt = spl ? fxName(spl[1]) + ' · ' + (splOn ? 'Ein' : 'Aus') + ' · ' + Math.round(spl[7] * 100 / 255) + ' %' : '';
@@ -524,7 +555,7 @@
       var n = p.node, w = Math.min(p.x1 - p.x0 - 10, 250), last;
       if (n.me) last = n.timeout ? 'kein Sync seit ' + cs.ch.age + ' s' : n.wait ? 'Überwachung ab Startende' : cs.ch.none ? (n.role === 'Master' ? 'noch nichts gesendet' : 'noch kein Sync empfangen') : susp ? 'EM ' + cs.em + ' läuft · Band ausgesetzt' : (n.role === 'Master' ? 'Sync gesendet vor ' : 'Sync empfangen vor ') + cs.ch.age + ' s';
       else last = spl ? 'laut Sync: ' + splTxt : n.unk ? 'Zustand unbekannt' : 'meldet nichts zurück';
-      nodeBox(c, p, p.x - w / 2, yNode, w, nh, [n.n, n.role + (n.me ? ' · dieses Gerät' : ''), last], arrived[p.x]);
+      nodeBox(c, p, p.x - w / 2, yNode, w, nh, [n.n, n.role + (n.me ? ' · dieses Gerät' : ''), last], p.arr);
       c.strokeStyle = n.me ? GREEN : LINE; c.lineWidth = 1; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(p.x, yNode + nh); c.lineTo(p.x, yBand - 4); c.stroke(); c.setLineDash([]);
       var lit = n.me ? cs.st !== 'off' && cs.st !== 'wait' && (!!sc.bar.power || cs.st === 'lock') : false, x0 = p.x0 + gapX, x1 = p.x1 - gapX;
       if (!n.me) {
