@@ -1076,7 +1076,8 @@ function Extract-EnumOptions {
     
   # Sort by value
   if ($enumOptions.Count -gt 0) {
-    $enumOptions = $enumOptions | Sort-Object Value
+    # Script block: Windows PowerShell 5.1 does not sort hashtables by key name
+    $enumOptions = $enumOptions | Sort-Object { $_.Value }
   }
     
   return $enumOptions
@@ -1580,7 +1581,7 @@ function Generate-EffectMappingCpp {
 
   if ($registrationOrder.Count -eq 0) {
     Write-Warning "Failed to parse EffectPool.cpp! Falling back to alphabetical sort"
-    $sorted = $effectList | Sort-Object NameEN
+    $sorted = $effectList | Sort-Object { $_.NameEN } # hashtables: script block for Windows PowerShell 5.1
   }
   else {
     $effectLookup = @{}

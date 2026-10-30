@@ -3570,7 +3570,8 @@ $hardwareConfigs = $hardwareConfigsFiltered
 # physical device always maps to the same index. This is what keeps a device configuration
 # valid when firmware or the ETS product is updated, and makes -Full vs. non-Full builds
 # produce an identical hardware identity.
-$hardwareConfigs = @($hardwareConfigs | Sort-Object -Property DeviceIdBit)
+# Script block, not -Property: Windows PowerShell 5.1 does not sort hashtables by key name
+$hardwareConfigs = @($hardwareConfigs | Sort-Object -Property @{ Expression = { $_.DeviceIdBit } })
 
 if ($hardwareConfigsSkipped.Count -gt 0) {
   Write-Host "  Skipped $($hardwareConfigsSkipped.Count) hardware(s) without HW_ID" -ForegroundColor DarkYellow
