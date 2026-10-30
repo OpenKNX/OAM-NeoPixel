@@ -3590,6 +3590,13 @@ if ($hardwareConfigs.Count -gt $MAX_HARDWARE_VARIANTS) {
   $hardwareConfigs = $hardwareConfigs[0..($MAX_HARDWARE_VARIANTS - 1)]
 }
 
+# One hardware drops the Hardware Selection parameter, but the port chooses still reference it: no knxprod
+if ($hardwareConfigs.Count -eq 1) {
+  $hint = if ($HardwareListMode -eq 'Full') { "Add a second hardware with DEVICE_HW_ID" } else { "Build at least two hardware targets, or use HardwareListMode 'Full'" }
+  Write-ErrorMsg "Only one hardware ($($hardwareConfigs[0].Name)): the ETS generator needs at least two hardware entries with DEVICE_HW_ID. $hint"
+  exit 1
+}
+
 if ($hardwareConfigs.Count -eq 0) {
   Write-WarningMsg "No hardware configurations with DEVICE_HW_ID found"
   Write-WarningMsg "Please add DEVICE_HW_ID defines to hardware headers"
