@@ -888,7 +888,24 @@
     var P = planMain, r = $('plan').getBoundingClientRect(), hit = -1;
     if (!P.G || TPL[lay.tpl].cube) return -1;
     var x = (e.clientX - r.left - P.ox) / P.s, y = (e.clientY - r.top - P.oy) / P.s;
-    P.G.areas.forEach(function (a) { if (a.run && a.run.src === 'seg' && x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) hit = a.run.seg; });
+    var boxes = []; // strip-fed parts whose box holds the pointer
+    P.G.areas.forEach(function (a) { if (a.run && x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) { if (a.run.src === 'seg') hit = a.run.seg; else if (a.run.src === 'strip') boxes.push(a.run); } });
+    if (hit >= 0) return hit;
+    function nearest(only, lim) { // segment of the LED nearest the pointer, on lines fed by a segment or strip
+      var best = lim, res = -1;
+      P.G.lines.forEach(function (L) {
+        if ((only && only.indexOf(L.run) < 0) || L.empty || !(L.n >= 1) || (L.run.src !== 'seg' && L.run.src !== 'strip')) return;
+        var dx = L.x2 - L.x1, dy = L.y2 - L.y1, q = dx * dx + dy * dy, f = q ? clamp(((x - L.x1) * dx + (y - L.y1) * dy) / q, 0, 1) : 0, d = Math.hypot(L.x1 + f * dx - x, L.y1 + f * dy - y);
+        if (d > best) return;
+        var k = Math.min(L.n - 1, Math.floor(f * L.n)), i = L.map ? L.map(k) : L.i0 + k, sg;
+        if (L.run.rev) i = L.runN - 1 - i;
+        sg = L.run.src === 'seg' ? sc.segs[L.run.seg] : sc.strips[L.run.strip] && i < sc.strips[L.run.strip].leds ? segAt(stripStart(L.run.strip) + i) : null;
+        if (sg) { best = d; res = sc.segs.indexOf(sg); }
+      });
+      return res;
+    }
+    hit = nearest(null, 12 / P.s); // an LED within 12 px (garage walls have no box)
+    if (hit < 0 && boxes.length) hit = nearest(boxes, Infinity); // else anywhere in a strip-fed box
     return hit;
   }
   $('plan').addEventListener('click', function (e) {
