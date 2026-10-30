@@ -12,7 +12,8 @@
   for (var k0 = 0; k0 < 8; k0++) { TONE.push(tok('--np-t' + k0)); EDGE.push(tok('--np-e' + k0)); }
   var GREEN = tok('--np-green'), GREENT = tok('--np-green-t'), INK = tok('--np-ink'), MUTE = tok('--np-mute'),
     FAINT = tok('--np-faint'), STAGE = tok('--np-stage'), LINE = tok('--np-line2'),
-    BAD = tok('--np-bad'), BADBG = tok('--np-bad-bg'), BADFG = tok('--np-bad-fg'), OFFE = tok('--np-offedge');
+    BAD = tok('--np-bad'), BADBG = tok('--np-bad-bg'), BADFG = tok('--np-bad-fg'), OFFE = tok('--np-offedge'),
+    WARN = tok('--np-warn'), WARNBG = tok('--np-warn-bg'), WARNFG = tok('--np-warn-fg');
   var OFF = rgbOf(tok('--np-off'));
   // White tones of the strip's white channels, mixed in additively: single W neutral, WW warm, CW cool.
   var TW = [255, 241, 220], TWW = [255, 215, 160], TCW = [242, 246, 255];
@@ -103,7 +104,7 @@
       if (!c.m || !(c.total > 0)) continue;
       var nodes = [], role = c.m === 1 ? 'Master' : 'Slave', peer = c.m === 1 ? 'Slave' : 'Master oder Slave', off = Math.min(c.off, c.total), end = Math.min(c.total, off + len);
       if (off > 0) nodes.push({ n: 'Kette 0–' + (off - 1), role: peer, off: 0, len: off, unk: 1 });
-      nodes.push({ n: 'Segment ' + (i + 1), role: role, me: 1, off: off, len: Math.max(1, end - off), timeout: c.timeout, wait: c.wait });
+      nodes.push({ n: 'Segment ' + (i + 1), role: role, me: 1, off: off, len: Math.max(1, end - off), timeout: c.timeout, wait: c.wait, link: c.timeout ? 'tmo' : c.wait || c.none ? 'wait' : c.age > 6 ? 'late' : 'ok' }); // late: 2 heartbeats (3 s) missing; none = nothing since boot, grey until the timeout
       if (end < c.total) nodes.push({ n: 'Kette ' + end + '–' + (c.total - 1), role: peer, off: end, len: c.total - end, unk: 1 });
       L.chain = { seg: i, total: c.total, nodes: nodes };
     }
@@ -384,17 +385,20 @@
   }
   // KNX group telegrams from the master to all slaves; marks the slaves a telegram just reached (p.arr).
   // A point may carry its own bus height (p.yb, one per row of the top view); rows are joined by a trunk at the left edge.
+  // Sync link of this device: ok green, late (2 heartbeats missing) orange, timeout red, start phase grey; other devices are not measured.
+  function linkCol(n) { return n.me ? { ok: GREEN, late: WARN, tmo: BAD }[n.link] || LINE : LINE; }
+  function linkDash(n) { return n.me && n.link === 'ok' ? [] : [4, 4]; }
   function pillsAndBus(c, pts, yBus, t) {
     pts.forEach(function (p) { if (p.yb === undefined) p.yb = yBus; p.arr = 0; });
-    var master = pts.filter(function (p) { return p.node.role === 'Master'; })[0], TX = 8;
+    var master = pts.filter(function (p) { return p.node.role === 'Master'; })[0], me = pts.filter(function (p) { return p.node.me; })[0], TX = 8;
     var ys = pts.map(function (p) { return p.yb; }).filter(function (y, i, a) { return a.indexOf(y) === i; }).sort(function (a, b) { return a - b; });
     function xsAt(y) { return pts.filter(function (p) { return p.yb === y; }).map(function (p) { return p.x; }); }
-    c.strokeStyle = LINE; c.lineWidth = 2; c.setLineDash([]);
+    c.strokeStyle = me ? linkCol(me.node) : LINE; c.lineWidth = 2; c.setLineDash(me ? linkDash(me.node) : [4, 4]);
     ys.forEach(function (y) { var xs = xsAt(y); c.beginPath(); c.moveTo(ys.length > 1 ? TX : Math.min.apply(null, xs), y); c.lineTo(Math.max.apply(null, xs), y); c.stroke(); });
     if (ys.length > 1) { c.beginPath(); c.moveTo(TX, ys[0]); c.lineTo(TX, ys[ys.length - 1]); c.stroke(); }
     pts.forEach(function (p) {
-      var broken = p.node.timeout, unk = p.node.unk && !broken;
-      c.strokeStyle = broken ? BAD : unk ? LINE : FAINT; c.setLineDash(broken || unk ? [4, 4] : []);
+      var broken = p.node.timeout;
+      c.strokeStyle = linkCol(p.node); c.lineWidth = 2; c.setLineDash(linkDash(p.node));
       c.beginPath(); c.moveTo(p.x, p.yb); c.lineTo(p.x, p.y); c.stroke(); c.setLineDash([]);
       if (broken) { var my = (p.yb + p.y) / 2; c.strokeStyle = BAD; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 5, my - 5); c.lineTo(p.x + 5, my + 5); c.moveTo(p.x + 5, my - 5); c.lineTo(p.x - 5, my + 5); c.stroke(); }
     });
@@ -413,6 +417,7 @@
       c.fillStyle = GREEN; c.globalAlpha = .22; c.beginPath(); c.arc(x, y, 9, 0, 6.283); c.fill(); c.globalAlpha = 1; c.beginPath(); c.arc(x, y, 4, 0, 6.283); c.fill();
     }
     var ph = (t % 3) / 1.1; // heartbeat every 3 s; a change is sent at once (min. 300 ms apart)
+    if (!me || me.node.link !== 'ok') return; // telegrams run only while this device's link is fine
     if (master && !master.node.unk) {
       pts.forEach(function (p) {
         if (p === master) return;
@@ -422,7 +427,7 @@
     } else {
       // This device is a receiving slave and the master is not known by name: the telegram still
       // arrives here, so it runs from the other part of the chain to this device.
-      var me = pts.filter(function (p) { return p.node.me; })[0], src = pts.filter(function (p) { return !p.node.me; })[0], cs0 = sc.segs[sc.chain.seg];
+      var src = pts.filter(function (p) { return !p.node.me; })[0], cs0 = sc.segs[sc.chain.seg];
       if (me && src && me.node.role !== 'Master' && !me.node.timeout && !me.node.wait && cs0 && !cs0.ch.none) {
         if (ph > 1) { if (ph < 1.35) me.arr = 1; }
         else dot(src, me, clamp(ph, 0, 1));
@@ -432,12 +437,12 @@
   function nodeBox(c, p, x, y, w, h, lines, arrived) {
     var n = p.node;
     rr(c, x, y, w, h, 7);
-    c.fillStyle = n.timeout ? BADBG : n.me ? GREENT : '#fff'; c.fill();
+    c.fillStyle = !n.me || n.link === 'wait' ? '#fff' : n.link === 'tmo' ? BADBG : n.link === 'late' ? WARNBG : GREENT; c.fill();
     if (arrived && !n.me) { c.globalAlpha = .18; c.lineWidth = 6; c.strokeStyle = GREEN; c.stroke(); c.globalAlpha = 1; }
-    c.lineWidth = n.me || n.timeout ? 2 : 1.2; c.strokeStyle = n.timeout ? BAD : n.me ? GREEN : FAINT;
-    c.setLineDash(n.me || n.timeout ? [] : [4, 3]); c.stroke(); c.setLineDash([]);
+    c.lineWidth = n.me ? 2 : 1.2; c.strokeStyle = !n.me ? FAINT : n.link === 'wait' ? FAINT : linkCol(n);
+    c.setLineDash(n.me && n.link !== 'wait' ? [] : [4, 3]); c.stroke(); c.setLineDash([]);
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    lines.forEach(function (l, i) { c.font = (i === 0 ? '600 12px' : '11px') + ' sans-serif'; c.fillStyle = i === 0 ? INK : (n.timeout && i === lines.length - 1 ? BADFG : MUTE); c.fillText(fit(c, l, w - 10), x + w / 2, y + 12 + i * 15); });
+    lines.forEach(function (l, i) { c.font = (i === 0 ? '600 12px' : '11px') + ' sans-serif'; c.fillStyle = i === 0 ? INK : i === lines.length - 1 && n.me && n.link === 'tmo' ? BADFG : i === lines.length - 1 && n.me && n.link === 'late' ? WARNFG : MUTE; c.fillText(fit(c, l, w - 10), x + w / 2, y + 12 + i * 15); });
   }
   function drawPlan0(t) {
     var cv = plan.cv, c = cv.getContext('2d'), z = plan.sz, G = plan.G;
@@ -460,7 +465,7 @@
       }
       var nd = nodeOf(a.run), tn = runTone(a.run);
       rr(c, X(a.x), Y(a.y), a.w * s, a.h * s, 8); c.globalAlpha = .5; c.fillStyle = TONE[tn]; c.fill(); c.globalAlpha = 1;
-      c.lineWidth = nd && nd.me ? 2 : 1; c.strokeStyle = nd && nd.me ? GREEN : nd && nd.timeout ? BAD : EDGE[tn]; c.setLineDash(nd && !nd.me ? [5, 4] : []); c.stroke(); c.setLineDash([]);
+      c.lineWidth = nd && nd.me ? 2 : 1; c.strokeStyle = nd && nd.me ? (nd.link === 'wait' ? FAINT : linkCol(nd)) : EDGE[tn]; c.setLineDash(nd && !nd.me ? [5, 4] : []); c.stroke(); c.setLineDash([]);
       if (nd && a.run.src !== 'none' && bandSuspended(sc.segs[sc.chain.seg]) && nd.me) { // EM: every device on its own panel
         var g0 = sc.segs[sc.chain.seg].geo; c.fillStyle = MUTE; c.font = '11px sans-serif'; c.textAlign = 'center';
         c.fillText(fit(c, 'EM ' + sc.segs[sc.chain.seg].em + ' · eigene ' + (is2D(g0) ? 'Matrix ' + g0[0] + ' × ' + g0[1] : 'LEDs'), a.w * s - 8), X(a.x + a.w / 2), Y(a.y) + 8);
@@ -489,7 +494,7 @@
         if (c.measureText(txt).width + 18 > p.w) txt = n.n + ' · ' + n.role;
         w = Math.min(c.measureText(txt).width + 18, p.w);
         nodeBox(c, p, p.x - w / 2, p.y, w, 22, [], p.arr);
-        c.font = '600 11px sans-serif'; c.fillStyle = n.timeout ? BADFG : INK; c.textAlign = 'center'; c.fillText(fit(c, txt, w - 10), p.x, p.y + 11);
+        c.font = '600 11px sans-serif'; c.fillStyle = n.me && n.link === 'tmo' ? BADFG : n.me && n.link === 'late' ? WARNFG : INK; c.textAlign = 'center'; c.fillText(fit(c, txt, w - 10), p.x, p.y + 11);
       });
     }
   }
@@ -553,10 +558,10 @@
     var spl = cs.ch.pl, splOn = spl && (spl[0] & 1), splTxt = spl ? fxName(spl[1]) + ' · ' + (splOn ? 'Ein' : 'Aus') + ' · ' + Math.round(spl[7] * 100 / 255) + ' %' : '';
     pts.forEach(function (p) {
       var n = p.node, w = Math.min(p.x1 - p.x0 - 10, 250), last;
-      if (n.me) last = n.timeout ? 'kein Sync seit ' + cs.ch.age + ' s' : n.wait ? 'Überwachung ab Startende' : cs.ch.none ? (n.role === 'Master' ? 'noch nichts gesendet' : 'noch kein Sync empfangen') : susp ? 'EM ' + cs.em + ' läuft · Band ausgesetzt' : (n.role === 'Master' ? 'Sync gesendet vor ' : 'Sync empfangen vor ') + cs.ch.age + ' s';
+      if (n.me) last = n.timeout ? 'kein Sync seit ' + cs.ch.age + ' s' : n.wait ? 'Überwachung ab Startende' : cs.ch.none ? (n.role === 'Master' ? 'noch nichts gesendet' : 'noch kein Sync empfangen') : n.link === 'late' ? (n.role === 'Master' ? 'seit ' + cs.ch.age + ' s nichts gesendet' : 'letzter Sync vor ' + cs.ch.age + ' s') : susp ? 'EM ' + cs.em + ' läuft · Band ausgesetzt' : (n.role === 'Master' ? 'Sync gesendet vor ' : 'Sync empfangen vor ') + cs.ch.age + ' s';
       else last = spl ? 'laut Sync: ' + splTxt : n.unk ? 'Zustand unbekannt' : 'meldet nichts zurück';
       nodeBox(c, p, p.x - w / 2, yNode, w, nh, [n.n, n.role + (n.me ? ' · dieses Gerät' : ''), last], p.arr);
-      c.strokeStyle = n.me ? GREEN : LINE; c.lineWidth = 1; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(p.x, yNode + nh); c.lineTo(p.x, yBand - 4); c.stroke(); c.setLineDash([]);
+      c.strokeStyle = linkCol(n); c.lineWidth = 1; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(p.x, yNode + nh); c.lineTo(p.x, yBand - 4); c.stroke(); c.setLineDash([]);
       var lit = n.me ? cs.st !== 'off' && cs.st !== 'wait' && (!!sc.bar.power || cs.st === 'lock') : false, x0 = p.x0 + gapX, x1 = p.x1 - gapX;
       if (!n.me) {
         c.save(); rr(c, x0, yBand, x1 - x0, bh, 4); c.clip(); c.fillStyle = '#f3f4f1'; c.fillRect(x0, yBand, x1 - x0, bh);
@@ -576,7 +581,7 @@
         for (var j = 0; j < smp; j++) { var col1 = lit ? segPx(cs, Math.floor(j * n.len / smp), t, n.off) : null; c.fillStyle = rgb(col1 ? mix(OFF, col1, clamp(col1[3], 0, 1)) : OFF); c.fillRect(x0 + j * sw, yBand + bh / 2 - 6, sw + .3, 12); }
       }
       if (n.me && !lit) { c.fillStyle = MUTE; c.font = '11px sans-serif'; c.textAlign = 'center'; c.fillText(cs.st === 'wait' ? 'noch keine Ausgabe (Startphase)' : n.timeout ? 'aus · nach Sync-Timeout' : 'aus · Gerät aus', p.x, yBand + bh / 2 - 14); }
-      rr(c, x0 - 1, yBand - 3, x1 - x0 + 2, bh + 6, 5); c.lineWidth = n.me ? 2 : 1; c.strokeStyle = n.me ? GREEN : LINE; c.setLineDash(n.me ? [] : [4, 3]); c.stroke(); c.setLineDash([]);
+      rr(c, x0 - 1, yBand - 3, x1 - x0 + 2, bh + 6, 5); c.lineWidth = n.me ? 2 : 1; c.strokeStyle = n.me && n.link !== 'wait' ? linkCol(n) : n.me ? FAINT : LINE; c.setLineDash(n.me ? [] : [4, 3]); c.stroke(); c.setLineDash([]);
       c.fillStyle = MUTE; c.font = '11px sans-serif'; c.textAlign = 'center';
       var lab = susp ? (H2 ? 'eigene Matrix ' + n.len / H2 + ' × ' + H2 : 'nur eigene LEDs ' + n.len) : 'LED ' + n.off + '–' + (n.off + n.len - 1) + (H2 ? ' · Spalten ' + n.off / H2 + '–' + ((n.off + n.len) / H2 - 1) : '');
       c.fillText(fit(c, lab, x1 - x0 - 6), p.x, yBand + bh + 16);
@@ -728,7 +733,7 @@
       (me.role === 'Master' ? 'Die Slaves bekommen weiter den Zustand von vor dem EM-Start; ohne eigenen EM zeigen sie diesen Zustand auf der gemeinsamen Fläche.' : 'Sync-Telegramme vom Master werden ignoriert, halten aber die Timeout-Überwachung am Leben.') + '</div>';
     if (me.wait) h += '<div class="np-note info"><b>Startphase:</b> Die Sync-Überwachung beginnt erst nach der Startverzögerung; bis dahin zählt kein Timeout.</div>';
     if (me.timeout) h += '<div class="np-note bad"><b>Kein Sync vom Master ' + (s.ch.none ? 'seit dem Start' : 'seit ' + s.ch.age + ' s') + '</b> (Timeout ' + s.ch.to * 10 + ' s). Das Segment „' + segLabel(ch.seg) + '“ wurde ausgeschaltet; das nächste Sync-Telegramm schaltet es wieder nach Vorgabe des Masters.</div>';
-    h += '<div class="np-card"><div class="np-card-h"><h3>' + segLabel(ch.seg) + ' · ' + me.role + '</h3>' + (me.timeout ? pill('bad', 'Timeout') : me.wait ? pill('idle', 'Startphase') : susp ? pill('warn', 'ausgesetzt (EM ' + s.em + ')') : pill('ok', me.role === 'Master' ? 'sendet' : 'empfängt')) + '<span class="np-sp"></span><span class="np-f">Namen und Lage der anderen Geräte stammen aus der Anordnung</span></div><canvas class="np-stage" id="chaincv"></canvas>' +
+    h += '<div class="np-card"><div class="np-card-h"><h3>' + segLabel(ch.seg) + ' · ' + me.role + '</h3>' + (me.timeout ? pill('bad', 'Timeout') : me.wait ? pill('idle', 'Startphase') : me.link === 'wait' ? pill('idle', me.role === 'Master' ? 'noch nichts gesendet' : 'noch kein Sync') : me.link === 'late' ? pill('warn', 'Sync verspätet') : susp ? pill('warn', 'ausgesetzt (EM ' + s.em + ')') : pill('ok', me.role === 'Master' ? 'sendet' : 'empfängt')) + '<span class="np-sp"></span><span class="np-f">Namen und Lage der anderen Geräte stammen aus der Anordnung</span></div><canvas class="np-stage" id="chaincv"></canvas>' +
       '<div class="np-cap">' + ledLegend() + '</div><div class="np-cap"><span class="np-key"><i style="background:' + GREEN + '"></i>Sync-Telegramm alle 3 s (Lebenszeichen), bei Änderung sofort</span><span>grün umrandet = dieses Gerät</span><span>gestrichelt = andere Geräte, von hier nicht überwacht</span></div></div>';
     var pl = s.ch.pl, plTxt = pl ? fxName(pl[1]) + ' ' + hex6(pl[3] << 16 | pl[4] << 8 | pl[5]).toUpperCase() + (pl[6] ? ' + W ' + pl[6] : '') + (pl[8] ? ' + CW ' + pl[8] : '') + ', ' + (pl[0] & 1 ? 'Ein' : 'Aus') + ' · ' + Math.round(pl[7] * 100 / 255) + ' %' : '';
     var sent = me.role === 'Master' ? (s.ch.none ? 'noch nichts gesendet' : 'vor ' + s.ch.age + ' s · ' + (susp ? 'Zustand vor dem EM-Start: ' : '') + plTxt) : '';
