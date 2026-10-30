@@ -1,0 +1,951 @@
+{
+ "name": "Effekt-Eigenschaften (alle 33 Effekte)",
+ "device": "1.1.5",
+ "webUrl": "http://10.0.0.125",
+ "note": "Laufzeit-Test ohne ETS-Schreibzugriff: Effekte per Konsole auf Segment 0, Bild aus /neo/pixels. Erwartung aus der Effektbeschreibung in Help_de/NEO-Effekt-Typ.md. Ein Neustart stellt die ETS-Konfiguration wieder her. 1D-Effekte werden ueber das ganze Segment (LED 0-313) bewertet, 2D-Effekte ueber die 8x8-Flaeche (LED 0-63).",
+ "defaults": {
+  "timeoutMs": 0,
+  "waitMs": 500
+ },
+ "steps": [
+  {
+   "id": "E-setup",
+   "title": "Segment 0: Farbe rot, 1D",
+   "do": [
+    {
+     "console": "neo seg geo 0 1 1 0"
+    },
+    {
+     "console": "neo color 0 255 0 0"
+    }
+   ],
+   "expect": []
+  },
+  {
+   "id": "E00",
+   "title": "0 Solid (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Statische Farbe ohne Animation",
+   "do": [
+    {
+     "console": "neo effect set 0 0"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "constant"
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "uniform"
+    }
+   ]
+  },
+  {
+   "id": "E01",
+   "title": "1 Wipe (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Farbe laeuft vom Anfang bis zum Ende",
+   "do": [
+    {
+     "console": "neo effect set 0 1"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E02",
+   "title": "2 Rainbow (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Regenbogen ueber das gesamte Farbspektrum",
+   "do": [
+    {
+     "console": "neo effect set 0 2"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "hueSpread",
+     "minHueBins": 6
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E03",
+   "title": "3 Pride2015 (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Regenbogenfarben mit wandernden Helligkeitswellen",
+   "do": [
+    {
+     "console": "neo effect set 0 3"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "hueSpread",
+     "minHueBins": 4
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E04",
+   "title": "4 Juggle (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Mehrere farbige Punkte pendeln hin und her",
+   "do": [
+    {
+     "console": "neo effect set 0 4"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "movingPeak"
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E05",
+   "title": "5 BPM (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Pulsierende Farbwellen",
+   "do": [
+    {
+     "console": "neo effect set 0 5"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E06",
+   "title": "6 Cylon (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Lichtauge mit verblassendem Schweif",
+   "do": [
+    {
+     "console": "neo effect set 0 6"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "movingPeak"
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "sparse",
+     "maxLitFraction": 0.5
+    }
+   ]
+  },
+  {
+   "id": "E07",
+   "title": "7 Test (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Kanaltest",
+   "do": [
+    {
+     "console": "neo effect set 0 7"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 10,
+     "intervalMs": 500,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E08",
+   "title": "8 Fire (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Feuersimulation mit Flackern",
+   "do": [
+    {
+     "console": "neo effect set 0 8"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "lit"
+    }
+   ]
+  },
+  {
+   "id": "E09",
+   "title": "9 Theater Chase (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Laufende Punktmuster",
+   "do": [
+    {
+     "console": "neo effect set 0 9"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "sparse",
+     "maxLitFraction": 0.7
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "title": "10 Sparkle (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Zufaelliges Funkeln",
+   "do": [
+    {
+     "console": "neo effect set 0 10"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "sparse",
+     "maxLitFraction": 0.5
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "title": "11 Breathing (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Sanftes Ein-/Ausatmen",
+   "do": [
+    {
+     "console": "neo effect set 0 11"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 12,
+     "intervalMs": 300,
+     "property": "brightnessVaries"
+    }
+   ]
+  },
+  {
+   "id": "E12",
+   "title": "12 Strobe (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Schnelles Blitzen",
+   "do": [
+    {
+     "console": "neo effect set 0 12"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 16,
+     "intervalMs": 90,
+     "property": "strobe"
+    }
+   ]
+  },
+  {
+   "id": "E13",
+   "title": "13 Comet (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Bewegter Punkt mit Schweif",
+   "do": [
+    {
+     "console": "neo effect set 0 13"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "movingPeak"
+    }
+   ]
+  },
+  {
+   "id": "E14",
+   "title": "14 Noise (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Sanftes Rauschen entlang Streifen",
+   "do": [
+    {
+     "console": "neo effect set 0 14"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E15",
+   "title": "15 Palette (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Feste 16-Farben-Paletten",
+   "do": [
+    {
+     "console": "neo effect set 0 15"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "hueSpread",
+     "minHueBins": 3,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "id": "E16",
+   "title": "16 Blitz (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Zufaellige Blitzeinschlaege",
+   "do": [
+    {
+     "console": "neo effect set 0 16"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 40,
+     "intervalMs": 250,
+     "property": "strobe"
+    }
+   ]
+  },
+  {
+   "id": "E17",
+   "title": "17 Gradient (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Linearer HSV-Farbverlauf",
+   "do": [
+    {
+     "console": "neo effect set 0 17"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "hueSpread",
+     "minHueBins": 3,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "id": "E18",
+   "title": "18 Kerze (1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Kerzenflacker-Effekt",
+   "do": [
+    {
+     "console": "neo effect set 0 18"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    },
+    {
+     "type": "effect",
+     "range": [
+      0,
+      313
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "lit"
+    }
+   ]
+  },
+  {
+   "id": "E-2d",
+   "title": "Segment 0: Geometrie 8x8 (Schlangen, Zeilen)",
+   "do": [
+    {
+     "console": "neo seg geo 0 8 8 1"
+    }
+   ],
+   "expect": []
+  },
+  {
+   "id": "E19",
+   "title": "19 Laufschrift (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Horizontale Laufschrift auf LED-Matrix",
+   "do": [
+    {
+     "console": "neo effect set 0 19"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 10,
+     "intervalMs": 300,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E20",
+   "title": "20 Uhr 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Uhr auf einer LED-Matrix (digital)",
+   "do": [
+    {
+     "console": "neo effect set 0 20"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "sparse",
+     "maxLitFraction": 0.8,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "id": "E21",
+   "title": "21 Snake 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Snake, frisst Futter und waechst",
+   "do": [
+    {
+     "console": "neo effect set 0 21"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E22",
+   "title": "22 Matrix 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Digitaler Matrix-Regen",
+   "do": [
+    {
+     "console": "neo effect set 0 22"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E23",
+   "title": "23 Tetris 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Tetris auf 2D-Matrix",
+   "do": [
+    {
+     "console": "neo effect set 0 23"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 10,
+     "intervalMs": 400,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E24",
+   "title": "24 TRON (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Neon-Grid mit bewegten Scanlinien",
+   "do": [
+    {
+     "console": "neo effect set 0 24"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E25",
+   "title": "25 Starfield Warp (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Sternenfeld mit Warp-Tunnel",
+   "do": [
+    {
+     "console": "neo effect set 0 25"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E26",
+   "title": "26 Plasma Nebula (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Mehrlagige Plasma-Nebel-Animation",
+   "do": [
+    {
+     "console": "neo effect set 0 26"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E27",
+   "title": "27 UFO Swarm (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Mehrere UFOs",
+   "do": [
+    {
+     "console": "neo effect set 0 27"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E28",
+   "title": "28 Game of Life 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Zellulaerer Automat, startet neu wenn erstarrt",
+   "do": [
+    {
+     "console": "neo effect set 0 28"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 10,
+     "intervalMs": 500,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E29",
+   "title": "29 DNA 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Rotierende DNA-Doppelhelix",
+   "do": [
+    {
+     "console": "neo effect set 0 29"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 12,
+     "intervalMs": 600,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E30",
+   "title": "30 Aurora 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Polarlicht, fliessende Vorhaenge",
+   "do": [
+    {
+     "console": "neo effect set 0 30"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E31",
+   "title": "31 Lissajous 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Lissajous-Figur mit driftender Phase",
+   "do": [
+    {
+     "console": "neo effect set 0 31"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  },
+  {
+   "id": "E32",
+   "title": "32 Metaballs 2D (2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Driftende Blobs",
+   "do": [
+    {
+     "console": "neo effect set 0 32"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "effect",
+     "range": [
+      0,
+      63
+     ],
+     "frames": 8,
+     "intervalMs": 250,
+     "property": "animated"
+    }
+   ]
+  }
+ ]
+}

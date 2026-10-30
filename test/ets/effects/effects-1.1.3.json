@@ -1,0 +1,1055 @@
+{
+ "name": "Effekt-Ausgabe 1.1.3 (alle 33 Effekte an den echten LEDs)",
+ "device": "1.1.3",
+ "note": "Effekt per Konsole, Pruefung ueber neo phys dump (Ausgabepuffer, der mit dem letzten show() gesendet wurde). Blitz: seltene Blitze, deshalb 4 s Abstand. Uhr 2D: Doppelpunkt/Sekunden, 2,5 s Abstand. Ein Neustart/Download stellt die ETS-Konfiguration wieder her. Theater Chase: Muster wiederholt sich alle 3 Schritte, daher 700 ms Abstand (nicht ein Vielfaches der Schrittzeit).",
+ "defaults": {
+  "timeoutMs": 0,
+  "waitMs": 500
+ },
+ "steps": [
+  {
+   "id": "E-setup",
+   "title": "Rolle (Segment 5) 1D, Panel A (Segment 0) 2D 8x8; Farbe rot",
+   "do": [
+    {
+     "console": "neo color 5 255 0 0 0"
+    },
+    {
+     "console": "neo color 0 255 0 0"
+    }
+   ],
+   "expect": []
+  },
+  {
+   "id": "E00",
+   "title": "0 Solid (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Statische Farbe ohne Animation -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 0"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1500,
+     "change": false
+    }
+   ]
+  },
+  {
+   "id": "E01",
+   "title": "1 Wipe (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Farbe laeuft vom Anfang bis zum Ende -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 1"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E02",
+   "title": "2 Rainbow (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Regenbogen ueber das gesamte Farbspektrum -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 2"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E03",
+   "title": "3 Pride2015 (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Regenbogenfarben mit wandernden Helligkeitswellen -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 3"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E04",
+   "title": "4 Juggle (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Mehrere farbige Punkte pendeln hin und her -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 4"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E05",
+   "title": "5 BPM (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Pulsierende Farbwellen -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 5"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E06",
+   "title": "6 Cylon (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Lichtauge mit verblassendem Schweif -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 6"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E07",
+   "title": "7 Test (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Kanaltest -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 7"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E08",
+   "title": "8 Fire (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Feuersimulation mit Flackern -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 8"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E09",
+   "title": "9 Theater Chase (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Laufende Punktmuster -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 9"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 700,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "title": "10 Sparkle (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Zufaelliges Funkeln -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 10"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "title": "11 Breathing (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Sanftes Ein-/Ausatmen -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 11"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E12",
+   "title": "12 Strobe (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Schnelles Blitzen -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 12"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E13",
+   "title": "13 Comet (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Bewegter Punkt mit Schweif -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 13"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E14",
+   "title": "14 Noise (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Sanftes Rauschen entlang Streifen -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 14"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E15",
+   "title": "15 Palette (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Feste 16-Farben-Paletten -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 15"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E16",
+   "title": "16 Blitz (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Zufaellige Blitzeinschlaege -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 16"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 4000,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E17",
+   "title": "17 Gradient (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Linearer HSV-Farbverlauf -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 17"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E18",
+   "title": "18 Kerze (Rolle, 1D)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Kerzenflacker-Effekt -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 5 18"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 5 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E19",
+   "title": "19 Laufschrift (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Horizontale Laufschrift auf LED-Matrix -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 19"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E20",
+   "title": "20 Uhr 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Uhr auf einer LED-Matrix (digital) -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 20"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 2500,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E21",
+   "title": "21 Snake 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Snake, frisst Futter und waechst -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 21"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E22",
+   "title": "22 Matrix 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Digitaler Matrix-Regen -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 22"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E23",
+   "title": "23 Tetris 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Tetris auf 2D-Matrix -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 23"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E24",
+   "title": "24 TRON (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Neon-Grid mit bewegten Scanlinien -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 24"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E25",
+   "title": "25 Starfield Warp (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Sternenfeld mit Warp-Tunnel -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 25"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E26",
+   "title": "26 Plasma Nebula (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Mehrlagige Plasma-Nebel-Animation -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 26"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E27",
+   "title": "27 UFO Swarm (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Mehrere UFOs -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 27"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E28",
+   "title": "28 Game of Life 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Zellulaerer Automat, startet neu wenn erstarrt -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 28"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E29",
+   "title": "29 DNA 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Rotierende DNA-Doppelhelix -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 29"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E30",
+   "title": "30 Aurora 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Polarlicht, fliessende Vorhaenge -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 30"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E31",
+   "title": "31 Lissajous 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Lissajous-Figur mit driftender Phase -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 31"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E32",
+   "title": "32 Metaballs 2D (Panel A, 2D 8x8)",
+   "source": "Help_de/NEO-Effekt-Typ.md: Driftende Blobs -> Ausgabepuffer: Licht an, Bild aendert sich (Solid: steht)",
+   "do": [
+    {
+     "console": "neo effect set 0 32"
+    },
+    {
+     "wait": 2500
+    }
+   ],
+   "expect": [
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "lit=(\\d+)",
+     "group": 1,
+     "value": "0",
+     "op": "gt"
+    },
+    {
+     "type": "console",
+     "cmd": "neo phys dump 0 0 4",
+     "pattern": "hash=([0-9A-F]+)",
+     "group": 1,
+     "changeMs": 1200,
+     "change": true
+    }
+   ]
+  },
+  {
+   "id": "E-reset",
+   "title": "Ruecksetzen: Effekte wie in ETS (Plasma auf S1, Solid auf S6)",
+   "do": [
+    {
+     "console": "neo effect set 0 26"
+    },
+    {
+     "console": "neo effect set 5 0"
+    },
+    {
+     "console": "neo color 5 255 255 255 200"
+    }
+   ],
+   "expect": []
+  }
+ ]
+}
