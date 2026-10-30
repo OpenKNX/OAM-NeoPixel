@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Normalize generated files to LF line endings.
+    Normalize generated files to LF line endings without a UTF-8 BOM.
 
 .DESCRIPTION
     The generator scripts splice blocks into existing files with PowerShell string
@@ -11,7 +11,8 @@
     Build-Release.ps1 appear to dirty the same handful of files on every run.
 
     The repository pins `eol=lf` in .gitattributes, so this normalizes the generated
-    files to LF after the generators have written them.
+    files to LF after the generators have written them. Windows PowerShell 5.1 writes
+    a UTF-8 BOM with Set-Content -Encoding UTF8 (pwsh 7 does not); it is removed too.
 #>
 
 [CmdletBinding()]
@@ -23,6 +24,7 @@ param(
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
 # Files and globs written or spliced by Build-EffectParameters.ps1 / Build-HardwareConfig.ps1
+# (Help_de/*.md also covers the hand-written help files in that folder)
 $patterns = @(
     "src/NeoPixel.share.xml"
     "src/NeoPixel.EM.share.xml"
@@ -62,7 +64,10 @@ foreach ($pattern in $patterns) {
         # Strip CR only where it precedes LF; a lone CR is not a line ending here.
         $out = [System.Collections.Generic.List[byte]]::new($bytes.Length)
         $hadCrLf = $false
-        for ($i = 0; $i -lt $bytes.Length; $i++) {
+        # Leading UTF-8 BOM, written by Windows PowerShell 5.1
+        $hadBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+        $start = if ($hadBom) { 3 } else { 0 }
+        for ($i = $start; $i -lt $bytes.Length; $i++) {
             if ($bytes[$i] -eq 13 -and ($i + 1) -lt $bytes.Length -and $bytes[$i + 1] -eq 10) {
                 $hadCrLf = $true
                 continue
@@ -70,12 +75,12 @@ foreach ($pattern in $patterns) {
             $out.Add($bytes[$i])
         }
 
-        if ($hadCrLf) {
+        if ($hadCrLf -or $hadBom) {
             [System.IO.File]::WriteAllBytes($file.FullName, $out.ToArray())
             $changed++
             if (-not $Quiet) {
                 $rel = $file.FullName.Substring($repoRoot.Length + 1) -replace '\\', '/'
-                Write-Host "  - LF normalized: $rel" -ForegroundColor DarkGray
+                Write-Host "  - Normalized (LF, no BOM): $rel" -ForegroundColor DarkGray
             }
         }
     }
@@ -83,10 +88,10 @@ foreach ($pattern in $patterns) {
 
 if (-not $Quiet) {
     if ($changed -gt 0) {
-        Write-Host "  [OK] Line endings normalized to LF ($changed of $scanned file(s))" -ForegroundColor Green
+        Write-Host "  [OK] Normalized to LF without BOM ($changed of $scanned file(s))" -ForegroundColor Green
     }
     else {
-        Write-Host "  [OK] Line endings already LF ($scanned file(s) checked)" -ForegroundColor Green
+        Write-Host "  [OK] Already LF without BOM ($scanned file(s) checked)" -ForegroundColor Green
     }
 }
 
