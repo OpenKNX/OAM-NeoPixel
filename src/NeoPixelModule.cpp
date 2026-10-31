@@ -1684,7 +1684,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
         if (koIndex == NEO_KoFx)
         {
             const uint8_t fxId = ko.value(DPT_Value_1_Ucount);
-            if (getTypeFromEffect(getEffectFromType(fxId)) != fxId)
+            if (!NeoPixelEffectCatalog::isAvailable(fxId))
             {
                 logWarningP("Segment %d: effect ID %d unknown - ignored", channel, fxId);
                 _channelIndex = oldChannelIndex;

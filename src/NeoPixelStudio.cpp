@@ -228,7 +228,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     if (action == "batch")
     {
         if (validateOnly || !value.isArray() || !value.get(size_t(0)).isObject()) return "Ungültiger Befehlsblock";
-        uint8_t stagedEffect = getTypeFromEffect(segment->getEffect());
+        uint8_t stagedEffect = segment->getConfig().effectType;
         size_t count = 0;
         for (; value.get(count).valid(); ++count)
         {
@@ -314,7 +314,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
         if (success && !_module._localTestMode) _module.statusAfterCommand(index + 1);
         return success ? std::string() : "Szenenaktion fehlgeschlagen";
     }
-    Effect* effect = validateOnly && expectedEffect != 255 ? getEffectFromType(expectedEffect) : segment->getEffect();
+    Effect* effect = nullptr;
     uint32_t number = 0;
     uint32_t parameter = 0;
     std::string text;
@@ -331,7 +331,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     {
         if (!integer(value, 0, 254)) return "Ungültiger Effekt";
         number = static_cast<uint32_t>(value.toFloat());
-        if (getTypeFromEffect(getEffectFromType(number)) != number) return "Effekt nicht verfügbar";
+        if (!NeoPixelEffectCatalog::isAvailable(static_cast<uint8_t>(number))) return "Effekt nicht verfügbar";
     }
     else if (action == "brightness" || action == "primaryWhite" || action == "secondaryWhite" || action == "primaryCool" || action == "secondaryCool")
     {
@@ -362,7 +362,11 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     }
     else if (action == "parameter")
     {
-        if (!effect || !integer(doc.get("effect"), 0, 254) || static_cast<uint32_t>(doc.get("effect").toFloat()) != getTypeFromEffect(effect)) return "Effekt wurde geändert; Seite neu laden";
+        const uint8_t effectType = validateOnly && expectedEffect != 255 ? expectedEffect : segment->getConfig().effectType;
+        if (!NeoPixelEffectCatalog::isAvailable(effectType) || !integer(doc.get("effect"), 0, 254) ||
+            static_cast<uint32_t>(doc.get("effect").toFloat()) != effectType) return "Effekt wurde geändert; Seite neu laden";
+        effect = validateOnly && expectedEffect != 255 ? getEffectFromType(expectedEffect) : segment->getEffect();
+        if (!effect) return "Effekt nicht verfügbar";
         if (!effect->getParameterCount() || !integer(doc.get("parameter"), 0, effect->getParameterCount() - 1)) return "Unbekannter Parameter";
         parameter = static_cast<uint32_t>(doc.get("parameter").toFloat());
         const ParameterType type = effect->getParameterType(parameter);

@@ -3,6 +3,7 @@
 
 #if defined(OPENKNX_WEBSERVER) && (defined(KNX_IP_LAN) || defined(KNX_IP_WIFI))
     #include "EffectTypeMapping.h"
+    #include "WebUi/NeoPixelEffectCatalog.generated.h"
     #include "OpenKNX/Format/JSON/Writer.h"
     #include <algorithm>
     #include <cmath>
@@ -160,7 +161,7 @@ std::string NeoPixelStudio::commissioningControl(size_t index, const Reader& doc
                                                                         : 0;
     if (pattern != "red" && pattern != "green" && pattern != "blue" && pattern != "white" && pattern != "warm" && pattern != "cool" && pattern != "chase" && pattern != "cycle") return "Unbekanntes Testmuster";
 
-    if (getTypeFromEffect(getEffectFromType(effect)) != effect) return "Der Testeffekt ist in dieser Firmware nicht enthalten";
+    if (!NeoPixelEffectCatalog::isAvailable(static_cast<uint8_t>(effect))) return "Der Testeffekt ist in dieser Firmware nicht enthalten";
     // A new pattern or level on the segment already under test applies directly: the pre-test state stays saved
     // (Stop still returns to it) and is not restored in between, which would flash it and send KNX status twice.
     const bool restart = !_testRestore.empty() && _testSegment == int(index);
