@@ -6,6 +6,48 @@
     Automated build script for OpenKNX NeoPixel firmware across multiple hardware platforms.
     Use -Help for usage information.
 
+.PARAMETER Mode
+    Positional shortcut for a switch: Release | Dev | SkipFirmware | SkipOknx | SkipTool | SkipHostCli | SkipKnxprod | Clean | Full | Mini.
+
+.PARAMETER Release
+    Build the RELEASE variant (alias -Rel). Default is Dev.
+
+.PARAMETER Dev
+    Build the Dev variant. This is the default; the flag is optional.
+
+.PARAMETER Mini
+    Build only the hardware kept on the desk.
+
+.PARAMETER Full
+    Build all hardware variants, not just the tested set.
+
+.PARAMETER SkipFirmware
+    Run the generators, the pre/post steps and the oknx PC tool build, skip the firmware compilation.
+    The ETS product of the variant is kept as NeoPixel-Dev.knxprod / NeoPixel-Release.knxprod in the repository root.
+
+.PARAMETER SkipOknx
+    Skip building the PC tool oknx (alias -SkipTool, -SkipHostCli); the package takes the binaries already built, if any.
+
+.PARAMETER SkipKnxprod
+    Do not run the effect/hardware generators and OpenKNXproducer: include/knxprod.h and the ETS data stay from
+    the last run. Stops when include/knxprod.h is missing or belongs to the other variant.
+
+.PARAMETER Clean
+    Remove generated files and exit.
+
+.PARAMETER Help
+    Show this help (alias -h).
+
+.EXAMPLE
+    ./Build-Release.ps1 -SkipFirmware -SkipOknx                  # Dev knxprod only -> NeoPixel-Dev.knxprod
+.EXAMPLE
+    ./Build-Release.ps1 -Rel -SkipFirmware -SkipOknx             # Release knxprod only -> NeoPixel-Release.knxprod
+.EXAMPLE
+    ./Build-Release.ps1 -SkipFirmware -SkipTool -SkipKnxprod     # repackage only, nothing is rebuilt
+
+.NOTES
+    AUTHOR : Erkan Colak
+
 .LINK
     https://github.com/OpenKNX/OAM-NeoPixel
 #>
@@ -15,10 +57,21 @@ param(
     [string]$Mode = "",
 
     [Parameter(Mandatory=$false)]
+    [Alias("Rel")]
     [switch]$Release,
 
     [Parameter(Mandatory=$false)]
+    [switch]$Dev,
+
+    [Parameter(Mandatory=$false)]
     [switch]$SkipFirmware,
+
+    [Parameter(Mandatory=$false)]
+    [Alias("SkipTool", "SkipHostCli")]
+    [switch]$SkipOknx,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipKnxprod,
 
     [Parameter(Mandatory=$false)]
     [switch]$Clean,
@@ -57,20 +110,25 @@ function OpenKNX_ShowLogo($AddCustomText = $null) {
 function Show-Help {
     OpenKNX_ShowLogo "Build Release Script"
     Write-Host "USAGE:" -ForegroundColor Yellow
-    Write-Host "  .\Build-Release.ps1 [-Release] [-Mini|-Full] [-SkipFirmware] [-Clean]"
+    Write-Host "  .\Build-Release.ps1 [-Release|-Rel] [-Dev] [-Mini|-Full] [-SkipFirmware] [-SkipOknx|-SkipTool] [-SkipKnxprod] [-Clean]"
     Write-Host ""
     Write-Host "OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -Release       Create release build (default: dev)"
+    Write-Host "  -Release, -Rel Create release build (default: dev)"
+    Write-Host "  -Dev           Create dev build (this is the default anyway)"
     Write-Host "  -Mini          Build ONLY the hardware kept on the desk (fast turnaround)"
     Write-Host "  -Full          Build ALL hardware variants (default: tested only)"
-    Write-Host "  -SkipFirmware  Generate configs only, skip firmware compilation"
+    Write-Host "  -SkipFirmware  Generate configs/knxprod and build oknx, skip firmware compilation"
+    Write-Host "                 (the ETS product stays as NeoPixel-Dev.knxprod / NeoPixel-Release.knxprod in the repo root)"
+    Write-Host "  -SkipOknx      Skip building the PC tool oknx (alias -SkipTool, -SkipHostCli)"
+    Write-Host "  -SkipKnxprod   Do not run the generators and OpenKNXproducer; knxprod.h and the ETS data stay from the last run"
+    Write-Host "                 (stops when knxprod.h is missing or belongs to the other variant)"
     Write-Host "  -Clean         Remove generated files and exit"
     Write-Host "  -Help, -h      Show this help"
     Write-Host ""
     Write-Host "TARGET SETS:" -ForegroundColor Yellow
-    Write-Host "  -Mini          KNeoPiX RP2350 + KNeoPiX ESP32S3 only (2 targets)"
-    Write-Host "  (default)      tested hardware (7 targets)"
-    Write-Host "  -Full          tested + untested + third-party (33 targets)"
+    Write-Host "  -Mini          KNeoPiX V1 + V1.5: RP2350, ESP32S3, ESP32S3 TP+WiFi (6 targets)"
+    Write-Host "  (default)      tested hardware (14 targets)"
+    Write-Host "  -Full          tested + untested + third-party (36 targets)"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\Build-Release.ps1              " -NoNewline -ForegroundColor White
@@ -78,11 +136,17 @@ function Show-Help {
     Write-Host "  .\Build-Release.ps1 -Release     " -NoNewline -ForegroundColor White
     Write-Host "# Release build" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Mini        " -NoNewline -ForegroundColor White
-    Write-Host "# Only the two boards on the desk" -ForegroundColor DarkGray
+    Write-Host "# Only the boards on the desk" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Full        " -NoNewline -ForegroundColor White
     Write-Host "# Include all chip variants and third-party hardware" -ForegroundColor DarkGray
     Write-Host "  .\Build-Release.ps1 -Release -Full" -NoNewline -ForegroundColor White
     Write-Host " # Full release" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -SkipFirmware -SkipOknx" -NoNewline -ForegroundColor White
+    Write-Host " # Dev knxprod only -> NeoPixel-Dev.knxprod" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -Rel -SkipFirmware -SkipOknx" -NoNewline -ForegroundColor White
+    Write-Host " # Release knxprod only -> NeoPixel-Release.knxprod" -ForegroundColor DarkGray
+    Write-Host "  .\Build-Release.ps1 -SkipFirmware -SkipTool -SkipKnxprod" -NoNewline -ForegroundColor White
+    Write-Host " # repackage only" -ForegroundColor DarkGray
     Write-Host ""
 }
 
@@ -93,10 +157,10 @@ if ($Help) {
 }
 
 # Validate Mode parameter manually
-$validModes = @("Release", "SkipFirmware", "Clean", "Full", "Mini", "")
+$validModes = @("Release", "Dev", "SkipFirmware", "SkipOknx", "SkipTool", "SkipHostCli", "SkipKnxprod", "Clean", "Full", "Mini", "")
 if ($Mode -and $Mode -notin $validModes) {
     Write-Host ""
-    Write-Host "ERROR: Invalid mode '$Mode'. Valid values: Release, SkipFirmware, Clean, Full, Mini" -ForegroundColor Red
+    Write-Host "ERROR: Invalid mode '$Mode'. Valid values: Release, Dev, SkipFirmware, SkipOknx, SkipTool, SkipHostCli, SkipKnxprod, Clean, Full, Mini" -ForegroundColor Red
     Show-Help
     exit 1
 }
@@ -105,8 +169,16 @@ if ($Mode -and $Mode -notin $validModes) {
 $isClean = ($Mode -eq "Clean") -or $Clean
 $isRelease = ($Mode -eq "Release") -or $Release
 $isSkipFirmware = ($Mode -eq "SkipFirmware") -or $SkipFirmware
+$isSkipOknx = ($Mode -in @("SkipOknx", "SkipTool", "SkipHostCli")) -or $SkipOknx
+$isSkipKnxprod = ($Mode -eq "SkipKnxprod") -or $SkipKnxprod
 $isFull = ($Mode -eq "Full") -or $Full
 $isMini = ($Mode -eq "Mini") -or $Mini
+
+if ($isRelease -and (($Mode -eq "Dev") -or $Dev)) {
+    Write-Host ""
+    Write-Host "ERROR: -Release and -Dev are mutually exclusive. Pick one." -ForegroundColor Red
+    exit 1
+}
 
 # Mini and Full select opposite ends of the target list - picking both is a typo,
 # and silently letting one win would produce a build the caller did not ask for.
@@ -139,7 +211,7 @@ if ($isClean) {
         # Only known generated outputs: preserve hand-written source and release packages.
         foreach ($pattern in @(
             'include/knxprod.h', 'include/buildtime.h', 'include/versions.h', 'include/webassets.h',
-            'src/NeoPixel-*.debug.xml', 'src/*.baggages', 'src/*.knxprod',
+            'src/NeoPixel-*.debug.xml', 'src/*.baggages', 'src/*.knxprod', 'NeoPixel-Dev.knxprod', 'NeoPixel-Release.knxprod',
             # Older producer naming: no longer generated, left behind by earlier builds
             'src/NeoPixel.debug.xml', 'src/NeoPixel.appl.debug.xml'
         )) {
@@ -291,37 +363,102 @@ if ($isMini) {
 }
 Write-Host "Target set: $targetSetName - $($allTargets.Count) target(s)" -ForegroundColor Cyan
 
-# Extract unique hardware section names from targets
-$hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
-
-Write-Host "Generating GPIO templates for selected hardware (mode: $HardwareListMode)..." -ForegroundColor Cyan
-Write-Host "  Section filter: $($hardwareFilter -join ', ')" -ForegroundColor DarkGray
-scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter -HardwareListMode $HardwareListMode
-if (!$?) {
-    Write-Host "GPIO template generation failed!" -ForegroundColor Red
-    exit 1
-}
-
-# Generate effect parameters before building
-Write-Host "Generating effect parameters..." -ForegroundColor Cyan
-scripts/Build-EffectParameters.ps1 -SkipOpenKNXproducer
-if (!$?) {
-    Write-Host "Effect parameter generation failed!" -ForegroundColor Red
-    exit 1
-}
-
-# The generators splice blocks in with mixed newlines; without this the repository
-# shows the same files as modified after every run (see Normalize-LineEndings.ps1).
-Write-Host "Normalizing line endings..." -ForegroundColor Cyan
-scripts/Normalize-LineEndings.ps1
-
 # Determine build parameter for OpenKNXproducer
 # Pass "Release" or "Dev" to select the matching XML file
 $buildParam = if ($isRelease) { "Release" } else { "Dev" }
+$releaseName = "NeoPixel-$buildParam"
 
-# Execute generic pre-build steps
-lib/OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
-if (!$?) { exit 1 }
+# With -SkipKnxprod the firmware is compiled against the existing include/knxprod.h while the package takes
+# the ETS data of the requested variant; a header of the other variant would ship mismatching ETS data.
+if ($isSkipKnxprod) {
+    $headerNumber = $null
+    $xmlNumber = $null
+    if (Test-Path -LiteralPath "include/knxprod.h" -PathType Leaf) {
+        $headerNumber = Select-String -LiteralPath "include/knxprod.h" -Pattern '^#define MAIN_ApplicationNumber\s+(\d+)' | Select-Object -First 1
+    }
+    if (Test-Path -LiteralPath "src/$releaseName.xml" -PathType Leaf) {
+        $xmlNumber = Select-String -LiteralPath "src/$releaseName.xml" -Pattern 'ApplicationNumber="(\d+)"' | Select-Object -First 1
+    }
+    if ($null -eq $headerNumber -or $null -eq $xmlNumber) {
+        Write-Host "ERROR: -SkipKnxprod needs include/knxprod.h and src/$releaseName.xml - run once without -SkipKnxprod" -ForegroundColor Red
+        exit 1
+    }
+    if ($headerNumber.Matches[0].Groups[1].Value -ne $xmlNumber.Matches[0].Groups[1].Value) {
+        Write-Host "ERROR: include/knxprod.h was built for the other variant (application $($headerNumber.Matches[0].Groups[1].Value), $releaseName is $($xmlNumber.Matches[0].Groups[1].Value)) - run once without -SkipKnxprod" -ForegroundColor Red
+        exit 1
+    }
+}
+
+# PC tool oknx, built first so a tool failure aborts before the firmware build. The post-build step
+# packs the binaries of this pio matrix into Tools/oknx; -SkipFirmware still builds it.
+$oknxDir = "lib/OFM-FileTransferModule/oknx"
+if (-not $isSkipOknx) {
+    if (Test-Path (Join-Path $oknxDir "platformio.ini")) {
+        Write-Host "Building the oknx PC tool matrix (pio run -> oknx, all OS/arch)..." -ForegroundColor Cyan
+        pio run -d $oknxDir
+        if (!$?) { Write-Host "oknx build failed" -ForegroundColor Red; exit 1 }
+    } else {
+        Write-Host "oknx project not found ($oknxDir) - the release would ship without the PC tool" -ForegroundColor Red
+        Write-Host "  check out OFM-FileTransferModule, or pass -SkipOknx to leave it out on purpose" -ForegroundColor Red
+        exit 1
+    }
+} else {
+    Write-Host "Skipping PC tool build (SkipOknx) - the release packs the oknx binaries already built, if any" -ForegroundColor Yellow
+}
+
+# The generators write the XML that OpenKNXproducer turns into knxprod.h; with -SkipKnxprod both stay
+# from the last run, so header and ETS data keep matching.
+if (-not $isSkipKnxprod) {
+    # Extract unique hardware section names from targets
+    $hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
+
+    Write-Host "Generating GPIO templates for selected hardware (mode: $HardwareListMode)..." -ForegroundColor Cyan
+    Write-Host "  Section filter: $($hardwareFilter -join ', ')" -ForegroundColor DarkGray
+    scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter -HardwareListMode $HardwareListMode
+    if (!$?) {
+        Write-Host "GPIO template generation failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    # Generate effect parameters before building
+    Write-Host "Generating effect parameters..." -ForegroundColor Cyan
+    scripts/Build-EffectParameters.ps1 -SkipOpenKNXproducer
+    if (!$?) {
+        Write-Host "Effect parameter generation failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    # The generators splice blocks in with mixed newlines; without this the repository
+    # shows the same files as modified after every run (see Normalize-LineEndings.ps1).
+    Write-Host "Normalizing line endings..." -ForegroundColor Cyan
+    scripts/Normalize-LineEndings.ps1
+} else {
+    Write-Host "Skipping effect/hardware generators (SkipKnxprod) - their outputs stay from the last run" -ForegroundColor Yellow
+}
+
+# Execute generic pre-build steps. The shared preprocess passes its arguments on positionally, so the
+# skip travels in the environment; cleared first and in finally so it never leaks into a later build.
+Remove-Item Env:OPENKNX_SKIP_KNXPROD -ErrorAction SilentlyContinue
+if ($isSkipKnxprod) { $env:OPENKNX_SKIP_KNXPROD = "1" }
+try {
+    lib/OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
+    $preprocessOk = $?
+}
+finally {
+    Remove-Item Env:OPENKNX_SKIP_KNXPROD -ErrorAction SilentlyContinue
+}
+if (!$preprocessOk) { exit 1 }
+
+# The post-build step deletes release/<releaseName>.knxprod; keep a copy for a direct ETS import.
+if (-not $isSkipKnxprod) {
+    $knxprodSource = "release/$releaseName.knxprod"
+    if (Test-Path -LiteralPath $knxprodSource -PathType Leaf) {
+        Copy-Item -LiteralPath $knxprodSource -Destination "$releaseName.knxprod" -Force
+        Write-Host "ETS product for import: $releaseName.knxprod" -ForegroundColor Green
+    } else {
+        Write-Host "OpenKNXproducer left no $knxprodSource - no ETS product to import" -ForegroundColor Yellow
+    }
+}
 
 # ============================================================================
 # BUILD EXECUTION

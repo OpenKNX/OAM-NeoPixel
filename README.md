@@ -170,9 +170,15 @@ pio run -e release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 -t upload
 To create packaged release artifacts instead of a single PlatformIO build, use:
 
 ```bash
-pwsh scripts/Build-Release.ps1
-pwsh scripts/Build-Release.ps1 -Release
+pwsh scripts/Build-Release.ps1                                 # Dev package (tested hardware)
+pwsh scripts/Build-Release.ps1 -Release                        # Release package (alias -Rel)
+pwsh scripts/Build-Release.ps1 -SkipFirmware -SkipOknx         # Dev knxprod only -> NeoPixel-Dev.knxprod
+pwsh scripts/Build-Release.ps1 -Rel -SkipFirmware -SkipOknx    # Release knxprod only -> NeoPixel-Release.knxprod
+pwsh scripts/Build-Release.ps1 -SkipFirmware -SkipTool -SkipKnxprod   # repackage only
 ```
+
+`-SkipOknx` (alias `-SkipTool`) skips the oknx PC tool build, `-SkipKnxprod` keeps `include/knxprod.h` and the ETS data
+of the last run and stops when that header belongs to the other variant. `pwsh scripts/Build-Release.ps1 -h` lists all options.
 
 ### 4. Configure in ETS
 - **LED Type**: Select your LED protocol (WS2812B, APA102, etc.)
