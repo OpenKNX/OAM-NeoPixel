@@ -37,11 +37,10 @@ namespace
         return value.isNumber() && std::isfinite(number) && double(number) >= double(min) && double(number) <= double(max) && std::floor(number) == number;
     }
 
-    std::string utf8(const char* value)
+    void utf8(std::string& result, const char* value)
     {
-        std::string result;
+        result.clear();
         if (value) OpenKNX::Charset::encodeUtf8(result, value, strlen(value));
-        return result;
     }
 
     void color(Writer& json, const char* key, uint8_t r, uint8_t g, uint8_t b, uint8_t ww, uint8_t cw)
@@ -188,11 +187,12 @@ void NeoPixelStudio::loop()
     if (recent && uint32_t(now - _lastRefresh) >= 1000 && openknxNetwork.webserver.ui.hasClients()) _refresh.store(true);
     if (!_refresh.load() || (command.empty() && uint32_t(now - _lastRefresh) < 250)) return;
     // Build outside the guard: callbacks only ever see a complete immutable snapshot.
-    std::string state = snapshot();
+    snapshot(_stateBack);
+    const std::string& state = _stateBack;
     uint32_t hash = 2166136261u; // FNV-1a
     for (const char c : state) hash = (hash ^ uint8_t(c)) * 16777619u;
     if (_guard.exchange(1, std::memory_order_acquire)) return;
-    _state.swap(state);
+    _state.swap(_stateBack);
     _processing = false;
     _refresh.store(false);
     _lastRefresh = millis();
@@ -463,10 +463,10 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     return {};
 }
 
-std::string NeoPixelStudio::snapshot()
+void NeoPixelStudio::snapshot(std::string& output)
 {
     const uint32_t selected = _requestedSegment.load();
-    Writer json;
+    Writer json(output);
     json.beginObject().field("ready", true).field("configured", true).field("globalPower", _module._globalPowerOn);
     json.field("completedId", _completedId).field("error", _error);
     json.field("channels", uint32_t(_module._virtualStrip ? _module._virtualStrip->getBytesPerLed() : 3));
@@ -483,8 +483,9 @@ std::string NeoPixelStudio::snapshot()
         json.field("detailsLoaded", details).field("testing", _testSegment == int(i));
         if (_testSegment == int(i)) json.field("testPattern", _testPattern);
         if (details) {
-            json.field("commissioningPending", commissioning(i) != commissioning(i, true));
-            json.field("commissioningApplied", commissioning(i) == commissioning(i, false, true));
+            const bool hasDraft = !_commissioning[i].empty();
+            json.field("commissioningPending", !commissioningMatches(i, true, hasDraft));
+            json.field("commissioningApplied", commissioningMatches(i, false, hasDraft));
             json.key("commissioning"); writeCommissioning(json, i);
         }
         json.field("power", _module.isSegmentVisible(cfg)).field("em", cfg.emController.isRunning());
@@ -509,7 +510,8 @@ std::string NeoPixelStudio::snapshot()
                 json.endArray();
                 char sceneText[15] = {};
                 memcpy(sceneText, data.data() + 22, 14);
-                json.field("text", utf8(sceneText)).endObject();
+                utf8(_snapshotText, sceneText);
+                json.field("text", _snapshotText).endObject();
             }
         }
         json.endArray();
@@ -524,7 +526,11 @@ std::string NeoPixelStudio::snapshot()
                                                                                                                   : "number";
                 json.beginObject().field("id", uint32_t(p)).field("name", effect->getParameterName(p)).field("type", kind);
                 json.field("min", effect->getParameterMin(p)).field("max", effect->getParameterMax(p));
-                if (type == ParameterType::PARAM_STRING) json.field("value", utf8(c.effectText));
+                if (type == ParameterType::PARAM_STRING)
+                {
+                    utf8(_snapshotText, c.effectText);
+                    json.field("value", _snapshotText);
+                }
                 else
                     json.field("value", effect->getParameter(segment, p));
                 json.key("options").beginArray();
@@ -537,6 +543,5 @@ std::string NeoPixelStudio::snapshot()
         json.endArray().endObject();
     }
     json.endArray().endObject();
-    return json.str();
 }
 #endif

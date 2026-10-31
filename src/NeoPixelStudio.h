@@ -30,6 +30,8 @@ class NeoPixelStudio
     std::atomic<uint32_t> _requestedSegment{1};
     std::string _pending;
     std::string _state = "{\"ready\":false,\"segments\":[]}";
+    std::string _stateBack;
+    std::string _snapshotText;
     uint32_t _nextId = 0;
     uint32_t _pendingId = 0;
     uint32_t _completedId = 0;
@@ -49,7 +51,7 @@ class NeoPixelStudio
     static constexpr uint32_t WATCH_MS = 30000;
     /** @brief Hash of the last published state and the change counter pushed as "studio:<rev>" on the UI socket. */
     uint32_t _stateHash = 0, _rev = 0;
-    std::string commissioning(size_t index, bool downloaded = false, bool runtime = false) const;
+    bool commissioningMatches(size_t index, bool downloaded, bool compareDraft) const;
     void writeCommissioning(OpenKNX::Format::JSON::Writer& json, size_t index, bool downloaded = false, bool runtime = false) const;
     std::string commissioningControl(size_t index, const OpenKNX::Format::JSON::Reader& doc, bool validateOnly);
     std::string applyLiveCommissioning(size_t index, const OpenKNX::Format::JSON::Reader& value);
@@ -66,6 +68,6 @@ class NeoPixelStudio
     std::string readSaved(size_t index, std::string& error) const;
     std::string apply(const std::string& command);
     std::string applyDoc(const OpenKNX::Format::JSON::Reader& doc, bool validateOnly = false, uint8_t expectedEffect = 255);
-    std::string snapshot();
+    void snapshot(std::string& output);
 };
 #endif

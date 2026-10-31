@@ -18,32 +18,71 @@ namespace
     }
 } // namespace
 
-std::string NeoPixelStudio::commissioning(size_t index, bool downloaded, bool runtime) const
+bool NeoPixelStudio::commissioningMatches(size_t index, bool downloaded, bool compareDraft) const
 {
-    if (!downloaded && !runtime && !_commissioning[index].empty()) return _commissioning[index];
     uint8_t _channelIndex = index;
-    Writer json;
-    json.beginObject().field("start", uint32_t(!downloaded && _module._liveLedLayout ? _module._liveSegmentStarts[index] : ParamNEO_NEOSegmentStart)).field("end", uint32_t(!downloaded && _module._liveLedLayout ? _module._liveSegmentEnds[index] : ParamNEO_NEOSegmentEnd));
-    json.key("strips").beginArray();
+    const bool useDraft = compareDraft && !_commissioning[index].empty();
+    const uint32_t runtimeStart = _module._liveLedLayout ? _module._liveSegmentStarts[index] : ParamNEO_NEOSegmentStart;
+    const uint32_t runtimeEnd = _module._liveLedLayout ? _module._liveSegmentEnds[index] : ParamNEO_NEOSegmentEnd;
+    const uint32_t targetStart = downloaded ? ParamNEO_NEOSegmentStart : runtimeStart;
+    const uint32_t targetEnd = downloaded ? ParamNEO_NEOSegmentEnd : runtimeEnd;
     const unsigned count = std::min<unsigned>(8, ParamNEO_NEONumberOfLEDStrips);
+
+    if (useDraft)
+    {
+        Reader draft(_commissioning[index].c_str());
+        const Reader strips = draft.get("strips");
+        if (!draft.isObject() || draft.get("start").toUInt() != targetStart || draft.get("end").toUInt() != targetEnd ||
+            !strips.isArray() || strips.get(count).valid()) return false;
+        for (unsigned strip = 0; strip < count; ++strip)
+        {
+            _channelIndex = strip;
+            const Reader item = strips.get(strip);
+            const uint32_t length = downloaded ? ParamNEOSTRIP_NEOLength : _module.configuredStripLength(strip);
+            const uint32_t skip = downloaded ? ParamNEOSTRIP_NEOSkipFirstLEDs : _module.configuredStripSkip(strip);
+            if (!item.isObject() || item.get("id").toUInt() != strip + 1 || item.get("length").toUInt() != length || item.get("skip").toUInt() != skip)
+                return false;
+        }
+        return true;
+    }
+
+    if (runtimeStart != targetStart || runtimeEnd != targetEnd) return false;
+    if (!downloaded) return true;
     for (unsigned strip = 0; strip < count; ++strip)
     {
         _channelIndex = strip;
-        json.beginObject().field("id", uint32_t(strip + 1)).field("length", uint32_t(downloaded ? ParamNEOSTRIP_NEOLength : _module.configuredStripLength(strip)));
-        json.field("skip", uint32_t(downloaded ? ParamNEOSTRIP_NEOSkipFirstLEDs : _module.configuredStripSkip(strip))).endObject();
+        if (_module.configuredStripLength(strip) != ParamNEOSTRIP_NEOLength || _module.configuredStripSkip(strip) != ParamNEOSTRIP_NEOSkipFirstLEDs)
+            return false;
     }
-    return json.endArray().endObject().str();
+    return true;
 }
 
 void NeoPixelStudio::writeCommissioning(Writer& json, size_t index, bool downloaded, bool runtime) const
 {
-    const std::string text = commissioning(index, downloaded, runtime);
-    Reader value(text.c_str());
-    json.beginObject().field("start", value.get("start").toUInt()).field("end", value.get("end").toUInt()).key("strips").beginArray();
-    for (size_t i = 0; value.get("strips").get(i).valid(); ++i)
+    uint8_t _channelIndex = index;
+    if (!downloaded && !runtime && !_commissioning[index].empty())
     {
-        const Reader strip = value.get("strips").get(i);
-        json.beginObject().field("id", strip.get("id").toUInt()).field("length", strip.get("length").toUInt()).field("skip", strip.get("skip").toUInt()).endObject();
+        Reader value(_commissioning[index].c_str());
+        const Reader strips = value.get("strips");
+        json.beginObject().field("start", value.get("start").toUInt()).field("end", value.get("end").toUInt()).key("strips").beginArray();
+        for (size_t i = 0; strips.get(i).valid(); ++i)
+        {
+            const Reader strip = strips.get(i);
+            json.beginObject().field("id", strip.get("id").toUInt()).field("length", strip.get("length").toUInt()).field("skip", strip.get("skip").toUInt()).endObject();
+        }
+        json.endArray().endObject();
+        return;
+    }
+
+    const uint32_t start = !downloaded && _module._liveLedLayout ? _module._liveSegmentStarts[index] : ParamNEO_NEOSegmentStart;
+    const uint32_t end = !downloaded && _module._liveLedLayout ? _module._liveSegmentEnds[index] : ParamNEO_NEOSegmentEnd;
+    json.beginObject().field("start", start).field("end", end).key("strips").beginArray();
+    const unsigned count = std::min<unsigned>(8, ParamNEO_NEONumberOfLEDStrips);
+    for (unsigned strip = 0; strip < count; ++strip)
+    {
+        _channelIndex = strip;
+        json.beginObject().field("id", uint32_t(strip + 1)).field("length", uint32_t(downloaded ? ParamNEOSTRIP_NEOLength : _module.configuredStripLength(strip)))
+            .field("skip", uint32_t(downloaded ? ParamNEOSTRIP_NEOSkipFirstLEDs : _module.configuredStripSkip(strip))).endObject();
     }
     json.endArray().endObject();
 }
