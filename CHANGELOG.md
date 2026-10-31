@@ -1,9 +1,9 @@
 # Changes
 
 
-## BETA-DEV-v2.0.0: 2026-10-31 (not released, see doc/TODO.md Prio 0 and 1)
+## ALPHA-DEV-v2.0.0: 2026-10-31 (not released, see doc/TODO.md Prio 0 and 1)
 
-ETS product **2.0** (`NeoPixel-Dev`), release variant **0.15** (`NeoPixel-Release`). Beta dev build for testers,
+ETS product **2.0** (`NeoPixel-Dev`), release variant **0.15** (`NeoPixel-Release`). Alpha dev build for testers,
 not a public release: the Prio 0 and Prio 1 items of `doc/TODO.md` are still open; it carries everything since the tag `v0.3`
 (2026-06-21). The parameter layout, the object numbers and the flash layout changed on the way, so a device needs
 this knxprod and a full ETS download after the firmware update.
