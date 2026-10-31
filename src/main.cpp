@@ -14,9 +14,6 @@
 #include "FileTransferModule.h"
 
 #ifdef ARDUINO_ARCH_RP2040
-    #ifndef OPENKNX_USB_EXCHANGE_IGNORE
-        #include "UsbExchangeModule.h"
-    #endif
     #if defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)
         #include "NetworkModule.h"
     #endif
@@ -59,11 +56,6 @@ void setup()
     openknx.addModule(7, openknxNetwork);
 #endif
 
-#ifdef ARDUINO_ARCH_RP2040
-    #ifndef OPENKNX_USB_EXCHANGE_IGNORE
-    openknx.addModule(8, openknxUsbExchangeModule);
-    #endif
-#endif
     openknx.addModule(9, openknxFileTransferModule);
 #ifdef NEOPIXEL_MODULE_TEST_ENV
     //    openknx.addModule(99, neoPixelModule);
