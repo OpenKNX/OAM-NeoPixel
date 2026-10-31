@@ -603,7 +603,9 @@
         clearTimeout(timer);
         try {
             if (!effects.length) {
-                effects = await request('effects');
+                const catalog = await request('effects');
+                const available = await request('effect-availability');
+                effects = catalog.filter(effect => available[effect.id] === '1');
                 el('effect').replaceChildren();
                 effects.forEach(effect => option(el('effect'), effect.id, effect.name));
             }

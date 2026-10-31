@@ -60,7 +60,7 @@
   function hex6(n) { return '#' + ('00000' + (n >>> 0).toString(16)).slice(-6); }
   function hex4(n) { return '0x' + ('000' + (n >>> 0).toString(16).toUpperCase()).slice(-4); }
   function upStr(s) { var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return d + ' d ' + ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2) + (d || h ? '' : ':' + ('0' + x).slice(-2)); }
-  function fxName(id) { var n = FX1D.concat(FX2D)[id]; return n || 'Effekt ' + id; }
+  function fxName(id) { var effect = FX.find(function (item) { return item.id === id; }); return effect ? effect.name : 'Effekt ' + id; }
   var EMPTY = { v: 1, up: 0, leds: 0, bpl: 3, bar: { pw: 1, bri: 0, fps: 0, fpsT: 0, hcl: 0, err: 0, warn: 0, warn2: 0 }, pwr: { mode: 0, lim: 0, thr: 0, abl: 0, perLed: 0, ma: 0, load: 0 },
     hw: { chip: '', mhz: 0, cores: 0, hwid: 0, board: '', ets: 0, etsName: '', ls: 0, build: 0, ft: 0, ftMin: 0, ftMax: 0, temp: 0, heap: 0, heapMin: 0, heapTot: 0, rmtFree: 0, rmtTot: 0, start: 1, startLeft: 0, deferred: 0, savedValid: 0 },
     emCount: 0, emSum: 0, strips: [], segs: [], relays: [], cmds: [], empty: 1 };
@@ -814,8 +814,15 @@
   // no bus telegram (valueNoSend + processInputKo in the loop task), lock / startup delay / Effektkette rules apply,
   // status KOs send as usual. Offered by the configured parameters, not by group address.
   // Effect names as in src/EffectIds.lock (IDs 0-19 1D, 20-32 2D)
-  var FX1D = ['Solid', 'Wipe', 'Rainbow', 'Pride2015', 'Juggle', 'BPM', 'Cylon', 'Test', 'Fire', 'Theater Chase', 'Sparkle', 'Breathing', 'Strobe', 'Comet', 'Noise', 'Palette', 'Lightning', 'Gradient', 'Candle', 'Scroll Text'];
-  var FX2D = ['Clock 2D', 'Snake 2D', 'Matrix 2D', 'Tetris 2D', 'TRON', 'Starfield Warp', 'Plasma Nebula', 'UFO Swarm', 'Game of Life 2D', 'DNA 2D', 'Aurora 2D', 'Lissajous 2D', 'Metaballs 2D'];
+  var FX = [];
+  Promise.all([
+    fetch('/neopixel/api/effects', { cache: 'no-store' }).then(function (response) { if (!response.ok) throw new Error('effects'); return response.json(); }),
+    fetch('/neopixel/api/effect-availability', { cache: 'no-store' }).then(function (response) { if (!response.ok) throw new Error('effect-availability'); return response.json(); })
+  ]).then(function (results) {
+    FX = results[0].filter(function (effect) { return results[1][effect.id] === '1'; });
+    LIVE.sig = '';
+    if (LIVE.st) onState(LIVE.st);
+  }).catch(function () { FX = []; });
   // Offered by the configured parameters of the active segment (no group address needed):
   // always Ein/Aus, Helligkeit, Dimmen, Sperre, Effekt; colour by strip type; scenes 1..NEO~SceneCount;
   // EM only for EMs within NEOEMEnabled, state aktiv (NEOEM~Enabled = 1) and with cues (a start with 0 cues is refused).
@@ -841,7 +848,7 @@
       (sc.segs.some(function (s) { return s.ch.m === 1; }) ? '<br><b>Ausnahme Effektkette-Master:</b> Ändert die Steuerung Ein/Aus, Effekt, Tempo, Farbe oder Helligkeit eines Master-Segments, sendet das Gerät wie immer ein Sync-Telegramm, und die Slaves folgen.' : '') +
       '<br><span class="np-f"><b>Angeboten wird, was für das Segment konfiguriert ist</b> – auch ohne Gruppenadresse: Ein/Aus, Helligkeit, Dimmen, Sperre und Effekt für jedes aktive Segment; Farbe nach Streifentyp (RGB, RGBW, RGB + WW/CW); Szenen 1 bis „Anzahl Szenen“; Effektmanager nur, wenn er in den Basiseinstellungen verfügbar, aktiv und mit Cues angelegt ist. 2D-Effekte nur bei 2D-Segmenten.</span></div>';
     sc.segs.forEach(function (s, i) {
-      var lay8 = sc.bar.layout, lk = lookOf(s), c = rgbOf(s.c1), rows = '', ems = emsFor(), fxList = is2D(s.geo) ? FX1D.concat(FX2D) : FX1D;
+      var lay8 = sc.bar.layout, lk = lookOf(s), c = rgbOf(s.c1), rows = '', ems = emsFor(), fxList = FX.filter(function (effect) { return is2D(s.geo) || effect.dimensions === 1; });
       if (has(s, 'power')) rows += ctlRow('Ein/Aus', '<span class="np-seg2">' + cbtn(i, 'power', 1, 'Ein', (s.st === 'on' || s.st === 'lock') && s.bri > 0) + cbtn(i, 'power', 0, 'Aus', s.st === 'off') + '</span>');
       if (has(s, 'bri') || has(s, 'dim')) rows += ctlRow('Helligkeit',
         (has(s, 'bri') ? '<input type="range" class="np-rng" min="0" max="100" value="' + s.bri + '" data-seg="' + i + '" data-f="bri" aria-label="Helligkeit absolut"><b class="np-num" id="ctl-bri-' + i + '">' + s.bri + ' %</b>' : '<b class="np-num" id="ctl-bri-' + i + '">' + s.bri + ' %</b>') +
@@ -852,7 +859,7 @@
         if (has(s, 'cct')) col += '<label class="np-wl">WW <input type="range" class="np-rng sm" min="0" max="255" value="' + (s.w || 0) + '" data-seg="' + i + '" data-f="ww"></label><label class="np-wl">CW <input type="range" class="np-rng sm" min="0" max="255" value="' + (s.cw || 0) + '" data-seg="' + i + '" data-f="cw"></label>';
         rows += ctlRow('Farbe', col + '<span class="np-f">' + (has(s, 'rgbw') ? 'RGBW (Streifentyp RGBW)' : has(s, 'cct') ? 'RGB + WW/CW (Streifentyp RGBCCT)' : 'RGB (Streifentyp RGB)') + ' · ' + s.c1.toUpperCase() + (s.w ? ' + W ' + s.w : '') + (s.cw ? ' + CW ' + s.cw : '') + '</span>');
       }
-      if (has(s, 'fx')) rows += ctlRow('Effekt', '<select class="np-sel" data-seg="' + i + '" data-f="fx">' + fxList.map(function (n) { return '<option' + (n === s.fx ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select>' + (is2D(s.geo) ? '' : '<span class="np-f">2D-Effekte nur bei 2D-Segmenten</span>'));
+      if (has(s, 'fx')) rows += ctlRow('Effekt', '<select class="np-sel" data-seg="' + i + '" data-f="fx"' + (fxList.length ? '' : ' disabled') + '>' + fxList.map(function (effect) { return '<option value="' + effect.id + '"' + (effect.name === s.fx ? ' selected' : '') + '>' + esc(effect.name) + '</option>'; }).join('') + '</select>' + (is2D(s.geo) ? '' : '<span class="np-f">2D-Effekte nur bei 2D-Segmenten</span>'));
       if (has(s, 'scene') && s.scenes && s.scenes.length) rows += ctlRow('Szene', s.scenes.map(function (q) { return cbtn(i, 'scene', q.n, 'Szene ' + q.n, s.scene === q.n); }).join(''));
       if (ems.length) rows += ctlRow('Effektmanager', ems.map(function (e) {
         var run = s.em === e.id && /run|pause/.test(s.ems || ''), act = e.st === 1;
@@ -969,7 +976,7 @@
     var el = e.target, d = el.dataset; if (!d.f) return;
     var i = +d.seg, s = sc.segs[i];
     if (d.f === 'rgbw' || d.f === 'rgbw-w') { var lc = d.f === 'rgbw' ? el.value : s.c1, lw = d.f === 'rgbw-w' ? +el.value : s.w || 0; sendCtl(i, 'rgbw', lc + '/' + lw); return; } // one RGBW telegram: colour + W
-    if (d.f === 'fx') { var id = FX1D.concat(FX2D).indexOf(el.value); if (id >= 0) sendCtl(i, 'fx', id); return; }
+    if (d.f === 'fx') { var id = +el.value; if (FX.some(function (effect) { return effect.id === id; })) sendCtl(i, 'fx', id); return; }
     sendCtl(i, d.f, d.f === 'rgb' ? el.value : +el.value);
   });
   $('ctl').addEventListener('input', function (e) { // live label while dragging; the value is applied on release

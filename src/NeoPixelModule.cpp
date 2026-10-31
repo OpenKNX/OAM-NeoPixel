@@ -1,4 +1,5 @@
 #include "NeoPixelModule.h"
+#include "WebUi/NeoPixelEffectCatalog.generated.h"
 #include "NeoPixelStudio.h"
 #include "EffectManagerLifecycle.h"
 #include "ColorManagement.h"
@@ -2110,7 +2111,7 @@ void NeoPixelBusModule::processInputKo(GroupObject& ko)
                     // Same validity rule as the Fx object: the ID must map to its own effect
                     for (int id = (raw & 0x08) ? cur + 1 : cur - 1; id >= 0 && id <= 254; id += (raw & 0x08) ? 1 : -1)
                     {
-                        if (getTypeFromEffect(getEffectFromType((uint8_t)id)) == (uint8_t)id)
+                        if (NeoPixelEffectCatalog::isAvailable((uint8_t)id))
                         {
                             next = (uint8_t)id;
                             break;

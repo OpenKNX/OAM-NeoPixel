@@ -64,7 +64,10 @@ param(
   [switch]$Force = $false,
 
   [Parameter(Mandatory = $false)]
-  [switch]$SkipOpenKNXproducer = $false
+  [switch]$SkipOpenKNXproducer = $false,
+
+  [Parameter(Mandatory = $false)]
+  [switch]$WebCatalogOnly = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -425,6 +428,14 @@ if ($Clean) {
   $cppFile = Join-Path $srcDir $script:Config.CppHeaderName
   if (Test-Path $cppFile) {
     $filesToDelete += [PSCustomObject]@{ Type = "C++ Header"; Name = $script:Config.CppHeaderName; Path = $cppFile }
+  }
+
+  # 2a. Collect generated web effect catalog files
+  foreach ($relativePath in @('web/assets/effects.json', 'src/WebUi/NeoPixelEffectCatalog.generated.h')) {
+    $catalogFile = Resolve-RepoPath $relativePath
+    if (Test-Path $catalogFile) {
+      $filesToDelete += [PSCustomObject]@{ Type = "Web Catalog"; Name = (Split-Path -Leaf $catalogFile); Path = $catalogFile }
+    }
   }
 
   # 3. Collect old .part.xml files (legacy)
@@ -884,6 +895,65 @@ if ($Clean) {
 # Helper Functions
 # ====================================================================
 
+function Get-EffectMethodBody {
+  param([string]$Content, [string]$FunctionName)
+  $match = [regex]::Match($Content, "\bget$FunctionName\s*\([^)]*\)[^{;]*\{")
+  if (-not $match.Success) { return $null }
+  $start = $match.Index + $match.Length
+  $depth = 1
+  for ($position = $start; $position -lt $Content.Length; $position++) {
+    if ($Content[$position] -eq '{') { $depth++ }
+    elseif ($Content[$position] -eq '}') {
+      $depth--
+      if ($depth -eq 0) { return $Content.Substring($start, $position - $start) }
+    }
+  }
+  throw "Unterminated get$FunctionName method"
+}
+
+function Get-EffectReturnExpression {
+  param([string]$Content, [string]$FunctionName, [int]$CaseIndex)
+  $body = Get-EffectMethodBody $Content $FunctionName
+  if ($null -eq $body) { return $null }
+  $body = $body -replace '(?m)//[^\r\n]*', ''
+  $cases = [regex]::Matches($body, '((?:case\s+\d+\s*:\s*)+)return\s+([^;]+);')
+  foreach ($case in $cases) {
+    if ($case.Groups[1].Value -match "\bcase\s+$CaseIndex\s*:") { return $case.Groups[2].Value.Trim() }
+  }
+  $conditional = [regex]::Match($body, '\bif\s*\(\s*\w+\s*==\s*(\d+)\s*\)\s*return\s+([^;]+);')
+  if ($conditional.Success -and [int]$conditional.Groups[1].Value -eq $CaseIndex) { return $conditional.Groups[2].Value.Trim() }
+  $default = [regex]::Match($body, '\bdefault\s*:\s*return\s+([^;]+);')
+  if ($default.Success) { return $default.Groups[1].Value.Trim() }
+  $returns = [regex]::Matches($body, '\breturn\s+([^;]+);')
+  if ($returns.Count -gt 0) { return $returns[$returns.Count - 1].Groups[1].Value.Trim() }
+  throw "Cannot extract get$FunctionName for parameter $CaseIndex"
+}
+
+function Resolve-EffectExpression {
+  param([string]$Content, [string]$Expression, [int]$CaseIndex)
+  if ($Expression -match '^\(?\s*\w+\s*==\s*(\d+)\s*\)?\s*\?\s*([^:]+)\s*:\s*(.+)$') {
+    $Expression = if ($CaseIndex -eq [int]$Matches[1]) { $Matches[2].Trim() } else { $Matches[3].Trim() }
+  }
+  if ($Expression -match '^\d+$') { return [int]$Expression }
+  if ($Expression -match '^"((?:\\.|[^"\\])*)"$') { return [regex]::Unescape($Matches[1]) }
+  if ($Expression -eq 'nullptr') { return '' }
+  if ($Expression -match '^(\w+)(?:\s*-\s*(\d+))?$') {
+    $constant = $Matches[1]
+    $subtract = if ($Matches[2]) { [int]$Matches[2] } else { 0 }
+    $definition = [regex]::Match($Content, "\b$constant\s*(?:\[\])?\s*=\s*(\d+|`"(?:\\.|[^`"\\])*`")\s*;")
+    if (-not $definition.Success) {
+      $fonts = Get-Content (Resolve-RepoPath "$($script:Config.EffectsDir)/ScrollTextFonts.h") -Raw -Encoding utf8
+      $definition = [regex]::Match($fonts, "\b$constant\s*=\s*(\d+)\s*;")
+    }
+    if ($definition.Success) {
+      $value = Resolve-EffectExpression $Content $definition.Groups[1].Value $CaseIndex
+      if ($subtract) { return [int]$value - $subtract }
+      return $value
+    }
+  }
+  throw "Unsupported effect metadata expression: $Expression"
+}
+
 function Extract-SwitchCase {
   param(
     [string]$Content,
@@ -944,12 +1014,9 @@ function Extract-IntValue {
     [int]$CaseIndex
   )
 
-  # Updated regex - handle multi-line switch statements
-  $pattern = "get$FunctionName\s*\([^)]*\)[^{]*\{(?s).*?case\s+$CaseIndex\s*:\s*return\s+(\d+)"
-  if ($Content -match $pattern) {
-    return [int]$Matches[1]
-  }
-  return 0
+  $expression = Get-EffectReturnExpression $Content $FunctionName $CaseIndex
+  if ($null -eq $expression) { return $(if ($FunctionName -eq 'ParameterMax') { 255 } else { 0 }) }
+  return Resolve-EffectExpression $Content $expression $CaseIndex
 }
 
 function Extract-ParameterType {
@@ -958,9 +1025,8 @@ function Extract-ParameterType {
     [int]$CaseIndex
   )
 
-  # Find ParameterType::PARAM_XXX in getParameterType() case - handle multi-line
-  $pattern = "getParameterType\s*\([^)]*\)[^{]*\{(?s).*?case\s+$CaseIndex\s*:\s*return\s+ParameterType::(\w+)"
-  if ($Content -match $pattern) {
+  $expression = Get-EffectReturnExpression $Content 'ParameterType' $CaseIndex
+  if ($expression -match '^ParameterType::(\w+)$') {
     return $Matches[1]
   }
   return "PARAM_UINT8"  # Default
@@ -1919,6 +1985,7 @@ function Parse-EffectHeader {
         Description = $paramDesc
         Type        = $paramType
         Default     = $paramDefault
+        DefaultText = if ($paramType -eq 'PARAM_STRING') { Resolve-EffectExpression $content (Get-EffectReturnExpression $content 'ParameterDefaultText' $i) $i } else { '' }
         Min         = $paramMin
         Max         = $paramMax
         EnumOptions = $enumOptions
@@ -4097,6 +4164,84 @@ if ($effects.Count -eq 0) {
   Write-Host "No effects with parameters found!" -ForegroundColor Yellow
   exit 0
 }
+
+function Write-WebEffectCatalog {
+  param([array]$effects)
+  $catalog = @($effects | Sort-Object EffectID | ForEach-Object {
+    $effect = $_
+    [ordered]@{
+      id = [int]$effect.EffectID
+      name = $effect.NameEN
+      dimensions = if (Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN) { 2 } else { 1 }
+      parameters = @($effect.Parameters | ForEach-Object {
+        $parameter = $_
+        [ordered]@{
+          id = [int]$parameter.Index
+          name = $parameter.Name
+          type = switch ($parameter.Type) {
+            'PARAM_STRING' { 'text' }
+            'PARAM_BOOL' { 'bool' }
+            'PARAM_ENUM' { 'enum' }
+            default { 'number' }
+          }
+          min = [int]$parameter.Min
+          max = [int]$parameter.Max
+          value = if ($parameter.Type -eq 'PARAM_STRING') { [string]$parameter.DefaultText } else { [int]$parameter.Default }
+          options = @($parameter.EnumOptions | Sort-Object Value | ForEach-Object { $_.Name })
+        }
+      })
+    }
+  })
+  $catalogPath = Resolve-RepoPath 'web/assets/effects.json'
+  $json = ConvertTo-Json -InputObject $catalog -Depth 10 -Compress
+  [System.IO.File]::WriteAllText($catalogPath, $json, [System.Text.UTF8Encoding]::new($false))
+  $memory = [System.IO.MemoryStream]::new()
+  $gzip = [System.IO.Compression.GZipStream]::new($memory, [System.IO.Compression.CompressionLevel]::SmallestSize, $true)
+  try {
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+    $gzip.Write($bytes, 0, $bytes.Length)
+  } finally { $gzip.Dispose() }
+  $compressed = $memory.ToArray()
+  $memory.Dispose()
+  $header = @('#pragma once', '#include <cstdint>', '', 'namespace NeoPixelEffectCatalog', '{', '    inline const uint8_t gzip[] = {')
+  for ($offset = 0; $offset -lt $compressed.Length; $offset += 20) {
+    $last = [Math]::Min($offset + 19, $compressed.Length - 1)
+    $header += '        ' + (($compressed[$offset..$last] | ForEach-Object { '0x{0:x2}' -f $_ }) -join ',') + ','
+  }
+  $header += @('    };', '    inline constexpr char available[] =')
+  $ordered = @($effects | Sort-Object EffectID)
+  for ($index = 0; $index -lt $ordered.Count; $index++) {
+    $effect = $ordered[$index]
+    if ([int]$effect.EffectID -ne $index) { throw 'Web catalog requires contiguous registration IDs' }
+    $method = $effect.ClassName -replace 'Effect', ''
+    $conditions = @()
+    if ($method -ne 'Solid') { $conditions += "!defined(NEOPIXEL_DISABLE_$($method.ToUpper()))" }
+    if ($index -ge 8 -and $index -le 18) { $conditions += '!defined(NEOPIXEL_MINIMAL_EFFECTS)' }
+    if ($index -ge 20) { $conditions += '!defined(NEOPIXEL_DISABLE_2D)' }
+    if ($conditions.Count) {
+      $header += @(('#if ' + ($conditions -join ' && ')), '        "1"', '#else', '        "0"', '#endif')
+    } else { $header += '        "1"' }
+  }
+  $header += @('        ;', '    inline constexpr char availableJson[] =', '        "\""')
+  for ($index = 0; $index -lt $ordered.Count; $index++) {
+    $effect = $ordered[$index]
+    $method = $effect.ClassName -replace 'Effect', ''
+    $conditions = @()
+    if ($method -ne 'Solid') { $conditions += "!defined(NEOPIXEL_DISABLE_$($method.ToUpper()))" }
+    if ($index -ge 8 -and $index -le 18) { $conditions += '!defined(NEOPIXEL_MINIMAL_EFFECTS)' }
+    if ($index -ge 20) { $conditions += '!defined(NEOPIXEL_DISABLE_2D)' }
+    if ($conditions.Count) {
+      $header += @(('#if ' + ($conditions -join ' && ')), '        "1"', '#else', '        "0"', '#endif')
+    } else { $header += '        "1"' }
+  }
+  $header += @('        "\"";', '', '    inline bool isAvailable(uint8_t id)', '    {', '        return id < sizeof(available) - 1 && available[id] == ''1'';', '    }', '}')
+  $headerPath = Resolve-RepoPath 'src/WebUi/NeoPixelEffectCatalog.generated.h'
+  [System.IO.File]::WriteAllText($headerPath, ($header -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+  Write-Host "Web effect catalog: $catalogPath ($($catalog.Count) effects)"
+}
+
+Write-WebEffectCatalog $effects
+if ($WebCatalogOnly) { return }
 
 Write-Host "  " -NoNewline
 Write-Host ("─" * 116) -ForegroundColor DarkGray

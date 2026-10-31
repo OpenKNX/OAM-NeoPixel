@@ -6,6 +6,7 @@
  * GET /neo/pixels (binary LED image), POST /neo/control (one command, executed in the loop task).
  */
 #include "NeoPixelWeb.h"
+#include "WebUi/NeoPixelEffectCatalog.generated.h"
 
 #ifdef NEOPIXEL_WEB
 
@@ -140,6 +141,12 @@ void NeoPixelWeb::setup(bool configured, uint32_t startMs)
     ws.addRoute(WEB_GET, "/assets/neopixel.js", Webserver::Asset(WebAssets::neopixel_js_mime, WebAssets::neopixel_js_gz, sizeof(WebAssets::neopixel_js_gz)));
     ws.addRoute(WEB_GET, "/neo", [this](WebRequest& q, WebResponse& r) { handlePage(q, r); });
     ws.addRoute(WEB_GET, "/neo/state", [this](WebRequest& q, WebResponse& r) { handleState(q, r); });
+    ws.addRoute(WEB_GET, "/neopixel/api/effects", Webserver::Asset("application/json", NeoPixelEffectCatalog::gzip, sizeof(NeoPixelEffectCatalog::gzip)));
+    ws.addRoute(WEB_GET, "/neopixel/api/effect-availability", [](WebRequest&, WebResponse& res) {
+        res.setContentType("application/json");
+        res.setHeader("Cache-Control", "no-store");
+        res.sendStatic(NeoPixelEffectCatalog::availableJson);
+    });
     ws.addRoute(WEB_GET, "/neo/em", [this](WebRequest& q, WebResponse& r) { handleEm(q, r); });
     ws.addRoute(WEB_GET, "/neo/pixels", [this](WebRequest& q, WebResponse& r) { handlePixels(q, r); });
     ws.addRoute(WEB_POST, "/neo/control", [this](WebRequest& q, WebResponse& r) { handleControl(q, r); });

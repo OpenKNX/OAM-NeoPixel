@@ -10,6 +10,7 @@
     #include "OpenKNX/Format/JSON/Writer.h"
     #include "NeoPixelWeb.h"
     #include "WebUi/NeoPixelStudioAssets.h"
+    #include "WebUi/NeoPixelEffectCatalog.generated.h"
     #include "webassets.h"
     #include <cctype>
     #include <cmath>
@@ -56,34 +57,6 @@ void NeoPixelStudio::setup(bool configured)
     if (_registered) return;
     _state = configured ? "{\"ready\":false,\"configured\":true,\"segments\":[]}"
                         : "{\"ready\":false,\"configured\":false,\"segments\":[]}";
-    Writer effects;
-    effects.beginArray();
-    for (unsigned id = 0; id <= 254; ++id)
-    {
-        Effect* effect = getEffectFromType(id);
-        if (!effect || getTypeFromEffect(effect) != id) continue;
-        effects.beginObject().field("id", uint32_t(id)).field("name", effect->getName("en")).key("parameters").beginArray();
-        for (uint8_t p = 0; p < effect->getParameterCount(); ++p)
-        {
-            const auto type = effect->getParameterType(p);
-            effects.beginObject().field("id", uint32_t(p)).field("name", effect->getParameterName(p));
-            effects.field("type", type == ParameterType::PARAM_STRING ? "text" : type == ParameterType::PARAM_BOOL ? "bool"
-                                                                             : type == ParameterType::PARAM_ENUM   ? "enum"
-                                                                                                                   : "number");
-            effects.field("min", effect->getParameterMin(p)).field("max", effect->getParameterMax(p));
-            if (type == ParameterType::PARAM_STRING) effects.field("value", effect->getParameterDefaultText(p) ? effect->getParameterDefaultText(p) : "");
-            else
-                effects.field("value", effect->getParameterDefault(p));
-            effects.key("options").beginArray();
-            if (type == ParameterType::PARAM_ENUM)
-                for (uint8_t n = 0; n < effect->getEnumValueCount(p); ++n)
-                    effects.value(effect->getEnumValueName(p, n));
-            effects.endArray().endObject();
-        }
-        effects.endArray().endObject();
-    }
-    effects.endArray();
-    _effects = effects.str();
 
     auto& web = openknxNetwork.webserver;
     web.addMenuItem("NeoPixel Studio", "/neopixel", 20);
@@ -98,9 +71,12 @@ void NeoPixelStudio::setup(bool configured)
 #endif
     web.addRoute(WEB_GET, "/assets/studio.css", Webserver::Asset(WebAssets::studio_css_mime, WebAssets::studio_css_gz, sizeof(WebAssets::studio_css_gz)));
     web.addRoute(WEB_GET, "/assets/studio.js", Webserver::Asset(WebAssets::studio_js_mime, WebAssets::studio_js_gz, sizeof(WebAssets::studio_js_gz)));
-    web.addRoute(WEB_GET, "/neopixel/api/effects", [this](WebRequest&, WebResponse& res) {
-        sendJson(res, 200, _effects.c_str());
+    #if !defined(NEOPIXEL_WEB) || defined(NEOPIXEL_WEB_DISABLE)
+    web.addRoute(WEB_GET, "/neopixel/api/effects", Webserver::Asset("application/json", NeoPixelEffectCatalog::gzip, sizeof(NeoPixelEffectCatalog::gzip)));
+    web.addRoute(WEB_GET, "/neopixel/api/effect-availability", [](WebRequest&, WebResponse& res) {
+        sendJson(res, 200, NeoPixelEffectCatalog::availableJson);
     });
+    #endif
     web.addRoute(WEB_GET, "/neopixel/api/state", [this](WebRequest& req, WebResponse& res) {
         if (!_acceptCommands.load())
         {

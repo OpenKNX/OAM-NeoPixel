@@ -30,7 +30,6 @@ class NeoPixelStudio
     std::atomic<uint32_t> _requestedSegment{1};
     std::string _pending;
     std::string _state = "{\"ready\":false,\"segments\":[]}";
-    std::string _effects;
     uint32_t _nextId = 0;
     uint32_t _pendingId = 0;
     uint32_t _completedId = 0;
