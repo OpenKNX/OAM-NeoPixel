@@ -62,6 +62,7 @@ class NeoPixelStudio
     std::string _etsExport;
     uint16_t _etsToken = 0;
     uint8_t _etsSegment = 0, _etsSource = 0;
+    uint8_t currentEffectType(size_t index) const;
     uint32_t configSignature(size_t index) const;
     std::string exportSegment(size_t index, bool forSave, std::string& error) const;
     std::string saveSegment(size_t index);

@@ -61,8 +61,8 @@ std::string NeoPixelStudio::exportSegment(size_t index, bool forSave, std::strin
         error = "Vor dem Speichern einen direkten Effekt wählen; ein Effektmanager läuft";
         return {};
     }
-    const uint8_t id = getTypeFromEffect(effect);
     const auto& c = segment->getConfig();
+    const uint8_t id = currentEffectType(index);
     Writer json;
     json.beginObject().field("version", uint32_t(1)).field("segment", uint32_t(index + 1));
     json.field("configSignature", configSignature(index)).field("effect", uint32_t(id));
@@ -271,7 +271,7 @@ void NeoPixelStudio::restoreSaved(bool scenesOnly)
         if (!commands.isArray() || !commands.get(size_t(0)).isObject()) continue;
         const bool normalSnapshot = _module._flashPersistence && _module._flashPersistence->hasSceneSnapshot();
         if (normalSnapshot && cfg.savedEffectType != saved.get("effect").toUInt()) continue;
-        uint8_t effect = getTypeFromEffect(cfg.segment->getEffect());
+        uint8_t effect = currentEffectType(index);
         bool valid = true;
         size_t count = 0;
         for (; commands.get(count).valid(); ++count)

@@ -228,7 +228,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     if (action == "batch")
     {
         if (validateOnly || !value.isArray() || !value.get(size_t(0)).isObject()) return "Ungültiger Befehlsblock";
-        uint8_t stagedEffect = segment->getConfig().effectType;
+        uint8_t stagedEffect = currentEffectType(index);
         size_t count = 0;
         for (; value.get(count).valid(); ++count)
         {
@@ -362,7 +362,7 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     }
     else if (action == "parameter")
     {
-        const uint8_t effectType = validateOnly && expectedEffect != 255 ? expectedEffect : segment->getConfig().effectType;
+        const uint8_t effectType = validateOnly && expectedEffect != 255 ? expectedEffect : currentEffectType(index);
         if (!NeoPixelEffectCatalog::isAvailable(effectType) || !integer(doc.get("effect"), 0, 254) ||
             static_cast<uint32_t>(doc.get("effect").toFloat()) != effectType) return "Effekt wurde geändert; Seite neu laden";
         effect = validateOnly && expectedEffect != 255 ? getEffectFromType(expectedEffect) : segment->getEffect();
@@ -467,6 +467,24 @@ std::string NeoPixelStudio::applyDoc(const Reader& doc, bool validateOnly, uint8
     return {};
 }
 
+uint8_t NeoPixelStudio::currentEffectType(size_t index) const
+{
+    if (index >= _module._segments.size()) return 0;
+    const auto& cfg = _module._segments[index];
+    if (cfg.emController.isRunning() && _module._emData)
+    {
+        const uint8_t emId = cfg.emController.activeEmId();
+        const uint8_t cueNumber = cfg.emController.activeCueNum();
+        if (emId > 0 && emId <= EM_COUNT)
+        {
+            const auto& em = _module._emData[emId - 1];
+            if (cueNumber > 0 && cueNumber <= em.header.cueCount && cueNumber <= EM_CUE_COUNT)
+                return em.cues[cueNumber - 1].effectId;
+        }
+    }
+    return cfg.segment ? cfg.segment->getConfig().effectType : 0;
+}
+
 void NeoPixelStudio::snapshot(std::string& output)
 {
     const uint32_t selected = _requestedSegment.load();
@@ -493,7 +511,7 @@ void NeoPixelStudio::snapshot(std::string& output)
             json.key("commissioning"); writeCommissioning(json, i);
         }
         json.field("power", _module.isSegmentVisible(cfg)).field("em", cfg.emController.isRunning());
-        json.field("brightness", uint32_t(cfg.savedBrightness)).field("effect", uint32_t(getTypeFromEffect(effect)));
+        json.field("brightness", uint32_t(cfg.savedBrightness)).field("effect", uint32_t(currentEffectType(i)));
         color(json, "primary", c.r(), c.g(), c.b(), c.ww(), c.cw());
         color(json, "secondary", c.r2(), c.g2(), c.b2(), c.ww2(), c.cw2());
         json.field("ownPower", cfg.savedPower != 0);
