@@ -7,6 +7,10 @@
   <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
   <op:nowarn id="3" regex="NEO_LedTypeToRGB_Impl" />
   <op:nowarn id="3" regex="NEO_ResetClockGPIOOnLedTypeChange_Impl" />
+  <!-- Studio import/compare helpers, called only from NEO_compareStudioSettings / NEO_importStudioSettings -->
+  <op:nowarn id="3" regex="Function with name (NEO_hasHostMethod|NEO_parseStudioJson|NEO_readStudioSettings|NEO_studio[A-Za-z]+|showProgress) was never called" />
+  <!-- Nested functions inside those helpers; the empty name is an anonymous function(ch) the scanner picks up -->
+  <op:nowarn id="3" regex="Function with name (fail|space|string|value|integer|add|rgb|latin|activeAlias|) was never called" />
   <!-- Suppress intended Union-Integrity overlaps for UI-limited selectors and hardware-specific GPIO unions -->
   <op:nowarn id="10" regex="Parameter NEO_VirtualStripPos[1-7](_[1-7])?" />
   <op:nowarn id="10" regex="Parameter NEO_(NEOExternalRelay[1-4]Port|NEORelay[1-4]GPIOPortHW\d+)" />
