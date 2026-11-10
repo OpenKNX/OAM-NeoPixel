@@ -694,6 +694,31 @@ function Show-OpenKNXLogo {
 # ====================================================================
 # Helper Functions - Compiler Detection
 # ====================================================================
+function Test-CppPreprocessor {
+  param([string]$Compiler)
+
+  $previousErrorAction = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    $global:LASTEXITCODE = $null
+    $output = "#include <cstdint>`nOPENKNX_CPP_PROBE_OK" | & $Compiler -E -P -x c++ - 2>&1
+    $exitCode = $LASTEXITCODE
+  }
+  catch {
+    Write-WarningMsg "Skipping unusable compiler '$Compiler': $_"
+    return $false
+  }
+  finally {
+    $ErrorActionPreference = $previousErrorAction
+  }
+
+  if ($exitCode -eq 0 -and $output -contains "OPENKNX_CPP_PROBE_OK") {
+    return $true
+  }
+  Write-WarningMsg "Skipping unusable compiler '$Compiler' (exit ${exitCode}): $($output | Select-Object -First 3)"
+  return $false
+}
+
 function Find-PlatformIOCompiler {
   # Search for PlatformIO toolchains in common locations
   $platformioHome = if ($env:PLATFORMIO_CORE_DIR) {
@@ -723,14 +748,19 @@ function Find-PlatformIOCompiler {
     "*-g++"                   # Generic fallback
   )
 
+  $probed = @{}
   foreach ($toolchainDir in $toolchainDirs) {
     $binDir = Join-Path $toolchainDir.FullName "bin"
     if (-not (Test-Path $binDir)) { continue }
 
     foreach ($compilerName in $compilerNames) {
       $compilers = Get-ChildItem -Path $binDir -Filter "$compilerName$exeSuffix" -File -ErrorAction SilentlyContinue
-      if ($compilers) {
-        return $compilers[0].FullName
+      foreach ($candidate in $compilers) {
+        if ($probed.ContainsKey($candidate.FullName)) { continue }
+        $probed[$candidate.FullName] = $true
+        if (Test-CppPreprocessor -Compiler $candidate.FullName) {
+          return $candidate.FullName
+        }
       }
     }
   }
@@ -3315,24 +3345,21 @@ if ($pioCompiler) {
 if (-not $compiler) {
   $systemCompilers = @("g++", "clang++", "cpp")
   foreach ($cmd in $systemCompilers) {
-    try {
-      # Force -CommandType Application to avoid PowerShell aliases (e.g., "cpp" = Copy-ItemProperty in PS 5.1)
-      $cmdInfo = Get-Command $cmd -CommandType Application -ErrorAction SilentlyContinue
-      if ($cmdInfo) {
-        $compiler = $cmdInfo.Source  # Use full path from Get-Command
+    # Force -CommandType Application to avoid PowerShell aliases (e.g., "cpp" = Copy-ItemProperty in PS 5.1)
+    $cmdInfo = Get-Command $cmd -CommandType Application -ErrorAction SilentlyContinue
+    foreach ($candidate in $cmdInfo) {
+      if (Test-CppPreprocessor -Compiler $candidate.Source) {
+        $compiler = $candidate.Source
         Write-Step "Using system compiler: $compiler"
         break
       }
     }
-    catch {
-      # Compiler binary not found in PATH or not executable - try next candidate
-      Write-Verbose "Compiler '$candidate' not available: $_"
-    }
+    if ($compiler) { break }
   }
 }
 
 if (-not $compiler) {
-  Write-ErrorMsg "No C++ compiler/preprocessor found!"
+  Write-ErrorMsg "No working C++ compiler/preprocessor found. Install or repair a PlatformIO toolchain, or provide g++, clang++ or cpp in PATH."
   exit 1
 }
 
@@ -3393,18 +3420,19 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
   # Run preprocessor (temporarily disable ErrorActionPreference to avoid exception on compiler errors)
   try {
     $prevErrorAction = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    
-    # Run preprocessor - array expansion passes each element as separate argument
-    # INI parsing already converted \" to " so args are clean for compiler
-    $extractorOutput = & $compiler $preprocessorArgs 2>&1
-    
-    $ErrorActionPreference = $prevErrorAction
+    try {
+      $ErrorActionPreference = "Continue"
+      $global:LASTEXITCODE = $null
+      # INI parsing already converted \" to " so args are clean for compiler.
+      $extractorOutput = & $compiler $preprocessorArgs 2>&1
+      $preprocessorExitCode = $LASTEXITCODE
+    }
+    finally {
+      $ErrorActionPreference = $prevErrorAction
+    }
 
-    if ($LASTEXITCODE -ne 0) {
-      Write-WarningMsg "  Preprocessing failed for $hwName - skipping"
-      Write-Host "  Debug: $($extractorOutput | Select-Object -First 3)" -ForegroundColor DarkGray
-      continue
+    if ($null -eq $preprocessorExitCode -or $preprocessorExitCode -ne 0) {
+      throw "Preprocessing failed for $hwName using '$compiler' (exit ${preprocessorExitCode}).`n$($extractorOutput | Select-Object -First 10 | Out-String)"
     }
 
     # Parse output - filter to only KEY=VALUE lines (ignore warnings and line markers)
@@ -3530,7 +3558,8 @@ for ($hwIdx = 0; $hwIdx -lt $hardwareConfigs.Count; $hwIdx++) {
     }
   }
   catch {
-    Write-WarningMsg "  Error processing ${hwName}: $_"
+    Write-ErrorMsg "Error processing ${hwName}: $_"
+    exit 1
   }
 }
 
@@ -3550,7 +3579,7 @@ $hardwareConfigsSkipped = @()
 # device can self-identify, and selectable in ETS so their GPIO config can be applied.
 # Only hardware without a DEVICE_HW_ID is skipped (it cannot be identified at runtime).
 foreach ($hwConfig in $hardwareConfigs) {
-  if ($hwConfig.DeviceIdBit -eq 0) {
+  if ([int]$hwConfig.DeviceIdBit -eq 0) {
     $hardwareConfigsSkipped += $hwConfig
     Write-WarningMsg "  Hardware '$($hwConfig.Name)' has no DEVICE_HW_ID - skipping ETS generation"
   }

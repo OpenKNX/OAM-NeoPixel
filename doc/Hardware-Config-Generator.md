@@ -294,14 +294,22 @@ NEOPIXEL_HW_PORT_1_GPIO
 
 **Compiler Detection Logic**:
 ```powershell
-# Priority 1: PlatformIO toolchain (finds exact compiler for target)
+# Priority 1: A working PlatformIO C++ preprocessor
 $pioCompiler = Find-PlatformIOCompiler
 
 # Priority 2: System compilers
 $systemCompilers = @("g++", "clang++", "cpp")
 
-# Result: Correct compiler with matching hardware defines
+# Result: Working preprocessor with the hardware-specific defines
 ```
+
+Each compiler candidate must successfully preprocess C++ stdin including `<cstdint>`
+before it is selected. Broken installations (for example `CreateProcess: No such
+file or directory` from a missing compiler frontend) are reported and skipped;
+the generator tries the remaining PlatformIO toolchains, then system compilers.
+If hardware preprocessing fails after selection, generation stops immediately
+with the hardware name, compiler and diagnostic instead of emitting an incomplete
+hardware list or misleading duplicate `DEVICE_HW_ID 0x0000` errors.
 
 ---
 

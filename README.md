@@ -157,6 +157,24 @@ Select your target hardware environment in `platformio.custom.ini`. The release 
 | `release_QUINLED_DIG_OCTA_32_8L_WIFI` | QuinLED Dig-Octa-32-8L WiFi |
 | `release_QUINLED_DIG_OCTA_32_8L_ETHERNET` | QuinLED Dig-Octa-32-8L Ethernet |
 | `release_QUINLED_DIG_NEXT2` | QuinLED Dig-Next-2 |
+| `release_QUINLED_DIG_UNO_V4_WIFI` | QuinLED Dig-Uno V4 WiFi |
+| `release_QUINLED_DIG_UNO_V4_ETHERNET` | QuinLED Dig-Uno V4 Ethernet |
+| `release_QUINLED_DIG_QUAD_V4_WIFI` | QuinLED Dig-Quad V4 WiFi |
+| `release_QUINLED_DIG_QUAD_V4_ETHERNET` | QuinLED Dig-Quad V4 Ethernet |
+| `release_QUINLED_DIG_OCTA_32_8L_V2_WIFI` | QuinLED Dig-Octa-32-8L V2 WiFi |
+| `release_QUINLED_DIG_OCTA_32_8L_V2_ETHERNET` | QuinLED Dig-Octa-32-8L V2 Ethernet |
+| `release_QUINLED_DIG_OCTA_32_8L_V4_WIFI` | QuinLED Dig-Octa-32-8L V4 WiFi |
+| `release_QUINLED_DIG_OCTA_32_8L_V4_ETHERNET` | QuinLED Dig-Octa-32-8L V4 Ethernet |
+
+QuinLED flash/PSRAM configuration:
+
+| Targets | Flash | PSRAM |
+|---|---|---|
+| Dig2Go, Dig-Uno V3, Dig-Quad V3, legacy Dig-Octa without a version suffix | 4 MB | None configured |
+| Dig-Next-2, Dig-Uno V4, Dig-Quad V4 | 8 MB | 2 MB |
+| Dig-Octa-32-8L V2 and V4 | 16 MB | None |
+
+The versioned Octa environments are separate from the legacy 4 MB targets. V2 and V4 have different LED GPIOs and Ethernet clock settings; select the environment matching the board revision. GPIO assignments follow the official [Uno V4](https://quinled.info/quinled-dig-uno-pinout-guide/), [Quad V4](https://quinled.info/quinled-dig-quad-pinout-guide/), [Octa V2](https://quinled.info/quinled-dig-octa-brainboard-32-8l-pinout-guide-v2/) and [Octa V4](https://quinled.info/quinled-dig-octa-brainboard-32-8l-pinout-guide/) pinout guides.
 
 > **Hardware support:** Only the **OpenKNX** targets (KNeoPiX, Mini, UP1) are developed, tested and supported — the **KNeoPiX** is the reference platform. The **Gledopto** and **QuinLED** targets are built for convenience but are **untested and not officially supported by OpenKNX**: use them at your own risk — if they work, great; if not, there is no support. For a reliable result, use OpenKNX hardware.
 
@@ -384,8 +402,10 @@ OpenKNX NeoPixel runs on a wide range of OpenKNX-compatible controllers. The **O
 - QuinLED Dig2Go
 - QuinLED Dig-Uno V3 in WiFi, Ethernet and WiFi AE Plus variants
 - QuinLED Dig-Quad V3 in WiFi, Ethernet and WiFi AE Plus variants
+- QuinLED Dig-Uno V4 and Dig-Quad V4 in WiFi and Ethernet variants (8 MB flash, 2 MB PSRAM)
 - QuinLED Dig-Octa-32-8L in WiFi and Ethernet variants
-- QuinLED Dig-Next-2
+- QuinLED Dig-Octa-32-8L V2 and V4 in WiFi and Ethernet variants (16 MB flash)
+- QuinLED Dig-Next-2 (8 MB flash, 2 MB PSRAM)
 
 ### Additional Full-Build Targets
 

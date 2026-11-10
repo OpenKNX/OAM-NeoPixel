@@ -3662,6 +3662,9 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     #if defined(QUINLED_ETHERNET_CLK_OUT_GPIO)
             QUINLED_ETHERNET_CLK_OUT_GPIO,
     #endif
+    #if defined(QUINLED_ETHERNET_CLK_IN_GPIO)
+            QUINLED_ETHERNET_CLK_IN_GPIO,
+    #endif
     #if defined(QUINLED_ETHERNET_TX_EN_GPIO)
             QUINLED_ETHERNET_TX_EN_GPIO,
     #endif

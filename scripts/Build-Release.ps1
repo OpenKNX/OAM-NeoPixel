@@ -323,9 +323,9 @@ $fullTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
 
     # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz (Gledopto: https://gledopto.com/h-pd-124.html)
-    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
+    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP";  Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
     @{ Env = "release_GLEDOPTO_GL_C_017WL";             Name = "Gledopto-GL-C-017WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_017WL" }
-    @{ Env = "release_GLEDOPTO_GL_C_620WL";              Name = "Gledopto-GL-C-620WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_620WL" }
+    @{ Env = "release_GLEDOPTO_GL_C_620WL";             Name = "Gledopto-GL-C-620WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_620WL" }
     
     # QuinLED Variants (QuinLED: https://www.quinled.info/)
     @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG2GO" }
@@ -338,6 +338,14 @@ $fullTargets = @(
     @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_WIFI" }
     @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_ETHERNET" }
     @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_NEXT2" }
+    @{ Env = "release_QUINLED_DIG_UNO_V4_WIFI";           Name = "QuinLED-Dig-Uno-V4-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V4_WIFI" }
+    @{ Env = "release_QUINLED_DIG_UNO_V4_ETHERNET";       Name = "QuinLED-Dig-Uno-V4-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V4_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V4_WIFI";          Name = "QuinLED-Dig-Quad-V4-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V4_WIFI" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V4_ETHERNET";      Name = "QuinLED-Dig-Quad-V4-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V4_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V2_WIFI";    Name = "QuinLED-Dig-Octa-32-8L-V2-WiFi";    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V2_WIFI" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V2_ETHERNET";Name = "QuinLED-Dig-Octa-32-8L-V2-Ethernet";Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V2_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V4_WIFI";    Name = "QuinLED-Dig-Octa-32-8L-V4-WiFi";    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V4_WIFI" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V4_ETHERNET";Name = "QuinLED-Dig-Octa-32-8L-V4-Ethernet";Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V4_ETHERNET" }
     )
 
 # Hardware identity list (ETS dropdown / JS auto-detect / HW map):
@@ -391,12 +399,29 @@ if ($isSkipKnxprod) {
 
 # PC tool oknx, built first so a tool failure aborts before the firmware build. The post-build step
 # packs the binaries of this pio matrix into Tools/oknx; -SkipFirmware still builds it.
+function Find-PlatformIOExecutable {
+    $command = Get-Command pio, platformio -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($command) { return $command.Source }
+
+    $coreDir = if ($env:PLATFORMIO_CORE_DIR) { $env:PLATFORMIO_CORE_DIR } else { Join-Path $HOME ".platformio" }
+    $isWin = ($env:OS -eq "Windows_NT") -or ($PSVersionTable.PSVersion.Major -le 5)
+    $binDir = if ($isWin) { Join-Path (Join-Path $coreDir "penv") "Scripts" } else { Join-Path (Join-Path $coreDir "penv") "bin" }
+    $names = if ($isWin) { @("pio.exe", "platformio.exe") } else { @("pio", "platformio") }
+    foreach ($name in $names) {
+        $candidate = Join-Path $binDir $name
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
+    }
+    throw "PlatformIO not found in PATH or '$binDir'. Install PlatformIO or set PLATFORMIO_CORE_DIR to its core directory."
+}
+
 $oknxDir = "lib/OFM-FileTransferModule/oknx"
 if (-not $isSkipOknx) {
     if (Test-Path (Join-Path $oknxDir "platformio.ini")) {
         Write-Host "Building the oknx PC tool matrix (pio run -> oknx, all OS/arch)..." -ForegroundColor Cyan
-        pio run -d $oknxDir
-        if (!$?) { Write-Host "oknx build failed" -ForegroundColor Red; exit 1 }
+        $pioExecutable = Find-PlatformIOExecutable
+        Write-Host "Using PlatformIO: $pioExecutable" -ForegroundColor DarkGray
+        & $pioExecutable run -d $oknxDir
+        if ($LASTEXITCODE -ne 0) { Write-Host "oknx build failed" -ForegroundColor Red; exit 1 }
     } else {
         Write-Host "oknx project not found ($oknxDir) - the release would ship without the PC tool" -ForegroundColor Red
         Write-Host "  check out OFM-FileTransferModule, or pass -SkipOknx to leave it out on purpose" -ForegroundColor Red
