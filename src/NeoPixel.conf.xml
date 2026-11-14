@@ -13,6 +13,8 @@
   <op:config name="%FCB_VerifyVersion%" value="0.10" />
   <op:config name="%LMG_VerifyVersion%" value="0.4" />
 
+  <!-- module sync buttons on OpenKNX > Module: the firmware reports the modules it lacks (src/main.cpp: NET, NETW) -->
+  <op:config name="%BASE_ShowSyncModulesButton%" value="1" />
   <op:config name="%LOG_EnableSave%" value="0" />
   <op:config name="%NET_ServiceHTTP%" value="1" />
   <op:config name="%NET_ServiceNTP%" value="1" />

@@ -53,7 +53,24 @@ void setup()
     openknx.addModule(10, openknxFunctionBlocksModule);
 
 #if defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)
-    openknx.addModule(7, openknxNetwork);
+    #if MASK_VERSION == 0x57B0
+    openknx.addModule(7, openknxNetwork); // KNX over IP: the network is the KNX link, never switched off
+    #else
+    // TP build: module checkbox "Netzwerk" (OpenKNX > Module); parameters are loaded by openknx.init() above
+    // (Common::init -> initKnx -> knx.readMemory); unprogrammed device: network on. NETW has no checkbox row,
+    // its bit is not in the ETS download image (always 0), so it is not read here.
+    if (!knx.configured() || ParamBASE_ModuleEnabled_NET)
+        openknx.addModule(7, openknxNetwork);
+    else
+        logInfo("Network", "module checkbox off in ETS: network module not started");
+    #endif
+    #ifndef KNX_IP_WIFI
+    openknx.unsupportedEtsModule(ETS_ModuleId_NETW); // LAN only: no WiFi settings
+    #endif
+#else
+    // no network module in this firmware: the ETS module sync buttons (OpenKNX > Module) switch it off
+    openknx.unsupportedEtsModule(ETS_ModuleId_NET);
+    openknx.unsupportedEtsModule(ETS_ModuleId_NETW);
 #endif
 
     openknx.addModule(9, openknxFileTransferModule);
