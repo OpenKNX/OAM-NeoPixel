@@ -35,6 +35,9 @@
 .PARAMETER Clean
     Remove generated files and exit.
 
+.PARAMETER Detailed
+    Passed to Build-EffectParameters.ps1 and Build-HardwareProfile.ps1: full log instead of the summary lines.
+
 .PARAMETER Help
     Show this help (alias -h).
 
@@ -83,6 +86,9 @@ param(
     [switch]$Mini,
 
     [Parameter(Mandatory=$false)]
+    [switch]$Detailed,
+
+    [Parameter(Mandatory=$false)]
     [Alias("h")]
     [switch]$Help
 )
@@ -110,7 +116,7 @@ function OpenKNX_ShowLogo($AddCustomText = $null) {
 function Show-Help {
     OpenKNX_ShowLogo "Build Release Script"
     Write-Host "USAGE:" -ForegroundColor Yellow
-    Write-Host "  .\Build-Release.ps1 [-Release|-Rel] [-Dev] [-Mini|-Full] [-SkipFirmware] [-SkipOknx|-SkipTool] [-SkipKnxprod] [-Clean]"
+    Write-Host "  .\Build-Release.ps1 [-Release|-Rel] [-Dev] [-Mini|-Full] [-SkipFirmware] [-SkipOknx|-SkipTool] [-SkipKnxprod] [-Clean] [-Detailed]"
     Write-Host ""
     Write-Host "OPTIONS:" -ForegroundColor Yellow
     Write-Host "  -Release, -Rel Create release build (default: dev)"
@@ -123,6 +129,7 @@ function Show-Help {
     Write-Host "  -SkipKnxprod   Do not run the generators and OpenKNXproducer; knxprod.h and the ETS data stay from the last run"
     Write-Host "                 (stops when knxprod.h is missing or belongs to the other variant)"
     Write-Host "  -Clean         Remove generated files and exit"
+    Write-Host "  -Detailed      Full log of Build-EffectParameters.ps1 and Build-HardwareProfile.ps1 (default: summary lines)"
     Write-Host "  -Help, -h      Show this help"
     Write-Host ""
     Write-Host "TARGET SETS:" -ForegroundColor Yellow
@@ -200,7 +207,7 @@ if ($isClean) {
     Push-Location (Split-Path -Parent $PSScriptRoot)
     try {
         Write-Host "Cleaning effect parameters..." -ForegroundColor Cyan
-        & ./scripts/Build-EffectParameters.ps1 -Clean -Force
+        & ./scripts/Build-EffectParameters.ps1 -Clean -Force -Detailed:$Detailed
         if (-not $?) { throw "Effect parameter cleanup failed." }
 
         # Outputs of the hardware generator (HardwareProfile.xml <Output>/<Generate>): not committed
@@ -454,7 +461,7 @@ if (-not $isSkipKnxprod) {
     # Effect parameters first: they fill the effect blocks of src/NeoPixel.script.src.js, which the
     # hardware generator then assembles into src/NeoPixel.script.js
     Write-Host "Generating effect parameters..." -ForegroundColor Cyan
-    scripts/Build-EffectParameters.ps1 -SkipOpenKNXproducer
+    scripts/Build-EffectParameters.ps1 -SkipOpenKNXproducer -Detailed:$Detailed
     if (!$?) {
         Write-Host "Effect parameter generation failed!" -ForegroundColor Red
         exit 1
@@ -463,7 +470,7 @@ if (-not $isSkipKnxprod) {
     # Hardware selection, ports and board tables: OGM-HardwareConfig generator, manifest HardwareProfile.xml
     Write-Host "Generating hardware files (HardwareProfile.xml)..." -ForegroundColor Cyan
     $global:LASTEXITCODE = 0
-    & lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1 -Manifest HardwareProfile.xml
+    & lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1 -Manifest HardwareProfile.xml -Detailed:$Detailed
     if ($global:LASTEXITCODE -ne 0) {
         Write-Host "Hardware generation failed!" -ForegroundColor Red
         exit 1

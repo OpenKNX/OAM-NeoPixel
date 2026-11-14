@@ -29,8 +29,17 @@ FILEPATH: scripts/Build-EffectParameters.ps1
     - Rollback mechanism on validation failures
     - Support for multi-language descriptions (de/en)
 
+    Console output is quiet by default: a progress line per effect (interactive console only),
+    errors and warnings with their context, and one summary line. -Detailed prints the full log.
+    Every generated file is written only when its content changed (BOM and CRLF are ignored in the
+    comparison; Normalize-LineEndings.ps1 removes them), so unchanged files keep their timestamp.
+
 .PARAMETER Language
     Language for parameter descriptions (de or en), default: de
+
+.PARAMETER Detailed
+    Print the full log (every effect, parameter and file step) instead of progress and summary.
+    Also implied by -Verbose and by -Clean without -Force (the confirmation lists the files).
 
 .EXAMPLE
     .\scripts\Build-EffectParameters.ps1
@@ -39,6 +48,10 @@ FILEPATH: scripts/Build-EffectParameters.ps1
 .EXAMPLE
     .\scripts\Build-EffectParameters.ps1 -Language "en"
     Generates parameters with English descriptions
+
+.EXAMPLE
+    .\scripts\Build-EffectParameters.ps1 -SkipOpenKNXproducer -Detailed
+    Generates without the producer check and prints the full log
 
 .NOTES
     This script is part of the OpenKNX project automation framework.
@@ -67,7 +80,10 @@ param(
   [switch]$SkipOpenKNXproducer = $false,
 
   [Parameter(Mandatory = $false)]
-  [switch]$WebCatalogOnly = $false
+  [switch]$WebCatalogOnly = $false,
+
+  [Parameter(Mandatory = $false)]
+  [switch]$Detailed = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -266,6 +282,169 @@ function Write-ScriptVerbose {
   }
 }
 
+# ====================================================================
+# Console output and file writes
+# ====================================================================
+
+# Quiet unless -Detailed or -Verbose; -Clean without -Force lists the files before it asks.
+$script:QuietOutput = (-not $Detailed) -and ($VerbosePreference -ne 'Continue') -and -not ($Clean -and -not $Force)
+$script:WrittenFiles = @{}
+# Output state in one table: the proxies below also run inside scripts called from here (hardware
+# generator), where $script: is that script's scope, so they find this table by dynamic lookup.
+$script:EffectOutput = @{
+  ShowProgress  = $script:QuietOutput -and -not [Console]::IsOutputRedirected
+  ProgressWidth = 0
+  Line          = (New-Object System.Collections.ArrayList)
+  LineAlert     = $false
+  Force         = 0
+}
+
+if ($script:QuietOutput) {
+  # Replaces Write-Host for this script: a line is printed only when one of its parts is red or
+  # yellow (error, warning) or while $EffectOutput.Force is above 0. -Detailed keeps the cmdlet.
+  function Write-Host {
+    param(
+      [Parameter(Position = 0, ValueFromPipeline = $true, ValueFromRemainingArguments = $true)]
+      [object]$Object,
+      [switch]$NoNewline,
+      [object]$Separator,
+      [System.ConsoleColor]$ForegroundColor,
+      [System.ConsoleColor]$BackgroundColor
+    )
+    process {
+      $state = $EffectOutput
+      $part = @{}
+      foreach ($key in $PSBoundParameters.Keys) { $part[$key] = $PSBoundParameters[$key] }
+      [void]$state.Line.Add($part)
+      if ($PSBoundParameters.ContainsKey('ForegroundColor') -and
+        $ForegroundColor -in @('Red', 'DarkRed', 'Yellow', 'DarkYellow')) {
+        $state.LineAlert = $true
+      }
+      if ($NoNewline) { return }
+      if ($state.LineAlert -or $state.Force -gt 0) {
+        Clear-EffectProgress
+        foreach ($p in $state.Line) { Microsoft.PowerShell.Utility\Write-Host @p }
+      }
+      $state.Line.Clear()
+      $state.LineAlert = $false
+    }
+  }
+
+  # Clears the progress line first; drops an unfinished Write-Host line (the warning names the file).
+  function Write-Warning {
+    param([Parameter(Position = 0, ValueFromPipeline = $true)][string]$Message)
+    process {
+      Clear-EffectProgress
+      $EffectOutput.Line.Clear()
+      $EffectOutput.LineAlert = $false
+      Microsoft.PowerShell.Utility\Write-Warning $Message
+    }
+  }
+}
+
+# Removes the proxies again. Dot-sourced (or pwsh -NoExit -File) they would otherwise stay in the
+# caller's scope and silence its Write-Host. Only functions defined in this file are removed.
+# Dot-sourced, a Write-Host function of the caller's scope is replaced by the proxy, not restored.
+function Remove-EffectOutputProxy {
+  Clear-EffectProgress
+  $ownFile = ${function:Remove-EffectOutputProxy}.File
+  foreach ($name in 'Write-Host', 'Write-Warning') {
+    $command = Get-Command -Name $name -CommandType Function -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($command -and $command.ScriptBlock.File -eq $ownFile) { Remove-Item -LiteralPath "Function:\$name" }
+  }
+}
+
+# Script body up to the end of the file: the finally there runs on exit, return and errors.
+try {
+
+function Clear-EffectProgress {
+  $state = $EffectOutput
+  if ($state.ProgressWidth -gt 0) {
+    Microsoft.PowerShell.Utility\Write-Host ("`r" + (' ' * $state.ProgressWidth) + "`r") -NoNewline
+    $state.ProgressWidth = 0
+  }
+}
+
+function Show-EffectProgress {
+  param([int]$Index, [int]$Total, [string]$Name)
+  $state = $script:EffectOutput
+  if (-not $state.ShowProgress) { return }
+  $text = "Effekte: $Index/$Total  $Name"
+  $pad = [Math]::Max(0, $state.ProgressWidth - $text.Length)
+  Microsoft.PowerShell.Utility\Write-Host ("`r" + $text + (' ' * $pad)) -NoNewline
+  $state.ProgressWidth = $text.Length + $pad
+}
+
+function Write-EffectSummary {
+  param([int]$Processed, [int]$Deleted = -1)
+  if (-not $script:QuietOutput) { return }
+  Clear-EffectProgress
+  $count = $script:WrittenFiles.Count
+  $files = if ($count -eq 1) { '1 Datei' } else { "$count Dateien" }
+  $ae = [char]0x00E4
+  $oe = [char]0x00F6
+  if ($Deleted -ge 0) {
+    $removed = if ($Deleted -eq 1) { '1 Datei' } else { "$Deleted Dateien" }
+    $text = "Effekte: bereinigt, $removed gel${oe}scht, $files geschrieben"
+  }
+  elseif ($count -gt 0) { $text = "Effekte: $Processed verarbeitet, $files geschrieben" }
+  else { $text = "Effekte: unver${ae}ndert" }
+  Microsoft.PowerShell.Utility\Write-Host $text -ForegroundColor Green
+}
+
+# Writes $Bytes unless the file already holds exactly these bytes, or these bytes without a
+# leading UTF-8 BOM and with CRLF as LF (the form Normalize-LineEndings.ps1 leaves behind).
+# Returns $true when the file was written.
+function Write-BytesIfChanged {
+  param([Parameter(Mandatory)][string]$FullPath, [Parameter(Mandatory)][AllowEmptyCollection()][byte[]]$Bytes)
+  if ([System.IO.File]::Exists($FullPath)) {
+    # Latin-1 maps each byte to one char, so the string compare is a byte compare
+    $latin1 = [System.Text.Encoding]::GetEncoding(28591)
+    $old = $latin1.GetString([System.IO.File]::ReadAllBytes($FullPath))
+    $new = $latin1.GetString($Bytes)
+    if ([string]::Equals($old, $new, [System.StringComparison]::Ordinal)) { return $false }
+    $bom = [string][char]0xEF + [char]0xBB + [char]0xBF
+    if ($new.StartsWith($bom, [System.StringComparison]::Ordinal)) { $new = $new.Substring(3) }
+    if ([string]::Equals($old, $new.Replace("`r`n", "`n"), [System.StringComparison]::Ordinal)) { return $false }
+  }
+  [System.IO.File]::WriteAllBytes($FullPath, $Bytes)
+  $script:WrittenFiles[$FullPath] = $true
+  return $true
+}
+
+# Appends one Set-Content -Value item: $null is skipped, a collection is written element by element.
+function Add-SetContentItem {
+  param([System.Text.StringBuilder]$Builder, [object]$Item, [bool]$NoNewline)
+  if ($null -eq $Item) { return }
+  if ($Item -is [System.Collections.IEnumerable] -and $Item -isnot [string] -and $Item -isnot [System.Collections.IDictionary]) {
+    foreach ($element in $Item) { Add-SetContentItem -Builder $Builder -Item $element -NoNewline $NoNewline }
+    return
+  }
+  [void]$Builder.Append([string]$Item)
+  if (-not $NoNewline) { [void]$Builder.Append([Environment]::NewLine) }
+}
+
+# Write-if-changed form of 'Set-Content -Encoding UTF8 [-NoNewline]': same text and encoding (BOM in
+# Windows PowerShell 5.1, none in pwsh 6+; -NoBom as UTF8Encoding($false)), same path resolution.
+function Write-FileIfChanged {
+  param(
+    [Parameter(Mandatory)][string]$Path,
+    [AllowNull()][AllowEmptyString()][object]$Value,
+    [switch]$NoNewline,
+    [switch]$NoBom
+  )
+  $fullPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+  $builder = New-Object System.Text.StringBuilder
+  Add-SetContentItem -Builder $builder -Item $Value -NoNewline ([bool]$NoNewline)
+  $encoding = New-Object System.Text.UTF8Encoding(((-not $NoBom) -and $PSVersionTable.PSVersion.Major -lt 6))
+  $body = $encoding.GetBytes($builder.ToString())
+  $preamble = $encoding.GetPreamble()
+  $bytes = New-Object byte[] ($preamble.Length + $body.Length)
+  [System.Array]::Copy($preamble, 0, $bytes, 0, $preamble.Length)
+  [System.Array]::Copy($body, 0, $bytes, $preamble.Length, $body.Length)
+  return (Write-BytesIfChanged -FullPath $fullPath -Bytes $bytes)
+}
+
 function Get-StableEffectParameterId {
   param(
     [int]$StartId,
@@ -403,7 +582,7 @@ function Get-AllEffectHeaders {
 # ====================================================================
 
 if ($Clean) {
-  Clear-Host
+  if (-not $script:QuietOutput) { Clear-Host }
 
   Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
 
@@ -555,7 +734,10 @@ if ($Clean) {
   Write-Host ""
 
   # Show what will be deleted
-  Write-Host "  Files to be deleted:" -ForegroundColor Yellow
+  # Yellow, but no warning: -Detailed only (-Clean without -Force always runs detailed)
+  if (-not $script:QuietOutput) {
+    Write-Host "  Files to be deleted:" -ForegroundColor Yellow
+  }
   Write-Host "  " -NoNewline
   Write-Host ("─" * 116) -ForegroundColor DarkGray
 
@@ -649,7 +831,7 @@ if ($Clean) {
     '              $3'
     $content = $content -replace $pattern3, $replacement3
 
-    Set-Content -Path $templateFile -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $templateFile -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.Segment.templ.xml - marker blocks emptied" -ForegroundColor Green
   }
 
@@ -664,7 +846,7 @@ if ($Clean) {
     '  $3'
     $content = $content -replace $pattern4, $replacement4
 
-    Set-Content -Path $neoPixelXml -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $neoPixelXml -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.xml - NEOEFF Module removed" -ForegroundColor Green
   }
 
@@ -679,7 +861,7 @@ if ($Clean) {
     '                $3'
     $content = $content -replace $pattern5, $replacement5
 
-    Set-Content -Path $shareXmlPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $shareXmlPath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.share.xml - Effect Type Enumeration emptied" -ForegroundColor Green
 
     # Reduced lists for hardware without the 2D effects - same markers, same treatment.
@@ -691,7 +873,7 @@ if ($Clean) {
       $rep = '$1                <!-- Content will be generated by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + '                $3'
       $content = $content -replace $pat, $rep
     }
-    Set-Content -Path $shareXmlPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $shareXmlPath -Value $content -NoNewline
     Write-Host "    [OK] NeoPixel.share.xml - no-2D enumerations emptied" -ForegroundColor Green
 
     # Also empty Effect ParameterTypes block
@@ -699,7 +881,7 @@ if ($Clean) {
     $pattern6 = "(?s)($([regex]::Escape($script:Config.Markers.EffectPTStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.EffectPTEnd)))"
     $replacement6 = '$1              $3'
     $content = $content -replace $pattern6, $replacement6
-    Set-Content -Path $shareXmlPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $shareXmlPath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.share.xml - Effect ParameterTypes emptied" -ForegroundColor Green
 
     # Also empty Scene Effect Enumeration block (static EM entries 200..215 stay outside the markers)
@@ -708,7 +890,7 @@ if ($Clean) {
     $replacement7 = '$1                <!-- Content will be generated by Build-EffectParameters.ps1 -->' + [Environment]::NewLine +
     '                $3'
     $content = $content -replace $pattern7, $replacement7
-    Set-Content -Path $shareXmlPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $shareXmlPath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.share.xml - Scene Effect Enumeration emptied" -ForegroundColor Green
   }
 
@@ -734,7 +916,7 @@ if ($Clean) {
 // This file will be generated by Build-EffectParameters.ps1
 // Run the script to generate effect type mapping from EffectPool.cpp
 "@
-    Set-Content -Path $effectTypeMappingPath -Value $placeholderContent -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $effectTypeMappingPath -Value $placeholderContent -NoNewline
     Write-Host "    ✓ EffectTypeMapping.h - Emptied with placeholder" -ForegroundColor Green
   }
 
@@ -760,7 +942,7 @@ if ($Clean) {
 // This file will be generated by Build-EffectParameters.ps1
 // Run the script to generate effect parameter loading logic
 "@
-    Set-Content -Path $effectParamMappingPath -Value $placeholderContent -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $effectParamMappingPath -Value $placeholderContent -NoNewline
     Write-Host "    ✓ EffectParameterMapping.h - Emptied with placeholder" -ForegroundColor Green
   }
 
@@ -782,7 +964,7 @@ if ($Clean) {
     $pattern = "(?s)($([regex]::Escape($markers.SceneEffectPCParamsStart))\r?\n)(.*?)($([regex]::Escape($markers.SceneEffectPCParamsEnd)))"
     $content = $content -replace $pattern, ('$1' + [Environment]::NewLine + '                                    $3')
 
-    Set-Content -Path $scenePartPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $scenePartPath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.Scene.part.xml - Scene effect marker blocks emptied" -ForegroundColor Green
   }
 
@@ -810,7 +992,7 @@ if ($Clean) {
     $pattern = '(?s)(// BEGIN AUTO-GENERATED: Studio ETS parameter names\r?\n).*?(// END AUTO-GENERATED: Studio ETS parameter names)'
     $content = $content -replace $pattern, ('$1var NEO_StudioEffectParameters = {};' + [Environment]::NewLine + '$2')
 
-    Set-Content -Path $scriptJsPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $scriptJsPath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.script.src.js - Scene Effect Defaults emptied" -ForegroundColor Green
   }
 
@@ -829,7 +1011,7 @@ if ($Clean) {
     $pattern = "(?s)($([regex]::Escape($markers.CueEffectTypedParamsStart))\r?\n)(.*?)($([regex]::Escape($markers.CueEffectTypedParamsEnd)))"
     $content = $content -replace $pattern, ('$1' + [Environment]::NewLine + '              $3')
 
-    Set-Content -Path $cuePartPath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $cuePartPath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.Cue.part.xml - Cue effect marker blocks emptied" -ForegroundColor Green
   }
 
@@ -844,7 +1026,7 @@ if ($Clean) {
     '                $3'
     $content = $content -replace $pattern, $replacement
 
-    Set-Content -Path $emSharePath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $emSharePath -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.EM.share.xml - Cue Effect Enumeration emptied" -ForegroundColor Green
 
     # Reduced cue list for hardware without the 2D effects.
@@ -852,7 +1034,7 @@ if ($Clean) {
     $patNo2D = "(?s)($([regex]::Escape($script:Config.Markers.CueEffectEnumNo2DStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.CueEffectEnumNo2DEnd)))"
     $repNo2D = '$1                <!-- Content will be generated by Build-EffectParameters.ps1 -->' + [Environment]::NewLine + '                $3'
     $content = $content -replace $patNo2D, $repNo2D
-    Set-Content -Path $emSharePath -Value $content -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $emSharePath -Value $content -NoNewline
     Write-Host "    [OK] NeoPixel.EM.share.xml - no-2D cue enumeration emptied" -ForegroundColor Green
 
   # 10. Empty the generated blocks outside the ETS XML: the effect table in the help file
@@ -867,7 +1049,7 @@ if ($Clean) {
     $pat = "(?s)($([regex]::Escape($target.Start))\r?\n)(.*?)($([regex]::Escape($target.End)))"
     $updated = $content -replace $pat, ('$1' + $target.Note + [Environment]::NewLine + '$3')
     if ($updated -ne $content) {
-      Set-Content -Path $full -Value $updated -NoNewline -Encoding UTF8
+      $null = Write-FileIfChanged -Path $full -Value $updated -NoNewline
       Write-Host ("    [OK] {0} - generated block emptied" -f (Split-Path $target.Path -Leaf)) -ForegroundColor Green
     }
   }
@@ -888,6 +1070,7 @@ if ($Clean) {
 
   Write-Host ""
   Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
+  Write-EffectSummary -Deleted $deletedCount
   exit 0
 }
 
@@ -1452,12 +1635,13 @@ function Build-EffectIdMap {
     $oldContent = ""
     if (Test-Path $lockPath) { $oldContent = [System.IO.File]::ReadAllText($lockPath) }
     if ($newContent -ne $oldContent) {
-      [System.IO.File]::WriteAllText($lockPath, $newContent, (New-Object System.Text.UTF8Encoding($false)))
-      if ($locked.Count -eq 0) {
-        Write-Host "  Created src/EffectIds.lock ($($effectIds.Count) effects, IDs 0-$($id - 1))" -ForegroundColor Green
-      }
-      else {
-        Write-Host "  Updated src/EffectIds.lock (effect(s) appended)" -ForegroundColor Green
+      if (Write-FileIfChanged -Path $lockPath -Value $newContent -NoNewline -NoBom) {
+        if ($locked.Count -eq 0) {
+          Write-Host "  Created src/EffectIds.lock ($($effectIds.Count) effects, IDs 0-$($id - 1))" -ForegroundColor Green
+        }
+        else {
+          Write-Host "  Updated src/EffectIds.lock (effect(s) appended)" -ForegroundColor Green
+        }
       }
     }
   }
@@ -1598,7 +1782,10 @@ function Generate-EffectTypeEnumeration {
 
   Write-Host ""
   Write-Host "  Generated $($xmlLines.Count) effect enumerations (IDs 0-$($runtimeId-1))" -ForegroundColor Green
-  Write-Host "  Note: Using DE names as default in XML. EN names in comments." -ForegroundColor Yellow
+  # Yellow, but no warning: -Detailed only
+  if (-not $script:QuietOutput) {
+    Write-Host "  Note: Using DE names as default in XML. EN names in comments." -ForegroundColor Yellow
+  }
   Write-ScriptVerbose "Effect type enumeration generation complete" "Green"
   Write-Host ""
 
@@ -1832,7 +2019,7 @@ function Update-EffectTypeEnumerationInShareXml {
 
   # Write back to file
   Write-ScriptVerbose "Writing updated XML back to file"
-  Set-Content -Path $ShareXmlPath -Value $newXmlContent -NoNewline -Encoding UTF8
+  $null = Write-FileIfChanged -Path $ShareXmlPath -Value $newXmlContent -NoNewline
 
   # Second variant without the 2D effects, for hardware built with NEOPIXEL_DISABLE_2D.
   # The list is already sorted with the 2D effects last, so dropping them keeps the order.
@@ -1844,11 +2031,11 @@ function Update-EffectTypeEnumerationInShareXml {
   if ($newXmlContent -match [regex]::Escape($startNo2D)) {
     $patternNo2D = "(?s)($([regex]::Escape($startNo2D))).*?($([regex]::Escape($endNo2D)))"
     $newXmlContent = $newXmlContent -replace $patternNo2D, "`$1`n$no2dXml`n                `$2"
-    Set-Content -Path $ShareXmlPath -Value $newXmlContent -NoNewline -Encoding UTF8
+    $null = Write-FileIfChanged -Path $ShareXmlPath -Value $newXmlContent -NoNewline
     Write-Host "  * NEOEffectTypeNo2D: $($no2dLines.Count) of $(($enumXml -split "`n").Count) effects" -ForegroundColor Green
   }
   else {
-    Write-WarningMsg "Marker $startNo2D not found - the no-2D effect list was not generated"
+    Write-Warning "Marker $startNo2D not found - the no-2D effect list was not generated"
   }
 
   Write-Host "  ✓ NeoPixel.share.xml updated successfully!" -ForegroundColor Green
@@ -1887,7 +2074,7 @@ function Update-EffectParameterTypesInShareXml {
   $replacement = "`$1`n$Content`n              `$2"
   $newXmlContent = $xmlContent -replace $pattern, $replacement
 
-  Set-Content -Path $ShareXmlPath -Value $newXmlContent -NoNewline -Encoding UTF8
+  $null = Write-FileIfChanged -Path $ShareXmlPath -Value $newXmlContent -NoNewline
   Write-Host "  ✓ Effect ParameterTypes injected into NeoPixel.share.xml" -ForegroundColor Green
 }
 
@@ -2108,7 +2295,10 @@ function Update-NeoEffModule {
       "`$1$neoeffModule`n  `$2"
   }
   else {
-    Write-Host "  • Removing NEOEFF module from NeoPixel.xml..." -ForegroundColor Yellow
+    # Yellow, but no warning: -Detailed only
+    if (-not $script:QuietOutput) {
+      Write-Host "  $([char]0x2022) Removing NEOEFF module from NeoPixel.xml..." -ForegroundColor Yellow
+    }
 
     # Clear content between markers
     $content = $content -replace `
@@ -2116,7 +2306,7 @@ function Update-NeoEffModule {
       "`$1`n  `$2"
   }
 
-  Set-Content -Path $NeoPixelXmlPath -Value $content -NoNewline -Encoding UTF8
+  $null = Write-FileIfChanged -Path $NeoPixelXmlPath -Value $content -NoNewline
 }
 
 function Test-OpenKNXproducer {
@@ -2163,7 +2353,10 @@ function Test-OpenKNXproducer {
   Write-Host "  ▸ Command: $openKnxExe create --Debug -h $HeaderFile $SourceDir" -ForegroundColor DarkGray
   Write-Host ""
   Write-Host "  ▶ Running OpenKNXproducer (output below)..." -ForegroundColor Gray
-  Write-Host "    Note: Producer may hang on critical errors - check output carefully" -ForegroundColor Yellow
+  # Yellow, but no warning: -Detailed only
+  if (-not $script:QuietOutput) {
+    Write-Host "    Note: Producer may hang on critical errors - check output carefully" -ForegroundColor Yellow
+  }
   Write-Host "  " -NoNewline
   Write-Host ("═" * 114) -ForegroundColor DarkGray
 
@@ -2171,7 +2364,9 @@ function Test-OpenKNXproducer {
   try {
     Push-Location $WorkingDir
 
-    Write-Information "Starting OpenKNXproducer in directory: $WorkingDir with Argutments: create --Debug -h $HeaderFile $SourceDir" -InformationAction Continue
+    if (-not $script:QuietOutput) {
+      Write-Information "Starting OpenKNXproducer in directory: $WorkingDir with Argutments: create --Debug -h $HeaderFile $SourceDir" -InformationAction Continue
+    }
 
     # Capture output to temp file while also showing it
     $tempOut = [System.IO.Path]::GetTempFileName()
@@ -2238,6 +2433,12 @@ function Test-OpenKNXproducer {
         }
       }
       else {
+        # Quiet mode dropped the uncolored producer output above; it is the error context
+        if ($script:QuietOutput -and $capturedOutput) {
+          $script:EffectOutput.Force++
+          Write-Host $capturedOutput
+          $script:EffectOutput.Force--
+        }
         Write-Host "  ERROR OpenKNXproducer failed with exit code $exitCode" -ForegroundColor Red
         if ($ptNotDeclared.Count -gt 0) {
           Write-Host "  Found $($ptNotDeclared.Count) undeclared ParameterType error(s)" -ForegroundColor Red
@@ -2261,50 +2462,6 @@ function Test-OpenKNXproducer {
       ExitCode = -1
       Output   = $_.Exception.Message
     }
-  }
-}
-
-function Clear-MarkerRegions {
-  param(
-    [string]$TemplatePath,
-    [string]$NeoPixelXmlPath
-  )
-
-  Write-Host "  • Clearing marker regions (keeping markers intact)..." -ForegroundColor Yellow
-
-  $content = Get-Content $TemplatePath -Raw -Encoding UTF8
-
-  # Clear Union Parameters region
-  $content = $content -replace `
-    "(?s)($([regex]::Escape($script:Config.Markers.UnionStart)).*?<!-- Start ID: \d+, Start Offset: \d+ \(FIXED[^)]*\) -->.*?<!-- Generated:[^>]*-->).*?($([regex]::Escape($script:Config.Markers.UnionEnd)))", `
-    "`$1`n`$2"
-
-  # Clear ParameterRefs region
-  $content = $content -replace `
-    "(?s)($([regex]::Escape($script:Config.Markers.ParamRefsStart)).*?<!-- Generated:[^>]*-->).*?($([regex]::Escape($script:Config.Markers.ParamRefsEnd)))", `
-    "`$1`n`$2"
-
-  # Clear Dynamic UI region
-  $content = $content -replace `
-    "(?s)($([regex]::Escape($script:Config.Markers.DynamicUIStart)).*?<!-- Effect-specific[^>]*-->).*?($([regex]::Escape($script:Config.Markers.DynamicUIEnd)))", `
-    "`$1`n`$2"
-
-  Set-Content -Path $TemplatePath -Value $content -Encoding UTF8 -NoNewline
-  Write-Host "    OK Marker regions cleared (markers preserved)" -ForegroundColor Green
-
-  # Clear NEOEFF module
-  Update-NeoEffModule -NeoPixelXmlPath $NeoPixelXmlPath -Enable $false
-  Write-Host "    OK NEOEFF module removed" -ForegroundColor Green
-
-  # Clear Effect ParameterTypes in share XML
-  $shareXmlPath = Resolve-RepoPath $script:Config.ShareXml
-  if (Test-Path $shareXmlPath) {
-    $shareContent = Get-Content $shareXmlPath -Raw -Encoding UTF8
-    $shareContent = $shareContent -replace `
-      "(?s)($([regex]::Escape($script:Config.Markers.EffectPTStart))).*?($([regex]::Escape($script:Config.Markers.EffectPTEnd)))", `
-      "`$1`n              `$2"
-    Set-Content -Path $shareXmlPath -Value $shareContent -Encoding UTF8 -NoNewline
-    Write-Host "    OK Effect ParameterTypes cleared from share XML" -ForegroundColor Green
   }
 }
 
@@ -2533,7 +2690,7 @@ function Generate-HelpFiles {
       $helpContent += ""
       $helpContent += "**Standardwert:** $($param.Default)"
 
-      Set-Content -Path $helpFilePath -Value ($helpContent -join "`n") -Encoding UTF8
+      $null = Write-FileIfChanged -Path $helpFilePath -Value ($helpContent -join "`n")
 
       # Track created file with source info
       $source = if ($param.Description) { "aus Header" } else { "Platzhalter" }
@@ -2547,8 +2704,11 @@ function Generate-HelpFiles {
   # Show warning if files were created
   if ($createdFiles.Count -gt 0) {
     Write-Host ""
-    Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
-    Write-Host "$($createdFiles.Count) help file(s) newly created" -ForegroundColor White
+    # Yellow, but no warning: -Detailed only
+    if (-not $script:QuietOutput) {
+      Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
+      Write-Host "$($createdFiles.Count) help file(s) newly created" -ForegroundColor White
+    }
     Write-Host "  " -NoNewline
     Write-Host ("─" * 116) -ForegroundColor DarkGray
 
@@ -2564,10 +2724,13 @@ function Generate-HelpFiles {
     }
 
     if ($fromPlaceholder.Count -gt 0) {
+      # Quiet mode too: the file names are the context of this warning
+      $script:EffectOutput.Force++
       Write-Host "    With placeholder text ($($fromPlaceholder.Count)) - please fill in:" -ForegroundColor Yellow
       foreach ($file in $fromPlaceholder) {
         Write-Host "      • $($file.FileName)" -ForegroundColor DarkGray
       }
+      $script:EffectOutput.Force--
     }
 
     Write-Host "  " -NoNewline
@@ -2625,7 +2788,7 @@ function Generate-EffectIdReferenceHelp {
     $content += "- $($effect.EffectID) - $nameDE - $nameEN"
   }
 
-  Set-Content -Path $filePath -Value ($content -join "`n") -Encoding UTF8
+  $null = Write-FileIfChanged -Path $filePath -Value ($content -join "`n")
   return $fileName
 }
 
@@ -2785,7 +2948,7 @@ function Generate-EffectTypeHelpTable {
   $pattern = '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Table - DO NOT EDIT MANUALLY -->).*?(<!-- END AUTO-GENERATED: Effect Table -->)'
   if ($content -notmatch $pattern) { return $null }
   $updated = $content -replace $pattern, "`$1`n$body`n`$2"
-  Set-Content -Path $filePath -Value $updated -Encoding UTF8 -NoNewline
+  $null = Write-FileIfChanged -Path $filePath -Value $updated -NoNewline
 
   return @{
     Standard    = $rows.standard.Count
@@ -2861,7 +3024,7 @@ function Generate-EffectFlagList {
     $pattern = '(?s)(<!-- BEGIN AUTO-GENERATED: Effect Flags - DO NOT EDIT MANUALLY -->).*?(<!-- END AUTO-GENERATED: Effect Flags -->)'
     if ($content -notmatch $pattern) { return $null }
     $updated = $content -replace $pattern, "`$1`n$body`n`$2"
-    Set-Content -Path $listPath -Value $updated -Encoding UTF8 -NoNewline
+    $null = Write-FileIfChanged -Path $listPath -Value $updated -NoNewline
 
     return @{ Standard = $standard.Count; Extended = $extended.Count; TwoD = $twoD.Count }
 }
@@ -2900,7 +3063,7 @@ function Generate-SceneHelpFiles {
       ""
       "**Wertebereich:** 0 (deaktiviert) - $sceneCount"
     )
-    Set-Content -Path $sceneCountFile -Value ($content -join "`n") -Encoding UTF8
+    $null = Write-FileIfChanged -Path $sceneCountFile -Value ($content -join "`n")
     $createdFiles += "NEO-Anzahl-Szenen.md"
   }
 
@@ -2918,7 +3081,7 @@ function Generate-SceneHelpFiles {
         ""
         $fp.Desc
       )
-      Set-Content -Path $filePath -Value ($content -join "`n") -Encoding UTF8
+      $null = Write-FileIfChanged -Path $filePath -Value ($content -join "`n")
       $createdFiles += $fileName
     }
   }
@@ -2934,8 +3097,11 @@ function Generate-SceneHelpFiles {
 
   if ($createdFiles.Count -gt 0) {
     Write-Host ""
-    Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
-    Write-Host "$($createdFiles.Count) scene help file(s) newly created" -ForegroundColor White
+    # Yellow, but no warning: -Detailed only
+    if (-not $script:QuietOutput) {
+      Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
+      Write-Host "$($createdFiles.Count) scene help file(s) newly created" -ForegroundColor White
+    }
   }
 
   return @{ Count = $createdFiles.Count }
@@ -2997,7 +3163,9 @@ function Restore-Template {
 
   if ($BackupPath -and (Test-Path $BackupPath)) {
     Write-Host "   Restoring template from backup..." -ForegroundColor Yellow
-    Copy-Item -Path $BackupPath -Destination $TemplatePath -Force
+    $resolve = $ExecutionContext.SessionState.Path
+    $backupBytes = [System.IO.File]::ReadAllBytes($resolve.GetUnresolvedProviderPathFromPSPath($BackupPath))
+    $null = Write-BytesIfChanged -FullPath $resolve.GetUnresolvedProviderPathFromPSPath($TemplatePath) -Bytes $backupBytes
     Write-Host "    OK Template restored" -ForegroundColor Green
   }
 }
@@ -3241,7 +3409,7 @@ $DynamicContent                    $endMarker
 
     if ($updateCount -eq 3) {
       # Save updated content
-      Set-Content -Path $TemplatePath -Value $templateContent -Encoding UTF8 -NoNewline
+      $null = Write-FileIfChanged -Path $TemplatePath -Value $templateContent -NoNewline
       Write-Host "    OK Template saved successfully" -ForegroundColor Green
 
       # Validate the result
@@ -3818,7 +3986,7 @@ function Update-CuePartXml {
   }
 
   if ($updateCount -eq 3) {
-    Set-Content -Path $CuePartPath -Value $content -Encoding UTF8 -NoNewline
+    $null = Write-FileIfChanged -Path $CuePartPath -Value $content -NoNewline
     Write-Host "    OK Cue part.xml updated ($updateCount blocks)" -ForegroundColor Green
     return $true
   }
@@ -3925,7 +4093,7 @@ function Update-ScenePartXml {
   }
 
   if ($updateCount -eq 4) {
-    Set-Content -Path $ScenePartPath -Value $content -Encoding UTF8 -NoNewline
+    $null = Write-FileIfChanged -Path $ScenePartPath -Value $content -NoNewline
     Write-Host "    OK Scene part.xml updated ($updateCount blocks)" -ForegroundColor Green
     return $true
   }
@@ -3991,7 +4159,7 @@ function Update-ScriptJS {
   if ($content -match $pattern) {
     $replacement = "`$1`n$DefaultsContent`n`$3"
     $content = $content -replace $pattern, $replacement
-    Set-Content -Path $ScriptPath -Value $content -Encoding UTF8 -NoNewline
+    $null = Write-FileIfChanged -Path $ScriptPath -Value $content -NoNewline
     return $true
   }
 
@@ -4019,7 +4187,7 @@ function Update-ScriptJSFunction {
   if ($content -match $pattern) {
     $replacement = "`$1`n$FunctionContent`n`$3"
     $content = $content -replace $pattern, $replacement
-    Set-Content -Path $ScriptPath -Value $content -Encoding UTF8 -NoNewline
+    $null = Write-FileIfChanged -Path $ScriptPath -Value $content -NoNewline
     return $true
   }
 
@@ -4152,11 +4320,27 @@ Write-Host ("─" * 116) -ForegroundColor DarkGray
 Write-Host ""
 
 # Parse all effects
-foreach ($file in $effectFiles) {
-  $effectData = Parse-EffectHeader -HeaderPath $file.FullName -Lang $Language
-  if ($effectData) {
-    $effects += $effectData
+$effectIndex = 0
+try {
+  foreach ($file in $effectFiles) {
+    $effectIndex++
+    Show-EffectProgress -Index $effectIndex -Total @($effectFiles).Count -Name ($file.BaseName -replace '^Effect|Effect$', '')
+    $effectData = Parse-EffectHeader -HeaderPath $file.FullName -Lang $Language
+    if ($effectData) {
+      $effects += $effectData
+    }
   }
+}
+catch {
+  # Quiet mode dropped the "Parsing <file>" line; the error text alone does not name the header
+  if ($script:QuietOutput) {
+    Clear-EffectProgress
+    Microsoft.PowerShell.Utility\Write-Host "  Error while parsing $($file.FullName):" -ForegroundColor Red
+  }
+  throw
+}
+finally {
+  Clear-EffectProgress
 }
 
 if ($effects.Count -eq 0) {
@@ -4194,9 +4378,12 @@ function Write-WebEffectCatalog {
   })
   $catalogPath = Resolve-RepoPath 'web/assets/effects.json'
   $json = ConvertTo-Json -InputObject $catalog -Depth 10 -Compress
-  [System.IO.File]::WriteAllText($catalogPath, $json, [System.Text.UTF8Encoding]::new($false))
+  $null = Write-FileIfChanged -Path $catalogPath -Value $json -NoNewline -NoBom
   $memory = [System.IO.MemoryStream]::new()
-  $gzip = [System.IO.Compression.GZipStream]::new($memory, [System.IO.Compression.CompressionLevel]::SmallestSize, $true)
+  # SmallestSize exists from .NET 6 (pwsh 7); .NET Framework (Windows PowerShell 5.1) has Optimal
+  $levelType = [System.IO.Compression.CompressionLevel]
+  $level = if ([Enum]::GetNames($levelType) -contains 'SmallestSize') { [Enum]::Parse($levelType, 'SmallestSize') } else { [System.IO.Compression.CompressionLevel]::Optimal }
+  $gzip = New-Object System.IO.Compression.GZipStream($memory, $level, $true)
   try {
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
     $gzip.Write($bytes, 0, $bytes.Length)
@@ -4236,12 +4423,15 @@ function Write-WebEffectCatalog {
   }
   $header += @('        "\"";', '', '    inline bool isAvailable(uint8_t id)', '    {', '        return id < sizeof(available) - 1 && available[id] == ''1'';', '    }', '}')
   $headerPath = Resolve-RepoPath 'src/WebUi/NeoPixelEffectCatalog.generated.h'
-  [System.IO.File]::WriteAllText($headerPath, ($header -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+  $null = Write-FileIfChanged -Path $headerPath -Value (($header -join "`n") + "`n") -NoNewline -NoBom
   Write-Host "Web effect catalog: $catalogPath ($($catalog.Count) effects)"
 }
 
 Write-WebEffectCatalog $effects
-if ($WebCatalogOnly) { return }
+if ($WebCatalogOnly) {
+  Write-EffectSummary -Processed $effects.Count
+  return
+}
 
 Write-Host "  " -NoNewline
 Write-Host ("─" * 116) -ForegroundColor DarkGray
@@ -4269,7 +4459,7 @@ Update-EffectTypeEnumerationInShareXml -ShareXmlPath $shareXmlPath
 # Step 0b: Generate C++ Effect Type Mapping Header
 $cppMapping = Generate-EffectMappingCpp
 $cppMappingHeaderPath = "src/EffectTypeMapping.h"
-Set-Content -Path $cppMappingHeaderPath -Value $cppMapping -Encoding UTF8
+$null = Write-FileIfChanged -Path $cppMappingHeaderPath -Value $cppMapping
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "C++ effect type mapping header" -ForegroundColor White
 Write-Host "       $cppMappingHeaderPath" -ForegroundColor DarkGray
@@ -4320,7 +4510,7 @@ $nextId = $unionResult.NextId
 $nextOffset = $unionResult.NextOffset
 
 $unionParamsPath = "src/NeoPixel.Effects.UnionParameters.generated.xml"
-Set-Content -Path $unionParamsPath -Value $unionParamsXml -Encoding UTF8
+$null = Write-FileIfChanged -Path $unionParamsPath -Value $unionParamsXml
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Union Parameters XML" -ForegroundColor White
 Write-Host "       $unionParamsPath" -ForegroundColor DarkGray
@@ -4329,7 +4519,7 @@ Write-Host "       Next ID: $nextId, Offset: $nextOffset" -ForegroundColor DarkG
 # 3. ParameterRefs (uses same Start ID)
 $paramRefsXml = Generate-ParameterRefs -Effects $effects -StartId $startId
 $paramRefsPath = "src/NeoPixel.Effects.ParameterRefs.generated.xml"
-Set-Content -Path $paramRefsPath -Value $paramRefsXml -Encoding UTF8
+$null = Write-FileIfChanged -Path $paramRefsPath -Value $paramRefsXml
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "ParameterRefs XML" -ForegroundColor White
 Write-Host "       $paramRefsPath" -ForegroundColor DarkGray
@@ -4337,7 +4527,7 @@ Write-Host "       $paramRefsPath" -ForegroundColor DarkGray
 # 4. Dynamic choose/when blocks (uses same Start ID)
 $dynamicChooseXml = Generate-DynamicChoose -Effects $effects -StartId $startId
 $dynamicChoosePath = "src/NeoPixel.Effects.DynamicChoose.generated.xml"
-Set-Content -Path $dynamicChoosePath -Value $dynamicChooseXml -Encoding UTF8
+$null = Write-FileIfChanged -Path $dynamicChoosePath -Value $dynamicChooseXml
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Dynamic choose/when blocks" -ForegroundColor White
 Write-Host "       $dynamicChoosePath" -ForegroundColor DarkGray
@@ -4351,16 +4541,18 @@ foreach ($effect in $effects | Sort-Object { [int]$_.EffectID }) {
   $studioNames[[string]$effect.EffectID] = $names
 }
 $studioScriptPath = Resolve-RepoPath "src/NeoPixel.script.src.js"
-$studioScript = Get-Content $studioScriptPath -Raw
+# UTF-8 without BOM (hardware generator): without -Encoding, Windows PowerShell 5.1 reads it as cp1252
+$studioScript = Get-Content $studioScriptPath -Raw -Encoding UTF8
 $studioBlock = "// BEGIN AUTO-GENERATED: Studio ETS parameter names`nvar NEO_StudioEffectParameters = " + ($studioNames | ConvertTo-Json -Depth 4 -Compress) + ";`n// END AUTO-GENERATED: Studio ETS parameter names"
 if ($studioScript.Contains('// BEGIN AUTO-GENERATED: Studio ETS parameter names')) {
   $studioScript = [regex]::Replace($studioScript, '(?s)// BEGIN AUTO-GENERATED: Studio ETS parameter names.*?// END AUTO-GENERATED: Studio ETS parameter names', $studioBlock)
 } else { $studioScript += "`n" + $studioBlock + "`n" }
-Set-Content $studioScriptPath -Value $studioScript -Encoding UTF8 -NoNewline
+$null = Write-FileIfChanged -Path $studioScriptPath -Value $studioScript -NoNewline
 
 $cppMapping = Generate-CppMapping -Effects $effects
 $cppMappingPath = "src/EffectParameterMapping.h"
-Set-Content -Path $cppMappingPath -Value $cppMapping -Encoding UTF8
+# Written once in 5c together with loadSceneEffectParameters(); text as Set-Content wrote it here
+$cppMappingText = (@($cppMapping) | ForEach-Object { [string]$_ + [Environment]::NewLine }) -join ''
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "C++ mapping header" -ForegroundColor White
 Write-Host "       $cppMappingPath" -ForegroundColor DarkGray
@@ -4416,10 +4608,10 @@ else {
 
 # 5c. Append loadSceneEffectParameters() to C++ mapping header
 $sceneCppMapping = Generate-SceneCppMapping -Effects $effects
-$existingCpp = Get-Content -Path $cppMappingPath -Raw -Encoding UTF8
+$existingCpp = $cppMappingText
 # Insert before the final #endif
 $existingCpp = $existingCpp -replace '#endif // EFFECT_PARAMETER_MAPPING_H', "$sceneCppMapping`n`n#endif // EFFECT_PARAMETER_MAPPING_H"
-Set-Content -Path $cppMappingPath -Value $existingCpp -Encoding UTF8 -NoNewline
+$null = Write-FileIfChanged -Path $cppMappingPath -Value $existingCpp -NoNewline
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "loadSceneEffectParameters() added to C++ mapping header" -ForegroundColor White
 
@@ -4499,6 +4691,9 @@ Write-Host "══════════════════════�
 Write-Host "  Updating Template" -ForegroundColor Cyan
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
+# Template bytes before this run: the rollback after a failed producer check restores them
+$templateBytesBeforeRun = [System.IO.File]::ReadAllBytes($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($templatePath))
+
 try {
   $success = Update-TemplateWithMarkers -TemplatePath $templatePath `
     -UnionContent $unionParamsXml `
@@ -4547,7 +4742,7 @@ try {
       }
       $cueNo2DBlock = $cueNo2DLines -join "`n"
       $emContent = $emContent -replace '(?s)(<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_START -->).*?(<!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_END -->)', "`$1`n$cueNo2DBlock`n                `$2"
-      Set-Content $emSharePath -Value $emContent -Encoding UTF8 -NoNewline
+      $null = Write-FileIfChanged -Path $emSharePath -Value $emContent -NoNewline
       Write-Host "  [OK] NeoPixel.EM.share.xml: PT-CueEffect enum updated ($($effects.Count) effects, No2D $($cueNo2DLines.Count))" -ForegroundColor Green
     }
 
@@ -4582,7 +4777,7 @@ try {
       }
       $sceneNo2DBlock = $sceneNo2DLines -join "`n"
       $shareContent = $shareContent -replace '(?s)(<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_START -->).*?(<!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_END -->)', "`$1`n$sceneNo2DBlock`n                `$2"
-      Set-Content $sharePath -Value $shareContent -Encoding UTF8 -NoNewline
+      $null = Write-FileIfChanged -Path $sharePath -Value $shareContent -NoNewline
       Write-Host "  [OK] NeoPixel.share.xml: PT-NEOSceneEffectType enum updated ($($effects.Count) effects + 16 EM actions, No2D $($sceneNo2DLines.Count))" -ForegroundColor Green
     }
 
@@ -4603,7 +4798,10 @@ try {
     }
     else {
       Write-Host ""
-      Write-Host "  Skipping OpenKNXproducer validation (as requested)" -ForegroundColor Yellow
+      # Yellow, but no warning: -Detailed only
+      if (-not $script:QuietOutput) {
+        Write-Host "  Skipping OpenKNXproducer validation (as requested)" -ForegroundColor Yellow
+      }
       $testResult = @{ Success = $true }
     }
 
@@ -4769,6 +4967,7 @@ try {
 
       # Show warning for effects missing getParameterDescription()
       if ($effectsWithoutDesc.Count -gt 0) {
+        $script:EffectOutput.Force++
         Write-Host "  WARNING " -NoNewline -ForegroundColor Yellow
         Write-Host "[!] " -NoNewline -ForegroundColor Yellow
         Write-Host "- $placeholderCount Help files with placeholders generated." -ForegroundColor Yellow
@@ -4788,11 +4987,13 @@ try {
         }
         Write-Host "  Please implement getParameterDescription() in these effects to provide proper descriptions." -ForegroundColor Yellow
         Write-Host ""
+        $script:EffectOutput.Force--
       }
 
       Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
       Write-Host ""
       Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
+      Write-EffectSummary -Processed $effects.Count
     }
     else {
       # OpenKNXproducer failed -> ROLLBACK!
@@ -4804,14 +5005,9 @@ try {
       Write-Host "Rolling back changes..." -ForegroundColor Yellow
       Write-Host ""
 
-      # 1. Restore template from backup
-      if (Test-Path "$templatePath.backup") {
-        Restore-Template -TemplatePath $templatePath
-      }
-      else {
-        # Backup doesn't exist -> Clear marker regions instead
-        Clear-MarkerRegions -TemplatePath $templatePath -NeoPixelXmlPath $neoPixelXmlPath
-      }
+      # 1. Restore the template to its bytes before this run (its file backup is already gone:
+      #    Update-TemplateWithMarkers removes it after its own validation)
+      $null = Write-BytesIfChanged -FullPath $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($templatePath) -Bytes $templateBytesBeforeRun
 
       # 2. Save error log
       $errorLogPath = "src/Build-EffectParameters.err"
@@ -4844,7 +5040,7 @@ Template has been restored to previous state.
 Fix the errors shown in the console output and run the script again.
 ============================================================
 "@
-      Set-Content -Path $errorLogPath -Value $errorLog -Encoding UTF8
+      $null = Write-FileIfChanged -Path $errorLogPath -Value $errorLog
 
       Write-Host "  [OK] Template restored" -ForegroundColor Green
       Write-Host "  [SAVED] Error log: " -NoNewline -ForegroundColor Yellow
@@ -4868,4 +5064,9 @@ Fix the errors shown in the console output and run the script again.
 catch {
   Write-Error "Failed to update template: $_"
   exit 1
+}
+
+}
+finally {
+  Remove-EffectOutputProxy
 }
