@@ -7,9 +7,9 @@ Der GPIO-Pin, der für die Datenübertragung zu den LEDs verwendet wird. Bei PWM
 - Geben Sie die GPIO-Nummer ein (z.B. 16 für GPIO16)
 - Der Pin muss als Ausgang konfigurierbar sein
 - Ohne Auswahl („Wählen Sie bitte ein Port aus“) bleibt der Streifen aus; „Manuell“ verwendet den GPIO aus dem Feld darunter
-- Ein Onboard-Relais (QuinLED Dig2Go IO12, Gledopto GL-C-017WL und GL-C-620WL IO18) wird nicht als Port angeboten; ein noch gespeicherter Wert dieses Ports oder derselbe GPIO unter „Manuell“ schaltet den Streifen ab (Log: „relay output“), die ETS-Konfliktprüfung meldet den manuellen GPIO
+- Ein Onboard-Relais (QuinLED Dig2Go IO12, Gledopto GL-C-017WL und GL-C-620WL IO18) wird nicht als Port angeboten; ein noch gespeicherter Wert dieses Ports oder derselbe GPIO unter „Manuell“ schaltet den Streifen ab (Log: „relay output“), ETS meldet einen GPIO-Konflikt am Streifen, auch bei „Externe Relais“ = 0 (die Seite des Relais zeigt ihn, sobald sie angezeigt wird)
 - Ohne passende Hardware-Auswahl auf der Seite OpenKNX → „Hardware“ (keine oder eine andere Hardware als die der Firmware) nutzt das Gerät keinen Port und auch keinen manuellen GPIO: der Streifen bleibt aus
-- Ein manueller GPIO, der dem GPIO eines gewählten Ports (Streifen oder Relais) oder einem anderen manuellen GPIO gleicht, wird in ETS als Port-Konflikt angezeigt
+- Belegen zwei Einstellungen denselben GPIO der gewählten Hardware (Port, „Manuell“ oder ein fest verdrahtetes Relais), zeigt ETS bei jeder eine Meldung „GPIO-Konflikt“; ohne gewählte Hardware wird nicht geprüft
 - Vermeiden Sie Pins, die für andere Funktionen reserviert sind
 - Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion), seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, lehnt die Firmware ab: der Streifen bleibt dann aus (Log: „REFUSED“)
 - Nutzt ein Relais oder ein vorheriger Streifen denselben GPIO schon, lehnt die Firmware den späteren Streifen ab und er bleibt aus (Log: „REFUSED“); ein SPI-Streifen belegt MOSI und Takt nur gemeinsam.

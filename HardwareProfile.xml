@@ -6,7 +6,9 @@
   of the per-board port parameter IDs (...HW<n>); a new board gets the next free number, a removed board keeps
   its number, so no other board's parameter IDs move. The firmware reads the shared byte (carrier parameters).
 -->
-<HardwareProfile prefix="NEOHW" moduleType="45" text="Hardware" unselected="hide" order="hwid" ids="slot">
+<!-- portManualValue / portNoneValue: values of the data, clock and relay port parameters (0..9 = port 1..10, 10 = manual GPIO,
+     15 = not selected), read by the GPIO conflict check (<Conflicts>) and the firmware (HardwareProfile::signalGpio) -->
+<HardwareProfile prefix="NEOHW" moduleType="45" text="Hardware" unselected="hide" order="hwid" ids="slot" portManualValue="10" portNoneValue="15">
 
   <!-- op:config feature flags, e.g. %NEOHW_CAP_No2D% / %NEOHW_SelectRef% (referenced by NeoPixel-Dev.xml / NeoPixel-Release.xml);
        share + script: the hardware module (op:define prefix NEOHW, ModuleType 45): selection, device query, capability page -->
@@ -64,7 +66,7 @@
   <Boards platformio="release_*" />
 
   <!-- a port wired to a relay of the board (HW_RELAY_<n>_GPIO) is no LED port; the other ports keep their numbers;
-       max 10: port values 0..9 = ports 1..10, value 10 = manual GPIO (src/HardwareMappingLogic.h) -->
+       max 10: port values 0..9 = ports 1..10, value 10 = manual GPIO (portManualValue) -->
   <Ports board="*" excludeRelayPins="true" max="10" />
 
   <!-- ParameterTypes, included by NeoPixel.share.xml (xpath //ApplicationProgram/Static/ParameterTypes/ParameterType) -->
@@ -77,4 +79,117 @@
 
   <!-- ETS script: src/NeoPixel.script.src.js with the board tables expanded (@@use lines) -->
   <Generate template="src/NeoPixel.script.src.js" output="src/NeoPixel.script.js" />
+  <!-- GPIO conflict check (OGM-HardwareConfig generator README "GPIO-Konflikte"): every active signal resolves to a GPIO of
+       the selected board, two signals on one GPIO show their error block (Conflict_<name>, NeoPixel.Strip.templ.xml and the
+       relay pages of NeoPixel.share.xml). The parts go into the NEO module: flags without memory, calculation PC-%TT%00900;
+       relays P-%TT%00900..00903, strip n data P-%TT%0091n, clock P-%TT%0092n (<ChannelBlock>: the strip template names its
+       flag through %C%). Data/clock: per-board port parameters of NeoPixel.hw.strip.xml (byte of the carriers NEO<n>DataPort /
+       NEO<n>ClockPort); SPI LED types (firmware isSpiProtocol = driver library ProtocolHelper::isSPI: 5 6 21 22 23 24 25)
+       use the MOSI GPIO and the clock, every other type the data GPIO. Relays: per-board port parameters of
+       NeoPixel.hw.share.xml; relay r of a board with r hard-wired relays has no port, its pin is occupied whatever the
+       relay count. -->
+  <Conflicts output="src/NeoPixel.hw.conflicts.gen.xml" number="900"
+             error="GPIO-Konflikt: {text} nutzt denselben GPIO wie ein anderer Streifen, ein Relais oder ein manueller GPIO. Bitte einen freien Port oder GPIO wählen.">
+    <Param name="Strips" ref="%AID%_UP-%TT%00020_R-%TT%0002001" />
+    <Param name="Relays" ref="%AID%_UP-%TT%00130_R-%TT%0013001" />
+    <Param name="Type1" ref="%AID%_UP-%TT%91030_R-%TT%9103001" />
+    <Param name="Type2" ref="%AID%_UP-%TT%92030_R-%TT%9203001" />
+    <Param name="Type3" ref="%AID%_UP-%TT%93030_R-%TT%9303001" />
+    <Param name="Type4" ref="%AID%_UP-%TT%94030_R-%TT%9403001" />
+    <Param name="Type5" ref="%AID%_UP-%TT%95030_R-%TT%9503001" />
+    <Param name="Type6" ref="%AID%_UP-%TT%96030_R-%TT%9603001" />
+    <Param name="Type7" ref="%AID%_UP-%TT%97030_R-%TT%9703001" />
+    <Param name="Type8" ref="%AID%_UP-%TT%98030_R-%TT%9803001" />
+    <Use name="Strip1Data" text="Streifen 1 Daten" when="Strips >= 1"
+         port="%AID%_UP-%TT%01{{D3 (900 + $b.Slot)}}_R-%TT%01{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type1 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%91035_R-%TT%9103501" />
+      <Manual ref="%AID%_UP-%TT%91033_R-%TT%9103301" />
+    </Use>
+    <Use name="Strip1Clock" text="Streifen 1 Takt" when="Strips >= 1 and Type1 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%01{{D3 (950 + $b.Slot)}}_R-%TT%01{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%91034_R-%TT%9103401" />
+    </Use>
+    <Use name="Strip2Data" text="Streifen 2 Daten" when="Strips >= 2"
+         port="%AID%_UP-%TT%02{{D3 (900 + $b.Slot)}}_R-%TT%02{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type2 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%92035_R-%TT%9203501" />
+      <Manual ref="%AID%_UP-%TT%92033_R-%TT%9203301" />
+    </Use>
+    <Use name="Strip2Clock" text="Streifen 2 Takt" when="Strips >= 2 and Type2 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%02{{D3 (950 + $b.Slot)}}_R-%TT%02{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%92034_R-%TT%9203401" />
+    </Use>
+    <Use name="Strip3Data" text="Streifen 3 Daten" when="Strips >= 3"
+         port="%AID%_UP-%TT%03{{D3 (900 + $b.Slot)}}_R-%TT%03{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type3 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%93035_R-%TT%9303501" />
+      <Manual ref="%AID%_UP-%TT%93033_R-%TT%9303301" />
+    </Use>
+    <Use name="Strip3Clock" text="Streifen 3 Takt" when="Strips >= 3 and Type3 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%03{{D3 (950 + $b.Slot)}}_R-%TT%03{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%93034_R-%TT%9303401" />
+    </Use>
+    <Use name="Strip4Data" text="Streifen 4 Daten" when="Strips >= 4"
+         port="%AID%_UP-%TT%04{{D3 (900 + $b.Slot)}}_R-%TT%04{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type4 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%94035_R-%TT%9403501" />
+      <Manual ref="%AID%_UP-%TT%94033_R-%TT%9403301" />
+    </Use>
+    <Use name="Strip4Clock" text="Streifen 4 Takt" when="Strips >= 4 and Type4 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%04{{D3 (950 + $b.Slot)}}_R-%TT%04{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%94034_R-%TT%9403401" />
+    </Use>
+    <Use name="Strip5Data" text="Streifen 5 Daten" when="Strips >= 5"
+         port="%AID%_UP-%TT%05{{D3 (900 + $b.Slot)}}_R-%TT%05{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type5 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%95035_R-%TT%9503501" />
+      <Manual ref="%AID%_UP-%TT%95033_R-%TT%9503301" />
+    </Use>
+    <Use name="Strip5Clock" text="Streifen 5 Takt" when="Strips >= 5 and Type5 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%05{{D3 (950 + $b.Slot)}}_R-%TT%05{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%95034_R-%TT%9503401" />
+    </Use>
+    <Use name="Strip6Data" text="Streifen 6 Daten" when="Strips >= 6"
+         port="%AID%_UP-%TT%06{{D3 (900 + $b.Slot)}}_R-%TT%06{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type6 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%96035_R-%TT%9603501" />
+      <Manual ref="%AID%_UP-%TT%96033_R-%TT%9603301" />
+    </Use>
+    <Use name="Strip6Clock" text="Streifen 6 Takt" when="Strips >= 6 and Type6 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%06{{D3 (950 + $b.Slot)}}_R-%TT%06{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%96034_R-%TT%9603401" />
+    </Use>
+    <Use name="Strip7Data" text="Streifen 7 Daten" when="Strips >= 7"
+         port="%AID%_UP-%TT%07{{D3 (900 + $b.Slot)}}_R-%TT%07{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type7 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%97035_R-%TT%9703501" />
+      <Manual ref="%AID%_UP-%TT%97033_R-%TT%9703301" />
+    </Use>
+    <Use name="Strip7Clock" text="Streifen 7 Takt" when="Strips >= 7 and Type7 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%07{{D3 (950 + $b.Slot)}}_R-%TT%07{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%97034_R-%TT%9703401" />
+    </Use>
+    <Use name="Strip8Data" text="Streifen 8 Daten" when="Strips >= 8"
+         port="%AID%_UP-%TT%08{{D3 (900 + $b.Slot)}}_R-%TT%08{{D3 (900 + $b.Slot)}}01">
+      <Manual when="Type8 in 5 6 21 22 23 24 25" ref="%AID%_UP-%TT%98035_R-%TT%9803501" />
+      <Manual ref="%AID%_UP-%TT%98033_R-%TT%9803301" />
+    </Use>
+    <Use name="Strip8Clock" text="Streifen 8 Takt" when="Strips >= 8 and Type8 in 5 6 21 22 23 24 25"
+         port="%AID%_UP-%TT%08{{D3 (950 + $b.Slot)}}_R-%TT%08{{D3 (950 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%98034_R-%TT%9803401" />
+    </Use>
+    <Use name="Relay1" text="Relais 1" wiredRelay="1" when="Relays >= 1"
+         port="%AID%_UP-%TT%{{D5 (200 + $b.Slot)}}_R-%TT%{{D5 (200 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%00155_R-%TT%0015501" />
+    </Use>
+    <Use name="Relay2" text="Relais 2" wiredRelay="2" when="Relays >= 2"
+         port="%AID%_UP-%TT%{{D5 (250 + $b.Slot)}}_R-%TT%{{D5 (250 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%00156_R-%TT%0015601" />
+    </Use>
+    <Use name="Relay3" text="Relais 3" wiredRelay="3" when="Relays >= 3"
+         port="%AID%_UP-%TT%{{D5 (300 + $b.Slot)}}_R-%TT%{{D5 (300 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%00157_R-%TT%0015701" />
+    </Use>
+    <Use name="Relay4" text="Relais 4" wiredRelay="4" when="Relays >= 4"
+         port="%AID%_UP-%TT%{{D5 (350 + $b.Slot)}}_R-%TT%{{D5 (350 + $b.Slot)}}01">
+      <Manual ref="%AID%_UP-%TT%00158_R-%TT%0015801" />
+    </Use>
+    <!-- one block per strip page (NeoPixel.Strip.templ.xml, %C% = strip) -->
+    <ChannelBlock name="StripData" text="Streifen %C% Daten" uses="Strip1Data Strip2Data Strip3Data Strip4Data Strip5Data Strip6Data Strip7Data Strip8Data" />
+    <ChannelBlock name="StripClock" text="Streifen %C% Takt" uses="Strip1Clock Strip2Clock Strip3Clock Strip4Clock Strip5Clock Strip6Clock Strip7Clock Strip8Clock" />
+  </Conflicts>
 </HardwareProfile>

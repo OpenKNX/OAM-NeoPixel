@@ -3640,29 +3640,33 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
         return false;
     };
 
-    // GPIO of one strip signal from its ETS port selection (0-9 port, 10 manual, else not selected);
+    // GPIO of one strip signal from its ETS port selection (HardwareProfile::signalGpio: PORT_MANUAL = manual GPIO,
+    // PORT_NONE = none, any other value k = HW_PORT_<k+1>_GPIO of this board or none when the board does not describe that
+    // port (ETS offers ports 1..10); GPIO_NONE while the ETS selection is not this board);
     // 255 = no GPIO, the strip stays off. log = false for the pre-scan, which runs before the build.
+    const uint16_t hwSelect = selectedHardwareId();
     auto resolveStripGpio = [&](uint8_t stripIdx, const char* signal, uint8_t portSelection, uint8_t manualGpio, bool log) -> uint8_t {
-        const uint8_t gpio = portSelectionGpio(portSelection, manualGpio, !_hwConfigMismatch);
+        const uint8_t gpio = HardwareProfile::signalGpio(hwSelect, portSelection, manualGpio);
+        const bool manual = portSelection == HardwareProfile::PORT_MANUAL;
         // a hard-wired relay pin (HW_RELAY_<n>_GPIO) is never LED data, whatever the relay count: neither a port value
         // stored before the relay port left the port list nor a manual GPIO
         if (isHwRelayGpio(gpio))
         {
             if (log)
             {
-                if (classifyPortSelection(portSelection) == PortSelectionKind::Manual)
+                if (manual)
                     logErrorP("Strip %d: %s manual GPIO %d is the relay output of this hardware - strip disabled", stripIdx, signal, gpio);
                 else
                     logErrorP("Strip %d: %s port %d is the relay output GPIO %d of this hardware - strip disabled", stripIdx, signal, portSelection + 1, gpio);
             }
-            return 255;
+            return HardwareProfile::GPIO_NONE;
         }
         if (!log) return gpio;
         if (_hwConfigMismatch)
             logErrorP("Strip %d: %s port ignored - the ETS hardware selection is not this board", stripIdx, signal);
-        else if (classifyPortSelection(portSelection) == PortSelectionKind::HardwarePort && gpio == 255)
+        else if (!manual && gpio == HardwareProfile::GPIO_NONE && portSelection != HardwareProfile::PORT_NONE && portSelection < HW_PORTS_MAX)
             logErrorP("Strip %d: %s port %d does not exist on this hardware", stripIdx, signal, portSelection + 1);
-        else if (classifyPortSelection(portSelection) == PortSelectionKind::NotSelected)
+        else if (!manual && gpio == HardwareProfile::GPIO_NONE)
             logWarningP("Strip %d: no %s port selected in ETS (value %d) - strip disabled", stripIdx, signal, portSelection);
         return gpio;
     };
@@ -3690,50 +3694,18 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             }
             else
             {
-                // relay n <= HW_RELAY_COUNT is hard-wired: GPIO from the board header, its port byte is ignored;
-                // every further relay takes its port byte (as on boards without hard-wired relays)
-                auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
-                    if (relayIndex < hwRelayCount()) return hwRelayGpio(relayIndex);
-                    // Port byte from ETS (carrier NEOExternalRelay<r>Port)
-                    uint8_t portIndex;
+                // relay n <= HW_RELAY_COUNT is hard-wired: GPIO from the board header, its port byte is ignored; every
+                // further relay takes its port byte (carrier NEOExternalRelay<r>Port) and, for PORT_MANUAL, its manual GPIO
+                // (HardwareProfile::relaySignalGpio; the hardware selection matches here, see _hwConfigMismatch above)
+                auto resolveRelayGpio = [&](uint8_t relayIndex) -> uint8_t {
                     switch (relayIndex)
                     {
-                        case 0: portIndex = (uint8_t)ParamNEO_NEOExternalRelay1Port; break;
-                        case 1: portIndex = (uint8_t)ParamNEO_NEOExternalRelay2Port; break;
-                        case 2: portIndex = (uint8_t)ParamNEO_NEOExternalRelay3Port; break;
-                        case 3: portIndex = (uint8_t)ParamNEO_NEOExternalRelay4Port; break;
-                        default: portIndex = 255; break;
+                        case 0: return HardwareProfile::relaySignalGpio(hwSelect, 0, (uint8_t)ParamNEO_NEOExternalRelay1Port, (uint8_t)ParamNEO_NEOExternalRelay1GPIO);
+                        case 1: return HardwareProfile::relaySignalGpio(hwSelect, 1, (uint8_t)ParamNEO_NEOExternalRelay2Port, (uint8_t)ParamNEO_NEOExternalRelay2GPIO);
+                        case 2: return HardwareProfile::relaySignalGpio(hwSelect, 2, (uint8_t)ParamNEO_NEOExternalRelay3Port, (uint8_t)ParamNEO_NEOExternalRelay3GPIO);
+                        case 3: return HardwareProfile::relaySignalGpio(hwSelect, 3, (uint8_t)ParamNEO_NEOExternalRelay4Port, (uint8_t)ParamNEO_NEOExternalRelay4GPIO);
+                        default: return HardwareProfile::GPIO_NONE;
                     }
-
-                    // Check if "Manuell" (Value 10) is selected in Port dropdown
-                    if (portIndex == 10)
-                    {
-                        // Return manual GPIO number from ETS parameter
-                        switch (relayIndex)
-                        {
-    #if defined(ParamNEO_NEOExternalRelay1GPIO)
-                            case 0: return (uint8_t)ParamNEO_NEOExternalRelay1GPIO;
-    #endif
-    #if defined(ParamNEO_NEOExternalRelay2GPIO)
-                            case 1: return (uint8_t)ParamNEO_NEOExternalRelay2GPIO;
-    #endif
-    #if defined(ParamNEO_NEOExternalRelay3GPIO)
-                            case 2: return (uint8_t)ParamNEO_NEOExternalRelay3GPIO;
-    #endif
-    #if defined(ParamNEO_NEOExternalRelay4GPIO)
-                            case 3: return (uint8_t)ParamNEO_NEOExternalRelay4GPIO;
-    #endif
-                            default: return 255;
-                        }
-                    }
-
-                    // Otherwise port value 0-9 -> hwPortGpio(), any other value -> no GPIO
-
-                    if (!isHardwarePortSelected(portIndex))
-                    {
-                        return 255;
-                    }
-                    return hwPortGpio(portIndex);
                 };
 
                 for (uint8_t i = 0; i < _relayCount; ++i)
@@ -4065,7 +4037,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
                      i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
-                     spiFrequency, classifyPortSelection(getDataPortSelection(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
+                     spiFrequency, getDataPortSelection(i) == HardwareProfile::PORT_MANUAL ? " (Manual)" : " (Port)");
         }
         else
         {
@@ -4092,7 +4064,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             phys = _neoPixel.addStrip(dataGpioPin, pixels, proto, order);
             logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s",
                      i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
-                     classifyPortSelection(getDataPortSelection(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
+                     getDataPortSelection(i) == HardwareProfile::PORT_MANUAL ? " (Manual)" : " (Port)");
             if (phys)
             {
                 auto* cfg = phys->getConfig();
@@ -5882,20 +5854,15 @@ void NeoPixelBusModule::debugShowConfiguration()
         const char* colorOrderName = (colorOrderParam < 30) ? colorOrderNames[colorOrderParam] : "Unknown";
         logInfoP("  │    Color Order:      %d (%s)", colorOrderParam, colorOrderName);
 
-        // GPIO selection per signal: ETS port value 0-9 = hardware port, 10 = manual GPIO, else not selected
+        // GPIO selection per signal: ETS port value = hardware port n + 1, PORT_MANUAL = manual GPIO, PORT_NONE or above
+        // the ports = not selected (HardwareProfileData.h)
         auto showPort = [&](const char* label, uint8_t portSelection, uint8_t manualGpio) {
-            switch (classifyPortSelection(portSelection))
-            {
-                case PortSelectionKind::HardwarePort:
-                    logInfoP("  │    %-18s port %d -> GPIO %d", label, portSelection + 1, hwPortGpio(portSelection));
-                    break;
-                case PortSelectionKind::Manual:
-                    logInfoP("  │    %-18s manual GPIO %d", label, manualGpio);
-                    break;
-                default:
-                    logInfoP("  │    %-18s not selected (value %d)", label, portSelection);
-                    break;
-            }
+            if (portSelection == HardwareProfile::PORT_MANUAL)
+                logInfoP("  │    %-18s manual GPIO %d", label, manualGpio);
+            else if (portSelection != HardwareProfile::PORT_NONE && portSelection < HW_PORTS_MAX)
+                logInfoP("  │    %-18s port %d -> GPIO %d", label, portSelection + 1, hwPortGpio(portSelection));
+            else
+                logInfoP("  │    %-18s not selected (value %d)", label, portSelection);
         };
         if (isSpiProtocol(strip->getProtocol()))
         {

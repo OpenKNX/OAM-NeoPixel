@@ -2,19 +2,14 @@
 
 #include <cstdint>
 
-// Own hardware profile and the HW-IDs of the ETS hardware module (OGM-HardwareConfig/generator, HardwareProfile.xml)
+// Own hardware profile, the HW-IDs of the ETS hardware module and the port value resolution
+// (OGM-HardwareConfig/generator, HardwareProfile.xml portManualValue / portNoneValue):
+// HardwareProfile::signalGpio / relaySignalGpio, PORT_MANUAL (10), PORT_NONE (15), GPIO_NONE (255).
+// PORT_MANUAL / PORT_NONE are tested before the port, so a port described on 10 or 15 is never used; ETS offers ports
+// 1..10 only (HardwareProfile.xml <Ports max="10">, the generator stops on a board with more).
 #include "HardwareProfileData.h"
-// GPIO of a port value (OGM-HardwareConfig)
+// GPIO of a port value, hard-wired relays (OGM-HardwareConfig)
 #include "HardwareConfig/Helpers/HardwarePorts.h"
-
-// Port selection values of the ETS "Daten Port" / "Clock Port" / relay port parameters
-constexpr uint8_t MAX_HARDWARE_PORT_INDEX = 9;
-constexpr uint8_t MANUAL_GPIO_PORT_SELECTION = 10;
-constexpr uint8_t DUMMY_GPIO_PORT_SELECTION = 15;
-// ports 1..10 fit below the manual value 10; a board with more ports needs another value layout (manifest <Ports max="10">)
-#if defined(HW_PORT_COUNT) && (HW_PORT_COUNT) > 10
-    #error "NeoPixel stores hardware ports 1..10 (value 10 = manual GPIO): the board describes more ports"
-#endif
 
 #ifndef DEVICE_HW_ID
     #error "The board header defines no DEVICE_HW_ID: the ETS hardware selection cannot be checked"
@@ -40,7 +35,7 @@ inline uint16_t selectedHardwareId()
 /// values for this board: ETS writes them from the parameters of the selected board, or not at all.
 inline bool hardwareSelectionMatches(uint16_t selectedHwId)
 {
-    return selectedHwId == DEVICE_HW_ID;
+    return HardwareProfile::selectionIsOwn(selectedHwId);
 }
 
 // Port carriers: one parameter per strip on the byte that the port parameters of all boards share (strip union)
@@ -72,53 +67,4 @@ inline uint8_t getClockPortSelection(uint8_t stripIndex)
 {
     const uint8_t _channelIndex = stripIndex; // used by the NEOSTRIP_ParamCalcIndex macro of knxprod.h
     return (uint8_t)ParamNEOSTRIP_NEOClockPort;
-}
-
-/**
- * @brief Check if hardware-assisted GPIO mode is active
- *
- * Returns true if a valid hardware port is selected (not manual, not dummy).
- *
- * @param portSelection Port-selection value from getDataPortSelection() or getClockPortSelection()
- * @return true if hardware port is selected, false if manual (10) or dummy (15)
- */
-inline bool isHardwarePortSelected(uint8_t portSelection)
-{
-    return portSelection <= MAX_HARDWARE_PORT_INDEX;
-}
-
-/// What a strip port selection value (ETS "Daten Port" / "Clock Port") selects
-enum class PortSelectionKind : uint8_t
-{
-    HardwarePort, ///< 0-9: port of this hardware (hwPortGpio)
-    Manual,       ///< 10: the manual GPIO parameter of the strip
-    NotSelected   ///< 15 ("please select") or any other value
-};
-
-/**
- * @brief Classify a strip port selection value
- *
- * The value alone decides.
- */
-inline PortSelectionKind classifyPortSelection(uint8_t portSelection)
-{
-    if (portSelection <= MAX_HARDWARE_PORT_INDEX) return PortSelectionKind::HardwarePort;
-    if (portSelection == MANUAL_GPIO_PORT_SELECTION) return PortSelectionKind::Manual;
-    return PortSelectionKind::NotSelected;
-}
-
-/**
- * @brief GPIO of a strip signal from its port selection value; 255 = no GPIO (the strip stays off)
- * @param hwMatches hardwareSelectionMatches(): otherwise no value of the port byte is used, neither a port nor
- *                  "manual" (an unwritten byte reads 0 = port 1)
- */
-inline uint8_t portSelectionGpio(uint8_t portSelection, uint8_t manualGpio, bool hwMatches)
-{
-    if (!hwMatches) return 255;
-    switch (classifyPortSelection(portSelection))
-    {
-        case PortSelectionKind::HardwarePort: return hwPortGpio(portSelection);
-        case PortSelectionKind::Manual: return manualGpio;
-        default: return 255;
-    }
 }

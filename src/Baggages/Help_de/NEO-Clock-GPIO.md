@@ -25,7 +25,7 @@ Der GPIO-Pin für das Clock-Signal bei SPI-basierten LEDs (APA102, APA102-Klon, 
 - Clock und Daten-GPIO müssen zum gleichen SPI-Controller gehören
 - Ohne Auswahl des Clock-Ports bleibt der SPI-Streifen aus; „Manuell“ verwendet den Clock-GPIO aus dem Feld darunter
 - Ohne passende Hardware-Auswahl auf der Seite OpenKNX → „Hardware“ (keine oder eine andere Hardware als die der Firmware) nutzt das Gerät keinen Port und auch keinen manuellen GPIO: der Streifen bleibt aus
-- Ein manueller GPIO, der dem GPIO eines gewählten Ports (Streifen oder Relais) oder einem anderen manuellen GPIO gleicht, wird in ETS als Port-Konflikt angezeigt
+- Belegen zwei Einstellungen denselben GPIO der gewählten Hardware (Port, „Manuell“ oder ein fest verdrahtetes Relais), zeigt ETS bei jeder eine Meldung „GPIO-Konflikt“; ohne gewählte Hardware wird nicht geprüft
 - Kurze, gleichlange Leitungen für Clock und Daten verwenden
 - Clock-Signal ist kritisch für SPI-LED Funktion
 - Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion), seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, lehnt die Firmware ab; der Streifen bleibt dann aus (Log: „REFUSED“)

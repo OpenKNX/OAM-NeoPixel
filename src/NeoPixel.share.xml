@@ -4,11 +4,8 @@
 
   <!-- Suppress warnings for helper functions that are only called from JS, not from XML -->
   <op:nowarn id="3" regex="toInt" />
-  <op:nowarn id="3" regex="NEO_ResolveRelayPort" />
   <op:nowarn id="3" regex="NEO_LedTypeToRGB_Impl" />
-  <op:nowarn id="3" regex="NEO_ResetClockGPIOOnLedTypeChange_Impl" />
-  <!-- GPIO conflict check helpers, called only from NEO_DetectGPIOConflicts -->
-  <op:nowarn id="3" regex="Function with name (NEO_IsSpiLedType|NEO_SignalGpio|NEO_AddUsedGpio|NEO_FlagGpioConflict) was never called" />
+  <op:nowarn id="3" regex="NEO_MarkLedTypeChange_Impl" />
   <!-- Studio import/compare helpers, called only from NEO_compareStudioSettings / NEO_importStudioSettings -->
   <op:nowarn id="3" regex="Function with name (NEO_hasHostMethod|NEO_parseStudioJson|NEO_readStudioSettings|NEO_studio[A-Za-z]+|showProgress) was never called" />
   <!-- Nested functions inside those helpers; the empty name is an anonymous function(ch) the scanner picks up -->
@@ -437,13 +434,8 @@
                 </TypeRestriction>
               </ParameterType>
               
-              <!-- GPIO Conflict Flag ParameterType (must be BEFORE auto-generated section) -->
-              <ParameterType Id="%AID%_PT-ConflictFlag" Name="Pdt_ConflictFlag">
-                <TypeRestriction Base="Value" SizeInBit="1">
-                  <Enumeration Value="0" Text="Kein Konflikt" Id="%ENID%" />
-                  <Enumeration Value="1" Text="Konflikt erkannt!" Id="%ENID%" />
-                </TypeRestriction>
-              </ParameterType>
+              <!-- GPIO conflict flag (generated with the check, HardwareProfile.xml <Conflicts>) -->
+              <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//ApplicationProgram/Static/ParameterTypes/ParameterType" />
 
               <!-- External Relay ParameterTypes -->
               <ParameterType Id="%AID%_PT-RelayDelay" Name="RelayDelay">
@@ -840,62 +832,6 @@
                 <Parameter Id="%AID%_UP-%TT%00181" Offset="14" BitOffset="0" Name="VirtualStripEnd8" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 8" Value="0" Access="Read"/>
               </Union>
               
-              <!-- Data port selections of the 8 strips: copies written by the per-board copy calculations (NEO_CopyGPIOPortChecked), input of the conflict check; the firmware reads the carrier NEO&lt;n&gt;DataPort -->
-              <Union SizeInBit="64">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="80" BitOffset="0" />
-                <!-- All 8 strips GPIO port selections (64 bit total) -->
-                <Parameter Id="%AID%_UP-%TT%00101" Offset="0" BitOffset="0" Name="Strip1DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 1 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00102" Offset="1" BitOffset="0" Name="Strip2DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 2 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00103" Offset="2" BitOffset="0" Name="Strip3DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 3 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00104" Offset="3" BitOffset="0" Name="Strip4DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 4 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00105" Offset="4" BitOffset="0" Name="Strip5DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 5 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00106" Offset="5" BitOffset="0" Name="Strip6DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 6 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00107" Offset="6" BitOffset="0" Name="Strip7DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 7 GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00108" Offset="7" BitOffset="0" Name="Strip8DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 8 GPIO Port" Value="255" Access="None"/>
-              </Union>
-
-              <!-- GPIO Data Conflict Flags Union (8 flags in 1 byte, Access=None, JS-only) -->
-              <Union SizeInBit="8">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="88" BitOffset="0" />
-                <!-- All 8 strips conflict flags (8 bits in 1 byte) -->
-                <Parameter Id="%AID%_UP-%TT%00091" Offset="0" BitOffset="0" Name="Strip1HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 1 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00092" Offset="0" BitOffset="1" Name="Strip2HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 2 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00093" Offset="0" BitOffset="2" Name="Strip3HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 3 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00094" Offset="0" BitOffset="3" Name="Strip4HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 4 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00095" Offset="0" BitOffset="4" Name="Strip5HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 5 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00096" Offset="0" BitOffset="5" Name="Strip6HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 6 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00097" Offset="0" BitOffset="6" Name="Strip7HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 7 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00098" Offset="0" BitOffset="7" Name="Strip8HasDataConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 8 Conflict" Value="0" Access="None"/>
-              </Union>
-
-              <!-- GPIO Clock Conflict Flags Union (8 flags in 1 byte, Access=None, JS-only) -->
-              <Union SizeInBit="8">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="89" BitOffset="0" />
-                <!-- All 8 strips Clock conflict flags (8 bits in 1 byte) -->
-                <Parameter Id="%AID%_UP-%TT%00163" Offset="0" BitOffset="0" Name="Strip1HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 1 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00164" Offset="0" BitOffset="1" Name="Strip2HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 2 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00165" Offset="0" BitOffset="2" Name="Strip3HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 3 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00166" Offset="0" BitOffset="3" Name="Strip4HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 4 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00167" Offset="0" BitOffset="4" Name="Strip5HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 5 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00168" Offset="0" BitOffset="5" Name="Strip6HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 6 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00169" Offset="0" BitOffset="6" Name="Strip7HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 7 Clock Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00170" Offset="0" BitOffset="7" Name="Strip8HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 8 Clock Conflict" Value="0" Access="None"/>
-              </Union>
-
-              <!-- Clock port selections of the 8 strips: copies written by the per-board copy calculations (NEO_CopyGPIOPortChecked), input of the conflict check; the firmware reads the carrier NEO&lt;n&gt;ClockPort -->
-              <Union SizeInBit="64">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="90" BitOffset="0" />
-                <!-- All 8 strips Clock GPIO port selections (64 bit total) -->
-                <Parameter Id="%AID%_UP-%TT%00111" Offset="0" BitOffset="0" Name="Strip1ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 1 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00112" Offset="1" BitOffset="0" Name="Strip2ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 2 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00113" Offset="2" BitOffset="0" Name="Strip3ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 3 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00114" Offset="3" BitOffset="0" Name="Strip4ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 4 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00115" Offset="4" BitOffset="0" Name="Strip5ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 5 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00116" Offset="5" BitOffset="0" Name="Strip6ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 6 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00117" Offset="6" BitOffset="0" Name="Strip7ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 7 Clock GPIO Port" Value="255" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00118" Offset="7" BitOffset="0" Name="Strip8ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 8 Clock GPIO Port" Value="255" Access="None"/>
-              </Union>
-
               <!-- External Relay Configuration Union: NEOExternalRelay&lt;r&gt;Port is the carrier on the byte of the per-board relay port parameters (RelayParameters), read by the firmware -->
               <Union SizeInBit="40">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="98" BitOffset="0" />
@@ -924,14 +860,8 @@
               <Parameter Id="%AID%_P-%TT%00184" Name="NEOExternalRelay3Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
               <Parameter Id="%AID%_P-%TT%00185" Name="NEOExternalRelay4Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
 
-              <!-- External Relay Conflict Flags Union (4 flags in 1 byte, Access=None, JS-only) -->
-              <Union SizeInBit="8">
-                <Memory CodeSegment="%AID%_RS-04-00000" Offset="103" BitOffset="0" />
-                <Parameter Id="%AID%_UP-%TT%00133" Offset="0" BitOffset="0" Name="Relay1HasConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Relais 1 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00134" Offset="0" BitOffset="1" Name="Relay2HasConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Relais 2 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00137" Offset="0" BitOffset="2" Name="Relay3HasConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Relais 3 Conflict" Value="0" Access="None"/>
-                <Parameter Id="%AID%_UP-%TT%00138" Offset="0" BitOffset="3" Name="Relay4HasConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Relais 4 Conflict" Value="0" Access="None"/>
-              </Union>
+              <!-- GPIO conflict flags without memory, written by the generated calculation (HardwareProfile.xml <Conflicts>) -->
+              <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Parameters']/*" />
 
               <!-- External Relay Delay Configuration Union -->
               <Union SizeInBit="128">
@@ -1040,11 +970,8 @@
               <ParameterRef Id="%AID%_UP-%TT%00136_R-%TT%0013601" RefId="%AID%_UP-%TT%00136" />
               <!-- External Relay port parameter references (per board, NeoPixel.hw.share.gen.xml) -->
               <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayParameterRefs']/*" />
-              <!-- External Relay Conflict Flags -->
-              <ParameterRef Id="%AID%_UP-%TT%00133_R-%TT%0013301" RefId="%AID%_UP-%TT%00133" />
-              <ParameterRef Id="%AID%_UP-%TT%00134_R-%TT%0013401" RefId="%AID%_UP-%TT%00134" />
-              <ParameterRef Id="%AID%_UP-%TT%00137_R-%TT%0013701" RefId="%AID%_UP-%TT%00137" />
-              <ParameterRef Id="%AID%_UP-%TT%00138_R-%TT%0013801" RefId="%AID%_UP-%TT%00138" />
+              <!-- GPIO conflict flags (generated) -->
+              <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='ParameterRefs']/*" />
               <!-- External Relay Delay Parameters -->
               <ParameterRef Id="%AID%_UP-%TT%00139_R-%TT%0013901" RefId="%AID%_UP-%TT%00139" />
               <ParameterRef Id="%AID%_UP-%TT%00140_R-%TT%0014001" RefId="%AID%_UP-%TT%00140" />
@@ -1133,42 +1060,6 @@
               <ParameterRef Id="%AID%_UP-%TT%00177_R-%TT%0017701" RefId="%AID%_UP-%TT%00177" />
 
 
-              <!-- GPIO Port Parameters for all 8 strips -->
-              <ParameterRef Id="%AID%_UP-%TT%00101_R-%TT%0010101" RefId="%AID%_UP-%TT%00101" />
-              <ParameterRef Id="%AID%_UP-%TT%00102_R-%TT%0010201" RefId="%AID%_UP-%TT%00102" />
-              <ParameterRef Id="%AID%_UP-%TT%00103_R-%TT%0010301" RefId="%AID%_UP-%TT%00103" />
-              <ParameterRef Id="%AID%_UP-%TT%00104_R-%TT%0010401" RefId="%AID%_UP-%TT%00104" />
-              <ParameterRef Id="%AID%_UP-%TT%00105_R-%TT%0010501" RefId="%AID%_UP-%TT%00105" />
-              <ParameterRef Id="%AID%_UP-%TT%00106_R-%TT%0010601" RefId="%AID%_UP-%TT%00106" />
-              <ParameterRef Id="%AID%_UP-%TT%00107_R-%TT%0010701" RefId="%AID%_UP-%TT%00107" />
-              <ParameterRef Id="%AID%_UP-%TT%00108_R-%TT%0010801" RefId="%AID%_UP-%TT%00108" />
-              <!-- Data Conflict Flag Parameters for all 8 strips -->
-              <ParameterRef Id="%AID%_UP-%TT%00091_R-%TT%0009101" RefId="%AID%_UP-%TT%00091" />
-              <ParameterRef Id="%AID%_UP-%TT%00092_R-%TT%0009201" RefId="%AID%_UP-%TT%00092" />
-              <ParameterRef Id="%AID%_UP-%TT%00093_R-%TT%0009301" RefId="%AID%_UP-%TT%00093" />
-              <ParameterRef Id="%AID%_UP-%TT%00094_R-%TT%0009401" RefId="%AID%_UP-%TT%00094" />
-              <ParameterRef Id="%AID%_UP-%TT%00095_R-%TT%0009501" RefId="%AID%_UP-%TT%00095" />
-              <ParameterRef Id="%AID%_UP-%TT%00096_R-%TT%0009601" RefId="%AID%_UP-%TT%00096" />
-              <ParameterRef Id="%AID%_UP-%TT%00097_R-%TT%0009701" RefId="%AID%_UP-%TT%00097" />
-              <ParameterRef Id="%AID%_UP-%TT%00098_R-%TT%0009801" RefId="%AID%_UP-%TT%00098" />
-              <!-- Clock GPIO Port Parameters for all 8 strips -->
-              <ParameterRef Id="%AID%_UP-%TT%00111_R-%TT%0011101" RefId="%AID%_UP-%TT%00111" />
-              <ParameterRef Id="%AID%_UP-%TT%00112_R-%TT%0011201" RefId="%AID%_UP-%TT%00112" />
-              <ParameterRef Id="%AID%_UP-%TT%00113_R-%TT%0011301" RefId="%AID%_UP-%TT%00113" />
-              <ParameterRef Id="%AID%_UP-%TT%00114_R-%TT%0011401" RefId="%AID%_UP-%TT%00114" />
-              <ParameterRef Id="%AID%_UP-%TT%00115_R-%TT%0011501" RefId="%AID%_UP-%TT%00115" />
-              <ParameterRef Id="%AID%_UP-%TT%00116_R-%TT%0011601" RefId="%AID%_UP-%TT%00116" />
-              <ParameterRef Id="%AID%_UP-%TT%00117_R-%TT%0011701" RefId="%AID%_UP-%TT%00117" />
-              <ParameterRef Id="%AID%_UP-%TT%00118_R-%TT%0011801" RefId="%AID%_UP-%TT%00118" />
-              <!-- Clock Conflict Flag Parameters for all 8 strips -->
-              <ParameterRef Id="%AID%_UP-%TT%00163_R-%TT%0016301" RefId="%AID%_UP-%TT%00163" />
-              <ParameterRef Id="%AID%_UP-%TT%00164_R-%TT%0016401" RefId="%AID%_UP-%TT%00164" />
-              <ParameterRef Id="%AID%_UP-%TT%00165_R-%TT%0016501" RefId="%AID%_UP-%TT%00165" />
-              <ParameterRef Id="%AID%_UP-%TT%00166_R-%TT%0016601" RefId="%AID%_UP-%TT%00166" />
-              <ParameterRef Id="%AID%_UP-%TT%00167_R-%TT%0016701" RefId="%AID%_UP-%TT%00167" />
-              <ParameterRef Id="%AID%_UP-%TT%00168_R-%TT%0016801" RefId="%AID%_UP-%TT%00168" />
-              <ParameterRef Id="%AID%_UP-%TT%00169_R-%TT%0016901" RefId="%AID%_UP-%TT%00169" />
-              <ParameterRef Id="%AID%_UP-%TT%00170_R-%TT%0017001" RefId="%AID%_UP-%TT%00170" />
 
 
               <!-- Virtual Strip Start Index Parameter References -->
@@ -1338,105 +1229,9 @@
             </RParameters>
           </ParameterCalculation>
 
-          <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayCopyCalculations']/*" />
+          <!-- GPIO conflict check: one calculation, function and tables in the generated hardware script (NEOHW_conflictCheck) -->
+          <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Calculation']/*" />
 
-            <ParameterCalculation Id="%AID%_PC-%TT%00060" Language="JavaScript" Name="GPIOConflictTest" LRTransformationFunc="NEO_DetectGPIOConflicts" RLTransformationFunc="NEO_Empty">
-            <LParameters>
-              <!-- Data GPIO Port selections for all 8 strips -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%00101_R-%TT%0010101" AliasName="Strip1DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00102_R-%TT%0010201" AliasName="Strip2DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00103_R-%TT%0010301" AliasName="Strip3DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00104_R-%TT%0010401" AliasName="Strip4DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00105_R-%TT%0010501" AliasName="Strip5DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00106_R-%TT%0010601" AliasName="Strip6DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00107_R-%TT%0010701" AliasName="Strip7DataPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00108_R-%TT%0010801" AliasName="Strip8DataPort" />
-              <!-- Clock GPIO Port selections for all 8 strips -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%00111_R-%TT%0011101" AliasName="Strip1ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00112_R-%TT%0011201" AliasName="Strip2ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00113_R-%TT%0011301" AliasName="Strip3ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00114_R-%TT%0011401" AliasName="Strip4ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00115_R-%TT%0011501" AliasName="Strip5ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00116_R-%TT%0011601" AliasName="Strip6ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00117_R-%TT%0011701" AliasName="Strip7ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00118_R-%TT%0011801" AliasName="Strip8ClockPort" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" AliasName="NumberOfLEDStrips" />
-              <!-- Hardware selection and external relay ports (shared carriers; per-board inputs: ConflictRelayInputs) -->
-              <ParameterRefRef RefId="%NEOHW_SelectRef%" AliasName="HardwareSelection" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00130_R-%TT%0013001" AliasName="RelayCount" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00131_R-%TT%0013101" AliasName="Relay1Port" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00132_R-%TT%0013201" AliasName="Relay2Port" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00135_R-%TT%0013501" AliasName="Relay3Port" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00136_R-%TT%0013601" AliasName="Relay4Port" />
-              <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='ConflictRelayInputs']/*" />
-              <!-- manual GPIOs and LED type of the 8 strips, manual relay GPIOs: CHECK 7 (manual GPIO vs selected port) -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%91030_R-%TT%9103001" AliasName="Strip1LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%91033_R-%TT%9103301" AliasName="Strip1DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%91034_R-%TT%9103401" AliasName="Strip1ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%91035_R-%TT%9103501" AliasName="Strip1MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%92030_R-%TT%9203001" AliasName="Strip2LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%92033_R-%TT%9203301" AliasName="Strip2DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%92034_R-%TT%9203401" AliasName="Strip2ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%92035_R-%TT%9203501" AliasName="Strip2MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%93030_R-%TT%9303001" AliasName="Strip3LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%93033_R-%TT%9303301" AliasName="Strip3DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%93034_R-%TT%9303401" AliasName="Strip3ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%93035_R-%TT%9303501" AliasName="Strip3MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%94030_R-%TT%9403001" AliasName="Strip4LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%94033_R-%TT%9403301" AliasName="Strip4DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%94034_R-%TT%9403401" AliasName="Strip4ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%94035_R-%TT%9403501" AliasName="Strip4MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%95030_R-%TT%9503001" AliasName="Strip5LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%95033_R-%TT%9503301" AliasName="Strip5DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%95034_R-%TT%9503401" AliasName="Strip5ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%95035_R-%TT%9503501" AliasName="Strip5MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%96030_R-%TT%9603001" AliasName="Strip6LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%96033_R-%TT%9603301" AliasName="Strip6DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%96034_R-%TT%9603401" AliasName="Strip6ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%96035_R-%TT%9603501" AliasName="Strip6MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%97030_R-%TT%9703001" AliasName="Strip7LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%97033_R-%TT%9703301" AliasName="Strip7DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%97034_R-%TT%9703401" AliasName="Strip7ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%97035_R-%TT%9703501" AliasName="Strip7MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%98030_R-%TT%9803001" AliasName="Strip8LedType" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%98033_R-%TT%9803301" AliasName="Strip8DataGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%98034_R-%TT%9803401" AliasName="Strip8ClockGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%98035_R-%TT%9803501" AliasName="Strip8MosiGpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00155_R-%TT%0015501" AliasName="Relay1Gpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00156_R-%TT%0015601" AliasName="Relay2Gpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00157_R-%TT%0015701" AliasName="Relay3Gpio" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00158_R-%TT%0015801" AliasName="Relay4Gpio" />
-            </LParameters>
-            <RParameters>
-              <!-- Data conflict outputs for all 8 strips -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%00091_R-%TT%0009101" AliasName="Strip1HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00092_R-%TT%0009201" AliasName="Strip2HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00093_R-%TT%0009301" AliasName="Strip3HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00094_R-%TT%0009401" AliasName="Strip4HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00095_R-%TT%0009501" AliasName="Strip5HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00096_R-%TT%0009601" AliasName="Strip6HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00097_R-%TT%0009701" AliasName="Strip7HasDataConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00098_R-%TT%0009801" AliasName="Strip8HasDataConflict" />
-              <!-- Clock conflict outputs for all 8 strips -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%00163_R-%TT%0016301" AliasName="Strip1HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00164_R-%TT%0016401" AliasName="Strip2HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00165_R-%TT%0016501" AliasName="Strip3HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00166_R-%TT%0016601" AliasName="Strip4HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00167_R-%TT%0016701" AliasName="Strip5HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00168_R-%TT%0016801" AliasName="Strip6HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00169_R-%TT%0016901" AliasName="Strip7HasClockConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00170_R-%TT%0017001" AliasName="Strip8HasClockConflict" />
-              <!-- Relay conflict outputs -->
-              <ParameterRefRef RefId="%AID%_UP-%TT%00133_R-%TT%0013301" AliasName="Relay1HasConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00134_R-%TT%0013401" AliasName="Relay2HasConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00137_R-%TT%0013701" AliasName="Relay3HasConflict" />
-              <ParameterRefRef RefId="%AID%_UP-%TT%00138_R-%TT%0013801" AliasName="Relay4HasConflict" />
-            </RParameters>
-            </ParameterCalculation>
-
-            <!-- Retired: a blanket reset here cleared every port on each ETS application update, because ETS
-                             re-evaluates calculations on update. The per-board parameter type offers only valid values
-                             (placeholder, ports, manual); NEO_CopyGPIOPortChecked copies it (missing value -> 15). -->
 
             <ParameterCalculation Id="%AID%_PC-%TT%00039" Language="JavaScript" Name="NetworkModuleVisibility" LRTransformationFunc="NEO_SetNetworkModuleVisibility" RLTransformationFunc="NEO_Empty">
               <LParameters>
@@ -1708,12 +1503,7 @@
                     <choose ParamRefId="%NEOHW_SelectRef%">
                       <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayManualGpio1']/*" />
                     </choose>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00133_R-%TT%0013301" IndentLevel="2" />
-                        <choose ParamRefId="%AID%_UP-%TT%00133_R-%TT%0013301">
-                          <when test="1">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="PORT KONFLIKT: Relais 1 verwendet einen bereits belegten Port. Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
-                          </when>
-                        </choose>
+                        <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Conflict_Relay1']/*" />
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Schaltverzögerungen (0 = sofort schalten)" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00139_R-%TT%0013901" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00140_R-%TT%0014001" IndentLevel="2" />
@@ -1742,12 +1532,7 @@
                     <choose ParamRefId="%NEOHW_SelectRef%">
                       <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayManualGpio2']/*" />
                     </choose>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00134_R-%TT%0013401" IndentLevel="2" />
-                        <choose ParamRefId="%AID%_UP-%TT%00134_R-%TT%0013401">
-                          <when test="1">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="PORT KONFLIKT: Relais 2 verwendet einen bereits belegten Port. Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
-                          </when>
-                        </choose>
+                        <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Conflict_Relay2']/*" />
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Schaltverzögerungen (0 = sofort schalten)" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00141_R-%TT%0014101" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00142_R-%TT%0014201" IndentLevel="2" />
@@ -1776,12 +1561,7 @@
                     <choose ParamRefId="%NEOHW_SelectRef%">
                       <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayManualGpio3']/*" />
                     </choose>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00137_R-%TT%0013701" IndentLevel="2" />
-                        <choose ParamRefId="%AID%_UP-%TT%00137_R-%TT%0013701">
-                          <when test="1">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="PORT KONFLIKT: Relais 3 verwendet einen bereits belegten Port. Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
-                          </when>
-                        </choose>
+                        <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Conflict_Relay3']/*" />
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Schaltverzögerungen (0 = sofort schalten)" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00143_R-%TT%0014301" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00144_R-%TT%0014401" IndentLevel="2" />
@@ -1810,12 +1590,7 @@
                     <choose ParamRefId="%NEOHW_SelectRef%">
                       <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayManualGpio4']/*" />
                     </choose>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00138_R-%TT%0013801" IndentLevel="2" />
-                        <choose ParamRefId="%AID%_UP-%TT%00138_R-%TT%0013801">
-                          <when test="1">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="PORT KONFLIKT: Relais 4 verwendet einen bereits belegten Port. Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
-                          </when>
-                        </choose>
+                        <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Conflict_Relay4']/*" />
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Schaltverzögerungen (0 = sofort schalten)" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00145_R-%TT%0014501" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00146_R-%TT%0014601" IndentLevel="2" />
