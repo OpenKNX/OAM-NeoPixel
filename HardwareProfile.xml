@@ -71,7 +71,7 @@
   <Generate template="src/hw/NeoPixel.hw.types.xml" output="src/NeoPixel.hw.types.gen.xml" />
   <Generate template="src/hw/NeoPixel.hw.relaytypes.xml" output="src/NeoPixel.hw.relaytypes.gen.xml" />
 
-  <!-- board-dependent elements, included per <Block> by NeoPixel.share.xml / NeoPixel.Hardware.templ.xml -->
+  <!-- board-dependent elements, included per <Block> by NeoPixel.share.xml / NeoPixel.Strip.templ.xml -->
   <Generate template="src/hw/NeoPixel.hw.share.xml" output="src/NeoPixel.hw.share.gen.xml" />
   <Generate template="src/hw/NeoPixel.hw.strip.xml" output="src/NeoPixel.hw.strip.gen.xml" />
 

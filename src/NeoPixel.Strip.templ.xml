@@ -22,20 +22,21 @@
                 <!-- Byte 2: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%033" Offset="2" BitOffset="0" Name="NEO%C%DataGPIO" ParameterType="%AID%_PT-NEODataGPIO" Text="Daten GPIO" Value="6"/>
                 <!-- Byte 2: Bit 7 = WhiteMode (below) -->
-                <!-- Byte 3: hardware Clock Port (8b): one parameter per board (NeoPixel.Hardware.templ.xml) and this carrier, the name the firmware reads -->
+                <!-- Byte 3: hardware Clock Port (8b): one parameter per board (NeoPixel.hw.strip.gen.xml) and this carrier, the name the firmware reads -->
                 <Parameter Id="%AID%_UP-%TT%9%C%077" Offset="3" BitOffset="0" Name="NEO%C%ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Clock Port" Value="15" Access="None" op:nowarn="true"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%073" Offset="4" BitOffset="6" Name="NEO%C%SignalPolarity" ParameterType="%AID%_PT-NEOSignalPolarity" Text="Signal-Polarität" Value="0"/>
                 <!-- Byte 4: 0..5 (6b) MOSI GPIO, 6..7 (2b) signal polarity -->
                 <Parameter Id="%AID%_UP-%TT%9%C%035" Offset="4" BitOffset="0" Name="NEO%C%SPIMOSIGPIO" ParameterType="%AID%_PT-NEOSPIMOSIGPIO" Text="Daten GPIO" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%074" Offset="2" BitOffset="7" Name="NEO%C%WhiteMode" ParameterType="%AID%_PT-NEOWhiteMode" Text="Weiß-Berechnung" Value="0"/>
-                <!-- Byte 5: hardware Data Port (8b): one parameter per board (NeoPixel.Hardware.templ.xml) and this carrier, the name the firmware reads;
+                <!-- Byte 5: hardware Data Port (8b): one parameter per board (NeoPixel.hw.strip.gen.xml) and this carrier, the name the firmware reads;
                      0-9 = port (port number - 1), 10 = manual, 15 = not selected -->
                 <Parameter Id="%AID%_UP-%TT%9%C%076" Offset="5" BitOffset="0" Name="NEO%C%DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Daten Port" Value="15" Access="None" op:nowarn="true"/>
                 
                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                     HARDWARE GPIO PARAMETERS (from Hardware.templ.xml)
+                     HARDWARE GPIO PARAMETERS: data and clock port per board (generated)
                      ═══════════════════════════════════════════════════════════════════════════════════ -->
-                <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/Parameters/*" />
+                <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataParameters']/*" />
+                <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockParameters']/*" />
                 
                 <!-- Byte 6-7: Length (14-bit) -->
                 <!-- Byte 6..7: 14b (NEOLength) -->
@@ -81,7 +82,7 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="24" BitOffset="3" Name="NEO%C%SPICLKMode" ParameterType="%AID%_PT-SPIClockMode" Text="SPI Takt" Value="0"/>
                 
                 <!-- NOTE: the GPIO conflict flags live in NeoPixel.share.xml (data 00091-00098, clock 00163-00170, relays 00133/00134/00137/00138),
-                     set by NEO_DetectGPIOConflicts; the strip page shows the data flag (NeoPixel.Hardware.templ.xml GPIOConflictStatus) -->
+                     set by NEO_DetectGPIOConflicts; the strip page shows the data flag (port assignment section below) -->
                 
               </Union>
             </Parameters>
@@ -119,9 +120,10 @@
               <ParameterRef Id="%AID%_UP-%TT%9%C%075_R-%TT%9%C%07501" RefId="%AID%_UP-%TT%9%C%075" />
               
               <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                   HARDWARE GPIO PARAMETER REFS (from Hardware.templ.xml)
+                   HARDWARE GPIO PARAMETER REFS: data and clock port per board (generated)
                    ═══════════════════════════════════════════════════════════════════════════════════ -->
-              <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/ParameterRefs/*" />
+              <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataParameterRefs']/*" />
+              <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockParameterRefs']/*" />
             </ParameterRefs>
             <ParameterCalculations>
             <ParameterCalculation Id="%AID%_PC-%TT%9%C%001" Language="JavaScript" Name="Strip%C%_LEDTypeParamCalc" LRTransformationFunc="NEO_LedTypeToRGB_%C%" RLTransformationFunc="NEO_Empty">
@@ -156,11 +158,10 @@
               </ParameterCalculation>
               
               <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                   HARDWARE GPIO CALCULATIONS (from Hardware.templ.xml)
+                   HARDWARE GPIO CALCULATIONS: copy the per-board port into the carriers (generated)
                    ═══════════════════════════════════════════════════════════════════════════════════ -->
-              <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/ParameterCalculations/*" />
-              
-              <!-- GPIO ParameterCalculations now in Hardware.templ.xml -->
+              <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataCopyCalculations']/*" />
+              <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockCopyCalculations']/*" />
             </ParameterCalculations>
             <ComObjectTable>
               <!-- Power -->
@@ -250,15 +251,38 @@
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Wählen Sie die Anschluss-Ports für die Daten- und (bei SPI-LEDs) Takt-Leitung. Die verfügbaren Ports sind hardwareabhängig. Beachten Sie die Dokumentation Ihrer OpenKNX-Hardware für die korrekte Port-Belegung und mögliche Port-Konflikte." UIHint="Information" />
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                           HARDWARE GPIO CONFLICT STATUS DISPLAY (from Hardware.templ.xml)
+                           HARDWARE GPIO CONFLICT STATUS DISPLAY
                            Shows red error when GPIO port conflicts detected
                            ═══════════════════════════════════════════════════════════════════════════════════ -->
-                      <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/GPIOConflictStatus/*" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01" IndentLevel="1" />
+                      <!-- NEO_DetectGPIOConflicts sets the data flag also for a clock conflict, so this one flag shows both;
+                           shown only while a hardware is selected (not 0) -->
+                      <choose ParamRefId="%NEOHW_SelectRef%">
+                        <when test="0">
+                          <!-- No hardware selected → no conflict check -->
+                        </when>
+                        <when default="true">
+                          <choose ParamRefId="%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01">
+                            <when test="1">
+                              <ParameterSeparator Id="%AID%_PS-gpioconflict%C%" Text="PORT KONFLIKT: Der Daten- oder Takt-Port dieses Streifens ist bereits belegt (anderer Streifen, Relais oder manueller GPIO). Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
+                            </when>
+                          </choose>
+                        </when>
+                      </choose>
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                           HARDWARE GPIO PORT SELECTION UI (from Hardware.templ.xml)
+                           HARDWARE GPIO PORT SELECTION UI: data port of the selected board (generated whens)
                            ═══════════════════════════════════════════════════════════════════════════════════ -->
-                      <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/GPIOPortSelection/*" />
+                      <choose ParamRefId="%NEOHW_SelectRef%">
+                        <when test="0">
+                          <ParameterSeparator Id="%AID%_PS-nohw%C%" Text="Keine Hardware ausgewählt! Bitte wählen Sie zuerst eine Hardware aus." UIHint="Error"/>
+                        </when>
+                        <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataPortSelect']/*" />
+                      </choose>
+                      <!-- Manual data GPIO while the data port is "Manuell" (value 10) -->
+                      <choose ParamRefId="%NEOHW_SelectRef%">
+                        <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataManualGpio']/*" />
+                      </choose>
 
                       
                       <!-- Clock Port Selection (only for SPI LEDs) -->
@@ -266,16 +290,44 @@
                         <!-- SPI-Chipsets: APA102(5), SK9822(6), WS2801(21), LPD8806(22), LPD6803(23), P9813(24), APA102-Clone(25) -->
                         <when test="5 6 21 22 23 24 25">
                           <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                               HARDWARE GPIO CLOCK SELECTION UI (from Hardware.templ.xml)
+                               HARDWARE GPIO CLOCK SELECTION UI: clock port of the selected board (generated whens)
                                ═══════════════════════════════════════════════════════════════════════════════════ -->
-                          <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/GPIOClockSelection/*" />
+                          <choose ParamRefId="%NEOHW_SelectRef%">
+                            <when test="0">
+                              <!-- no message, the data port shows it -->
+                            </when>
+                            <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockPortSelect']/*" />
+                          </choose>
+                          <!-- Manual clock GPIO while the clock port is "Manuell" (value 10) -->
+                          <choose ParamRefId="%NEOHW_SelectRef%">
+                            <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockManualGpio']/*" />
+                          </choose>
                         </when>
                       </choose>
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                           EXPERT NOTE FOR A MANUAL GPIO (from Hardware.templ.xml)
+                           EXPERT NOTE FOR A MANUAL GPIO
+                           while the data port, or the clock port of an SPI LED type, is "Manuell" (port value 10)
                            ═══════════════════════════════════════════════════════════════════════════════════ -->
-                      <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/ManualGpioWarning/*" />
+                      <!-- hidden references of the port parameters the choose blocks test -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01" IndentLevel="1" />
+                      <ParameterRefRef RefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01" IndentLevel="1" />
+                      <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
+                        <when test="10">
+                          <ParameterSeparator Id="%AID%_PS-nnn" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
+                        </when>
+                        <when default="true">
+                          <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+                            <when test="5 6 21 22 23 24 25">
+                              <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
+                                <when test="10">
+                                  <ParameterSeparator Id="%AID%_PS-nnn" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
+                                </when>
+                              </choose>
+                            </when>
+                          </choose>
+                        </when>
+                      </choose>
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
                             SPI CLOCK CONFIGURATION (only for SPI LEDs)

@@ -34,7 +34,6 @@ $patterns = @(
     "src/NeoPixel.Cue.part.xml"
     "src/NeoPixel.Segment.templ.xml"
     "src/NeoPixel.Strip.templ.xml"
-    "src/NeoPixel.Hardware.templ.xml"
     "src/NeoPixel.EM.templ.xml"
     "src/NeoPixel-Dev.xml"
     "src/NeoPixel-Release.xml"

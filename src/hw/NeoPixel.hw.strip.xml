@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-@@# Board-dependent parts of NeoPixel.Hardware.templ.xml (strip template, %C% = strip), one <Block> per include site.
+@@# Board-dependent parts of NeoPixel.Strip.templ.xml (strip template, %C% = strip), one <Block> per include site.
 @@# Data port of board $b: parameter %TT%0%C%(900 + index), clock port %TT%0%C%(950 + index); the copy
 @@# calculations %TT%9%C%080<index> / 089<index> concatenate the index unpadded. All boards share the byte of the
 @@# carriers NEO%C%DataPort / NEO%C%ClockPort (NeoPixel.Strip.templ.xml) that the firmware reads.
