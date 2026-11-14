@@ -8,5 +8,5 @@ c19d925 ec/v1dev-ec lib/knx https://github.com/OpenKNX/knx.git
 64a7c65 ec/feat-hw-profile lib/OFM-NeoPixel https://github.com/OpenKNX/OFM-NeoPixel
 d36b127 ec/v1dev-ec lib/OFM-Network https://github.com/OpenKNX/OFM-Network.git
 71adf03 ec/feat-flash-size lib/OGM-Common https://github.com/OpenKNX/OGM-Common.git
-ee247d6 ec/feat-hw-profile lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
+79609cf ec/feat-hw-profile lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
 5edaf0e ec/main lib/TPUart https://github.com/OpenKNX/tpuart
