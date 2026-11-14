@@ -10,7 +10,7 @@ Der GPIO-Pin für die Daten des LED-Streifens, wenn bei „Daten Port“ die Aus
 
 **Wichtige Hinweise:**
 
-- Pins, die das Gerät für KNX (TX/RX), den Save-Pin, seine Taster (Prog, Funktion), seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, lehnt die Firmware ab: der Streifen bleibt dann aus (Log: „REFUSED“)
+- Pins, die das Gerät für KNX (TX/RX, nur bei einer TP-Firmware), den Save-Pin, seine Taster (Prog, Funktion), seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C5 16–18 und 20–22, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, lehnt die Firmware ab: der Streifen bleibt dann aus (Log: „REFUSED“). ETS meldet einen solchen GPIO schon bei der Eingabe („GPIO reserviert“); bei einer Hardware mit TP- und IP-Firmware (KNeoPiX ESP32-S3) steht für die KNX-Pins ein Hinweis, weil ETS die geladene Firmware nicht kennt
 - Nutzt ein Relais oder ein vorheriger Streifen denselben GPIO schon, lehnt die Firmware den späteren Streifen ab und er bleibt aus (Log: „REFUSED“); ein SPI-Streifen belegt MOSI und Takt nur gemeinsam.
 - ESP32 (klassisch): GPIO 34–39 sind nur Eingänge
 - Ohne Auswahl bei „Daten Port“ („Wählen Sie bitte ein Port aus“) bleibt der Streifen aus

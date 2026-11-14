@@ -88,8 +88,18 @@
        use the MOSI GPIO and the clock, every other type the data GPIO. Relays: per-board port parameters of
        NeoPixel.hw.share.xml; relay r of a board with r hard-wired relays has no port, its pin is occupied whatever the
        relay count. -->
-  <Conflicts output="src/NeoPixel.hw.conflicts.gen.xml" number="900"
-             error="GPIO-Konflikt: {text} nutzt denselben GPIO wie ein anderer Streifen, ein Relais oder ein manueller GPIO. Bitte einen freien Port oder GPIO wählen.">
+  <!-- reserved="true": a signal on a GPIO the selected board uses itself shows the reserved error (flag 2); the same set is
+       HardwareProfile::isReservedGpio, with which the firmware refuses such a strip or relay. Reserved without a list: the pins
+       OGM-Common drives (PROG_BUTTON/LED, INFO LEDs, OPENKNX_SERIALLED_PIN, FUNC buttons, SAVE_INTERRUPT), the KNX UART of a TP
+       build and the ESP32 flash / PSRAM bus. The list below adds the pins NeoPixel refuses on top: status LED of the KNeoPix
+       MINI, power pin of the serial LED, Ethernet PHY of the QuinLED and Gledopto Ethernet boards. -->
+  <ReservedPins macros="NEOPIX_LED_PIN NEOPIX_LED_POWER_PIN OPENKNX_SERIALLED_POWER_PIN" />
+  <ReservedPins macros="QUINLED_ETHERNET_POWER_GPIO QUINLED_ETHERNET_CLK_MODE QUINLED_ETHERNET_CLK_OUT_GPIO QUINLED_ETHERNET_CLK_IN_GPIO QUINLED_ETHERNET_TX_EN_GPIO QUINLED_ETHERNET_TXEN_GPIO QUINLED_ETHERNET_MDC_GPIO QUINLED_ETHERNET_MDIO_GPIO QUINLED_ETHERNET_TXD0_GPIO QUINLED_ETHERNET_TXD1_GPIO QUINLED_ETHERNET_RXD0_GPIO QUINLED_ETHERNET_RXD1_GPIO QUINLED_ETHERNET_CRS_DV_GPIO" />
+  <ReservedPins macros="GLEDOPTO_ETHERNET_CLK_IN_GPIO GLEDOPTO_ETHERNET_POWER_GPIO GLEDOPTO_ETHERNET_MDC_GPIO GLEDOPTO_ETHERNET_MDIO_GPIO GLEDOPTO_ETHERNET_TXEN_GPIO GLEDOPTO_ETHERNET_TXD0_GPIO GLEDOPTO_ETHERNET_TXD1_GPIO GLEDOPTO_ETHERNET_RXD0_GPIO GLEDOPTO_ETHERNET_RXD1_GPIO GLEDOPTO_ETHERNET_CRS_DV_GPIO" />
+  <Conflicts output="src/NeoPixel.hw.conflicts.gen.xml" number="900" reserved="true"
+             error="GPIO-Konflikt: {text} nutzt denselben GPIO wie ein anderer Streifen, ein Relais oder ein manueller GPIO. Bitte einen freien Port oder GPIO wählen."
+             reservedError="GPIO reserviert: {text} nutzt einen GPIO, den die gewählte Hardware selbst belegt (KNX, Taster, LED, Flash-Speicher oder Ethernet). Die Firmware schaltet den Anschluss nicht ein."
+             tpError="Hinweis: {text} nutzt den GPIO der KNX-TP-Schnittstelle dieser Hardware. Eine TP-Firmware schaltet den Anschluss nicht ein, mit einer IP-Firmware ist der GPIO frei.">
     <Param name="Strips" ref="%AID%_UP-%TT%00020_R-%TT%0002001" />
     <Param name="Relays" ref="%AID%_UP-%TT%00130_R-%TT%0013001" />
     <Param name="Type1" ref="%AID%_UP-%TT%91030_R-%TT%9103001" />
