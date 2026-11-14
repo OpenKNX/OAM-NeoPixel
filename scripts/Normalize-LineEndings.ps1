@@ -23,7 +23,7 @@ param(
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
-# Files and globs written or spliced by Build-EffectParameters.ps1 / Build-HardwareConfig.ps1
+# Files and globs written or spliced by Build-EffectParameters.ps1 and the hardware generator
 # (Help_de/*.md also covers the hand-written help files in that folder)
 $patterns = @(
     "src/NeoPixel.share.xml"
@@ -39,10 +39,10 @@ $patterns = @(
     "src/NeoPixel-Dev.xml"
     "src/NeoPixel-Release.xml"
     "src/NeoPixel.script.js"
+    "src/NeoPixel.script.src.js"
     "src/NeoPixel.Effects.*.generated.xml"
     "src/EffectTypeMapping.h"
     "src/EffectParameterMapping.h"
-    "src/HardwareMappingData.h"
     "src/HardwareMappingLogic.h"
     "src/EffectIds.lock"
     "src/Baggages/Help_de/*.md"

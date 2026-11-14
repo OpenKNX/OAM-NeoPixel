@@ -83,9 +83,9 @@
                                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Szene %SZ%" UIHint="Headline" />
 
                                 <!-- Effect Type -->
-                                <choose ParamRefId="%AID%_UP-4000018_R-400001801">
-                                  <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
-                                  <when test="65534">
+                                <choose ParamRefId="%NEOHW_SelectRef%">
+                                  <!-- hardware built with NEOPIXEL_DISABLE_2D (token from OGM-HardwareConfig/generator, HardwareProfile.xml) -->
+                                  <when test="%NEOHW_CAP_No2D%">
                                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+19%_R-%TT%%CC%%PPP+19%01" IndentLevel="2" HelpContext="NEO-Effekt-Typ-Szene"/>
                                   </when>
                                   <when default="true">

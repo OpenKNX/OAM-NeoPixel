@@ -4,79 +4,168 @@
      This file is included by NeoPixel.Strip.templ.xml via op:include
      Contains hardware-specific GPIO parameters and calculations
      ═══════════════════════════════════════════════════════════════════════════════════════════════ -->
-<HardwareGPIOConfig xmlns="http://knx.org/xml/project/20">
+<HardwareGPIOConfig xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
   <!-- PARAMETERS: Hardware-specific GPIO Port/Clock definitions -->
   <Parameters>
-    <!-- BEGIN AUTO-GENERATED: GPIO Port Selection Parameter -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Port Selection Parameter -->
+    <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataParameters']/*" />
 
-    <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection Parameter -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Clock Selection Parameter -->
+    <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockParameters']/*" />
 
-    <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result Parameters -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Conflict Result Parameters -->
   </Parameters>
 
   <!-- PARAMETER REFS: References to hardware GPIO parameters -->
   <ParameterRefs>
-    <!-- BEGIN AUTO-GENERATED: GPIO Port Selection ParameterRef -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Port Selection ParameterRef -->
+    <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataParameterRefs']/*" />
 
-    <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRef -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRef -->
-    <!-- BEGIN AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Conflict Result ParameterRefs -->
+    <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockParameterRefs']/*" />
   </ParameterRefs>
 
   <!-- UI ELEMENTS: Hardware-specific GPIO UI choose/when blocks -->
   <UIElements>
     <!-- GPIO Conflict Status Display (for conflict warnings) -->
     <GPIOConflictStatus>
-      <!-- BEGIN AUTO-GENERATED: GPIO Conflict Status Display -->
-      <!-- Cleaned - Ready for regeneration -->
-      <!-- END AUTO-GENERATED: GPIO Conflict Status Display -->
+      <ParameterRefRef RefId="%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01" IndentLevel="1" />
+      <!-- Hidden Clock conflict parameter references -->
+      <!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->
+      <!-- Only show conflict warning if Hardware is selected (NOT 0) -->
+      <choose ParamRefId="%NEOHW_SelectRef%">
+        <when test="0">
+          <!-- No hardware selected → no conflict check -->
+        </when>
+        <when default="true">
+          <!-- Hardware selected → check for conflicts -->
+          <choose ParamRefId="%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01">
+            <when test="1">
+              <ParameterSeparator Id="%AID%_PS-gpioconflict%C%" Text="PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem anderen physikalischen LED-Streifen verwendet. Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
+            </when>
+          </choose>
+        </when>
+      </choose>
     </GPIOConflictStatus>
     
     <!-- GPIO Port Selection UI -->
     <GPIOPortSelection>
-      <!-- BEGIN AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->
-      <!-- Cleaned - Ready for regeneration -->
-      <!-- END AUTO-GENERATED: GPIO Port Selection ParameterRefRef -->
+      <!-- Hardware-specific Data GPIO Selection - shows correct ports for each hardware -->
+      <choose ParamRefId="%NEOHW_SelectRef%">
+        <!-- Keine Hardware ausgewählt (Wert 0) -->
+        <when test="0">
+          <!-- Show error message: Hardware must be selected first -->
+          <ParameterSeparator Id="%AID%_PS-nohw%C%" Text="Keine Hardware ausgewählt! Bitte wählen Sie zuerst eine Hardware aus." UIHint="Error"/>
+        </when>
+        <!-- OpenKNX UP1 UART Gateway -->
+        <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataPortSelect']/*" />
+        <when default="true">
+          <!-- Fallback to manual input -->
+          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%033_R-%TT%9%C%03301" IndentLevel="2" HelpContext="NEO-Daten-GPIO"/>
+        </when>
+      </choose>
+      <!-- Manual Data GPIO input field when set to 'Manuell' (value 10) -->
+      <choose ParamRefId="%NEOHW_SelectRef%">
+        <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataManualGpio']/*" />
+        <when default="true">
+          <choose ParamRefId="%AID%_UP-%TT%9%C%033_R-%TT%9%C%03301">
+            <when test="10">
+              <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+                <when test="5 6 21 22 23 24 25">
+                  <!-- MOSI GPIO nur bei SPI -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%035_R-%TT%9%C%03501" IndentLevel="3" HelpContext="NEO-MOSI-GPIO"/>
+                </when>
+                <when default="true">
+                  <!-- Data GPIO -->
+                  <ParameterRefRef RefId="%AID%_UP-%TT%9%C%033_R-%TT%9%C%03301" IndentLevel="3" HelpContext="NEO-GPIO-manuell-konfigurieren"/>
+                </when>
+              </choose>
+            </when>
+          </choose>
+        </when>
+      </choose>
     </GPIOPortSelection>
     
     <!-- GPIO Clock Selection UI -->
     <GPIOClockSelection>
-      <!-- BEGIN AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
-      <!-- Cleaned - Ready for regeneration -->
-      <!-- END AUTO-GENERATED: GPIO Clock Selection ParameterRefRef -->
+      <!-- Hardware-specific Clock GPIO Selection - shows correct ports for each hardware -->
+      <choose ParamRefId="%NEOHW_SelectRef%">
+        <!-- Keine Hardware ausgewählt (Wert 0) -->
+        <when test="0">
+          <!-- Clock: Hardware not selected - no message (Data already shows it) -->
+          <!-- <ParameterSeparator Id="%AID%_PS-nohwclock%C%" Text=""/> -->
+        </when>
+        <!-- OpenKNX UP1 UART Gateway -->
+        <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockPortSelect']/*" />
+        <when default="true">
+          <!-- Fallback to manual input -->
+          <ParameterRefRef RefId="%AID%_UP-%TT%9%C%034_R-%TT%9%C%03401" IndentLevel="2" HelpContext="NEO-Clock-GPIO"/>
+        </when>
+      </choose>
+      <!-- Manual Clock GPIO input field when set to 'Manuell' (value 10) -->
+      <choose ParamRefId="%NEOHW_SelectRef%">
+        <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockManualGpio']/*" />
+        <when default="true">
+          <choose ParamRefId="%AID%_UP-%TT%9%C%034_R-%TT%9%C%03401">
+            <when test="10">
+              <ParameterRefRef RefId="%AID%_UP-%TT%9%C%034_R-%TT%9%C%03401" IndentLevel="3" HelpContext="NEO-SPI-Takt-manuell-konfigurieren"/>
+            </when>
+          </choose>
+        </when>
+      </choose>
     </GPIOClockSelection>
     
     <!-- GPIO Conflict Warning UI -->
     <GPIOConflictWarning>
-      <!-- BEGIN AUTO-GENERATED: Central Manual GPIO Warning -->
-      <!-- Cleaned - Ready for regeneration -->
-      <!-- END AUTO-GENERATED: Central Manual GPIO Warning -->
+      <!-- Zentrale Warnung: Zeige Warnung wenn Data oder Clock Port auf "Manuell" gesetzt ist -->
+      <!-- Hidden parameter references -->
+      <ParameterRefRef RefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01" IndentLevel="1" />
+      <ParameterRefRef RefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01" IndentLevel="1" />
+      <!-- Data Port = Manuell OR (LED is SPI AND Clock Port = Manuell) -->
+      <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
+        <when test="10">
+          <!-- Data Port is Manuell → show warning (regardless of Clock Port) -->
+        </when>
+        <when default="true">
+          <!-- Data Port NOT Manuell → check if Clock Port is Manuell for SPI LEDs -->
+          <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+            <when test="5 6 21 22 23 24 25">
+              <!-- LED type is SPI → check Clock Port -->
+              <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
+                <when test="10">
+                  <!-- Clock Port is Manuell → show warning -->
+                </when>
+              </choose>
+            </when>
+          </choose>
+        </when>
+      </choose>
+      <!-- Single ParameterSeparator shown if ANY of the above conditions matched -->
+      <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
+        <when test="10">
+          <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
+        </when>
+      </choose>
+      <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
+        <when test="5 6 21 22 23 24 25">
+          <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
+            <when test="10">
+              <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
+                <when test="10">
+                  <!-- Data already Manuell → warning already shown above, skip -->
+                </when>
+                <when default="true">
+                  <!-- Only Clock is Manuell → show warning -->
+                  <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
+                </when>
+              </choose>
+            </when>
+          </choose>
+        </when>
+      </choose>
     </GPIOConflictWarning>
   </UIElements>
 
   <!-- PARAMETER CALCULATIONS: Hardware GPIO copy logic -->
   <ParameterCalculations>
-    <!-- BEGIN AUTO-GENERATED: GPIO Copy ParameterCalculation -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Copy ParameterCalculation -->
+    <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='DataCopyCalculations']/*" />
 
-    <!-- BEGIN AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Clock Copy ParameterCalculation -->
+    <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockCopyCalculations']/*" />
 
-    <!-- BEGIN AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->
-    <!-- Cleaned - Ready for regeneration -->
-    <!-- END AUTO-GENERATED: GPIO Conflict Check ParameterCalculations -->
   </ParameterCalculations>
 </HardwareGPIOConfig>

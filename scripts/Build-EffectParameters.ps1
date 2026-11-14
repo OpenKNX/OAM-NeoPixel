@@ -578,7 +578,7 @@ if ($Clean) {
   Write-Host "    • Empty Effect Type Enumeration in share.xml" -ForegroundColor DarkGray
   Write-Host "    • Empty Scene Effect Enumeration in share.xml" -ForegroundColor DarkGray
   Write-Host "    • Empty Cue Effect Enumeration in EM.share.xml" -ForegroundColor DarkGray
-  Write-Host "    • Empty Scene Effect Defaults in script.js" -ForegroundColor DarkGray
+  Write-Host "    • Empty Scene Effect Defaults in script.src.js" -ForegroundColor DarkGray
 
   Write-Host "  " -NoNewline
   Write-Host ("─" * 116) -ForegroundColor DarkGray
@@ -786,8 +786,8 @@ if ($Clean) {
     Write-Host "    ✓ NeoPixel.Scene.part.xml - Scene effect marker blocks emptied" -ForegroundColor Green
   }
 
-  # 7. Empty Scene Effect Defaults in NeoPixel.script.js
-  $scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.js"
+  # 7. Empty Scene Effect Defaults in NeoPixel.script.src.js
+  $scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.src.js"
   if (Test-Path $scriptJsPath) {
     $content = Get-Content $scriptJsPath -Raw -Encoding UTF8
 
@@ -811,7 +811,7 @@ if ($Clean) {
     $content = $content -replace $pattern, ('$1var NEO_StudioEffectParameters = {};' + [Environment]::NewLine + '$2')
 
     Set-Content -Path $scriptJsPath -Value $content -NoNewline -Encoding UTF8
-    Write-Host "    ✓ NeoPixel.script.js - Scene Effect Defaults emptied" -ForegroundColor Green
+    Write-Host "    ✓ NeoPixel.script.src.js - Scene Effect Defaults emptied" -ForegroundColor Green
   }
 
   # 8. Empty Cue part.xml marker blocks
@@ -1667,7 +1667,7 @@ function Generate-EffectMappingCpp {
   $currentYear = 2026   # fixed -> deterministic output (no per-build churn); bump when needed
   $cppLines = @()
 
-  # Header comment (matching HardwareMappingData.h style)
+  # Header comment
   $cppLines += "/**"
   $cppLines += " * @file EffectTypeMapping.h"
   $cppLines += " * @brief Effect Type ID to EffectPool Instance Mapping (Auto-Generated)"
@@ -4350,7 +4350,7 @@ foreach ($effect in $effects | Sort-Object { [int]$_.EffectID }) {
   $names = @($effect.Parameters | ForEach-Object { $effectNameClean + ($_.Name -replace $script:Config.CleanPatterns.RemoveSpacesHyphens, '') })
   $studioNames[[string]$effect.EffectID] = $names
 }
-$studioScriptPath = Resolve-RepoPath "src/NeoPixel.script.js"
+$studioScriptPath = Resolve-RepoPath "src/NeoPixel.script.src.js"
 $studioScript = Get-Content $studioScriptPath -Raw
 $studioBlock = "// BEGIN AUTO-GENERATED: Studio ETS parameter names`nvar NEO_StudioEffectParameters = " + ($studioNames | ConvertTo-Json -Depth 4 -Compress) + ";`n// END AUTO-GENERATED: Studio ETS parameter names"
 if ($studioScript.Contains('// BEGIN AUTO-GENERATED: Studio ETS parameter names')) {
@@ -4423,36 +4423,36 @@ Set-Content -Path $cppMappingPath -Value $existingCpp -Encoding UTF8 -NoNewline
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "loadSceneEffectParameters() added to C++ mapping header" -ForegroundColor White
 
-# 5d. Scene Effect Defaults JS (for NeoPixel.script.js)
+# 5d. Scene Effect Defaults JS (for NeoPixel.script.src.js)
 $sceneDefaultsJS = Generate-SceneEffectDefaultsJS -Effects $effects
-$scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.js"
+$scriptJsPath = Resolve-RepoPath "src/NeoPixel.script.src.js"
 if (Test-Path $scriptJsPath) {
   $jsUpdateSuccess = Update-ScriptJS -ScriptPath $scriptJsPath -DefaultsContent $sceneDefaultsJS
   if ($jsUpdateSuccess) {
     Write-Host "  [OK] " -NoNewline -ForegroundColor Green
-    Write-Host "Scene effect defaults injected into script.js" -ForegroundColor White
+    Write-Host "Scene effect defaults injected into script.src.js" -ForegroundColor White
     Write-Host "       $scriptJsPath" -ForegroundColor DarkGray
   }
   else {
     Write-Host "  [WARN] " -NoNewline -ForegroundColor Yellow
-    Write-Host "Failed to update Scene Effect Defaults in script.js" -ForegroundColor White
+    Write-Host "Failed to update Scene Effect Defaults in script.src.js" -ForegroundColor White
   }
 
-  # 5e. Scene Effect Defaults Function JS (for NeoPixel.script.js)
+  # 5e. Scene Effect Defaults Function JS (for NeoPixel.script.src.js)
   $sceneDefaultsFunc = Generate-SceneEffectDefaultsFunction -Effects $effects
   $jsFuncSuccess = Update-ScriptJSFunction -ScriptPath $scriptJsPath -FunctionContent $sceneDefaultsFunc
   if ($jsFuncSuccess) {
     Write-Host "  [OK] " -NoNewline -ForegroundColor Green
-    Write-Host "Scene effect defaults function injected into script.js" -ForegroundColor White
+    Write-Host "Scene effect defaults function injected into script.src.js" -ForegroundColor White
   }
   else {
     Write-Host "  [WARN] " -NoNewline -ForegroundColor Yellow
-    Write-Host "Failed to update Scene Effect Defaults Function in script.js" -ForegroundColor White
+    Write-Host "Failed to update Scene Effect Defaults Function in script.src.js" -ForegroundColor White
   }
 }
 else {
   Write-Host "  [SKIP] " -NoNewline -ForegroundColor Yellow
-  Write-Host "NeoPixel.script.js not found: $scriptJsPath" -ForegroundColor White
+  Write-Host "NeoPixel.script.src.js not found: $scriptJsPath" -ForegroundColor White
 }
 
 # 6. Help Files (Markdown)
@@ -4590,6 +4590,12 @@ try {
     # FINAL VALIDATION: Test with OpenKNXproducer (optional)
     # ============================================================
     if (-not $SkipOpenKNXproducer) {
+      # The producer reads src/NeoPixel.script.js and the hardware generator outputs (not committed): assemble
+      # them from the current sources first, as Build-Release does, so this run validates the current state
+      Write-Host "  Generating hardware files (HardwareProfile.xml)..." -ForegroundColor Cyan
+      $global:LASTEXITCODE = 0
+      & (Resolve-RepoPath "lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1") -Manifest (Resolve-RepoPath "HardwareProfile.xml")
+      if ($global:LASTEXITCODE -ne 0) { throw "Hardware generation failed (lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1)" }
       # Validate against Dev XML (primary) — same template used by Release
       $testResult = Test-OpenKNXproducer -WorkingDir "." `
         -HeaderFile "include/knxprod.h" `

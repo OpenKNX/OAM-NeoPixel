@@ -5,6 +5,7 @@
 #include "ColorManagement.h"
 #include "EffectConfiguration.h"
 #include "HardwareMappingLogic.h"
+#include "HardwareProfileData.h"
 #include "NeoPixelTimingSelection.h"
 #include "SceneManager.h"
 #include "SegmentController.h"
@@ -287,15 +288,13 @@ void NeoPixelBusModule::loop(bool configured)
         if (now - _lastHwMismatchWarning >= 5000)
         { // Every 5 seconds
             _lastHwMismatchWarning = now;
-#ifdef DEVICE_HW_ID
-    #ifdef ParamNEO_NeoPixelHardwareSelect
-            uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
+            const uint16_t selectedHwId = selectedHardwareId();
 
-            if (selectedHwId == 255)
+            if (selectedHwId == HW_SELECT_NONE)
             {
-                // ETS has dummy value - user hasn't configured hardware yet
+                // no hardware selected in the ETS channel "Hardware" yet
                 const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
-                logErrorP("*** No hardware configured! Use 'Hardware auto-detect' button in ETS or manually select: %s (ID: 0x%04X)",
+                logErrorP("*** No hardware selected! ETS channel 'Hardware': select %s (ID: 0x%04X) or use 'Hardware vom Geraet abfragen'",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
             }
             else
@@ -307,8 +306,6 @@ void NeoPixelBusModule::loop(bool configured)
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID,
                           etsHwName ? etsHwName : "other hardware", selectedHwId);
             }
-    #endif
-#endif
         }
     }
 
@@ -3400,10 +3397,14 @@ int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
     return (int)idx;
 }
 
-// FunctionProperty: Handle ETS online functions (hardware detection)
+// FunctionProperty: device query of the hardware module (158/4) and the Studio readback (158/10)
 bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength)
 {
-    // Not our hardware-detection object/property? Silently decline so another module can handle it
+    // Button "Hardware vom Geraet abfragen" (generated NEOHW script): device query 158/4, answer generated into HardwareProfileData.h
+    if (HardwareProfile::answerQuery(objectIndex, propertyId, resultData, resultLength))
+        return true;
+
+    // Not our Studio object/property? Silently decline so another module can handle it
     // (e.g. the FileTransfer server on ObjectIndex 159). Do NOT log here: FunctionProperty is hit at
     // flood rate during an FTC upload, and a log PER FRAME stalls the blocking USB-CDC -> the loop
     // misses its watchdog feed -> the KNeoPix reboots mid-upload (same class as the router's TP print
@@ -3420,33 +3421,10 @@ bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t pro
         return true;
     }
 #endif
-    if (!data || length != 1 || data[0] != 0)
-    {
-        resultData[0] = 5;
-        resultLength = 1;
-        return true;
-    }
-    logDebugP("==> processFunctionProperty (hardware detection): ObjectIndex=%d, PropertyId=%d, Length=%d", objectIndex, propertyId, length);
-
-// Read hardware ID from compile-time define
-#ifdef DEVICE_HW_ID
-    uint16_t hwId = DEVICE_HW_ID;
-
-    // Return format: [0, hwId_high, hwId_low]
-    resultData[0] = 0;             // Success
-    resultData[1] = (hwId >> 8);   // High byte
-    resultData[2] = (hwId & 0xFF); // Low byte
-    resultLength = 3;
-
-    logDebugP("==> Hardware detection SUCCESS: DEVICE_HW_ID = 0x%04X (resultLength=%d)", hwId, resultLength);
-    return true;
-#else
-    // Hardware ID not defined in build
-    resultData[0] = 2; // Error: hardware ID not available
+    // anything else on 158/10 (e.g. the hardware detection of an application before the hardware module): not supported
+    resultData[0] = 5;
     resultLength = 1;
-    logErrorP("Hardware detection failed: DEVICE_HW_ID not defined");
-    return false;
-#endif
+    return true;
 }
 
 // =============================================================================
@@ -3464,11 +3442,11 @@ void NeoPixelBusModule::initializeGpioPins()
     // NOTE: WS2812 LEDs will RESET but keep their previous color in latches!
     // To actually turn LEDs OFF, we must send RGB(0,0,0) via the timing protocol
     // (this happens later in configureFromETS() after strip creation)
-    for (uint8_t portIndex = 0; portIndex < NEOPIXEL_HW_PORT_COUNT; portIndex++)
+    for (uint8_t portIndex = 0; portIndex < HW_PORT_COUNT; portIndex++)
     {
-        uint8_t gpio = mapPortIndexToGpio(portIndex);
+        uint8_t gpio = hwPortGpio(portIndex);
 
-        // Skip undefined GPIOs (255 = not defined in platformio.hardware.ini)
+        // Skip undefined GPIOs (255 = no HW_PORT_<n>_GPIO in the board header)
         if (gpio == 255) continue;
 
         // Robust GPIO initialization to prevent undefined LED states
@@ -3516,37 +3494,30 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // Initialize the OFM-NeoPixel module first
     if (!_neoPixel.getManager()) _neoPixel.init();
 
-// Log hardware configuration and check for mismatch
-#ifdef DEVICE_HW_ID
-    uint8_t hwIndex = getCurrentHardwareIndex();
+    // Log hardware configuration and check for mismatch
     const char* hwName = hardwareNameForId(DEVICE_HW_ID);
-    logInfoP("Hardware: %s (ID: 0x%04X, Index: %d) - Compile-time mode",
-             hwName ? hwName : "Unknown", DEVICE_HW_ID, hwIndex);
+    logInfoP("Hardware: %s (ID: 0x%04X)", hwName ? hwName : "Unknown", DEVICE_HW_ID);
 
-    // Check if ETS configuration matches compiled hardware.
-    // The ETS hardware selection stores the unique DEVICE_HW_ID (build-independent identity),
-    // so we compare it directly against this firmware's compiled DEVICE_HW_ID. This is robust
-    // regardless of how many hardware variants the firmware/product was built with, and stays
-    // valid across firmware/ETS updates (adding/removing other hardware cannot shift it).
-    #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
-    if (selectedHwId != DEVICE_HW_ID)
+    // The ETS hardware selection (module NEOHW) stores the DEVICE_HW_ID; any other value - also "not selected" -
+    // means the port bytes hold no value for this board, so no port byte value is used (strips and relays off).
+    const uint16_t selectedHwId = selectedHardwareId();
+    _hwConfigMismatch = !hardwareSelectionMatches(selectedHwId);
+    if (_hwConfigMismatch)
     {
-        _hwConfigMismatch = true;
         const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
         const char* etsHwName = hardwareNameForId(selectedHwId);
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
         logErrorP("  Compiled for:  %s (ID: 0x%04X)",
                   compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
         logErrorP("  ETS configured: %s (ID: 0x%04X)",
-                  etsHwName ? etsHwName : (selectedHwId == 255 ? "no hardware selected" : "other hardware"), selectedHwId);
+                  etsHwName ? etsHwName : (selectedHwId == HW_SELECT_NONE ? "no hardware selected" : "other hardware"), selectedHwId);
         logErrorP("  GPIO Port configuration from ETS will be IGNORED, to prevent damage and unexpected behaviors!");
         logErrorP("  Please Choose the correct Hardware in ETS or use correct firmware for this device.");
         logErrorP("!!!! HARDWARE MISMATCH !!!!");
 
-        if (selectedHwId == 255)
+        if (selectedHwId == HW_SELECT_NONE)
         {
-            // No hardware configured in ETS (dummy value)
+            // No hardware selected in ETS
             setErrorBlink(NEO_ERROR_NO_HW_CONFIGURED); // 2× blink
         }
         else
@@ -3555,23 +3526,6 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             setErrorBlink(NEO_ERROR_HW_MISMATCH); // 1× blink
         }
     }
-    else
-    {
-        _hwConfigMismatch = false;
-    }
-    #endif
-#else
-    #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
-    const char* hwName = hardwareNameForId(selectedHwId);
-    logInfoP("Hardware: %s (ID: 0x%04X) - ETS runtime selection",
-             hwName ? hwName : "Unknown", selectedHwId);
-    _hwConfigMismatch = false; // No mismatch in runtime mode
-    #else
-    logWarningP("Hardware selection not available - using default configuration");
-    _hwConfigMismatch = false;
-    #endif
-#endif
 
     // Track used GPIO pins to avoid conflicts
     std::vector<uint8_t> usedPins;
@@ -3689,25 +3643,28 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // GPIO of one strip signal from its ETS port selection (0-9 port, 10 manual, else not selected);
     // 255 = no GPIO, the strip stays off. log = false for the pre-scan, which runs before the build.
     auto resolveStripGpio = [&](uint8_t stripIdx, const char* signal, uint8_t portSelection, uint8_t manualGpio, bool log) -> uint8_t {
-        switch (classifyPortSelection(portSelection))
+        const uint8_t gpio = portSelectionGpio(portSelection, manualGpio, !_hwConfigMismatch);
+        // a hard-wired relay pin (HW_RELAY_<n>_GPIO) is never LED data, whatever the relay count: neither a port value
+        // stored before the relay port left the port list nor a manual GPIO
+        if (isHwRelayGpio(gpio))
         {
-            case PortSelectionKind::Manual:
-                return manualGpio;
-            case PortSelectionKind::HardwarePort:
+            if (log)
             {
-                if (_hwConfigMismatch)
-                {
-                    if (log) logErrorP("Strip %d: %s port ignored - hardware mismatch, select the GPIO manually", stripIdx, signal);
-                    return 255;
-                }
-                const uint8_t gpio = mapPortIndexToGpio(portSelection);
-                if (gpio == 255 && log) logErrorP("Strip %d: %s port %d does not exist on this hardware", stripIdx, signal, portSelection + 1);
-                return gpio;
+                if (classifyPortSelection(portSelection) == PortSelectionKind::Manual)
+                    logErrorP("Strip %d: %s manual GPIO %d is the relay output of this hardware - strip disabled", stripIdx, signal, gpio);
+                else
+                    logErrorP("Strip %d: %s port %d is the relay output GPIO %d of this hardware - strip disabled", stripIdx, signal, portSelection + 1, gpio);
             }
-            default:
-                if (log) logWarningP("Strip %d: no %s port selected in ETS (value %d) - strip disabled", stripIdx, signal, portSelection);
-                return 255;
+            return 255;
         }
+        if (!log) return gpio;
+        if (_hwConfigMismatch)
+            logErrorP("Strip %d: %s port ignored - the ETS hardware selection is not this board", stripIdx, signal);
+        else if (classifyPortSelection(portSelection) == PortSelectionKind::HardwarePort && gpio == 255)
+            logErrorP("Strip %d: %s port %d does not exist on this hardware", stripIdx, signal, portSelection + 1);
+        else if (classifyPortSelection(portSelection) == PortSelectionKind::NotSelected)
+            logWarningP("Strip %d: no %s port selected in ETS (value %d) - strip disabled", stripIdx, signal, portSelection);
+        return gpio;
     };
 
     // Configure external relays (max derived from knxprod.h) and reserve their GPIO pins
@@ -3733,7 +3690,10 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             }
             else
             {
+                // relay n <= HW_RELAY_COUNT is hard-wired: GPIO from the board header, its port byte is ignored;
+                // every further relay takes its port byte (as on boards without hard-wired relays)
                 auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
+                    if (relayIndex < hwRelayCount()) return hwRelayGpio(relayIndex);
                     // Get port selection from ETS
                     uint8_t portIndex;
                     switch (relayIndex)
@@ -3773,7 +3733,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                     {
                         return 255;
                     }
-                    return mapPortIndexToGpio(portIndex);
+                    return hwPortGpio(portIndex);
                 };
 
                 for (uint8_t i = 0; i < _relayCount; ++i)
@@ -3823,22 +3783,22 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     #if defined(ParamNEO_NEOExternalRelay1BeforeRestart) && defined(ParamNEO_NEOExternalRelay1AfterRestart)
                     if (i == 0) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay1BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay1AfterRestart; }
     #elif defined(NEO_KoExternalRelay1)
-        #error "knxprod.h lacks the restart parameters of relay 1 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+        #error "knxprod.h lacks the restart parameters of relay 1 - regenerate it (scripts/Build-Release.ps1: hardware generator, OpenKNXproducer)"
     #endif
     #if defined(ParamNEO_NEOExternalRelay2BeforeRestart) && defined(ParamNEO_NEOExternalRelay2AfterRestart)
                     if (i == 1) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay2BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay2AfterRestart; }
     #elif defined(NEO_KoExternalRelay2)
-        #error "knxprod.h lacks the restart parameters of relay 2 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+        #error "knxprod.h lacks the restart parameters of relay 2 - regenerate it (scripts/Build-Release.ps1: hardware generator, OpenKNXproducer)"
     #endif
     #if defined(ParamNEO_NEOExternalRelay3BeforeRestart) && defined(ParamNEO_NEOExternalRelay3AfterRestart)
                     if (i == 2) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay3BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay3AfterRestart; }
     #elif defined(NEO_KoExternalRelay3)
-        #error "knxprod.h lacks the restart parameters of relay 3 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+        #error "knxprod.h lacks the restart parameters of relay 3 - regenerate it (scripts/Build-Release.ps1: hardware generator, OpenKNXproducer)"
     #endif
     #if defined(ParamNEO_NEOExternalRelay4BeforeRestart) && defined(ParamNEO_NEOExternalRelay4AfterRestart)
                     if (i == 3) { _relayBeforeRestart[i] = (uint8_t)ParamNEO_NEOExternalRelay4BeforeRestart; _relayStartup[i] = (uint8_t)ParamNEO_NEOExternalRelay4AfterRestart; }
     #elif defined(NEO_KoExternalRelay4)
-        #error "knxprod.h lacks the restart parameters of relay 4 - regenerate it (Build-HardwareConfig.ps1, OpenKNXproducer)"
+        #error "knxprod.h lacks the restart parameters of relay 4 - regenerate it (scripts/Build-Release.ps1: hardware generator, OpenKNXproducer)"
     #endif
                     // Value 3 is not offered: treat it like 0
                     if (_relayBeforeRestart[i] > kRelayBeforeKeep) _relayBeforeRestart[i] = kRelayBeforeAsLeds;
@@ -3918,13 +3878,13 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
         const uint8_t ledTypeParam = (uint8_t)ParamNEOSTRIP_NEOLEDType;
         const LedProtocol proto = StripConfiguration::mapProtocol(ledTypeParam);
-        const uint8_t dataPortSelection = getDataPortSelectionForHardwareIndex(i);
+        const uint8_t dataPortSelection = getDataPortSelection(i);
         const bool spi = isSpiProtocol(proto);
         const char* signals[2] = {spi ? "SCK" : "Data", "MOSI"};
         uint8_t gpios[2] = {255, 255};
         if (spi)
         {
-            gpios[0] = resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false);
+            gpios[0] = resolveStripGpio(i, "clock", getClockPortSelection(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, false);
             gpios[1] = resolveStripGpio(i, "data", dataPortSelection, (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, false);
             if (gpios[0] == 255 || gpios[1] == 255) continue; // the build leaves the strip off
         }
@@ -4020,8 +3980,8 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             else
             {
                 // Data Port -> MOSI, Clock Port -> SCK; each "Manuell" uses its own manual GPIO parameter
-                mosiGpio = resolveStripGpio(i, "data", getDataPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, true);
-                sckGpio = resolveStripGpio(i, "clock", getClockPortSelectionForHardwareIndex(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, true);
+                mosiGpio = resolveStripGpio(i, "data", getDataPortSelection(i), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO, true);
+                sckGpio = resolveStripGpio(i, "clock", getClockPortSelection(i), (uint8_t)ParamNEOSTRIP_NEOClockGPIO, true);
                 if (mosiGpio == 255 || sckGpio == 255) { ++_stripsWithoutGpio; continue; } // strip stays off, logged above
                 logInfoP("Strip %d: SPI pins MOSI:%d, SCK:%d", i, mosiGpio, sckGpio);
             }
@@ -4105,7 +4065,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
 
             logInfoP("SPI Strip %d: %d LEDs, MOSI=%d, SCK=%d, Protocol=%s, ColorOrder=%s, Freq=%d Hz%s",
                      i, pixels, mosiGpio, sckGpio, getProtocolName(proto), getColorOrderName(order),
-                     spiFrequency, classifyPortSelection(getDataPortSelectionForHardwareIndex(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
+                     spiFrequency, classifyPortSelection(getDataPortSelection(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
         }
         else
         {
@@ -4115,7 +4075,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             if (physicalOnly && _livePinKnown[i]) dataGpioPin = _liveDataPins[i];
             else
             {
-                dataGpioPin = resolveStripGpio(i, "data", getDataPortSelectionForHardwareIndex(i), dataGpio, true);
+                dataGpioPin = resolveStripGpio(i, "data", getDataPortSelection(i), dataGpio, true);
                 if (dataGpioPin == 255) { ++_stripsWithoutGpio; continue; } // strip stays off, logged above
                 logInfoP("Strip %d: Data GPIO %d", i, dataGpioPin);
             }
@@ -4132,7 +4092,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
             phys = _neoPixel.addStrip(dataGpioPin, pixels, proto, order);
             logInfoP("1-Wire Strip %d: %d LEDs, GPIO=%d, Protocol=%s, ColorOrder=%s%s",
                      i, pixels, dataGpioPin, getProtocolName(proto), getColorOrderName(order),
-                     classifyPortSelection(getDataPortSelectionForHardwareIndex(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
+                     classifyPortSelection(getDataPortSelection(i)) == PortSelectionKind::Manual ? " (Manual)" : " (Port)");
             if (phys)
             {
                 auto* cfg = phys->getConfig();
@@ -5846,26 +5806,11 @@ void NeoPixelBusModule::debugShowConfiguration()
     logInfoP("▶ Hardware Configuration:");
     logInfoP("────────────────────────────────────────────────────────────────────────");
 
-    #ifdef DEVICE_HW_ID
-    uint8_t hwIndex = getCurrentHardwareIndex();
     const char* hwName = hardwareNameForId(DEVICE_HW_ID);
-    logInfoP("  Mode:             Compile-time (DEVICE_HW_ID defined)");
     logInfoP("  Device HW ID:     0x%04X (%d decimal)", DEVICE_HW_ID, DEVICE_HW_ID);
-    logInfoP("  Hardware Index:   %d", hwIndex);
     logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
-    #else
-        #ifdef ParamNEO_NeoPixelHardwareSelect
-    uint16_t selectedHwId = (uint16_t)ParamNEO_NeoPixelHardwareSelect; // stored selection = DEVICE_HW_ID
-    uint8_t hwIndex = getCurrentHardwareIndex();
-    const char* hwName = hardwareNameForId(selectedHwId);
-    logInfoP("  Mode:             ETS Runtime Selection");
-    logInfoP("  Selected HW ID:   0x%04X", selectedHwId);
-    logInfoP("  Hardware Index:   %d", hwIndex);
-    logInfoP("  Hardware Name:    %s", hwName ? hwName : "Unknown");
-        #else
-    logInfoP("  Mode:             Not configured (no hardware selection)");
-        #endif
-    #endif
+    logInfoP("  ETS selection:    0x%04X (%s)", selectedHardwareId(),
+             hardwareSelectionMatches(selectedHardwareId()) ? "this board" : (selectedHardwareId() == HW_SELECT_NONE ? "none" : "other board"));
     logInfoP("");
 
     // ========================================================================
@@ -5947,7 +5892,7 @@ void NeoPixelBusModule::debugShowConfiguration()
             switch (classifyPortSelection(portSelection))
             {
                 case PortSelectionKind::HardwarePort:
-                    logInfoP("  │    %-18s port %d -> GPIO %d", label, portSelection + 1, mapPortIndexToGpio(portSelection));
+                    logInfoP("  │    %-18s port %d -> GPIO %d", label, portSelection + 1, hwPortGpio(portSelection));
                     break;
                 case PortSelectionKind::Manual:
                     logInfoP("  │    %-18s manual GPIO %d", label, manualGpio);
@@ -5959,8 +5904,8 @@ void NeoPixelBusModule::debugShowConfiguration()
         };
         if (isSpiProtocol(strip->getProtocol()))
         {
-            showPort("Data (MOSI):", getDataPortSelectionForHardwareIndex(_channelIndex), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO);
-            showPort("Clock (SCK):", getClockPortSelectionForHardwareIndex(_channelIndex), (uint8_t)ParamNEOSTRIP_NEOClockGPIO);
+            showPort("Data (MOSI):", getDataPortSelection(_channelIndex), (uint8_t)ParamNEOSTRIP_NEOSPIMOSIGPIO);
+            showPort("Clock (SCK):", getClockPortSelection(_channelIndex), (uint8_t)ParamNEOSTRIP_NEOClockGPIO);
             if (ParamNEOSTRIP_NEOSPICLKMode == 1)
             {
                 const uint8_t spiClkValue = (uint8_t)ParamNEOSTRIP_NEOSPICLK;
@@ -5974,7 +5919,7 @@ void NeoPixelBusModule::debugShowConfiguration()
         }
         else
         {
-            showPort("Data:", getDataPortSelectionForHardwareIndex(_channelIndex), (uint8_t)ParamNEOSTRIP_NEODataGPIO);
+            showPort("Data:", getDataPortSelection(_channelIndex), (uint8_t)ParamNEOSTRIP_NEODataGPIO);
         }
 
         // Timing (bitrate): ETS value -> kHz, from the single persisted-value mapping.

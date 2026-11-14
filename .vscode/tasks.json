@@ -4,6 +4,8 @@
         {
             "label": "OpenKNXproducer",
             "type": "shell",
+            "dependsOn": ["Build HardwareConfig"],
+            "dependsOrder": "sequence",
             "command": "~/bin/OpenKNXproducer.exe",
             "args": [
                 "create",
@@ -103,7 +105,7 @@
         {
             "label": "Build HardwareConfig",
             "type": "shell",
-            "command": "${workspaceFolder}/scripts/Build-HardwareConfig.ps1",
+            "command": "${workspaceFolder}/lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1",
             "args": [
             ],
             "options": {

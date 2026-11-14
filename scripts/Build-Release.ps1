@@ -128,7 +128,7 @@ function Show-Help {
     Write-Host "TARGET SETS:" -ForegroundColor Yellow
     Write-Host "  -Mini          KNeoPiX V1 + V1.5: RP2350, ESP32S3, ESP32S3 TP+WiFi (6 targets)"
     Write-Host "  (default)      tested hardware (14 targets)"
-    Write-Host "  -Full          tested + untested + third-party (36 targets)"
+    Write-Host "  -Full          tested + untested + third-party (44 targets)"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\Build-Release.ps1              " -NoNewline -ForegroundColor White
@@ -203,9 +203,34 @@ if ($isClean) {
         & ./scripts/Build-EffectParameters.ps1 -Clean -Force
         if (-not $?) { throw "Effect parameter cleanup failed." }
 
-        Write-Host "Cleaning hardware config..." -ForegroundColor Cyan
-        & ./scripts/Build-HardwareConfig.ps1 -Clean -Force
-        if (-not $?) { throw "Hardware config cleanup failed." }
+        # Outputs of the hardware generator (HardwareProfile.xml <Output>/<Generate>): not committed
+        # (.gitignore), the next Build-Release writes them again. HardwareProfile.slots is a source.
+        Write-Host "Removing hardware generator outputs (HardwareProfile.xml)..." -ForegroundColor Cyan
+        [xml]$hwManifest = [System.IO.File]::ReadAllText((Resolve-Path 'HardwareProfile.xml').Path, [System.Text.Encoding]::UTF8)
+        $hwOutputs = @()
+        foreach ($o in @($hwManifest.HardwareProfile.SelectNodes('Output'))) {
+            foreach ($a in @($o.Attributes)) { $hwOutputs += $a.Value }
+        }
+        foreach ($g in @($hwManifest.HardwareProfile.SelectNodes('Generate'))) { $hwOutputs += $g.GetAttribute('output') }
+        # <Page dev> (developer view module) and the page icon the generator copies from its assets
+        $hwPage = $hwManifest.HardwareProfile.SelectSingleNode('Page')
+        if ($hwPage) {
+            if ($hwPage.GetAttribute('dev')) { $hwOutputs += $hwPage.GetAttribute('dev') }
+            $hwIcon = $hwPage.GetAttribute('icon')
+            if ($hwIcon -and (Test-Path -LiteralPath "lib/OGM-HardwareConfig/generator/assets/icons/$hwIcon.png" -PathType Leaf)) { $hwOutputs += "src/Baggages/Icons/$hwIcon.png" }
+        }
+        foreach ($out in $hwOutputs) {
+            if ($out -and (Test-Path -LiteralPath $out -PathType Leaf)) {
+                Remove-Item -LiteralPath $out -Force
+                Write-Host "  Removed $out" -ForegroundColor DarkGray
+            }
+        }
+        # info images (QR code) of the hardware page: Baggages/<prefix>Info next to the share
+        $hwInfoDir = "src/Baggages/$($hwManifest.HardwareProfile.GetAttribute('prefix'))Info"
+        if (Test-Path -LiteralPath $hwInfoDir -PathType Container) {
+            Remove-Item -LiteralPath $hwInfoDir -Recurse -Force
+            Write-Host "  Removed $hwInfoDir" -ForegroundColor DarkGray
+        }
 
         Write-Host "Cleaning generated headers and producer outputs..." -ForegroundColor Cyan
         # Only known generated outputs: preserve hand-written source and release packages.
@@ -213,7 +238,9 @@ if ($isClean) {
             'include/knxprod.h', 'include/buildtime.h', 'include/versions.h', 'include/webassets.h',
             'src/NeoPixel-*.debug.xml', 'src/*.baggages', 'src/*.knxprod', 'NeoPixel-Dev.knxprod', 'NeoPixel-Release.knxprod',
             # Older producer naming: no longer generated, left behind by earlier builds
-            'src/NeoPixel.debug.xml', 'src/NeoPixel.appl.debug.xml'
+            'src/NeoPixel.debug.xml', 'src/NeoPixel.appl.debug.xml',
+            # Board table of the hardware generator before the hardware module (now include/HardwareProfileData.h)
+            'src/HardwareMappingData.h'
         )) {
             foreach ($item in Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue) {
                 Remove-Item -LiteralPath $item.FullName -Recurse -Force
@@ -241,7 +268,7 @@ if ($isClean) {
 # BUILD TARGET CONFIGURATION - Add new hardware variants here
 # ============================================================================
 #
-# Target format: @{ Env = "environment"; Name = "Output-Filename"; Ext = "feature-set"; HwSection = "section-name" }
+# Target format: @{ Env = "environment"; Name = "Output-Filename"; Ext = "feature-set" }
 #   Env       - PlatformIO environment name from platformio.ini (e.g., release_OKNXHW_...)
 #   Name      - Output firmware filename without extension (e.g., OpenKNX-XIAO-KNeoPiX-RP2350_V1)
 #   Ext       - Build-Step featureSet (historical field name; not a literal file extension)
@@ -266,99 +293,89 @@ if ($isClean) {
 #                 a device with OTA does not need a KNX upload script
 #                 ESP is always IP and OTA is always possible
 #                 RP2040/RP2350 needs to distinguish between IP and TP variants
-#   HwSection - EXACT section name from platformio.hardware.ini (e.g., neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1)
-#               This section name is used by Build-HardwareConfig.ps1 to extract build_flags for the C preprocessor
 #
-# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
+# Example: @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp" }
 # ============================================================================
 
 # Mini Build Targets (the hardware physically on the desk)
 # Purpose: fast turnaround while developing - one RP2350 and one ESP32S3 board per
 # KNeoPiX revision (V1, V1.5), so both families stay covered. The ETS product still offers
-# all hardware (HardwareListMode 'Full').
+# all hardware (every release_* env, HardwareProfile.xml).
 $miniTargets = @(
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_TPWIFI"; Ext = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V15"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_TPWIFI"; Ext = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_TPWIFI"; Ext = "esp32-tpip" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V15"; Ext = "rp2350-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_TPWIFI"; Ext = "esp32-tpip" }
     )
 
 # Standard Build Targets (tested hardware)
 $standardTargets = @(
     # OpenKNXiao KNeoPiX
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_IP"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_TPWIFI"; Ext = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V1"; Ext = "rp2040-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_IP"; Ext = "esp32-ip" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1_TPWIFI"; Ext = "esp32-tpip" }
     # OpenKNXiao KNeoPiX V1.5 (SN74LV8T245 level shifter)
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V15"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2350_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V15"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_RP2040_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_IP"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_TPWIFI"; Ext = "esp32-tpip"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32S3_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V15"; Ext = "rp2350-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2040_V15"; Name = "OpenKNX-XIAO-KNeoPiX-RP2040_V15"; Ext = "rp2040-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_IP"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_IP"; Ext = "esp32-ip" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V15_TPWIFI"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V15_TPWIFI"; Ext = "esp32-tpip" }
     # OpenKNXiao Mini
-    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2040_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "rp2350-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_RP2350_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32S3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32S3_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2040_MINI_V1"; Name = "OpenKNX-XIAO-RP2040-Mini_V1"; Ext = "rp2040-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_RP2350_MINI_V1"; Name = "OpenKNX-XIAO-RP2350-Mini_V1"; Ext = "rp2350-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32S3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32S3-Mini_V1"; Ext = "esp32-tp" }
     # OpenKNX UP1 Board
-    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "rp2040-tp"; HwSection = "neopixel_oknxhw_UP1_GW_UART" }
+    @{ Env = "release_OKNXHW_UP1_GW_UART"; Name = "OpenKNX-UP1-GW-UART"; Ext = "rp2040-tp" }
     )
 
 # Full Build Targets (additional, not yet tested hardware)
 $fullTargets = @(
     # OpenKNXiao KNeoPiX - ESP32 Variants
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C5_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C3_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C5_V15" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V15"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_KNEOPIX_ESP32C6_V15" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C3_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C3_V15"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C5_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C5_V15"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32C6_V15"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32C6_V15"; Ext = "esp32-tp" }
     
     # OpenKNXiao Mini - ESP32 Variants
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C3-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C3_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C5_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C5-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C5_MINI_V1" }
-    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "esp32-tp"; HwSection = "neopixel_oknxhw_OPENKNXIAO_ESP32C6_MINI_V1" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C3_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C3-Mini_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C5_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C5-Mini_V1"; Ext = "esp32-tp" }
+    @{ Env = "release_OKNXHW_OPENKNXIAO_ESP32C6_MINI_V1"; Name = "OpenKNX-XIAO-ESP32C6-Mini_V1"; Ext = "esp32-tp" }
 
     # Gledopto GL-C-309WL ESP32 WLED Digital Unterputz (Gledopto: https://gledopto.com/h-pd-124.html)
-    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP";  Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_ESP32_WLED_DIGITAL_UP" }
-    @{ Env = "release_GLEDOPTO_GL_C_017WL";             Name = "Gledopto-GL-C-017WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_017WL" }
-    @{ Env = "release_GLEDOPTO_GL_C_620WL";             Name = "Gledopto-GL-C-620WL-ESP32"; Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_GLEDOPTO_GL_C_620WL" }
+    @{ Env = "release_GLEDOPTO_ESP32_WLED_DIGITAL_UP"; Name = "Gledopto-GL-C-309WL-ESP32"; Ext = "esp32-ip" }
+    @{ Env = "release_GLEDOPTO_GL_C_017WL";             Name = "Gledopto-GL-C-017WL-ESP32"; Ext = "esp32-ip" }
+    @{ Env = "release_GLEDOPTO_GL_C_620WL";              Name = "Gledopto-GL-C-620WL-ESP32"; Ext = "esp32-ip" }
     
     # QuinLED Variants (QuinLED: https://www.quinled.info/)
-    @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG2GO" }
-    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI";           Name = "QuinLED-Dig-Uno-V3-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI" }
-    @{ Env = "release_QUINLED_DIG_UNO_V3_ETHERNET";       Name = "QuinLED-Dig-Uno-V3-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS";   Name = "QuinLED-Dig-Uno-V3-WiFi-AE-Plus";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI";          Name = "QuinLED-Dig-Quad-V3-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V3_ETHERNET";      Name = "QuinLED-Dig-Quad-V3-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS";  Name = "QuinLED-Dig-Quad-V3-WiFi-AE-Plus";  Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_WIFI" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_NEXT2" }
-    @{ Env = "release_QUINLED_DIG_UNO_V4_WIFI";           Name = "QuinLED-Dig-Uno-V4-WiFi";           Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V4_WIFI" }
-    @{ Env = "release_QUINLED_DIG_UNO_V4_ETHERNET";       Name = "QuinLED-Dig-Uno-V4-Ethernet";       Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_UNO_V4_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V4_WIFI";          Name = "QuinLED-Dig-Quad-V4-WiFi";          Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V4_WIFI" }
-    @{ Env = "release_QUINLED_DIG_QUAD_V4_ETHERNET";      Name = "QuinLED-Dig-Quad-V4-Ethernet";      Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_QUAD_V4_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V2_WIFI";    Name = "QuinLED-Dig-Octa-32-8L-V2-WiFi";    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V2_WIFI" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V2_ETHERNET";Name = "QuinLED-Dig-Octa-32-8L-V2-Ethernet";Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V2_ETHERNET" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V4_WIFI";    Name = "QuinLED-Dig-Octa-32-8L-V4-WiFi";    Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V4_WIFI" }
-    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V4_ETHERNET";Name = "QuinLED-Dig-Octa-32-8L-V4-Ethernet";Ext = "esp32-ip"; HwSection = "neopixel_oknxhw_QUINLED_DIG_OCTA_32_8L_V4_ETHERNET" }
+    @{ Env = "release_QUINLED_DIG2GO";                    Name = "QuinLED-Dig2Go";                    Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI";           Name = "QuinLED-Dig-Uno-V3-WiFi";           Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_ETHERNET";       Name = "QuinLED-Dig-Uno-V3-Ethernet";       Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_UNO_V3_WIFI_AE_PLUS";   Name = "QuinLED-Dig-Uno-V3-WiFi-AE-Plus";   Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI";          Name = "QuinLED-Dig-Quad-V3-WiFi";          Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_ETHERNET";      Name = "QuinLED-Dig-Quad-V3-Ethernet";      Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V3_WIFI_AE_PLUS";  Name = "QuinLED-Dig-Quad-V3-WiFi-AE-Plus";  Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_WIFI";       Name = "QuinLED-Dig-Octa-32-8L-WiFi";       Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_ETHERNET";   Name = "QuinLED-Dig-Octa-32-8L-Ethernet";   Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_NEXT2";                 Name = "QuinLED-Dig-Next-2";                Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_UNO_V4_WIFI";           Name = "QuinLED-Dig-Uno-V4-WiFi";           Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_UNO_V4_ETHERNET";       Name = "QuinLED-Dig-Uno-V4-Ethernet";       Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V4_WIFI";          Name = "QuinLED-Dig-Quad-V4-WiFi";          Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_QUAD_V4_ETHERNET";      Name = "QuinLED-Dig-Quad-V4-Ethernet";      Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V2_WIFI";    Name = "QuinLED-Dig-Octa-32-8L-V2-WiFi";    Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V2_ETHERNET"; Name = "QuinLED-Dig-Octa-32-8L-V2-Ethernet"; Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V4_WIFI";    Name = "QuinLED-Dig-Octa-32-8L-V4-WiFi";    Ext = "esp32-ip" }
+    @{ Env = "release_QUINLED_DIG_OCTA_32_8L_V4_ETHERNET"; Name = "QuinLED-Dig-Octa-32-8L-V4-Ethernet"; Ext = "esp32-ip" }
     )
 
-# Hardware identity list (ETS dropdown / JS auto-detect / HW map):
-#   'Full' (default) = all of platformio.hardware.ini -> every product offers all hardware, whatever
-#                      target set is built; a release firmware carries no entry of other hardware (HardwareMappingLogic.h)
-#   'Dynamic'        = only hardware built here -> smaller ETS/JS/XML; mismatch-safe via stable HW-ID
-$HardwareListMode = 'Full'
-
-# Generate dynamic GPIO templates before building
-# Collect exact hardware section names from all targets that will be built.
-# One selection drives both the hardware filter and the build loop below - if the
-# two were computed separately they could drift and generate GPIO templates for
-# hardware that never gets built.
+# Hardware identity list (ETS hardware module, device query, include/HardwareProfileData.h): every release_* env of
+# platformio.ini (HardwareProfile.xml <Boards platformio="release_*"/>), whatever target set is built; a release
+# firmware knows only its own hardware (DEVICE_HW_ID, DEVICE_NAME).
 if ($isMini) {
     $allTargets = $miniTargets
     $targetSetName = "mini targets (hardware on the desk)"
@@ -434,22 +451,21 @@ if (-not $isSkipOknx) {
 # The generators write the XML that OpenKNXproducer turns into knxprod.h; with -SkipKnxprod both stay
 # from the last run, so header and ETS data keep matching.
 if (-not $isSkipKnxprod) {
-    # Extract unique hardware section names from targets
-    $hardwareFilter = $allTargets | ForEach-Object { $_.HwSection } | Select-Object -Unique
-
-    Write-Host "Generating GPIO templates for selected hardware (mode: $HardwareListMode)..." -ForegroundColor Cyan
-    Write-Host "  Section filter: $($hardwareFilter -join ', ')" -ForegroundColor DarkGray
-    scripts/Build-HardwareConfig.ps1 -UniversalBuild -EnvironmentFilter $hardwareFilter -HardwareListMode $HardwareListMode
-    if (!$?) {
-        Write-Host "GPIO template generation failed!" -ForegroundColor Red
-        exit 1
-    }
-
-    # Generate effect parameters before building
+    # Effect parameters first: they fill the effect blocks of src/NeoPixel.script.src.js, which the
+    # hardware generator then assembles into src/NeoPixel.script.js
     Write-Host "Generating effect parameters..." -ForegroundColor Cyan
     scripts/Build-EffectParameters.ps1 -SkipOpenKNXproducer
     if (!$?) {
         Write-Host "Effect parameter generation failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    # Hardware selection, ports and board tables: OGM-HardwareConfig generator, manifest HardwareProfile.xml
+    Write-Host "Generating hardware files (HardwareProfile.xml)..." -ForegroundColor Cyan
+    $global:LASTEXITCODE = 0
+    & lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1 -Manifest HardwareProfile.xml
+    if ($global:LASTEXITCODE -ne 0) {
+        Write-Host "Hardware generation failed!" -ForegroundColor Red
         exit 1
     }
 
@@ -494,7 +510,7 @@ if (-not $isSkipFirmware) {
     Write-Host "Building firmware for hardware variants..." -ForegroundColor Cyan
     Write-Host "Building $targetSetName..." -ForegroundColor Cyan
 
-    # $allTargets was selected above - the same list the GPIO templates were generated for
+    # $allTargets was selected above
     foreach ($target in $allTargets) {
         lib/OGM-Common/scripts/setup/reusable/Build-Step.ps1 $target.Env $target.Name $target.Ext
         if (!$?) { exit 1 }

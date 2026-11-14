@@ -505,9 +505,9 @@
                     <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-Einstellungen" UIHint="Headline" />
                     <!-- Effect Type -->
-                    <choose ParamRefId="%AID%_UP-4000018_R-400001801">
-                      <!-- GENERATED_NO2D_HARDWARE_TEST: hardware ids built with NEOPIXEL_DISABLE_2D, filled by Build-HardwareConfig.ps1 -->
-                      <when test="65534">
+                    <choose ParamRefId="%NEOHW_SelectRef%">
+                      <!-- hardware built with NEOPIXEL_DISABLE_2D (token from OGM-HardwareConfig/generator, HardwareProfile.xml) -->
+                      <when test="%NEOHW_CAP_No2D%">
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" IndentLevel="1" HelpContext="NEO-Effekt-Typ"/>
                       </when>
                       <when default="true">

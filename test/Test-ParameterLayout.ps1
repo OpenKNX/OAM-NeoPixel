@@ -15,9 +15,10 @@
     (include/knxprod.h) and the generated product XML and fails when:
 
       1. two parameters of the strip block (NEOSTRIP_*) share a bit. The hardware variants of one
-         parameter (...PortHW0, ...PortHW1, ...) are alternatives and may share.
+         parameter (...PortHW0, ...PortHW1, ...) and its carrier are alternatives and may share.
       2. the hardware variants of one family (strip data port, strip clock port, relay 1-4 port)
-         do not all sit on the same offset and bits. The firmware reads them through one index.
+         and the carrier of that family (NEO<n>DataPort, NEO<n>ClockPort, NEOExternalRelay<r>Port)
+         do not all sit on the same offset and bits. The firmware reads the byte through the carrier.
       3. a strip port selection type lacks "Manuell" (10) or "please select" (15), the values the
          firmware decodes (classifyPortSelection in src/HardwareMappingLogic.h).
 
@@ -108,6 +109,10 @@ foreach ($line in Get-Content -Path $KnxprodHeader) {
     $family = ""
     $f = [regex]::Match($name, '^(\w+?PortHW)\d+$')
     if ($f.Success) { $family = $f.Groups[1].Value }
+    # carriers: the name the firmware reads the shared byte of a family through
+    elseif ($name -eq 'NEOSTRIP_NEODataPort') { $family = 'NEOSTRIP_NEOGPIODataPortHW' }
+    elseif ($name -eq 'NEOSTRIP_NEOClockPort') { $family = 'NEOSTRIP_NEOGPIOClockPortHW' }
+    elseif ($name -match '^NEO_NEOExternalRelay(\d)Port$') { $family = "NEO_NEORelay$($Matches[1])GPIOPortHW" }
     $parameters += [pscustomobject]@{ Name = $name; Offset = $offset; Desc = $desc; Bits = $bits; Family = $family }
 }
 
@@ -149,13 +154,20 @@ $families = $parameters | Where-Object { $_.Family } | Group-Object -Property Fa
 foreach ($group in $families) {
     $first = $group.Group[0]
     foreach ($p in $group.Group) {
-        if (($p.Offset -ne $first.Offset) -or ($p.Desc -ne $first.Desc)) {
+        # same bytes and bits; the description differs between a carrier (uint8_t) and a variant (8 Bits)
+        if (($p.Bits -join ',') -ne ($first.Bits -join ',')) {
             Write-Host "VARIANT: $($p.Name) at $($p.Offset) ($($p.Desc)) differs from $($first.Name) at $($first.Offset) ($($first.Desc))" -ForegroundColor Red
             $findings++
         }
     }
 }
-Write-Host "2. Hardware variants: $(@($families).Count) famil(ies) checked for one common place"
+foreach ($group in $families) {
+    if (-not ($group.Group | Where-Object { $_.Name -notmatch 'PortHW\d+$' })) {
+        Write-Host "CARRIER: family $($group.Name) has no carrier parameter" -ForegroundColor Red
+        $findings++
+    }
+}
+Write-Host "2. Hardware variants: $(@($families).Count) famil(ies) checked for one common place with their carrier"
 
 # --- 3. Every strip port selection type offers 10 (Manuell) and 15 (please select)
 $xml = Get-Content -Path $ProductXml -Raw

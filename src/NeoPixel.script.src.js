@@ -114,14 +114,14 @@ function NEO_LedTypeToRGB_8(input, output, context) { NEO_LedTypeToRGB_Impl(inpu
 // Reset Clock GPIO when switching between SPI and 1-Wire LED types
 function NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
-  
+
   // Check if this is a SPI LED type
-  var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 || 
+  var isSPI = (ledType === 5 || ledType === 6 || ledType === 21 ||
                ledType === 22 || ledType === 23 || ledType === 24 || ledType === 25);
 
   output.PendingLedTypeResetStrip = stripKey;
   output.PendingLedTypeResetLedType = ledType;
-  
+
   if (!isSPI) {
     // LED type changed to 1-Wire → Reset all Clock Ports to Dummy (15)
     output.Strip1ClockPort = 15;
@@ -132,7 +132,7 @@ function NEO_ResetClockGPIOOnLedTypeChange_Impl(input, output, context, stripKey
     output.Strip6ClockPort = 15;
     output.Strip7ClockPort = 15;
     output.Strip8ClockPort = 15;
-    
+
     info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (1-Wire) -> Clock Ports reset to 15, pending colour-order reset marker updated");
   } else {
     info("NEO_ResetClockGPIOOnLedTypeChange: Strip " + stripKey + " LED Type " + ledType + " (SPI) -> Clock Ports unchanged, pending colour-order reset marker updated");
@@ -395,100 +395,536 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
        " hasError=" + hasError);
 }
 
-// EventHandler: Hardware auto-detection from firmware
-// Called when user clicks "Hardware automatisch erkennen" button
-// Reads DEVICE_HW_ID from firmware, maps it to the generated hardware index,
-// and writes that index to the Hardware Selection parameter.
-function NEO_detectHardware(device, online, progress, context) {
-    progress.setText("NeoPixel: Lese Hardware-ID vom Gerät...");
-    progress.setProgress(10);
-    
-    online.connect();
-    progress.setProgress(30);
-    
-    // Function Property ID for hardware detection (to be implemented in firmware)
-    // Returns: [0, hwId_high, hwId_low] where hwId = (high << 8) | low
-    var data = [0]; // no input data
-    var resp = online.invokeFunctionProperty(158, 10, data); // FP 158/10 = NeoPixel hardware detect
-    
-    online.disconnect();
-    progress.setProgress(70);
-    
-    if (!resp || resp.length < 1 || resp[0] != 0) {
-        throw new Error("NeoPixel: Keine Antwort vom Gerät!");
-    }
-    
-    if (resp.length < 3) {
-        throw new Error("NeoPixel: Ungültige Antwort vom Gerät!");
-    }
-    
-    // Parse hardware ID from response (16-bit value)
-    var hwId = (resp[1] << 8) | resp[2];
-    
-    progress.setText("NeoPixel: Hardware erkannt - ID: 0x" + hwId.toString(16).toUpperCase());
-    progress.setProgress(90);
-    
-     // Check if Hardware-ID is known (validate using mapping)
-    var hwIndex = hardwareIdMap[hwId];
-    var isKnownHardware = (hwIndex !== undefined);
-    var hwName = null;
-    if (isKnownHardware) {
-        hwName = hardwareNameMap[hwId];  // Direkt Hardware-Name holen
-        progress.setText("NeoPixel: Erkannte Hardware: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ")");
-    } else {
-      // Unknown hardware - fall back to the ETS "Bitte wählen..." entry.
-      progress.setText("NeoPixel: Unbekannte Hardware-ID: 0x" + hwId.toString(16).toUpperCase() + " - bitte manuell konfigurieren");
-      hwIndex = 255;
-    }
-    
-    // The ETS hardware selection stores the unique DEVICE_HW_ID (not a list index), so the
-    // selection stays valid regardless of which other hardware exists or how the firmware
-    // was built. Write the detected HW-ID directly; reset to 255 ("please select") if unknown.
-    var hwSelectValue = isKnownHardware ? hwId : 255;
-    try {
-        // Method 1: ETS standard way using getParameterByName
-        var param = device.getParameterByName('NEO_NeoPixelHardwareSelect');
-        if (param) {
-            param.value = hwSelectValue;
-            if (isKnownHardware && hwName) {
-                progress.setText("NeoPixel: " + hwName + " (0x" + hwId.toString(16).toUpperCase() + ") ausgewählt");
-            } else {
-          progress.setText("NeoPixel: Hardware-Auswahl zurückgesetzt - bitte Hardware manuell wählen");
-            }
-        } else {
-            throw new Error("Parameter 'NEO_NeoPixelHardwareSelect' nicht gefunden");
-        }
-        
-    } catch (e) {
-        throw new Error("NeoPixel: Konnte Hardware-Auswahl nicht setzen: " + e.message);
-    }
-    
-    progress.setProgress(100);
-}
-
 // ====================================================================
 // GPIO Port Allocation and Conflict Detection
 // ====================================================================
 
-// BEGIN AUTO-GENERATED: Multi-Hardware GPIO Port Mapping
-// Cleaned - Ready for regeneration
-// END AUTO-GENERATED: Multi-Hardware GPIO Port Mapping
+// Port selection: the dropdown value is the hardware port number - 1
+// C++ firmware resolves value k to HW_PORT_{k+1}_GPIO of the board header
+// GPIO numbers are compile-time defines, not available in JavaScript
 
-// BEGIN AUTO-GENERATED: Hardware ID Mapping for EventHandler
-// Cleaned - Ready for regeneration
-// END AUTO-GENERATED: Hardware ID Mapping for EventHandler
+// Port counts per hardware ID (HW_ID -> port count)
+var portCounts = {
+@@use @hw/JsBoardEntries.js @{ Key = '0x{{X4 $b.HwId}}'; Value = '{{$b.Ports.Count}}'; Comment = '{{$b.Name}}'; Where = { $_.Ports.Count -gt 0 } }
+};
+// GPIO port labels per hardware (for documentation)
+var portLabels = {
+@@use @hw/JsBoardPorts.js
+};
+// GPIO of the hard-wired relays of a board (HW_RELAY_<n>_GPIO; relay n at index n-1); boards with relays on free ports have none
+var NEO_RelayGpioByHW = {
+@@use @hw/JsBoardEntries.js @{ Key = '0x{{X4 $b.HwId}}'; Value = '[{{(@($b.Relays | ForEach-Object { $_.Gpio }) -join '', '')}}]'; Comment = '{{$b.Name}}'; Where = { $_.Relays.Count -gt 0 } }
+};
+// GPIO per port value of each board (HW_PORT_<n>_GPIO of the board header; index = port value, null = not offered)
+var NEO_PortGpioByHW = {
+@@use @hw/JsBoardPortGpios.js
+};
+
+// DEVICE_HW_ID -> board number (HardwareProfile.slots), the suffix of the per-board relay inputs (NEO_ResolveRelayPort)
+var hardwareIdMap = {
+@@use @hw/JsBoardEntries.js @{ Indent = '    '; Value = '{{$b.Slot}}'; Comment = '{{$b.Name}} → Index {{$b.Slot}}' }
+};
 
 // REAL GPIO CONFLICT DETECTION
 // Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
 // Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
 
-// BEGIN AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection
-// Cleaned - Ready for regeneration
-// END AUTO-GENERATED: Multi-Hardware GPIO Conflict Detection
+// ============================================================================================================
+// HELPER: Copy a hardware-specific GPIO port selection into the shared (hidden) port parameter.
+// Each copy calculation reads only its own per-hardware parameter. HardwareSelection is no input:
+// as an input of every copy calculation it chained all copy calculations together, so one change
+// re-ran all of them and the calculations of unused slots overwrote the shared value.
+// ============================================================================================================
+@@use @hw/JsBoardInline.js @{ Prefix = 'var NEO_PortCountByHW = {'; Item = '{{$b.HwId}}: {{$b.Ports.Count}}'; Suffix = '};' }
+function NEO_CopyGPIOPortChecked(input, output, context) {
+  output.ShareGPIOPort = toInt(input.TemplateGPIOPort, 15);
+}
 
-// BEGIN AUTO-GENERATED: Network Module Visibility
-// Cleaned - Ready for regeneration
-// END AUTO-GENERATED: Network Module Visibility
+// ============================================================================================================
+// HELPER: RESOLVE RELAY PORT
+// The device receives the per-hardware parameter (RelayNHW<index>, same byte as the shared RelayNPort).
+// The shared copy keeps the value of an earlier hardware after a hardware change, so it is only the
+// fallback when no hardware is selected.
+// ============================================================================================================
+function NEO_ResolveRelayPort(input, hwSel, relayIdx) {
+  var hwIndex = (typeof hardwareIdMap !== 'undefined') ? hardwareIdMap[hwSel] : undefined;
+  var port = toInt(input['Relay' + relayIdx + 'HW' + hwIndex], -1);
+  if (port < 0) {
+    port = toInt(input['Relay' + relayIdx + 'Port'], 15);
+  }
+  return port;
+}
+
+// ============================================================================================================
+// REAL GPIO CONFLICT DETECTION
+// Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
+// Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
+// UNTERSTÜTZT: Data vs Data, Clock vs Clock, Data vs Clock Cross-Konflikte
+// ============================================================================================================
+function NEO_DetectGPIOConflicts(input, output, context) {
+  // Data port selection of all 8 strips (0..9 = hardware port, 10 = manual, 15 = none)
+  var dataPorts = [
+    input.Strip1DataPort,
+    input.Strip2DataPort,
+    input.Strip3DataPort,
+    input.Strip4DataPort,
+    input.Strip5DataPort,
+    input.Strip6DataPort,
+    input.Strip7DataPort,
+    input.Strip8DataPort
+  ];
+
+  // Clock port selection of all 8 strips (same values)
+  var clockPorts = [
+    input.Strip1ClockPort,
+    input.Strip2ClockPort,
+    input.Strip3ClockPort,
+    input.Strip4ClockPort,
+    input.Strip5ClockPort,
+    input.Strip6ClockPort,
+    input.Strip7ClockPort,
+    input.Strip8ClockPort
+  ];
+
+  // External relays (only active when RelayCount > 0)
+  var relayCount = toInt(input.RelayCount, 0);
+  if (relayCount < 0) relayCount = 0;
+  if (relayCount > 4) relayCount = 4;
+
+  // Resolve relay ports using shared params; fall back to HW-specific params (0 = no hardware selected)
+  var hwSel = toInt(input.HardwareSelection, 0);
+
+  // hard-wired relays have no port selection: they take part in CHECK 7 with their fixed GPIO
+  var wiredRelays = NEO_RelayGpioByHW[hwSel];
+  // relays 1..wiredCount are hard-wired (no port, 15 = not taking part in the port checks); further relays take a port
+  var wiredCount = wiredRelays ? wiredRelays.length : 0;
+  var relayPorts = [];
+  for (var rp = 1; rp <= relayCount; rp++) relayPorts.push(rp <= wiredCount ? 15 : NEO_ResolveRelayPort(input, hwSel, rp));
+  var relayRaw = relayPorts.slice(0);  // before the normalization below (10 = manual)
+
+  // Only hardware ports of the strips the firmware starts (1..NumberOfLEDStrips) take part; manual,
+  // none and the default of a never written shared port (255) count as free.
+  var activeStrips = toInt(input.NumberOfLEDStrips, 1);
+  if (activeStrips < 1) activeStrips = 1;
+  if (activeStrips > 8) activeStrips = 8;
+  for (var n = 0; n < 8; n++) {
+    dataPorts[n] = toInt(dataPorts[n], 15);
+    clockPorts[n] = toInt(clockPorts[n], 15);
+    if (n >= activeStrips || dataPorts[n] < 0 || dataPorts[n] >= 10) dataPorts[n] = 15;
+    if (n >= activeStrips || clockPorts[n] < 0 || clockPorts[n] >= 10) clockPorts[n] = 15;
+  }
+  for (var m = 0; m < relayPorts.length; m++) {
+    if (relayPorts[m] < 0 || relayPorts[m] >= 10) relayPorts[m] = 15;
+  }
+
+  // Alle Data Conflict Flags initial auf 0 setzen
+  output.Strip1HasDataConflict = 0;
+  output.Strip2HasDataConflict = 0;
+  output.Strip3HasDataConflict = 0;
+  output.Strip4HasDataConflict = 0;
+  output.Strip5HasDataConflict = 0;
+  output.Strip6HasDataConflict = 0;
+  output.Strip7HasDataConflict = 0;
+  output.Strip8HasDataConflict = 0;
+
+  // Alle Clock Conflict Flags initial auf 0 setzen
+  output.Strip1HasClockConflict = 0;
+  output.Strip2HasClockConflict = 0;
+  output.Strip3HasClockConflict = 0;
+  output.Strip4HasClockConflict = 0;
+  output.Strip5HasClockConflict = 0;
+  output.Strip6HasClockConflict = 0;
+  output.Strip7HasClockConflict = 0;
+  output.Strip8HasClockConflict = 0;
+
+  // Relay Conflict Flags initial auf 0 setzen
+  output.Relay1HasConflict = 0;
+  output.Relay2HasConflict = 0;
+  output.Relay3HasConflict = 0;
+  output.Relay4HasConflict = 0;
+
+  // CHECK 1: Data vs Data Konflikte
+  for (var i = 0; i < 8; i++) {
+    var dataI = dataPorts[i];
+    if (dataI == 10 || dataI == 15) continue;  // Manuell oder Dummy
+
+    for (var j = i + 1; j < 8; j++) {
+      var dataJ = dataPorts[j];
+
+      if (dataI == dataJ && dataJ != 10 && dataJ != 15) {
+        // BEIDE Strips bekommen Data-Konflikt-Flag
+        if (i == 0) output.Strip1HasDataConflict = 1;
+        if (i == 1) output.Strip2HasDataConflict = 1;
+        if (i == 2) output.Strip3HasDataConflict = 1;
+        if (i == 3) output.Strip4HasDataConflict = 1;
+        if (i == 4) output.Strip5HasDataConflict = 1;
+        if (i == 5) output.Strip6HasDataConflict = 1;
+        if (i == 6) output.Strip7HasDataConflict = 1;
+        if (i == 7) output.Strip8HasDataConflict = 1;
+
+        if (j == 0) output.Strip1HasDataConflict = 1;
+        if (j == 1) output.Strip2HasDataConflict = 1;
+        if (j == 2) output.Strip3HasDataConflict = 1;
+        if (j == 3) output.Strip4HasDataConflict = 1;
+        if (j == 4) output.Strip5HasDataConflict = 1;
+        if (j == 5) output.Strip6HasDataConflict = 1;
+        if (j == 6) output.Strip7HasDataConflict = 1;
+        if (j == 7) output.Strip8HasDataConflict = 1;
+      }
+    }
+  }
+
+  // CHECK 2: Clock vs Clock Konflikte
+  for (var i = 0; i < 8; i++) {
+    var clockI = clockPorts[i];
+    if (clockI == 10 || clockI == 15) continue;  // Manuell oder Dummy
+
+    for (var j = i + 1; j < 8; j++) {
+      var clockJ = clockPorts[j];
+
+      if (clockI == clockJ && clockJ != 10 && clockJ != 15) {
+        // BEIDE Strips bekommen Clock-Konflikt-Flag
+        if (i == 0) {
+          output.Strip1HasClockConflict = 1;
+          output.Strip1HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 1) {
+          output.Strip2HasClockConflict = 1;
+          output.Strip2HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 2) {
+          output.Strip3HasClockConflict = 1;
+          output.Strip3HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 3) {
+          output.Strip4HasClockConflict = 1;
+          output.Strip4HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 4) {
+          output.Strip5HasClockConflict = 1;
+          output.Strip5HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 5) {
+          output.Strip6HasClockConflict = 1;
+          output.Strip6HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 6) {
+          output.Strip7HasClockConflict = 1;
+          output.Strip7HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (i == 7) {
+          output.Strip8HasClockConflict = 1;
+          output.Strip8HasDataConflict = 1;  // Für UI-Anzeige
+        }
+
+        if (j == 0) {
+          output.Strip1HasClockConflict = 1;
+          output.Strip1HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 1) {
+          output.Strip2HasClockConflict = 1;
+          output.Strip2HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 2) {
+          output.Strip3HasClockConflict = 1;
+          output.Strip3HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 3) {
+          output.Strip4HasClockConflict = 1;
+          output.Strip4HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 4) {
+          output.Strip5HasClockConflict = 1;
+          output.Strip5HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 5) {
+          output.Strip6HasClockConflict = 1;
+          output.Strip6HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 6) {
+          output.Strip7HasClockConflict = 1;
+          output.Strip7HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 7) {
+          output.Strip8HasClockConflict = 1;
+          output.Strip8HasDataConflict = 1;  // Für UI-Anzeige
+        }
+      }
+    }
+  }
+
+  // CHECK 3: Data vs Clock Cross-Konflikte (CRITICAL!)
+  for (var i = 0; i < 8; i++) {
+    var dataI = dataPorts[i];
+    if (dataI == 10 || dataI == 15) continue;  // Manuell oder Dummy
+
+    for (var j = 0; j < 8; j++) {
+      if (i == j) continue;  // Selber Strip
+
+      var clockJ = clockPorts[j];
+
+      if (dataI == clockJ && clockJ != 10 && clockJ != 15) {
+        // Strip i hat Data-Konflikt, Strip j hat Clock-Konflikt
+        if (i == 0) output.Strip1HasDataConflict = 1;
+        if (i == 1) output.Strip2HasDataConflict = 1;
+        if (i == 2) output.Strip3HasDataConflict = 1;
+        if (i == 3) output.Strip4HasDataConflict = 1;
+        if (i == 4) output.Strip5HasDataConflict = 1;
+        if (i == 5) output.Strip6HasDataConflict = 1;
+        if (i == 6) output.Strip7HasDataConflict = 1;
+        if (i == 7) output.Strip8HasDataConflict = 1;
+
+        if (j == 0) {
+          output.Strip1HasClockConflict = 1;
+          output.Strip1HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 1) {
+          output.Strip2HasClockConflict = 1;
+          output.Strip2HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 2) {
+          output.Strip3HasClockConflict = 1;
+          output.Strip3HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 3) {
+          output.Strip4HasClockConflict = 1;
+          output.Strip4HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 4) {
+          output.Strip5HasClockConflict = 1;
+          output.Strip5HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 5) {
+          output.Strip6HasClockConflict = 1;
+          output.Strip6HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 6) {
+          output.Strip7HasClockConflict = 1;
+          output.Strip7HasDataConflict = 1;  // Für UI-Anzeige
+        }
+        if (j == 7) {
+          output.Strip8HasClockConflict = 1;
+          output.Strip8HasDataConflict = 1;  // Für UI-Anzeige
+        }
+      }
+    }
+  }
+
+  // CHECK 4: Interne Strip-Konflikte (Data = Clock im selben Strip)
+  for (var i = 0; i < 8; i++) {
+    var dataI = dataPorts[i];
+    var clockI = clockPorts[i];
+
+    // Skip wenn einer der Ports manuell ist oder Dummy
+    if (dataI == 10 || dataI == 15 || clockI == 10 || clockI == 15) continue;
+
+    // Konflikt wenn Data-Port = Clock-Port im selben Strip
+    if (dataI == clockI) {
+      // Strip hat internen Konflikt: Data und Clock auf demselben Port
+      if (i == 0) {
+        output.Strip1HasDataConflict = 1;
+        output.Strip1HasClockConflict = 1;
+      }
+      if (i == 1) {
+        output.Strip2HasDataConflict = 1;
+        output.Strip2HasClockConflict = 1;
+      }
+      if (i == 2) {
+        output.Strip3HasDataConflict = 1;
+        output.Strip3HasClockConflict = 1;
+      }
+      if (i == 3) {
+        output.Strip4HasDataConflict = 1;
+        output.Strip4HasClockConflict = 1;
+      }
+      if (i == 4) {
+        output.Strip5HasDataConflict = 1;
+        output.Strip5HasClockConflict = 1;
+      }
+      if (i == 5) {
+        output.Strip6HasDataConflict = 1;
+        output.Strip6HasClockConflict = 1;
+      }
+      if (i == 6) {
+        output.Strip7HasDataConflict = 1;
+        output.Strip7HasClockConflict = 1;
+      }
+      if (i == 7) {
+        output.Strip8HasDataConflict = 1;
+        output.Strip8HasClockConflict = 1;
+      }
+    }
+  }
+
+  // CHECK 5: Relais vs Strip-Konflikte
+  for (var r = 0; r < relayPorts.length; r++) {
+    var relayP = relayPorts[r];
+    if (relayP == 10 || relayP == 15) continue; // Manuell oder Dummy
+
+    for (var i = 0; i < 8; i++) {
+      var dataI = dataPorts[i];
+      if (relayP == dataI && dataI != 10 && dataI != 15) {
+        if (r == 0) output.Relay1HasConflict = 1;
+        if (r == 1) output.Relay2HasConflict = 1;
+        if (r == 2) output.Relay3HasConflict = 1;
+        if (r == 3) output.Relay4HasConflict = 1;
+        if (i == 0) output.Strip1HasDataConflict = 1;
+        if (i == 1) output.Strip2HasDataConflict = 1;
+        if (i == 2) output.Strip3HasDataConflict = 1;
+        if (i == 3) output.Strip4HasDataConflict = 1;
+        if (i == 4) output.Strip5HasDataConflict = 1;
+        if (i == 5) output.Strip6HasDataConflict = 1;
+        if (i == 6) output.Strip7HasDataConflict = 1;
+        if (i == 7) output.Strip8HasDataConflict = 1;
+      }
+
+      var clockI = clockPorts[i];
+      if (relayP == clockI && clockI != 10 && clockI != 15) {
+        if (r == 0) output.Relay1HasConflict = 1;
+        if (r == 1) output.Relay2HasConflict = 1;
+        if (r == 2) output.Relay3HasConflict = 1;
+        if (r == 3) output.Relay4HasConflict = 1;
+        if (i == 0) {
+          output.Strip1HasClockConflict = 1;
+          output.Strip1HasDataConflict = 1;
+        }
+        if (i == 1) {
+          output.Strip2HasClockConflict = 1;
+          output.Strip2HasDataConflict = 1;
+        }
+        if (i == 2) {
+          output.Strip3HasClockConflict = 1;
+          output.Strip3HasDataConflict = 1;
+        }
+        if (i == 3) {
+          output.Strip4HasClockConflict = 1;
+          output.Strip4HasDataConflict = 1;
+        }
+        if (i == 4) {
+          output.Strip5HasClockConflict = 1;
+          output.Strip5HasDataConflict = 1;
+        }
+        if (i == 5) {
+          output.Strip6HasClockConflict = 1;
+          output.Strip6HasDataConflict = 1;
+        }
+        if (i == 6) {
+          output.Strip7HasClockConflict = 1;
+          output.Strip7HasDataConflict = 1;
+        }
+        if (i == 7) {
+          output.Strip8HasClockConflict = 1;
+          output.Strip8HasDataConflict = 1;
+        }
+      }
+    }
+  }
+
+  // CHECK 6: Relais vs Relais Konflikte
+  for (var r = 0; r < relayPorts.length; r++) {
+    var relayR = relayPorts[r];
+    if (relayR == 10 || relayR == 15) continue;
+    for (var s = r + 1; s < relayPorts.length; s++) {
+      var relayS = relayPorts[s];
+      if (relayR == relayS && relayS != 10 && relayS != 15) {
+        if (r == 0) output.Relay1HasConflict = 1;
+        if (r == 1) output.Relay2HasConflict = 1;
+        if (r == 2) output.Relay3HasConflict = 1;
+        if (r == 3) output.Relay4HasConflict = 1;
+
+        if (s == 0) output.Relay1HasConflict = 1;
+        if (s == 1) output.Relay2HasConflict = 1;
+        if (s == 2) output.Relay3HasConflict = 1;
+        if (s == 3) output.Relay4HasConflict = 1;
+      }
+    }
+  }
+
+  // CHECK 7: a manual GPIO (port value 10) that equals the GPIO of a selected hardware port of the selected board
+  // (NEO_PortGpioByHW) or another manual GPIO; port vs port is covered by the value checks above
+  var portGpios = NEO_PortGpioByHW[hwSel];  // undefined while no or an unknown board is selected
+  if (!portGpios) return;  // no board selected: the port UI is hidden and the firmware uses no port byte
+  var used = [];  // { gpio, manual, strip (0..7) or -1, relay (0..3) or -1, clock }
+  for (var s7 = 0; s7 < activeStrips; s7++) {
+    var spi = NEO_IsSpiLedType(toInt(input['Strip' + (s7 + 1) + 'LedType'], 0));
+    var dRaw = toInt(input['Strip' + (s7 + 1) + 'DataPort'], 15);
+    var dManual = toInt(input['Strip' + (s7 + 1) + (spi ? 'MosiGpio' : 'DataGpio')], -1);
+    NEO_AddUsedGpio(used, NEO_SignalGpio(dRaw, dManual, portGpios), dRaw == 10, s7, -1, false);
+    if (spi) {
+      var cRaw = toInt(input['Strip' + (s7 + 1) + 'ClockPort'], 15);
+      NEO_AddUsedGpio(used, NEO_SignalGpio(cRaw, toInt(input['Strip' + (s7 + 1) + 'ClockGpio'], -1), portGpios), cRaw == 10, s7, -1, true);
+    }
+  }
+  // a hard-wired relay pin is never LED data, whatever the relay count (the firmware refuses such a strip GPIO)
+  for (var w7 = 0; w7 < wiredCount; w7++) NEO_AddUsedGpio(used, wiredRelays[w7], false, -1, w7, false);
+  for (var r7 = 0; r7 < relayRaw.length; r7++) {
+    NEO_AddUsedGpio(used, NEO_SignalGpio(relayRaw[r7], toInt(input['Relay' + (r7 + 1) + 'Gpio'], -1), portGpios), relayRaw[r7] == 10, -1, r7, false);
+  }
+  for (var a7 = 0; a7 < used.length; a7++) {
+    for (var b7 = a7 + 1; b7 < used.length; b7++) {
+      if (used[a7].gpio != used[b7].gpio || (!used[a7].manual && !used[b7].manual)) continue;
+      NEO_FlagGpioConflict(output, used[a7]);
+      NEO_FlagGpioConflict(output, used[b7]);
+    }
+  }
+}
+
+// LED types the firmware drives with MOSI + clock (NeoPixelBusModule::isSpiProtocol: APA102, SK9822, WS2801, LPD8806,
+// APA102 clone); LPD6803 (23) and P9813 (24) run on the data GPIO although the clock port UI offers them a clock
+function NEO_IsSpiLedType(ledType) {
+  var spiTypes = [5, 6, 21, 22, 25];
+  for (var i = 0; i < spiTypes.length; i++) if (spiTypes[i] == ledType) return true;
+  return false;
+}
+
+// GPIO of one signal: port value 0..9 -> GPIO of that port of the selected board, 10 -> manual GPIO, else -1
+function NEO_SignalGpio(portValue, manualGpio, portGpios) {
+  if (portValue == 10) return (manualGpio >= 0 && manualGpio < 255) ? manualGpio : -1;
+  if (portValue >= 0 && portValue <= 9 && portGpios && portValue < portGpios.length && portGpios[portValue] !== null) return portGpios[portValue];
+  return -1;
+}
+
+function NEO_AddUsedGpio(used, gpio, manual, strip, relay, clock) {
+  if (gpio < 0) return;
+  used.push({ gpio: gpio, manual: manual, strip: strip, relay: relay, clock: clock });
+}
+
+// conflict flags of one signal; a clock conflict also sets the data flag of its strip (the strip shows one warning)
+// (dot names as in NEO_DetectGPIOConflicts: no bracket writes into the ETS output object)
+function NEO_FlagGpioConflict(output, u) {
+  var s = u.strip;
+  if (s == 0) { output.Strip1HasDataConflict = 1; if (u.clock) output.Strip1HasClockConflict = 1; }
+  if (s == 1) { output.Strip2HasDataConflict = 1; if (u.clock) output.Strip2HasClockConflict = 1; }
+  if (s == 2) { output.Strip3HasDataConflict = 1; if (u.clock) output.Strip3HasClockConflict = 1; }
+  if (s == 3) { output.Strip4HasDataConflict = 1; if (u.clock) output.Strip4HasClockConflict = 1; }
+  if (s == 4) { output.Strip5HasDataConflict = 1; if (u.clock) output.Strip5HasClockConflict = 1; }
+  if (s == 5) { output.Strip6HasDataConflict = 1; if (u.clock) output.Strip6HasClockConflict = 1; }
+  if (s == 6) { output.Strip7HasDataConflict = 1; if (u.clock) output.Strip7HasClockConflict = 1; }
+  if (s == 7) { output.Strip8HasDataConflict = 1; if (u.clock) output.Strip8HasClockConflict = 1; }
+  if (u.relay == 0) output.Relay1HasConflict = 1;
+  if (u.relay == 1) output.Relay2HasConflict = 1;
+  if (u.relay == 2) output.Relay3HasConflict = 1;
+  if (u.relay == 3) output.Relay4HasConflict = 1;
+}
+
+// Module checkbox "Netzwerk" (BASE_ModuleEnabled_NET) from the hardware selection; the firmware of a TP build starts the
+// network module only with it on (src/main.cpp). Not selected (state after the app update): on, so a download keeps
+// the network settings and the network of a TP+WiFi firmware
+function NEO_SetNetworkModuleVisibility(input, output, context) {
+    var hwSelect = toInt(input.HardwareSelect, 0);
+@@use @hw/JsBoardInline.js @{ Prefix = '    var wifiHardware = ['; Suffix = '];'; Where = { $_.Cap.Network } }
+    var hasNetwork = (hwSelect === 0) ? 1 : 0;
+
+    for (var i = 0; i < wifiHardware.length; i++) {
+        if (hwSelect === wifiHardware[i]) {
+            hasNetwork = 1;
+            break;
+        }
+    }
+
+    output.ShowNetworkModule = hasNetwork;
+    info("Hardware " + hwSelect + " -> Network visible: " + hasNetwork);
+}
 
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
 

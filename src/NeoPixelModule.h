@@ -18,7 +18,7 @@
 // ETS FunctionProperty Definitions (from the generated NeoPixel-*.debug.xml files)
 // These values are referenced in the ETS JavaScript for online functions
 #define NEOPIXEL_FUNCTION_OBJECT_INDEX 158 // NeoPixel module appliance object
-#define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Hardware detection property
+#define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Studio readback (data[0] = 0x20); the device query is 158/4 (HardwareProfileData.h)
 
 // ─── NeoPixel Module Error/Warning Blink Codes ─────────────────────────────
 // All NeoPixel status codes use the STATUS LED (OPENKNX_LEDFUNC_BASE_STATE).

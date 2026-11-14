@@ -22,12 +22,15 @@
                 <!-- Byte 2: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%9%C%033" Offset="2" BitOffset="0" Name="NEO%C%DataGPIO" ParameterType="%AID%_PT-NEODataGPIO" Text="Daten GPIO" Value="6"/>
                 <!-- Byte 2: Bit 7 = WhiteMode (below) -->
-                <!-- Byte 3: hardware Clock Port (8b, NeoPixel.Hardware.templ.xml) -->
+                <!-- Byte 3: hardware Clock Port (8b): one parameter per board (NeoPixel.Hardware.templ.xml) and this carrier, the name the firmware reads -->
+                <Parameter Id="%AID%_UP-%TT%9%C%077" Offset="3" BitOffset="0" Name="NEO%C%ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Clock Port" Value="15" Access="None" op:nowarn="true"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%073" Offset="4" BitOffset="6" Name="NEO%C%SignalPolarity" ParameterType="%AID%_PT-NEOSignalPolarity" Text="Signal-Polarität" Value="0"/>
                 <!-- Byte 4: 0..5 (6b) MOSI GPIO, 6..7 (2b) signal polarity -->
                 <Parameter Id="%AID%_UP-%TT%9%C%035" Offset="4" BitOffset="0" Name="NEO%C%SPIMOSIGPIO" ParameterType="%AID%_PT-NEOSPIMOSIGPIO" Text="Daten GPIO" Value="3"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%074" Offset="2" BitOffset="7" Name="NEO%C%WhiteMode" ParameterType="%AID%_PT-NEOWhiteMode" Text="Weiß-Berechnung" Value="0"/>
-                <!-- Byte 5: hardware Data Port (8b, NeoPixel.Hardware.templ.xml); 0-9 = port, 10 = manual, 15 = not selected -->
+                <!-- Byte 5: hardware Data Port (8b): one parameter per board (NeoPixel.Hardware.templ.xml) and this carrier, the name the firmware reads;
+                     0-9 = port (port number - 1), 10 = manual, 15 = not selected -->
+                <Parameter Id="%AID%_UP-%TT%9%C%076" Offset="5" BitOffset="0" Name="NEO%C%DataPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Daten Port" Value="15" Access="None" op:nowarn="true"/>
                 
                 <!-- ═══════════════════════════════════════════════════════════════════════════════════
                      HARDWARE GPIO PARAMETERS (from Hardware.templ.xml)

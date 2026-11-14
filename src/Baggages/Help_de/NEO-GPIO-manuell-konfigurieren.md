@@ -14,6 +14,8 @@ Der GPIO-Pin für die Daten des LED-Streifens, wenn bei „Daten Port“ die Aus
 - Nutzt ein Relais oder ein vorheriger Streifen denselben GPIO schon, lehnt die Firmware den späteren Streifen ab und er bleibt aus (Log: „REFUSED“); ein SPI-Streifen belegt MOSI und Takt nur gemeinsam.
 - ESP32 (klassisch): GPIO 34–39 sind nur Eingänge
 - Ohne Auswahl bei „Daten Port“ („Wählen Sie bitte ein Port aus“) bleibt der Streifen aus
+- Ohne passende Hardware-Auswahl auf der Seite OpenKNX → „Hardware“ (keine oder eine andere Hardware als die der Firmware) nutzt das Gerät keinen Port und auch keinen manuellen GPIO: der Streifen bleibt aus
+- Ein manueller GPIO, der dem GPIO eines gewählten Ports (Streifen oder Relais) oder einem anderen manuellen GPIO gleicht, wird in ETS als Port-Konflikt angezeigt
 
 **Empfehlung:**
 Wenn möglich einen Port der Hardware auswählen; „Manuell“ nur für eigene Verdrahtung verwenden.

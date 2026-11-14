@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Hardware profile manifest of OAM-NeoPixel, read by lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1.
+  Boards: every release env; ports: HW_PORT_* of the board header; relays: <Set> entries below.
+  order="hwid" ids="slot": $b.Slot is the board number of HardwareProfile.slots (commit that file). It is part
+  of the per-board port parameter IDs (...HW<n>); a new board gets the next free number, a removed board keeps
+  its number, so no other board's parameter IDs move. The firmware reads the shared byte (carrier parameters).
+-->
+<HardwareProfile prefix="NEOHW" moduleType="45" text="Hardware" unselected="hide" order="hwid" ids="slot">
+
+  <!-- op:config feature flags, e.g. %NEOHW_CAP_No2D% / %NEOHW_SelectRef% (referenced by NeoPixel-Dev.xml / NeoPixel-Release.xml);
+       share + script: the hardware module (op:define prefix NEOHW, ModuleType 45): selection, device query, capability page -->
+  <!-- header: own profile for the device query (FP 158/4, NeoPixelModule::processFunctionProperty) -->
+  <Output conf="src/NeoPixel.hw.conf.xml" share="src/NeoPixel.hw.module.gen.xml" script="src/NeoPixel.hw.module.gen.js"
+          header="include/HardwareProfileData.h" />
+
+  <!-- capability ThirdParty (DEVICE_THIRD_PARTY) is built into the generator -->
+
+  <!-- Network module: the firmware has it (src/main.cpp adds it with KNX_IP_LAN or KNX_IP_WIFI) in some env of the board;
+       on/off is the OpenKNX module checkbox "Netzwerk" (BASE_ModuleEnabled_NET, set from the selection by NEO_SetNetworkModuleVisibility,
+       read by src/main.cpp in TP builds only). feature* = rows of the developer view (<Page features>); featureNote on boards
+       whose every env runs KNX over IP (the network is their KNX link). No2D: env build flag of platformio.custom.ini -->
+  <Capability name="Network" text="Netzwerk-Modul" expr="defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)" feature="Netzwerk" featureNote="immer ein, KNX über IP" featureNoteWhen="KnxIp" />
+  <Capability name="No2D" text="ohne 2D-Effekte" expr="defined(NEOPIXEL_DISABLE_2D)" merge="all" feature="2D-Effekte" featureInvert="true" />
+  <!-- WiFi in the firmware (env build flag): the WiFi settings (NETW) are offered only there -->
+  <Capability name="Wifi" text="WLAN" expr="defined(KNX_IP_WIFI)" feature="WLAN" featureNote="immer ein, KNX über IP" featureNoteWhen="KnxIp" />
+  <!-- KNX over IP (mask 0x57B0) in every env of the board; in the device query: this firmware runs KNX over IP -->
+  <Capability name="KnxIp" text="KNX über IP" expr="MASK_VERSION == 0x57B0" merge="all" feature="KNX" featureOn="IP" featureOff="TP" />
+  <!-- relays offered in ETS (query="false": not part of the device query): relay r <= HW_RELAY_COUNT of the board header is
+       hard-wired (QuinLED Dig2Go IO12, Gledopto GL-C-017WL IO18, GL-C-620WL IO18), every further relay takes a port; <Set> for
+       the boards whose relays sit on ports (KNeoPix terminal, UP1, QuinLED Uno/Quad V3+V4, Octa V1/V2/V4, Next2, Gledopto 309WL) and for the
+       017WL (relay 1 fixed, relay 2 on a port, as many relays as before); relays="true": developer view row (fest verdrahtet / Port wählbar) -->
+  <Value name="Relays" text="Relais" expr="HW_RELAY_COUNT" default="0" max="4" query="false" relays="true">
+    <Set board="OKNXHW_OPENKNXIAO_KNEOPIX_*" value="4" />
+    <Set board="DEVICE_UP1_GW_UART" value="1" />
+    <Set board="DEVICE_QUINLED_DIG_UNO_V3_*" value="1" />
+    <Set board="DEVICE_QUINLED_DIG_QUAD_V3_*" value="1" />
+    <Set board="DEVICE_QUINLED_DIG_UNO_V4_*" value="1" />
+    <Set board="DEVICE_QUINLED_DIG_QUAD_V4_*" value="1" />
+    <Set board="DEVICE_QUINLED_DIG_OCTA_32_8L_*" value="1" />
+    <Set board="DEVICE_QUINLED_DIG_NEXT2" value="1" />
+    <Set board="DEVICE_GLEDOPTO_ESP32_WLED_DIGITAL_UP" value="1" />
+    <Set board="DEVICE_GLEDOPTO_GL_C_017WL" value="2" />
+  </Value>
+
+  <!-- level shifter of the LED data lines (board header HW_LEVELSHIFTER, names in HardwareConfig/OpenKNX/Xiao.h), developer view only -->
+  <Value name="LevelShifter" text="Pegelwandler" expr="HW_LEVELSHIFTER" default="0" max="4" query="false"
+         names="– TXS0108E SN74HCT125 SN74AHCT125 SN74LV8T245" />
+
+  <!-- the hardware page as a page of the OpenKNX channel (NeoPixel-Dev.xml / NeoPixel-Release.xml compose it after "Allgemein"):
+       texts of the page (each <= 255 characters; absent = generator default: intro, queryTitle, query, infoDefault); no board
+       selected: "Abgleich mit dem Gerät" with the query button and unselectedInfo; board selected: device card (<InfoImage>),
+       switches, third-party notice. help = context help (src/Baggages/Help_de/NEO-Hardware.md). features = rows "Module und Funktionen" of the developer view; dev = developer view module,
+       defined only in NeoPixel-Dev.xml -->
+  <Page text="Hardware" icon="memory" help="NEO-Hardware" dev="src/NeoPixel.hw.dev.gen.xml" features="KnxIp Network Wifi No2D Relays"
+        unselectedInfo="Hardwareabhängige Einstellungen sind ausgeblendet, bis eine Hardware gewählt ist. Nach einem Update von einer Applikation ohne diese Seite ist die Auswahl einmalig zurückgesetzt." />
+  <Notice when="ThirdParty" title="Produkt eines Drittanbieters: OpenKNX stellt nur eine kompatible Firmware bereit und steht in keiner geschäftlichen Verbindung zum Hersteller. Gewährleistung, Support und Produktsicherheit liegen beim Hersteller. Nutzung auf eigene Verantwortung." />
+
+  <!-- device card on the hardware page: OpenKNX logo or third-party badge, DEVICE_NAME as headline, board text (HW_INFO_TEXT, else
+       the generator default); with HW_INFO_URL in the board header the QR code + link (one line) right of the board text.
+       Pictures: src/Baggages/NEOHWInfo (generated) -->
+  <InfoImage style="card" />
+
+  <Boards platformio="release_*" />
+
+  <!-- a port wired to a relay of the board (HW_RELAY_<n>_GPIO) is no LED port; the other ports keep their numbers;
+       max 10: port values 0..9 = ports 1..10, value 10 = manual GPIO (src/HardwareMappingLogic.h) -->
+  <Ports board="*" excludeRelayPins="true" max="10" />
+
+  <!-- ParameterTypes, included by NeoPixel.share.xml (xpath //ApplicationProgram/Static/ParameterTypes/ParameterType) -->
+  <Generate template="src/hw/NeoPixel.hw.types.xml" output="src/NeoPixel.hw.types.gen.xml" />
+  <Generate template="src/hw/NeoPixel.hw.relaytypes.xml" output="src/NeoPixel.hw.relaytypes.gen.xml" />
+
+  <!-- board-dependent elements, included per <Block> by NeoPixel.share.xml / NeoPixel.Hardware.templ.xml -->
+  <Generate template="src/hw/NeoPixel.hw.share.xml" output="src/NeoPixel.hw.share.gen.xml" />
+  <Generate template="src/hw/NeoPixel.hw.strip.xml" output="src/NeoPixel.hw.strip.gen.xml" />
+
+  <!-- ETS script: src/NeoPixel.script.src.js with the board tables expanded (@@use lines) -->
+  <Generate template="src/NeoPixel.script.src.js" output="src/NeoPixel.script.js" />
+</HardwareProfile>

@@ -446,13 +446,11 @@ void NeoPixelWeb::appendHead(std::string& j)
     const char* board = hardwareNameForId(hwId);
     uint16_t etsId = 0;
     const char* etsName = "";
-    #ifdef ParamNEO_NeoPixelHardwareSelect
     if (m._hwConfigMismatch)
     {
-        etsId = (uint16_t)ParamNEO_NeoPixelHardwareSelect;
-        etsName = etsId == 255 ? "" : hardwareNameForId(etsId);
+        etsId = selectedHardwareId();
+        etsName = etsId == HW_SELECT_NONE ? "" : hardwareNameForId(etsId);
     }
-    #endif
     uint8_t build = 0; // 0 = KNX TP, 1 = TP + WLAN, 2 = IP over WLAN, 3 = IP over LAN
     #if defined(KNX_IP_LAN)
     build = 3;
@@ -465,7 +463,7 @@ void NeoPixelWeb::appendHead(std::string& j)
     #endif
     addf(j, ",\"hw\":{\"chip\":\"%s\",\"mhz\":%lu,\"cores\":%u,\"hwid\":%u,\"board\":", ESP.getChipModel(), (unsigned long)getCpuFrequencyMhz(), (unsigned)ESP.getChipCores(), (unsigned)hwId);
     addJsonStr(j, board ? board : "", 48);
-    addf(j, ",\"ets\":%u,\"etsName\":", (unsigned)etsId);
+    addf(j, ",\"hwmm\":%u,\"ets\":%u,\"etsName\":", m._hwConfigMismatch ? 1u : 0u, (unsigned)etsId);
     addJsonStr(j, etsName ? etsName : "", 48);
     addf(j, ",\"ls\":%u,\"build\":%u", (unsigned)kHwDefaultLevelShifter, (unsigned)build);
     const uint32_t ftAvg = g_perfTracker.getAverageTime();

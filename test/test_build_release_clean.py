@@ -53,7 +53,7 @@ with tempfile.TemporaryDirectory(prefix='neopixel-build-clean-') as directory:
         print(f'Validated the ETS Text limit on {len(separators)} generated separators.')
 
     else:
-        run(fixture, '-File', 'scripts/Build-HardwareConfig.ps1', '-UniversalBuild')
+        run(fixture, '-File', 'lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1')
         run(fixture, '-File', 'scripts/Build-EffectParameters.ps1', '-SkipOpenKNXproducer')
         run(fixture, '-File', 'lib/OGM-Common/scripts/setup/reusable/Build-Dependencies.ps1')
     assert b'var NEO_StudioEffectParameters = {};' not in script.read_bytes()

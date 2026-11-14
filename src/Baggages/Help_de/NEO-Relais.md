@@ -76,5 +76,9 @@ Werden keine Relais benötigt, die Auswahl einfach auf **Deaktiviert** stellen. 
 
 **Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX), den Save-Pin, seine Taster, seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“). Nutzt ein vorheriges Relais denselben GPIO schon, bleibt das spätere Relais ohne Ausgang (Log: „REFUSED“); Relais werden vor den Streifen belegt.
 
+**Onboard-Relais (QuinLED Dig2Go IO12, Gledopto GL-C-017WL und GL-C-620WL IO18):** Relais 1 sitzt fest auf dem Relais der Platine; es hat keine Port-Auswahl, die Relais-Seite zeigt den Anschluss (z. B. „Anschluss: IO18 (Onboard Relais)“). Der Relais-Pin wird nicht als LED-Port angeboten. Weitere Relais (GL-C-017WL: Relais 2) wählen ihren Port wie gewohnt. Mehr Relais einzustellen, als die Hardware bietet, zeigt einen Fehler. Der Relais-Ausgang von QuinLED Uno, Quad, Octa und Next2 sowie IO12 (GL-C-309WL) und IO13 (GL-C-017WL) sind normale Ports: LED oder Relais.
+
+**Hardware-Auswahl:** Die Relais schalten nur, wenn auf der Seite OpenKNX → „Hardware“ die Hardware gewählt ist, für die die Firmware gebaut ist; sonst bleiben alle Relais ohne Ausgang. Ein manueller GPIO, der dem GPIO eines gewählten Ports oder einem anderen manuellen GPIO gleicht, wird in ETS als Port-Konflikt angezeigt.
+
 **Hinweis:** Für komplexere Automatisierungen (z. B. zeitgesteuerte oder verknüpfte Schaltungen) empfiehlt sich ein separates KNX-Schaltaktor-Modul.
 
