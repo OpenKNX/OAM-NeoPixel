@@ -1,6 +1,6 @@
 ### Clock GPIO
 
-Der GPIO-Pin für das Clock-Signal bei SPI-basierten LEDs (APA102, SK9822). Nur erforderlich wenn SPI-LEDs verwendet werden.
+Der GPIO-Pin für das Clock-Signal bei SPI-basierten LEDs (APA102, APA102-Klon, SK9822, WS2801, LPD8806, LPD6803, P9813). Nur erforderlich wenn SPI-LEDs verwendet werden.
 
 **Konfiguration:**
 

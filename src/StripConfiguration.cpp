@@ -59,16 +59,8 @@ ColorOrder StripConfiguration::mapColorOrder(uint8_t c)
     }
 }
 
+// same set as NeoPixelBusModule::isSpiProtocol: the SPI protocols of the driver library
 bool StripConfiguration::isSpiProtocol(LedProtocol protocol)
 {
-    switch (protocol)
-    {
-        case LedProtocol::APA102:
-        case LedProtocol::SK9822:
-        case LedProtocol::WS2801:
-        case LedProtocol::LPD8806:
-            return true;
-        default:
-            return false;
-    }
+    return ProtocolHelper::isSPI(protocol);
 }

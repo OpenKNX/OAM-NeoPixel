@@ -62,4 +62,4 @@ Das ist wichtig, weil die Beschriftung nur ein Zielwert ist. Die Hardware kann n
 
 - **640 und 720 kHz** sind Notnägel für sehr schwache Signale.
 - **WS2811** läuft mit **800 kHz**. Der ETS-Typ **„WS2812_400kHz"** wählt dagegen ausdrücklich das separate 400-kHz-Profil.
-- Dieses Feld gilt **nur für 1-Wire-LEDs** (WS2812, SK6812 und verwandte). **SPI-LEDs** (APA102, SK9822, WS2801, LPD8806, LPD6803, P9813) takten über ihre eigene Clock-Leitung — dort erscheint stattdessen **„SPI Clock"**, und dieses Feld wird ausgeblendet.
+- Dieses Feld gilt **nur für 1-Wire-LEDs** (WS2812, SK6812 und verwandte). **SPI-LEDs** (APA102, APA102-Clone, SK9822, WS2801, LPD8806, LPD6803, P9813) takten über ihre eigene Clock-Leitung — dort erscheint stattdessen **„SPI Clock"**, und dieses Feld wird ausgeblendet.

@@ -24,6 +24,6 @@ Ein Streifen mit falscher Polarität bleibt in aller Regel **komplett dunkel** o
 
 ## Hinweise
 
-- Bei **SPI-LEDs** (APA102, SK9822, WS2801, LPD8806, LPD6803, P9813) erscheint dieses Feld nicht — sie haben eine eigene Taktleitung und kennen diese Umschaltung nicht.
+- Bei **SPI-LEDs** (APA102, APA102-Clone, SK9822, WS2801, LPD8806, LPD6803, P9813) erscheint dieses Feld nicht — sie haben eine eigene Taktleitung und kennen diese Umschaltung nicht.
 - Die Einstellung gilt **pro Streifen**. Unterschiedliche Streifen dürfen unterschiedliche Werte haben.
 - **Normal** erzwingt die nicht-invertierte Ansteuerung auch bei einem Chip, der von sich aus invertiert wäre. Das ist nur sinnvoll, wenn deine Verkabelung die Umkehrung bereits erledigt.

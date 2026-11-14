@@ -4907,19 +4907,11 @@ void NeoPixelBusModule::createDefaultVirtualStripOrder()
     }
 }
 
+// MOSI + clock: the protocols the driver library runs on its SPI driver (APA102, APA102 clone, SK9822, WS2801, LPD8806,
+// LPD6803, P9813; ETS LED types 5 25 6 21 22 23 24)
 bool NeoPixelBusModule::isSpiProtocol(LedProtocol protocol)
 {
-    switch (protocol)
-    {
-        case LedProtocol::APA102:
-        case LedProtocol::APA102_CLONE:
-        case LedProtocol::SK9822:
-        case LedProtocol::WS2801:
-        case LedProtocol::LPD8806:
-            return true;
-        default:
-            return false;
-    }
+    return ProtocolHelper::isSPI(protocol);
 }
 
 const char* NeoPixelBusModule::getColorOrderName(ColorOrder order)
@@ -4962,6 +4954,9 @@ const char* NeoPixelBusModule::getProtocolName(LedProtocol protocol)
         case LedProtocol::SK9822: return "SK9822";
         case LedProtocol::WS2801: return "WS2801";
         case LedProtocol::LPD8806: return "LPD8806";
+        case LedProtocol::APA102_CLONE: return "APA102 clone";
+        case LedProtocol::LPD6803: return "LPD6803";
+        case LedProtocol::P9813: return "P9813";
         // 5-Channel RGBCCT Protocols
         case LedProtocol::SK6812_RGBCCT: return "SK6812_RGBCCT";
         case LedProtocol::WS2814_RGBCCT: return "WS2814_RGBCCT";
