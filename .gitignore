@@ -22,6 +22,9 @@ src/NeoPixel.hw.*.gen.xml
 src/NeoPixel.hw.module.gen.js
 include/HardwareProfileData.h
 src/NeoPixel.script.js
+# header OpenKNXproducer writes next to the XML when it runs without -h (the build uses include/knxprod.h)
+src/NeoPixel-Dev.h
+src/NeoPixel-Release.h
 src/Baggages/NEOHWInfo/
 # page icon of the hardware page, copied by the generator from OGM-HardwareConfig/generator/assets/icons
 src/Baggages/Icons/memory.png
