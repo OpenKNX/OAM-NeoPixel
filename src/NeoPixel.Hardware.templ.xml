@@ -25,9 +25,8 @@
     <!-- GPIO Conflict Status Display (for conflict warnings) -->
     <GPIOConflictStatus>
       <ParameterRefRef RefId="%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01" IndentLevel="1" />
-      <!-- Hidden Clock conflict parameter references -->
-      <!-- We can't easily reference Clock conflicts with %C%, so we'll use Data conflicts only for now -->
-      <!-- Only show conflict warning if Hardware is selected (NOT 0) -->
+      <!-- NEO_DetectGPIOConflicts sets the data flag also for a clock conflict, so this one flag shows both;
+           shown only while a hardware is selected (NOT 0) -->
       <choose ParamRefId="%NEOHW_SelectRef%">
         <when test="0">
           <!-- No hardware selected → no conflict check -->
@@ -36,7 +35,7 @@
           <!-- Hardware selected → check for conflicts -->
           <choose ParamRefId="%AID%_UP-%TT%0009%C%_R-%TT%0009%C%01">
             <when test="1">
-              <ParameterSeparator Id="%AID%_PS-gpioconflict%C%" Text="PORT KONFLIKT: Der von Ihnen zugewiesene Port wird bereits von einem anderen physikalischen LED-Streifen verwendet. Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
+              <ParameterSeparator Id="%AID%_PS-gpioconflict%C%" Text="PORT KONFLIKT: Der Daten- oder Takt-Port dieses Streifens ist bereits belegt (anderer Streifen, Relais oder manueller GPIO). Bitte wählen Sie einen freien Port aus!" UIHint="Error" />
             </when>
           </choose>
         </when>
@@ -110,55 +109,28 @@
       </choose>
     </GPIOClockSelection>
     
-    <!-- GPIO Conflict Warning UI -->
-    <GPIOConflictWarning>
-      <!-- Zentrale Warnung: Zeige Warnung wenn Data oder Clock Port auf "Manuell" gesetzt ist -->
-      <!-- Hidden parameter references -->
+    <!-- Expert note while the data port, or the clock port of an SPI LED type, is set to "Manuell" (port value 10) -->
+    <ManualGpioWarning>
+      <!-- hidden references of the port parameters the choose blocks test -->
       <ParameterRefRef RefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01" IndentLevel="1" />
       <ParameterRefRef RefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01" IndentLevel="1" />
-      <!-- Data Port = Manuell OR (LED is SPI AND Clock Port = Manuell) -->
       <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
         <when test="10">
-          <!-- Data Port is Manuell → show warning (regardless of Clock Port) -->
+          <ParameterSeparator Id="%AID%_PS-nnn" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
         </when>
         <when default="true">
-          <!-- Data Port NOT Manuell → check if Clock Port is Manuell for SPI LEDs -->
           <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
             <when test="5 6 21 22 23 24 25">
-              <!-- LED type is SPI → check Clock Port -->
               <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
                 <when test="10">
-                  <!-- Clock Port is Manuell → show warning -->
+                  <ParameterSeparator Id="%AID%_PS-nnn" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
                 </when>
               </choose>
             </when>
           </choose>
         </when>
       </choose>
-      <!-- Single ParameterSeparator shown if ANY of the above conditions matched -->
-      <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
-        <when test="10">
-          <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
-        </when>
-      </choose>
-      <choose ParamRefId="%AID%_UP-%TT%9%C%030_R-%TT%9%C%03001">
-        <when test="5 6 21 22 23 24 25">
-          <choose ParamRefId="%AID%_UP-%TT%0011%C%_R-%TT%0011%C%01">
-            <when test="10">
-              <choose ParamRefId="%AID%_UP-%TT%0010%C%_R-%TT%0010%C%01">
-                <when test="10">
-                  <!-- Data already Manuell → warning already shown above, skip -->
-                </when>
-                <when default="true">
-                  <!-- Only Clock is Manuell → show warning -->
-                  <ParameterSeparator Id="%AID%_PS-manualgpio%C%" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
-                </when>
-              </choose>
-            </when>
-          </choose>
-        </when>
-      </choose>
-    </GPIOConflictWarning>
+    </ManualGpioWarning>
   </UIElements>
 
   <!-- PARAMETER CALCULATIONS: Hardware GPIO copy logic -->

@@ -59,7 +59,7 @@
   <choose ParamRefId="{{$Ref}}">
     <when test="10">
       <ParameterRefRef RefId="%AID%_UP-%TT%{{D5 (154 + $r)}}_R-%TT%{{D5 (154 + $r)}}01" IndentLevel="3" />
-      <ParameterSeparator Id="%AID%_PS-nnn" Text="⚠️ WARNUNG: Manuelle GPIO-Konfiguration kann zu Hardware-Konflikten führen!" UIHint="Error" />
+      <ParameterSeparator Id="%AID%_PS-nnn" Text="WARNUNG: Manuelle GPIO-Konfiguration nur für Experten!&#xD;&#xA;Fehlerhafte Einstellungen können das Gerät dauerhaft unbrauchbar machen, die Kommunikation blockieren oder Hardware beschädigen." UIHint="Information" />
     </when>
   </choose>
 @@endparam

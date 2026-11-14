@@ -80,8 +80,8 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%036" Offset="24" BitOffset="0" Name="NEO%C%SPICLK" ParameterType="%AID%_PT-NEOSPICLK" Text="SPI Clock" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="24" BitOffset="3" Name="NEO%C%SPICLKMode" ParameterType="%AID%_PT-SPIClockMode" Text="SPI Takt" Value="0"/>
                 
-                <!-- NOTE: GPIO Conflict Parameters live in Share.xml (namespace 00, parameters 00091-00096, 00117-00122)
-                     They are directly referenced in the UI via ParameterRefRef - NO Strip-specific parameters needed! -->
+                <!-- NOTE: the GPIO conflict flags live in NeoPixel.share.xml (data 00091-00098, clock 00163-00170, relays 00133/00134/00137/00138),
+                     set by NEO_DetectGPIOConflicts; the strip page shows the data flag (NeoPixel.Hardware.templ.xml GPIOConflictStatus) -->
                 
               </Union>
             </Parameters>
@@ -273,9 +273,9 @@
                       </choose>
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
-                           HARDWARE GPIO CONFLICT WARNING UI (from Hardware.templ.xml)
+                           EXPERT NOTE FOR A MANUAL GPIO (from Hardware.templ.xml)
                            ═══════════════════════════════════════════════════════════════════════════════════ -->
-                      <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/GPIOConflictWarning/*" />
+                      <op:include href="NeoPixel.Hardware.templ.xml" xpath="//HardwareGPIOConfig/UIElements/ManualGpioWarning/*" />
                       
                       <!-- ═══════════════════════════════════════════════════════════════════════════════════
                             SPI CLOCK CONFIGURATION (only for SPI LEDs)
