@@ -403,11 +403,11 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
 // C++ firmware resolves value k to HW_PORT_{k+1}_GPIO of the board header
 // GPIO numbers are compile-time defines, not available in JavaScript
 
-// Port counts per hardware ID (HW_ID -> port count)
+// Port count per DEVICE_HW_ID
 var portCounts = {
 @@use @hw/JsBoardEntries.js @{ Key = '0x{{X4 $b.HwId}}'; Value = '{{$b.Ports.Count}}'; Comment = '{{$b.Name}}'; Where = { $_.Ports.Count -gt 0 } }
 };
-// GPIO port labels per hardware (for documentation)
+// Port labels per DEVICE_HW_ID
 var portLabels = {
 @@use @hw/JsBoardPorts.js
 };
@@ -425,13 +425,9 @@ var hardwareIdMap = {
 @@use @hw/JsBoardEntries.js @{ Indent = '    '; Value = '{{$b.Slot}}'; Comment = '{{$b.Name}} → Index {{$b.Slot}}' }
 };
 
-// REAL GPIO CONFLICT DETECTION
-// Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
-// Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
-
 // ============================================================================================================
-// HELPER: Copy a hardware-specific GPIO port selection into the shared (hidden) port parameter.
-// Each copy calculation reads only its own per-hardware parameter. HardwareSelection is no input:
+// HELPER: Copy the port selection of one board into the shared (hidden) port parameter (conflict check input).
+// Each copy calculation reads only its own per-board parameter. The hardware selection is no input:
 // as an input of every copy calculation it chained all copy calculations together, so one change
 // re-ran all of them and the calculations of unused slots overwrote the shared value.
 // ============================================================================================================
@@ -442,7 +438,7 @@ function NEO_CopyGPIOPortChecked(input, output, context) {
 
 // ============================================================================================================
 // HELPER: RESOLVE RELAY PORT
-// The device receives the per-hardware parameter (RelayNHW<index>, same byte as the shared RelayNPort).
+// The device receives the per-board parameter (RelayNHW<board number>, same byte as the shared RelayNPort).
 // The shared copy keeps the value of an earlier hardware after a hardware change, so it is only the
 // fallback when no hardware is selected.
 // ============================================================================================================
@@ -456,10 +452,9 @@ function NEO_ResolveRelayPort(input, hwSel, relayIdx) {
 }
 
 // ============================================================================================================
-// REAL GPIO CONFLICT DETECTION
-// Prüft ob ein Strip denselben GPIO Port wie ein anderer Strip verwendet
-// Wenn Strip X denselben Port wie Strip Y hat → BEIDE bekommen Konflikt-Flag
-// UNTERSTÜTZT: Data vs Data, Clock vs Clock, Data vs Clock Cross-Konflikte
+// GPIO CONFLICT DETECTION
+// Two signals (strip data/clock, relay) on the same port flag both; covers data vs data, clock vs clock,
+// data vs clock, data = clock of one strip, relay vs strip, relay vs relay and manual GPIOs (CHECK 7)
 // ============================================================================================================
 function NEO_DetectGPIOConflicts(input, output, context) {
   // Data port selection of all 8 strips (0..9 = hardware port, 10 = manual, 15 = none)
@@ -491,7 +486,7 @@ function NEO_DetectGPIOConflicts(input, output, context) {
   if (relayCount < 0) relayCount = 0;
   if (relayCount > 4) relayCount = 4;
 
-  // Resolve relay ports using shared params; fall back to HW-specific params (0 = no hardware selected)
+  // Relay ports from the per-board params of the selected board; the shared params are the fallback (0 = no hardware selected)
   var hwSel = toInt(input.HardwareSelection, 0);
 
   // hard-wired relays have no port selection: they take part in CHECK 7 with their fixed GPIO
@@ -517,7 +512,7 @@ function NEO_DetectGPIOConflicts(input, output, context) {
     if (relayPorts[m] < 0 || relayPorts[m] >= 10) relayPorts[m] = 15;
   }
 
-  // Alle Data Conflict Flags initial auf 0 setzen
+  // Reset all data conflict flags
   output.Strip1HasDataConflict = 0;
   output.Strip2HasDataConflict = 0;
   output.Strip3HasDataConflict = 0;
@@ -527,7 +522,7 @@ function NEO_DetectGPIOConflicts(input, output, context) {
   output.Strip7HasDataConflict = 0;
   output.Strip8HasDataConflict = 0;
 
-  // Alle Clock Conflict Flags initial auf 0 setzen
+  // Reset all clock conflict flags
   output.Strip1HasClockConflict = 0;
   output.Strip2HasClockConflict = 0;
   output.Strip3HasClockConflict = 0;
@@ -537,22 +532,22 @@ function NEO_DetectGPIOConflicts(input, output, context) {
   output.Strip7HasClockConflict = 0;
   output.Strip8HasClockConflict = 0;
 
-  // Relay Conflict Flags initial auf 0 setzen
+  // Reset all relay conflict flags
   output.Relay1HasConflict = 0;
   output.Relay2HasConflict = 0;
   output.Relay3HasConflict = 0;
   output.Relay4HasConflict = 0;
 
-  // CHECK 1: Data vs Data Konflikte
+  // CHECK 1: data vs data
   for (var i = 0; i < 8; i++) {
     var dataI = dataPorts[i];
-    if (dataI == 10 || dataI == 15) continue;  // Manuell oder Dummy
+    if (dataI == 10 || dataI == 15) continue;  // manual or none
 
     for (var j = i + 1; j < 8; j++) {
       var dataJ = dataPorts[j];
 
       if (dataI == dataJ && dataJ != 10 && dataJ != 15) {
-        // BEIDE Strips bekommen Data-Konflikt-Flag
+        // both strips get the data conflict flag
         if (i == 0) output.Strip1HasDataConflict = 1;
         if (i == 1) output.Strip2HasDataConflict = 1;
         if (i == 2) output.Strip3HasDataConflict = 1;
@@ -574,97 +569,97 @@ function NEO_DetectGPIOConflicts(input, output, context) {
     }
   }
 
-  // CHECK 2: Clock vs Clock Konflikte
+  // CHECK 2: clock vs clock
   for (var i = 0; i < 8; i++) {
     var clockI = clockPorts[i];
-    if (clockI == 10 || clockI == 15) continue;  // Manuell oder Dummy
+    if (clockI == 10 || clockI == 15) continue;  // manual or none
 
     for (var j = i + 1; j < 8; j++) {
       var clockJ = clockPorts[j];
 
       if (clockI == clockJ && clockJ != 10 && clockJ != 15) {
-        // BEIDE Strips bekommen Clock-Konflikt-Flag
+        // both strips get the clock conflict flag
         if (i == 0) {
           output.Strip1HasClockConflict = 1;
-          output.Strip1HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip1HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 1) {
           output.Strip2HasClockConflict = 1;
-          output.Strip2HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip2HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 2) {
           output.Strip3HasClockConflict = 1;
-          output.Strip3HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip3HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 3) {
           output.Strip4HasClockConflict = 1;
-          output.Strip4HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip4HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 4) {
           output.Strip5HasClockConflict = 1;
-          output.Strip5HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip5HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 5) {
           output.Strip6HasClockConflict = 1;
-          output.Strip6HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip6HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 6) {
           output.Strip7HasClockConflict = 1;
-          output.Strip7HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip7HasDataConflict = 1;  // shown as the strip warning
         }
         if (i == 7) {
           output.Strip8HasClockConflict = 1;
-          output.Strip8HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip8HasDataConflict = 1;  // shown as the strip warning
         }
 
         if (j == 0) {
           output.Strip1HasClockConflict = 1;
-          output.Strip1HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip1HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 1) {
           output.Strip2HasClockConflict = 1;
-          output.Strip2HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip2HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 2) {
           output.Strip3HasClockConflict = 1;
-          output.Strip3HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip3HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 3) {
           output.Strip4HasClockConflict = 1;
-          output.Strip4HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip4HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 4) {
           output.Strip5HasClockConflict = 1;
-          output.Strip5HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip5HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 5) {
           output.Strip6HasClockConflict = 1;
-          output.Strip6HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip6HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 6) {
           output.Strip7HasClockConflict = 1;
-          output.Strip7HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip7HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 7) {
           output.Strip8HasClockConflict = 1;
-          output.Strip8HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip8HasDataConflict = 1;  // shown as the strip warning
         }
       }
     }
   }
 
-  // CHECK 3: Data vs Clock Cross-Konflikte (CRITICAL!)
+  // CHECK 3: data of one strip vs clock of another
   for (var i = 0; i < 8; i++) {
     var dataI = dataPorts[i];
-    if (dataI == 10 || dataI == 15) continue;  // Manuell oder Dummy
+    if (dataI == 10 || dataI == 15) continue;  // manual or none
 
     for (var j = 0; j < 8; j++) {
-      if (i == j) continue;  // Selber Strip
+      if (i == j) continue;  // same strip: CHECK 4
 
       var clockJ = clockPorts[j];
 
       if (dataI == clockJ && clockJ != 10 && clockJ != 15) {
-        // Strip i hat Data-Konflikt, Strip j hat Clock-Konflikt
+        // strip i gets the data conflict flag, strip j the clock conflict flag
         if (i == 0) output.Strip1HasDataConflict = 1;
         if (i == 1) output.Strip2HasDataConflict = 1;
         if (i == 2) output.Strip3HasDataConflict = 1;
@@ -676,51 +671,51 @@ function NEO_DetectGPIOConflicts(input, output, context) {
 
         if (j == 0) {
           output.Strip1HasClockConflict = 1;
-          output.Strip1HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip1HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 1) {
           output.Strip2HasClockConflict = 1;
-          output.Strip2HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip2HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 2) {
           output.Strip3HasClockConflict = 1;
-          output.Strip3HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip3HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 3) {
           output.Strip4HasClockConflict = 1;
-          output.Strip4HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip4HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 4) {
           output.Strip5HasClockConflict = 1;
-          output.Strip5HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip5HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 5) {
           output.Strip6HasClockConflict = 1;
-          output.Strip6HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip6HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 6) {
           output.Strip7HasClockConflict = 1;
-          output.Strip7HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip7HasDataConflict = 1;  // shown as the strip warning
         }
         if (j == 7) {
           output.Strip8HasClockConflict = 1;
-          output.Strip8HasDataConflict = 1;  // Für UI-Anzeige
+          output.Strip8HasDataConflict = 1;  // shown as the strip warning
         }
       }
     }
   }
 
-  // CHECK 4: Interne Strip-Konflikte (Data = Clock im selben Strip)
+  // CHECK 4: data = clock within one strip
   for (var i = 0; i < 8; i++) {
     var dataI = dataPorts[i];
     var clockI = clockPorts[i];
 
-    // Skip wenn einer der Ports manuell ist oder Dummy
+    // skip when one of the ports is manual or none
     if (dataI == 10 || dataI == 15 || clockI == 10 || clockI == 15) continue;
 
-    // Konflikt wenn Data-Port = Clock-Port im selben Strip
+    // conflict when data port = clock port of the same strip
     if (dataI == clockI) {
-      // Strip hat internen Konflikt: Data und Clock auf demselben Port
+      // data and clock on the same port
       if (i == 0) {
         output.Strip1HasDataConflict = 1;
         output.Strip1HasClockConflict = 1;
@@ -756,10 +751,10 @@ function NEO_DetectGPIOConflicts(input, output, context) {
     }
   }
 
-  // CHECK 5: Relais vs Strip-Konflikte
+  // CHECK 5: relay vs strip
   for (var r = 0; r < relayPorts.length; r++) {
     var relayP = relayPorts[r];
-    if (relayP == 10 || relayP == 15) continue; // Manuell oder Dummy
+    if (relayP == 10 || relayP == 15) continue; // manual or none
 
     for (var i = 0; i < 8; i++) {
       var dataI = dataPorts[i];
@@ -820,7 +815,7 @@ function NEO_DetectGPIOConflicts(input, output, context) {
     }
   }
 
-  // CHECK 6: Relais vs Relais Konflikte
+  // CHECK 6: relay vs relay
   for (var r = 0; r < relayPorts.length; r++) {
     var relayR = relayPorts[r];
     if (relayR == 10 || relayR == 15) continue;

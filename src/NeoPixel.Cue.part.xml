@@ -4,7 +4,7 @@
     <!--
       Cue %CUE_NR%: 48 bytes at offset %CUE_OFF% within EM Union
       Parameters:
-        Byte  0:     EffektID     (1B)
+        Byte  0:     EffectID     (1B)
         Byte  1-10:  Params 0-9   (10B)
         Byte 11-13:  RGB          (3B)
         Byte 14:     W            (1B)
@@ -58,7 +58,7 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+15%_R-%TT%%CC%%CUE_PPP+15%01" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+15%" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+17%_R-%TT%%CC%%CUE_PPP+17%01" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+17%" />
-              <!-- Tabellen-Refs (02) für Cue-Übersichtstabelle im EM-Kanal -->
+              <!-- Table refs (02) for the cue overview table of the EM channel -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%02"   RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%"  Text="" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+14%_R-%TT%%CC%%CUE_PPP+14%02" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+14%" Text="" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+15%_R-%TT%%CC%%CUE_PPP+15%02" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+15%" Text="" />
@@ -67,7 +67,7 @@
           </Static>
           <Dynamic>
             <ChannelIndependentBlock>
-              <!-- Cue sichtbar wenn CueCount >= CUE_NR (Cue 1 immer da, da min=1) -->
+              <!-- Cue visible when CueCount >= CUE_NR (cue 1 always, min=1) -->
               <choose ParamRefId="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201">
                 <when test=">=%CUE_NR%">
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Cue%CUE_NR%"
@@ -75,9 +75,9 @@
                                   Icon="effectmanager-cue"
                                   ShowInComObjectTree="true"
                                   TextParameterRefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01">
-                    <!-- Cue-Name -->
+                    <!-- Cue name -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" IndentLevel="1" HelpContext="NEO-Cue-Name"/>
-                    <!-- Effekt Dropdown -->
+                    <!-- Effect dropdown -->
                     <choose ParamRefId="%NEOHW_SelectRef%">
                       <!-- hardware built with NEOPIXEL_DISABLE_2D (token from OGM-HardwareConfig/generator, HardwareProfile.xml) -->
                       <when test="%NEOHW_CAP_No2D%">
@@ -87,7 +87,7 @@
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01" IndentLevel="1" HelpContext="NEO-Cue-Effekt"/>
                       </when>
                     </choose>
-                    <!-- Farbe / Helligkeit / Timing -->
+                    <!-- Colour / brightness / timing -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+11%_R-%TT%%CC%%CUE_PPP+11%01" IndentLevel="1" HelpContext="NEO-Cue-Farbe"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+12%_R-%TT%%CC%%CUE_PPP+12%01" IndentLevel="1" HelpContext="NEO-Cue-Weiss"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+13%_R-%TT%%CC%%CUE_PPP+13%01" IndentLevel="1" HelpContext="NEO-Cue-Helligkeit"/>
@@ -100,7 +100,7 @@
                 </when>
               </choose>
             </ChannelIndependentBlock>
-            <!-- Tabellenzeile für die Cue-Übersichtstabelle im EM-Kanal (wird in EM.templ.xml included) -->
+            <!-- Table row of the cue overview table of the EM channel (included by EM.templ.xml) -->
             <CueTableRow>
               <choose ParamRefId="%AID%_UP-%TT%%CC%002_R-%TT%%CC%00201">
                 <when test=">=%CUE_NR%">

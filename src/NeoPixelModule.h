@@ -15,8 +15,7 @@
 #include <string>
 #include <vector>
 
-// ETS FunctionProperty Definitions (from the generated NeoPixel-*.debug.xml files)
-// These values are referenced in the ETS JavaScript for online functions
+// ETS FunctionProperty of the Studio readback, called by the ETS script (NeoPixel.script.src.js)
 #define NEOPIXEL_FUNCTION_OBJECT_INDEX 158 // NeoPixel module appliance object
 #define NEOPIXEL_FUNCTION_PROPERTY_ID 10   // Studio readback (data[0] = 0x20); the device query is 158/4 (HardwareProfileData.h)
 
@@ -27,7 +26,7 @@
 
 // Error codes (Red, STATUS LED): lower value = higher severity
 static constexpr uint8_t NEO_ERROR_HW_MISMATCH = 1;      // 1× blink: Firmware/ETS hardware mismatch
-static constexpr uint8_t NEO_ERROR_NO_HW_CONFIGURED = 2; // 2× blink: No hardware selected in ETS (dummy 255)
+static constexpr uint8_t NEO_ERROR_NO_HW_CONFIGURED = 2; // 2× blink: No hardware selected in ETS (selection value 0)
 static constexpr uint8_t NEO_ERROR_GPIO_CONFLICT = 3;    // 3× blink: Duplicate GPIO pin assignment
 static constexpr uint8_t NEO_ERROR_STRIP_FAILED = 4;     // 4× blink: Physical strip creation failed (nullptr)
 static constexpr uint8_t NEO_ERROR_VSTRIP_FAILED = 5;    // 5× blink: Virtual strip creation failed
@@ -51,7 +50,7 @@ class NeoPixelStudio;
  * This adapter demonstrates the ColorOrder design principles:
  * - PhysicalStrips handle hardware-specific ColorOrder (GRB, BGR, RGB, etc.)
  * - VirtualStrip provides unified RGB interface for effects
- * - Mixed hardware types can be combined seamlessly
+ * - Mixed LED types can be combined in one virtual strip
  *
  * Power Management features:
  * - Global current limiting across all strips
@@ -229,7 +228,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     void showHelp() override;
     bool processCommand(const std::string command, bool diagnose) override;
 
-    // FunctionProperty: ETS online functions (hardware detection)
+    // FunctionProperty: hardware device query (158/4) and Studio readback (158/10)
     bool processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength) override;
 
     // Access to unified virtual strip (if created)
@@ -483,7 +482,7 @@ class NeoPixelBusModule : public OpenKNX::Module
     // both here, since flash persistence is purely an OAM concern). onlySeg=-1 = all.
     void printFlashStateTable(int onlySeg);
 
-    void initializeGpioPins();             // Initialize all configured GPIO pins to LOW before strip creation
+    void initializeGpioPins();             // Drive every HW_PORT GPIO of the board LOW (unconfigured device only)
     void configurePowerManagement();       // Configure power management using OFM PowerManager
     void configureStripOptions();          // Configure swap and skip options from ETS parameters
     void configureSegments();              // Configure segments from ETS parameters

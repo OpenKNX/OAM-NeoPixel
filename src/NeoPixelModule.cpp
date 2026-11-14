@@ -249,8 +249,8 @@ void NeoPixelBusModule::setup(bool configured)
     {
         logInfoP("NeoPixelBusModule setup skipped - not configured");
         // Initialize GPIOs early to prevent floating states and send LED RESET signals
-        // NOTE: This only sets pins LOW - LEDs retain their color until proper protocol
-        //       data is sent (happens in configureFromETS() after strip creation)
+        // NOTE: This only sets pins LOW - LEDs keep their latched color: without an ETS
+        //       download no strip is built that sends black
         initializeGpioPins();
     }
     #ifdef NEOPIXEL_WEB
@@ -292,7 +292,7 @@ void NeoPixelBusModule::loop(bool configured)
 
             if (selectedHwId == HW_SELECT_NONE)
             {
-                // no hardware selected in the ETS channel "Hardware" yet
+                // no hardware selected on the ETS hardware page yet (OpenKNX channel, after "Allgemein")
                 const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
                 logErrorP("*** No hardware selected! ETS channel 'Hardware': select %s (ID: 0x%04X) or use 'Hardware vom Geraet abfragen'",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
@@ -3437,11 +3437,11 @@ void NeoPixelBusModule::initializeGpioPins()
 
     uint8_t initializedCount = 0;
 
-    // Iterate through ALL possible port indices (0-based) defined by hardware mapping
+    // Iterate through all port values 0..HW_PORT_COUNT-1 of the board header (hwPortGpio)
     // This sets all hardware GPIOs to LOW and sends RESET to LEDs
     // NOTE: WS2812 LEDs will RESET but keep their previous color in latches!
     // To actually turn LEDs OFF, we must send RGB(0,0,0) via the timing protocol
-    // (this happens later in configureFromETS() after strip creation)
+    // (only a configured device does that, in configureFromETS() after strip creation)
     for (uint8_t portIndex = 0; portIndex < HW_PORT_COUNT; portIndex++)
     {
         uint8_t gpio = hwPortGpio(portIndex);
@@ -3449,7 +3449,7 @@ void NeoPixelBusModule::initializeGpioPins()
         // Skip undefined GPIOs (255 = no HW_PORT_<n>_GPIO in the board header)
         if (gpio == 255) continue;
 
-        // Robust GPIO initialization to prevent undefined LED states
+        // GPIO initialization to prevent undefined LED states
         // Step 1: Reset pin to INPUT to clear any previous state/hardware functions
         pinMode(gpio, INPUT);
         // Step 2: Set to LOW while still INPUT (sets pull-down if available)
@@ -3539,7 +3539,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
     // On KNeoPix XIAO hardware KNX_UART_TX_PIN == GPIO0 and KNX_UART_RX_PIN == GPIO1. A manual data
     // GPIO 0 (or any other KNX pin) would otherwise let a strip take over the KNX TX line,
     // which kills the TPUart bus initialization (endless "Try Initialize", never "BCU connected").
-    // This check rejects such strips regardless of the configuration mode (manual / hardware port / auto).
+    // This check rejects such strips regardless of the configuration mode (manual GPIO or hardware port).
     // The buttons and status LEDs of the board are reserved as well (a value < 0 = not present,
     // > 255 = IO expander pin, not a GPIO), and so are the ESP32 flash/PSRAM bus and an Ethernet PHY.
     auto isReservedPin = [](uint8_t pin) -> bool {
@@ -3694,7 +3694,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                 // every further relay takes its port byte (as on boards without hard-wired relays)
                 auto resolveRelayGpio = [](uint8_t relayIndex) -> uint8_t {
                     if (relayIndex < hwRelayCount()) return hwRelayGpio(relayIndex);
-                    // Get port selection from ETS
+                    // Port byte from ETS (carrier NEOExternalRelay<r>Port)
                     uint8_t portIndex;
                     switch (relayIndex)
                     {
@@ -3727,7 +3727,7 @@ void NeoPixelBusModule::configureFromETS(bool physicalOnly)
                         }
                     }
 
-                    // Otherwise use hardware port mapping (portIndex 0-N)
+                    // Otherwise port value 0-9 -> hwPortGpio(), any other value -> no GPIO
 
                     if (!isHardwarePortSelected(portIndex))
                     {

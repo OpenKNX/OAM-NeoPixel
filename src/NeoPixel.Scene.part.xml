@@ -93,14 +93,14 @@
                                   </when>
                                 </choose>
 
-                                <!-- Hinweis, wenn diese Szene einen Effektmanager startet (Werte 200-215) -->
+                                <!-- Notice when this scene starts an effect manager (values 200-215) -->
                                 <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">
                                   <when test="&gt;=200">
                                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Diese Szene startet einen Effektmanager. Farben, Helligkeit und Effekt-Parameter entfallen — die Steuerung läuft über dessen KOs." UIHint="Information"/>
                                   </when>
                                 </choose>
 
-                                <!-- Farben + Helligkeit nur bei echtem Effekt (Wert < 200), nicht bei Effektmanager-Start -->
+                                <!-- Colours + brightness only for an effect (value < 200), not for an effect manager start -->
                                 <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">
                                   <when test="&lt;200">
                                 <!-- Primary Color RGB -->

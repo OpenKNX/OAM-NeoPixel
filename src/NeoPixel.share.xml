@@ -26,7 +26,7 @@
         <ApplicationProgram Id="%AID%" ApplicationNumber="40" ApplicationVersion="1" ProgramType="ApplicationProgram" MaskVersion="MV-07B0" Name="WP-Neopixel" LoadProcedureStyle="MergedProcedure" PeiType="0" DefaultLanguage="de" DynamicTableManagement="false" Linkable="true" MinEtsVersion="4.0">
           <Static>
             <ParameterTypes>
-              <!-- Topologie-Diagramme als Vollbild (TypePicture, rendert echtes Bild statt Mini-Icon) -->
+              <!-- Topology diagrams as full pictures (TypePicture, a picture instead of an icon) -->
               <ParameterType Id="%AID%_PT-TopoPic1d"        Name="TopoPic1d"><TypePicture RefId="%FILE-topo-1d%" /></ParameterType>
               <ParameterType Id="%AID%_PT-TopoPicSerpRows"  Name="TopoPicSerpRows"><TypePicture RefId="%FILE-topo-serprows%" /></ParameterType>
               <ParameterType Id="%AID%_PT-TopoPicLinRows"   Name="TopoPicLinRows"><TypePicture RefId="%FILE-topo-linrows%" /></ParameterType>
@@ -38,7 +38,7 @@
               <ParameterType Id="%AID%_PT-TopoPicDepthTile" Name="TopoPicDepthTile"><TypePicture RefId="%FILE-topo-depthtile%" /></ParameterType>
               <ParameterType Id="%AID%_PT-ChainPicMaster" Name="ChainPicMaster"><TypePicture RefId="%FILE-topo-chainm%" /></ParameterType>
               <ParameterType Id="%AID%_PT-ChainPicSlave"  Name="ChainPicSlave"><TypePicture RefId="%FILE-topo-chains%" /></ParameterType>
-              <!-- GPIO Port Selection Type (8 Bit for all hardware variants) -->
+              <!-- Port selection byte (0-9 port, 10 manual GPIO, 15 not selected) -->
               <ParameterType Id="%AID%_PT-GPIOPort8Bit" Name="GPIOPort8Bit">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
               </ParameterType>
@@ -267,9 +267,9 @@
                   <Enumeration Text="GRBCCT" Value="9"  Id="%ENID%" op:headerName="GRBCCT" />
                   <Enumeration Text="RGBCTW" Value="10" Id="%ENID%" op:headerName="RGBCTW" />
                   <Enumeration Text="GRBCTW" Value="11" Id="%ENID%" op:headerName="GRBCTW" />
-                  <!-- 4 Kanaele, Weiss zuerst: Rahmenformat des TM1814 laut Datenblatt -->
+                  <!-- 4 channels, white first: TM1814 frame format per datasheet -->
                   <Enumeration Text="WRGB"   Value="12" Id="%ENID%" op:headerName="WRGB" />
-                  <!-- Reihenfolge des gewaehlten Chips verwenden, nichts ueberschreiben -->
+                  <!-- use the order of the selected chip, override nothing -->
                   <Enumeration Text="Chip-Vorgabe" Value="13" Id="%ENID%" op:headerName="ChipDefault" />
                 </TypeRestriction>
               </ParameterType>
@@ -291,7 +291,7 @@
                   <Enumeration Text="WW and CW" Value="4" Id="%ENID%" op:headerName="WWandCW" />
                 </TypeRestriction>
               </ParameterType>
-              <!-- Signal-Polaritaet: Automatisch nimmt die Vorgabe des Chips (TM1814 & Co. sind invertiert) -->
+              <!-- Signal polarity: automatic takes the chip default (TM1814 and similar are inverted) -->
               <ParameterType Id="%AID%_PT-NEOSignalPolarity" Name="NEOSignalPolarity" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="2">
                   <Enumeration Text="Automatisch (Chip)" Value="0" Id="%ENID%" op:headerName="Auto" />
@@ -299,7 +299,7 @@
                   <Enumeration Text="Invertiert"         Value="2" Id="%ENID%" op:headerName="Inverted" />
                 </TypeRestriction>
               </ParameterType>
-              <!-- Weiss-Berechnung fuer RGBW/RGBCCT-Streifen -->
+              <!-- White calculation for RGBW/RGBCCT strips -->
               <ParameterType Id="%AID%_PT-NEOWhiteMode" Name="NEOWhiteMode" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="1">
                   <Enumeration Text="Aus"                    Value="0" Id="%ENID%" op:headerName="Off" />
@@ -309,7 +309,7 @@
               <!-- Timing -->
               <ParameterType Id="%AID%_PT-NEOTiming" Name="NEOTiming" op:headerExport="enum">
                 <TypeRestriction Base="Value" SizeInBit="4">
-                  <!-- Bitrate (kHz), 1-Wire. Anzeige nach Frequenz, Values migrations-fest (0-8 = alt).
+                  <!-- Bit rate (kHz), 1-wire. Sorted by frequency, values kept stable for migration (0-8 = old values).
                        Firmware-Mapping: NeoPixelTimingSelection.h. -->
                   <Enumeration Text="640 kHz"            Value="2"  Id="%ENID%" op:headerName="F640" />
                   <Enumeration Text="680 kHz"            Value="3"  Id="%ENID%" op:headerName="F680" />
@@ -475,7 +475,7 @@
               <ParameterType Id="%AID%_PT-NumberOfSegments" Name="NumberOfSegments">
                 <TypeNumber SizeInBit="5" Type="unsignedInt" minInclusive="1" maxInclusive="16" />
               </ParameterType>
-              <!-- Effektmanager global Anzahl (0..16) -->
+              <!-- Number of effect managers (0..16) -->
               <ParameterType Id="%AID%_PT-EMGlobalEnabled" Name="EMGlobalEnabled">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="16" />
               </ParameterType>              <!-- Startup EM per segment (0=none, 1-16) -->
@@ -534,7 +534,7 @@
                   <Enumeration Text="An (ETS-Werte)" Value="3" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
-              <!-- EM-Stop Rueckkehr-Verhalten (Segment Byte 29, Bits 0-1) -->
+              <!-- Behaviour after EM stop (segment byte 29, bits 0-1) -->
               <ParameterType Id="%AID%_PT-EmStopReturnMode" Name="EmStopReturnMode">
                 <TypeRestriction Base="Value" SizeInBit="2">
                   <Enumeration Text="Letzter Zustand" Value="0" Id="%ENID%" />
@@ -558,7 +558,7 @@
               <ParameterType Id="%AID%_PT-MatrixDimension" Name="MatrixDimension">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="255" />
               </ParameterType>
-              <!-- Effektkette: Sync-Modus (2 bit: 0=Aus, 1=Master, 2=Slave) -->
+              <!-- Effect chain: sync mode (2 bit: 0=off, 1=master, 2=slave) -->
               <ParameterType Id="%AID%_PT-EffektketteSyncMode" Name="EffektketteSyncMode">
                 <TypeRestriction Base="Value" SizeInBit="2" UIHint="DropDown">
                   <Enumeration Text="Aus (Standalone)"  Value="0" Id="%ENID%" />
@@ -566,14 +566,14 @@
                   <Enumeration Text="Slave"             Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
-              <!-- Effektkette: Override-Policy (1 bit) -->
+              <!-- Effect chain: override policy (1 bit) -->
               <ParameterType Id="%AID%_PT-EffektketteOverride" Name="EffektketteOverride">
                 <TypeRestriction Base="Value" SizeInBit="1" UIHint="DropDown">
                   <Enumeration Text="Sync übernimmt immer"      Value="0" Id="%ENID%" />
                   <Enumeration Text="Lokal hat Vorrang"         Value="1" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
-              <!-- Effektkette: Slave-Watchdog timeout (0=Aus; value × 10s) -->
+              <!-- Effect chain: slave watchdog timeout (0=off; value × 10 s) -->
               <ParameterType Id="%AID%_PT-EffektketteTimeout" Name="EffektketteTimeout">
                 <TypeRestriction Base="Value" SizeInBit="5" UIHint="DropDown">
                   <Enumeration Text="Aus (kein Timeout)" Value="0"  Id="%ENID%" />
@@ -583,8 +583,8 @@
                   <Enumeration Text="120 s"              Value="12" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
-              <!-- Effektkette: Gesamtlänge und Offset (uint16) -->
-              <!-- TotalLength min=1 (sinnlos bei 0), Offset min=0 (Master startet bei 0) -->
+              <!-- Effect chain: total length and offset (uint16) -->
+              <!-- TotalLength min=1 (0 is meaningless), Offset min=0 (the master starts at 0) -->
               <ParameterType Id="%AID%_PT-EffektketteLength" Name="EffektketteLength">
                 <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="1" maxInclusive="65535" />
               </ParameterType>
@@ -691,7 +691,7 @@
               <!-- END AUTO-GENERATED: Effect ParameterTypes -->
             </ParameterTypes>
             <Parameters>
-              <!-- Topologie-Bild-Parameter (Access=Read, kein Speicher; rendern das jeweilige Diagramm) -->
+              <!-- Topology picture parameters (Access=Read, no memory; show the diagram of the selection) -->
               <Parameter Id="%AID%_P-%TT%00410" Name="TopoPic1d"        ParameterType="%AID%_PT-TopoPic1d"        Text="" Access="Read" Value="" />
               <Parameter Id="%AID%_P-%TT%00411" Name="TopoPicSerpRows"  ParameterType="%AID%_PT-TopoPicSerpRows"  Text="" Access="Read" Value="" />
               <Parameter Id="%AID%_P-%TT%00412" Name="TopoPicLinRows"   ParameterType="%AID%_PT-TopoPicLinRows"   Text="" Access="Read" Value="" />
@@ -730,26 +730,26 @@
                 <Parameter Id="%AID%_UP-%TT%00068" Offset="3" BitOffset="0" Name="NEOpowerLimitGlobal" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Globale Strombegrenzung (mA)" Value="1000"/>
                 <!-- Byte 5: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%00069" Offset="5" BitOffset="0" Name="NEOcurrentPerLED" ParameterType="%AID%_PT-NEOPowerLimitLED" Text="Strom pro LED (mA)" Value="60"/>
-                <!-- Byte 5: 7 (1b) = frei -->
+                <!-- Byte 5: 7 (1b) = free -->
                 <!-- Byte 6..7: 16b -->
                 <Parameter Id="%AID%_UP-%TT%00070" Offset="6" BitOffset="0" Name="NEOcurrentPerChannel" ParameterType="%AID%_PT-NEOPowerLimitGlobal" Text="Strom pro Kanal (mA)" Value="500"/>
                 <!-- Byte 8: 0..2 (3b) = Combined Power Limit (0=Disabled, 1=FixedValue, 2=PerLED) -->
                 <Parameter Id="%AID%_UP-%TT%00081" Offset="8" BitOffset="0" Name="NEOpowerLimitCombined" ParameterType="%AID%_PT-NEOPowerLimitCombined" Text="Strombegrenzung" Value="0"/>
-                <!-- Byte 8: 3..7 (5b) - frei -->
+                <!-- Byte 8: 3..7 (5b) - free -->
                 <!-- Byte 9: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%00071" Offset="9" BitOffset="0" Name="NEOautoBrightnessLimit" ParameterType="%AID%_PT-NEOPercent" Text="Auto-Helligkeitsbegrenzung (%)" Value="100"/>
-                <!-- Byte 9: 7 (1b) - frei -->
+                <!-- Byte 9: 7 (1b) - free -->
                 <!-- Byte 10: 0..6 (7b) -->
                 <Parameter Id="%AID%_UP-%TT%00072" Offset="10" BitOffset="0" Name="NEOpowerLimitThreshold" ParameterType="%AID%_PT-NEOPercent" Text="Strombegrenzung Schwellwert (%)" Value="80"/>
-                <!-- Byte 10: Bit 7 frei -->
+                <!-- Byte 10: bit 7 free -->
                 <!-- Byte 11: -->
                 <Parameter Id="%AID%_UP-%TT%00073" Offset="11" BitOffset="0" Name="NEOablSlewRatePercent" ParameterType="%AID%_PT-ablSlewRatePercent" Text="Anstiegszeit ABL (%)" Value="20"/>
-                <!-- Byte 12-13: frei-->
-                <!-- Byte 12: Effektmanager global Aus/Ein -->
+                <!-- Byte 13: free -->
+                <!-- Byte 12: number of effect managers (0 = off) -->
                 <Parameter Id="%AID%_UP-%TT%00074" Offset="12" BitOffset="0" Name="NEOEMEnabled" ParameterType="%AID%_PT-EMGlobalEnabled" Text="Verfügbare Effektmanager" SuffixText="von 16 (0 = aus)" Value="0"/>
               </Union>
               <!-- Global Startup Behavior Union -->
-              <!-- FIXED: Changed Offset from 25 to 36 to avoid overlap with Power Settings (22-35) -->
+              <!-- Offset 36: after the power settings (22-35) -->
               <Union SizeInBit="56">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="36" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00024" Offset="0" BitOffset="0" Name="NEOGlobalStartupBehavior" ParameterType="%AID%_PT-GlobalStartupBehavior" Text="Verhalten nach Neustart (Global)" Value="0"/>
@@ -840,7 +840,7 @@
                 <Parameter Id="%AID%_UP-%TT%00181" Offset="14" BitOffset="0" Name="VirtualStripEnd8" ParameterType="%AID%_PT-MinMaxValue" Text="End LED Position 8" Value="0" Access="Read"/>
               </Union>
               
-              <!-- GPIO Data Port Configuration Union -->
+              <!-- Data port selections of the 8 strips: copies written by the per-board copy calculations (NEO_CopyGPIOPortChecked), input of the conflict check; the firmware reads the carrier NEO&lt;n&gt;DataPort -->
               <Union SizeInBit="64">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="80" BitOffset="0" />
                 <!-- All 8 strips GPIO port selections (64 bit total) -->
@@ -882,7 +882,7 @@
                 <Parameter Id="%AID%_UP-%TT%00170" Offset="0" BitOffset="7" Name="Strip8HasClockConflict" ParameterType="%AID%_PT-ConflictFlag" Text="Strip 8 Clock Conflict" Value="0" Access="None"/>
               </Union>
 
-              <!-- GPIO Clock Port Configuration Union -->
+              <!-- Clock port selections of the 8 strips: copies written by the per-board copy calculations (NEO_CopyGPIOPortChecked), input of the conflict check; the firmware reads the carrier NEO&lt;n&gt;ClockPort -->
               <Union SizeInBit="64">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="90" BitOffset="0" />
                 <!-- All 8 strips Clock GPIO port selections (64 bit total) -->
@@ -896,7 +896,7 @@
                 <Parameter Id="%AID%_UP-%TT%00118" Offset="7" BitOffset="0" Name="Strip8ClockPort" ParameterType="%AID%_PT-GPIOPort8Bit" Text="Strip 8 Clock GPIO Port" Value="255" Access="None"/>
               </Union>
 
-              <!-- External Relay Configuration Union -->
+              <!-- External Relay Configuration Union: NEOExternalRelay&lt;r&gt;Port is the carrier on the byte of the per-board relay port parameters (RelayParameters), read by the firmware -->
               <Union SizeInBit="40">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="98" BitOffset="0" />
                 <!-- Byte 0: Relay 1 GPIO Port (shared) -->
@@ -913,10 +913,10 @@
                 <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayParameters']/*" />
               </Union>
 
-              <!-- External Relay Names: ETS-only (non-stored). Reservierter 56-Byte-Block bleibt für später. -->
+              <!-- External Relay Names: ETS-only (not stored). The reserved 56-byte block stays for later use. -->
               <Union SizeInBit="448" op:nowarn="true">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="138" BitOffset="0" />
-                <!-- Versteckter Reserve-Platzhalter: hält die 56 Byte reserviert (Union braucht mindestens 1 Parameter) -->
+                <!-- Hidden placeholder: keeps the 56 bytes reserved (a Union needs at least one parameter) -->
                 <Parameter Id="%AID%_UP-%TT%00186" Offset="0" BitOffset="0" Name="NEORelayNamesReserved" ParameterType="%AID%_PT-RelayName" Text="reserved" Value="" Access="None" />
               </Union>
               <Parameter Id="%AID%_P-%TT%00182" Name="NEOExternalRelay1Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
@@ -955,7 +955,7 @@
                 <Parameter Id="%AID%_UP-%TT%00150" Offset="6" BitOffset="0" Name="NEOExternalRelay4MinOffTime" ParameterType="%AID%_PT-RelayMinOffTime" Text="Minimale Aus-Zeit (s)" Value="0"/>
               </Union>
 
-              <!-- External Relay Manual GPIO Numbers Union (triggered when Port=10) -->
+              <!-- External Relay Manual GPIO Numbers Union (used when the port value is 10 = manual) -->
               <Union SizeInBit="32">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="128" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00155" Offset="0" BitOffset="0" Name="NEOExternalRelay1GPIO" ParameterType="%AID%_PT-GPIONumber" Text="Relais 1 GPIO" Value="255"/>
@@ -964,7 +964,7 @@
                 <Parameter Id="%AID%_UP-%TT%00158" Offset="3" BitOffset="0" Name="NEOExternalRelay4GPIO" ParameterType="%AID%_PT-GPIONumber" Text="Relais 4 GPIO" Value="255"/>
               </Union>
 
-              <!-- External Relay Output Logic (Invert) Union (4 flags in 1 byte, Access=None, JS-only) -->
+              <!-- External Relay Output Logic (Invert) Union (1 bit per relay, read by the firmware) -->
               <Union SizeInBit="8">
                 <Memory CodeSegment="%AID%_RS-04-00000" Offset="132" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00159" Offset="0" BitOffset="0" Name="NEOExternalRelay1OutputLogic" ParameterType="%AID%_PT-RelayOutputLogic" Text="Ausgangslogik" Value="0"/>
@@ -1038,7 +1038,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00132_R-%TT%0013201" RefId="%AID%_UP-%TT%00132" />
               <ParameterRef Id="%AID%_UP-%TT%00135_R-%TT%0013501" RefId="%AID%_UP-%TT%00135" />
               <ParameterRef Id="%AID%_UP-%TT%00136_R-%TT%0013601" RefId="%AID%_UP-%TT%00136" />
-              <!-- External Relay GPIO Selection Parameter References (HW-specific) -->
+              <!-- External Relay port parameter references (per board, NeoPixel.hw.share.gen.xml) -->
               <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayParameterRefs']/*" />
               <!-- External Relay Conflict Flags -->
               <ParameterRef Id="%AID%_UP-%TT%00133_R-%TT%0013301" RefId="%AID%_UP-%TT%00133" />
@@ -1064,7 +1064,7 @@
               <ParameterRef Id="%AID%_P-%TT%00183_R-%TT%0018301" RefId="%AID%_P-%TT%00183" />
               <ParameterRef Id="%AID%_P-%TT%00184_R-%TT%0018401" RefId="%AID%_P-%TT%00184" />
               <ParameterRef Id="%AID%_P-%TT%00185_R-%TT%0018501" RefId="%AID%_P-%TT%00185" />
-              <!-- External Relay Manual GPIO Numbers (shown when Port=10) -->
+              <!-- External Relay Manual GPIO Numbers (shown when the port value is 10 = manual) -->
               <ParameterRef Id="%AID%_UP-%TT%00155_R-%TT%0015501" RefId="%AID%_UP-%TT%00155" />
               <ParameterRef Id="%AID%_UP-%TT%00156_R-%TT%0015601" RefId="%AID%_UP-%TT%00156" />
               <ParameterRef Id="%AID%_UP-%TT%00157_R-%TT%0015701" RefId="%AID%_UP-%TT%00157" />
@@ -1197,9 +1197,9 @@
               <!-- Virtual Strip Start LED Calculation -->
               <ParameterCalculation Id="%AID%_PC-%TT%00037" Language="JavaScript" Name="VirtualStripStartOffsets" LRTransformationFunc="NEO_UpdateVirtualStripStartIndices" RLTransformationFunc="NEO_Empty">
                 <LParameters>
-                  <!-- Anzahl physikalischer LED-Streifen (1..8) -->
+                  <!-- Number of physical LED strips (1..8) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" AliasName="NumberOfLEDStrips" />
-                  <!-- Kanonische virtuelle Reihenfolge (nach Auto-Swap) -->
+                  <!-- Canonical virtual order (after auto swap) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" AliasName="Pos1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00031_R-%TT%0003101" AliasName="Pos2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00032_R-%TT%0003201" AliasName="Pos3" />
@@ -1208,7 +1208,7 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" AliasName="Pos6" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" AliasName="Pos7" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00083_R-%TT%0008301" AliasName="Pos8" />
-                  <!-- UI-limitierte Varianten: nur zum Triggern der Berechnung -->
+                  <!-- UI-limited variants: only to trigger the calculation -->
                   <!-- Position 1 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00036_R-%TT%0003601" AliasName="Pos1_1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00037_R-%TT%0003701" AliasName="Pos1_2" />
@@ -1244,7 +1244,7 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" AliasName="Pos6_7" />
                   <!-- Position 7 -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" AliasName="Pos7_7" />
-                  <!-- Physikalische Streifenlängen (NEO%C%Length, 1..8) -->
+                  <!-- Physical strip lengths (NEO%C%Length, 1..8) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%91037_R-%TT%9103701" AliasName="Len1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%92037_R-%TT%9203701" AliasName="Len2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%93037_R-%TT%9303701" AliasName="Len3" />
@@ -1255,7 +1255,7 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%98037_R-%TT%9803701" AliasName="Len8" />
                 </LParameters>
                 <RParameters>
-                  <!-- Start-LED Outputs (read-only Parameter in der Tabelle) -->
+                  <!-- Start LED outputs (read-only parameters in the table) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00051_R-%TT%0005101" AliasName="Start1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00052_R-%TT%0005201" AliasName="Start2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" AliasName="Start3" />
@@ -1264,7 +1264,7 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" AliasName="Start6" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00178_R-%TT%0017801" AliasName="Start7" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00179_R-%TT%0017901" AliasName="Start8" />
-                  <!-- End-LED Outputs (read-only Parameter in der Tabelle) -->
+                  <!-- End LED outputs (read-only parameters in the table) -->
                   <ParameterRefRef RefId="%AID%_UP-%TT%00057_R-%TT%0005701" AliasName="End1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" AliasName="End2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" AliasName="End3" />
@@ -1361,7 +1361,7 @@
               <ParameterRefRef RefId="%AID%_UP-%TT%00117_R-%TT%0011701" AliasName="Strip7ClockPort" />
               <ParameterRefRef RefId="%AID%_UP-%TT%00118_R-%TT%0011801" AliasName="Strip8ClockPort" />
               <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" AliasName="NumberOfLEDStrips" />
-              <!-- External Relay Ports -->
+              <!-- Hardware selection and external relay ports (shared carriers; per-board inputs: ConflictRelayInputs) -->
               <ParameterRefRef RefId="%NEOHW_SelectRef%" AliasName="HardwareSelection" />
               <ParameterRefRef RefId="%AID%_UP-%TT%00130_R-%TT%0013001" AliasName="RelayCount" />
               <ParameterRefRef RefId="%AID%_UP-%TT%00131_R-%TT%0013101" AliasName="Relay1Port" />
@@ -1434,7 +1434,7 @@
             </RParameters>
             </ParameterCalculation>
 
-            <!-- Retired: the per-hardware GPIO copy calculations range-check the port themselves
+            <!-- Retired: the per-board GPIO copy calculations range-check the port themselves
                              (NEO_CopyGPIOPortChecked). A blanket reset here cleared every port on each
                              ETS application update, because ETS re-evaluates calculations on update. -->
 
@@ -1536,8 +1536,8 @@
                 </choose>
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Globale Einstellungen" Text="Globale Einstellungen" Inline="true" ShowInComObjectTree="true">
                     <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
-                      <!-- Global-KOs immer sichtbar (>=1 Segment, min=1): "Alle LEDs" auch bei 1 Segment
-                           verknuepfbar -> beim Hinzufuegen weiterer Segmente keine GA-Nacharbeit. -->
+                      <!-- Global KOs always visible (>=1 segment, min=1): "Alle LEDs" can be linked with 1 segment as well,
+                           so adding segments needs no group address rework. -->
                       <when test=">=1">
                         <!-- Global Power KO -->
                         <ComObjectRefRef RefId="%AID%_O-%TT%00000_R-%TT%0000001"  />
@@ -1564,7 +1564,7 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" IndentLevel="2" HelpContext="NEO-Anwendung"/>
                 </ParameterBlock>
               <!-- ========================================================================================================= -->
-              <!-- KO-Tree: HCL Hauptkategorie (nur für KOs) -->
+              <!-- KO tree: HCL main category (KOs only) -->
               <!-- ========================================================================================================= -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="HCL" Text="HCL" Inline="true" ShowInComObjectTree="true">
                 <!-- Global KO -->
@@ -1577,7 +1577,7 @@
                 </ParameterBlock>
               </ParameterBlock>
               <!-- ========================================================================================================= -->
-              <!-- Relais -->
+              <!-- Relays -->
               <!-- ========================================================================================================= -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="Relais" Text="Relais" Icon="relay" HelpContext="NEO-Relais" ShowInComObjectTree="true">
                 <!-- External Relay KOs: emitted per-relay inside the relay tree nodes (see Relay UI) -->
@@ -1840,11 +1840,11 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie hier die Anzahl der angeschlossenen LED-Streifen. Konfigurieren Sie anschließend die einzelnen Streifen in dem Sie jeweils auf den jeweiligen LED-Streifen in der Baumstruktur klicken." />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Bitte stellen Sie sicher, dass Sie auch nur die Anzahl an LED-Streifen konfigurieren, die Sie tatsächlich angeschlossen haben. Andernfalls kann es zu unerwartetem Verhalten kommen." />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" />
-                <!-- LED Anzahl Strips -->
+                <!-- Number of LED strips -->
                 <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="1" HelpContext="%DOC%" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <!-- ========================================================================================================= -->
-                <!-- Strombegrenzung (Global) -->
+                <!-- Current limiting (global) -->
                 <!-- ========================================================================================================= -->
                 <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimit" Text="Strombegrenzung" Icon="flash" HelpContext="NEO-Strombegrenzung" ShowInComObjectTree="true">
                   <ParameterSeparator Id="%AID%_PS-nnn" Text="Strombegrenzung (Global)" UIHint="Headline" />
@@ -1853,15 +1853,15 @@
                   <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" HelpContext="%DOC%"/>
                   <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
                     <when test="!=0">
-                      <!-- Not Deaktiviert -->
+                      <!-- Not disabled -->
                       <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101"> 
                         <!-- Check which mode -->
                         <when test="1"> 
-                          <!-- Fester Wert (mA) -->
+                          <!-- Fixed value (mA) -->
                           <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="2" HelpContext="%DOC%"/>
                         </when>
                         <when test="2"> 
-                          <!-- Pro LED (automatisch) -->
+                          <!-- Per LED (automatic) -->
                           <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="2" HelpContext="%DOC%"/>
                         </when>
                       </choose>
@@ -1877,7 +1877,7 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Reihenfolge der physikalischen LED-Streifen werden in der Einstellung des Virtuellen LED-Streifens festgelegt." UIHint="Information" />
               </ParameterBlock>
               <!-- ========================================================================================================= -->
-              <!-- KO-Tree: Strombegrenzung Hauptkategorie (nur für KOs) -->
+              <!-- KO tree: current limiting main category (KOs only) -->
               <!-- ========================================================================================================= -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="PowerLimitKOs" Text="Strombegrenzung" Inline="true" ShowInComObjectTree="true">
                 <!-- Global KOs -->
@@ -1896,14 +1896,14 @@
                 </ParameterBlock>
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Virtuell" Text="Virtueller LED Streifen" Icon="vledstrip" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
-                <!-- Allgemein (aufgeloest aus fruehrem Subknoten): globale Aktualisierungsrate -->
+                <!-- General (former sub node): global update rate -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Allgemein" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wie oft die Animation pro Sekunde neu berechnet und an die LEDs gesendet wird. Höher = flüssiger, aber mehr Rechenlast. Gilt für den gesamten Streifen." />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="1" HelpContext="NEO-Update-Speed"/>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Reihenfolge der physikalischen LED-Streifen im Virtuellen LED-Streifen" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Legen Sie fest, in welcher Reihenfolge die physikalischen LED-Streifen zum virtuellen Streifen zusammengefügt werden. Diese Reihenfolge bestimmt die LED-Nummerierung im virtuellen Streifen für die Segment-Definition." UIHint="Information" />
-                <!-- Duplikat-Pruefung: nur ab 2 physikalischen Streifen relevant; nur Fehlerfall anzeigen (good case = kein Banner) -->
+                <!-- Duplicate check: only with 2 or more physical strips; shown only on an error (no banner otherwise) -->
                 <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" />
                 <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
                   <when test="&gt;=2">
@@ -1928,8 +1928,8 @@
                     <Row Id="%AID%_PB-nnn_R-9" Name="Pos8" />
                   </Rows>
                   <Columns>
-                  <!-- Gesamtbreite ~122% (ETS erlaubt bis 200%): "Physikalischer Streifen"
-                       ist ein Dropdown mit langem Header -> breiter, damit es einzeilig bleibt. -->
+                  <!-- Total width ~122% (ETS allows up to 200%): "Physikalischer Streifen"
+                       is a dropdown with a long header -> wider, so it stays on one line. -->
                     <Column Id="%AID%_PB-nnn_C-1" Name="Pos" Width="12%" />
                     <Column Id="%AID%_PB-nnn_C-2" Name="StripSelect" Width="50%" />
                     <Column Id="%AID%_PB-nnn_C-3" Name="StripName"   Width="34%" />
@@ -1978,7 +1978,7 @@
                       </choose>
                       <!-- Name of selected physical strip used at Position 1 -->
                       <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001"> 
-                        <!-- 1 Strip → Wert steckt in 00036 -->
+                        <!-- 1 Strip → value in 00036 -->
                         <when test="=1">
                           <choose ParamRefId="%AID%_UP-%TT%00036_R-%TT%0003601">
                             <when test="=1">
@@ -1986,7 +1986,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 2 Strips → Wert steckt in 00037 -->
+                        <!-- 2 Strips → value in 00037 -->
                         <when test="=2">
                           <choose ParamRefId="%AID%_UP-%TT%00037_R-%TT%0003701">
                             <when test="=1">
@@ -1997,7 +1997,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 3 Strips → Wert steckt in 00038 -->
+                        <!-- 3 Strips → value in 00038 -->
                         <when test="=3">
                           <choose ParamRefId="%AID%_UP-%TT%00038_R-%TT%0003801">
                             <when test="=1">
@@ -2011,7 +2011,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 4 Strips → Wert steckt in 00039 -->
+                        <!-- 4 Strips → value in 00039 -->
                         <when test="=4">
                           <choose ParamRefId="%AID%_UP-%TT%00039_R-%TT%0003901">
                             <when test="=1">
@@ -2028,7 +2028,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 5 Strips → Wert steckt in 00040 -->
+                        <!-- 5 Strips → value in 00040 -->
                         <when test="=5">
                           <choose ParamRefId="%AID%_UP-%TT%00040_R-%TT%0004001">
                             <when test="=1">
@@ -2048,7 +2048,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00084 -->
+                        <!-- 6 Strips → value in 00084 -->
                         <when test="=6">
                           <choose ParamRefId="%AID%_UP-%TT%00084_R-%TT%0008401">
                             <when test="=1">
@@ -2071,7 +2071,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 7 Strips → Wert steckt in 00085 -->
+                        <!-- 7 Strips → value in 00085 -->
                         <when test="=7">
                           <choose ParamRefId="%AID%_UP-%TT%00085_R-%TT%0008501">
                             <when test="=1">
@@ -2097,7 +2097,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 8 Strips → Wert steckt in 00030 -->
+                        <!-- 8 Strips → value in 00030 -->
                         <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00030_R-%TT%0003001">
                             <when test="=1">
@@ -2160,7 +2160,7 @@
                       </choose>
                       <!-- Name of selected physical strip used at Position 2 -->
                       <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001"> 
-                        <!-- 2 Strips → Wert steckt in 00041 -->
+                        <!-- 2 Strips → value in 00041 -->
                         <when test="=2">
                           <choose ParamRefId="%AID%_UP-%TT%00041_R-%TT%0004101">
                             <when test="=1">
@@ -2171,7 +2171,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 3 Strips → Wert steckt in 00042 -->
+                        <!-- 3 Strips → value in 00042 -->
                         <when test="=3">
                           <choose ParamRefId="%AID%_UP-%TT%00042_R-%TT%0004201">
                             <when test="=1">
@@ -2185,7 +2185,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 4 Strips → Wert steckt in 00043 -->
+                        <!-- 4 Strips → value in 00043 -->
                         <when test="=4">
                           <choose ParamRefId="%AID%_UP-%TT%00043_R-%TT%0004301">
                             <when test="=1">
@@ -2202,7 +2202,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 5 Strips → Wert steckt in 00044 -->
+                        <!-- 5 Strips → value in 00044 -->
                         <when test="=5">
                           <choose ParamRefId="%AID%_UP-%TT%00044_R-%TT%0004401">
                             <when test="=1">
@@ -2222,7 +2222,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00086 -->
+                        <!-- 6 Strips → value in 00086 -->
                         <when test="=6">
                           <choose ParamRefId="%AID%_UP-%TT%00086_R-%TT%0008601">
                             <when test="=1">
@@ -2245,7 +2245,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 7 Strips → Wert steckt in 00087 -->
+                        <!-- 7 Strips → value in 00087 -->
                         <when test="=7">
                           <choose ParamRefId="%AID%_UP-%TT%00087_R-%TT%0008701">
                             <when test="=1">
@@ -2271,7 +2271,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 8 Strips → Wert steckt in 00031 -->
+                        <!-- 8 Strips → value in 00031 -->
                         <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00031_R-%TT%0003101">
                             <when test="=1">
@@ -2331,7 +2331,7 @@
                       </choose>
                       <!-- Name of selected physical strip used at Position 3 -->
                       <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
-                        <!-- 3 Strips → Wert steckt in 00045 -->
+                        <!-- 3 Strips → value in 00045 -->
                         <when test="=3">
                           <choose ParamRefId="%AID%_UP-%TT%00045_R-%TT%0004501">
                             <when test="=1">
@@ -2345,7 +2345,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 4 Strips → Wert steckt in 00046 -->
+                        <!-- 4 Strips → value in 00046 -->
                         <when test="=4">
                           <choose ParamRefId="%AID%_UP-%TT%00046_R-%TT%0004601">
                             <when test="=1">
@@ -2362,7 +2362,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 5 Strips → Wert steckt in 00047 -->
+                        <!-- 5 Strips → value in 00047 -->
                         <when test="=5">
                           <choose ParamRefId="%AID%_UP-%TT%00047_R-%TT%0004701">
                             <when test="=1">
@@ -2382,7 +2382,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00088 -->
+                        <!-- 6 Strips → value in 00088 -->
                         <when test="=6">
                           <choose ParamRefId="%AID%_UP-%TT%00088_R-%TT%0008801">
                             <when test="=1">
@@ -2405,7 +2405,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 7 Strips → Wert steckt in 00089 -->
+                        <!-- 7 Strips → value in 00089 -->
                         <when test="=7">
                           <choose ParamRefId="%AID%_UP-%TT%00089_R-%TT%0008901">
                             <when test="=1">
@@ -2431,7 +2431,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 8 Strips → Wert steckt in 00032 -->
+                        <!-- 8 Strips → value in 00032 -->
                         <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00032_R-%TT%0003201">
                             <when test="=1">
@@ -2488,7 +2488,7 @@
                       </choose>
                       <!-- Name of selected physical strip used at Position 4 -->
                       <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
-                        <!-- 4 Strips → Wert steckt in 00048 -->
+                        <!-- 4 Strips → value in 00048 -->
                         <when test="=4">
                           <choose ParamRefId="%AID%_UP-%TT%00048_R-%TT%0004801">
                             <when test="=1">
@@ -2505,7 +2505,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 5 Strips → Wert steckt in 00049 -->
+                        <!-- 5 Strips → value in 00049 -->
                         <when test="=5">
                           <choose ParamRefId="%AID%_UP-%TT%00049_R-%TT%0004901">
                             <when test="=1">
@@ -2525,7 +2525,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00171 -->
+                        <!-- 6 Strips → value in 00171 -->
                         <when test="=6">
                           <choose ParamRefId="%AID%_UP-%TT%00171_R-%TT%0017101">
                             <when test="=1">
@@ -2548,7 +2548,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 7 Strips → Wert steckt in 00172 -->
+                        <!-- 7 Strips → value in 00172 -->
                         <when test="=7">
                           <choose ParamRefId="%AID%_UP-%TT%00172_R-%TT%0017201">
                             <when test="=1">
@@ -2574,7 +2574,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 8 Strips → Wert steckt in 00033 -->
+                        <!-- 8 Strips → value in 00033 -->
                         <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00033_R-%TT%0003301">
                             <when test="=1">
@@ -2628,7 +2628,7 @@
                       </choose>
                       <!-- Name of selected physical strip used at Position 5 -->
                       <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
-                        <!-- 5 Strips → Wert steckt in 00050 -->
+                        <!-- 5 Strips → value in 00050 -->
                         <when test="=5">
                           <choose ParamRefId="%AID%_UP-%TT%00050_R-%TT%0005001">
                             <when test="=1">
@@ -2648,7 +2648,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 6 Strips → Wert steckt in 00173 -->
+                        <!-- 6 Strips → value in 00173 -->
                         <when test="=6">
                           <choose ParamRefId="%AID%_UP-%TT%00173_R-%TT%0017301">
                             <when test="=1">
@@ -2671,7 +2671,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 7 Strips → Wert steckt in 00174 -->
+                        <!-- 7 Strips → value in 00174 -->
                         <when test="=7">
                           <choose ParamRefId="%AID%_UP-%TT%00174_R-%TT%0017401">
                             <when test="=1">
@@ -2697,7 +2697,7 @@
                             </when>
                           </choose>
                         </when>
-                        <!-- 8 Strips → Wert steckt in 00034 -->
+                        <!-- 8 Strips → value in 00034 -->
                         <when test="=8">
                           <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
                             <when test="=1">
@@ -2940,11 +2940,11 @@
                 </choose>
                 </ParameterBlock>
                 <!-- ========================================================================================================= -->
-                <!-- Segment-Übersicht -->
-                <!-- Segmente-Übersicht als eigener Knoten (kein Stapeln mit der Reihenfolge-Tabelle) -->
+                <!-- Segment overview -->
+                <!-- Segment overview as its own node (not stacked with the order table) -->
                 <ParameterBlock Id="%AID%_PB-nnn" Name="SegmenteUebersicht" Text="Segmente" Icon="neo_segmente" HelpContext="NEO-NeoPixel" ShowInComObjectTree="true">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Segmente:" UIHint="Headline" />
-                <!-- Segment Anzahl Strips -->
+                <!-- Number of segments -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Definieren Sie bis zu 16 unabhängige Segmente auf dem virtuellen LED-Streifen. Jedes Segment kann einen eigenen Effekt, eigene Farben und Timing-Einstellungen haben." />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Segmente werden durch Start- und End-LED-Positionen definiert und können sich überlappen oder Lücken lassen." />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00021_R-%TT%0002101" IndentLevel="1" HelpContext="%DOC%" />  
@@ -2979,9 +2979,9 @@
                     <Row Id="%AID%_PB-nnn_R-16" Name="Seg15" />
                     <Row Id="%AID%_PB-nnn_R-17" Name="Seg16" />
                   </Rows>
-                  <!-- Gesamtbreite ~140% der Standard-UI-Breite (ETS erlaubt bis 200%),
-                       damit die Dropdown-Spalten "Effekt" und vor allem "EM nach Neustart"
-                       einzeilig gesetzt werden (kein Umbruch der Auswahltexte). -->
+                  <!-- Total width ~140% of the default UI width (ETS allows up to 200%),
+                       so the dropdown columns "Effekt" and "EM nach Neustart"
+                       stay on one line (no wrap of the selection texts). -->
                   <Columns>
                     <Column Id="%AID%_PB-nnn_C-1" Name="Description" Width="32%" />
                     <Column Id="%AID%_PB-nnn_C-2" Name="StartLED"    Width="13%" />
@@ -3174,7 +3174,7 @@
                   </choose>
                 </ParameterBlock>
                 </ParameterBlock>
-                <!-- "Allgemein"-Subknoten aufgeloest: Aktualisierungsrate steht jetzt oben auf dieser Seite -->
+                <!-- No "Allgemein" sub node: the update rate is at the top of this page -->
                 <!-- ========================================================================================================= -->
                 <!-- Segment Templates -->
                 <op:include href="NeoPixel.Segment.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEO" IsInner="true" />
@@ -3182,14 +3182,14 @@
                 
               </ParameterBlock>
               <!-- ========================================================================================================= -->
-              <!-- Effektmanager (Global)                                                                                   -->
+              <!-- Effect manager (global)                                                                                  -->
               <!-- ========================================================================================================= -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="Effektmanager" Text="Effektmanager" Icon="effectmanager" HelpContext="NEO-Effektmanager" ShowInComObjectTree="true">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Effektmanager" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Ein Effektmanager ist eine gespeicherte Sequenz aus Cues (Szenen). Er wird per KO oder ETS-Startwert auf einem Segment gestartet und kann loopen oder in einen anderen EM übergehen." />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-                <!-- EM-Auswahltabelle (eine Zeile pro EM: Aktiv + Beschreibung) -->
+                <!-- EM selection table (one row per EM: active + description) -->
                 <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
                   <when test="!=0">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Kanalauswahl" UIHint="Headline" />
@@ -3218,16 +3218,16 @@
                         <Column Id="%AID%_PB-nnn_C-2" Name="EmNr"    Width="12%" />
                         <Column Id="%AID%_PB-nnn_C-3" Name="EmName"  Width="58%" />
                       </Columns>
-                      <!-- Header-Zeile (UIHint=Headline = fett, wie bei den Strip-Tabellen) -->
+                      <!-- Header row (UIHint=Headline = bold, as in the strip tables) -->
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Zustand"      UIHint="Headline" Cell="0,1"/>
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="EM"           UIHint="Headline" Cell="0,2"/>
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Beschreibung" UIHint="Headline" Cell="0,3"/>
-                      <!-- Eine Zeile pro EM via Template -->
+                      <!-- One row per EM via template -->
                       <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/EmTableRow/*" type="template" prefix="NEOEM" IsInner="true" />
                     </ParameterBlock>
                   </when>
                 </choose>
-                <!-- EM 1-16 via template — nur wenn Anzahl > 0 -->
+                <!-- EM 1-16 via template - only when the number is > 0 -->
                 <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
                   <when test="!=0">
                     <op:include href="NeoPixel.EM.templ.xml" xpath="//Dynamic/ChannelIndependentBlock/*" type="template" prefix="NEOEM" IsInner="true" />
@@ -3245,7 +3245,7 @@
         <Baggage TargetPath="" Name="Icons.zip" Id="%FILE-ICONS%">
           <FileInfo TimeInfo="%DATETIME%" />
         </Baggage>
-        <!-- Topologie-Diagramme als Vollbild (TypePicture) -->
+        <!-- Topology diagrams as full pictures (TypePicture) -->
         <Baggage TargetPath="" Name="topo_1d.png"        Id="%FILE-topo-1d%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
         <Baggage TargetPath="" Name="topo_serprows.png"  Id="%FILE-topo-serprows%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
         <Baggage TargetPath="" Name="topo_linrows.png"   Id="%FILE-topo-linrows%"><FileInfo TimeInfo="%DATETIME%" /></Baggage>
