@@ -438,11 +438,7 @@ void NeoPixelWeb::appendHead(std::string& j)
         _tempMs = now | 1;
         _temp = openknx.hardware.cpuTemperature();
     }
-    #ifdef DEVICE_HW_ID
-    const uint16_t hwId = DEVICE_HW_ID;
-    #else
-    const uint16_t hwId = 0;
-    #endif
+    const uint16_t hwId = DEVICE_HW_ID; // HardwareMappingLogic.h stops the build without DEVICE_HW_ID
     const char* board = hardwareNameForId(hwId);
     uint16_t etsId = 0;
     const char* etsName = "";
@@ -780,11 +776,7 @@ void NeoPixelWeb::sendBuffer(WebResponse& res, const std::string& buf, const cha
 void NeoPixelWeb::sendUnconfigured(WebResponse& res)
 {
     // Static data only: without an ETS download nothing of the module is set up.
-    #ifdef DEVICE_HW_ID
-    const uint16_t hwId = DEVICE_HW_ID;
-    #else
-    const uint16_t hwId = 0;
-    #endif
+    const uint16_t hwId = DEVICE_HW_ID; // HardwareMappingLogic.h stops the build without DEVICE_HW_ID
     const char* board = hardwareNameForId(hwId);
     std::string j;
     addf(j, "{\"v\":1,\"unconf\":1,\"up\":%lu,\"hwid\":%u,\"board\":", (unsigned long)uptime(), (unsigned)hwId);

@@ -38,7 +38,7 @@
               <ParameterType Id="%AID%_PT-TopoPicDepthTile" Name="TopoPicDepthTile"><TypePicture RefId="%FILE-topo-depthtile%" /></ParameterType>
               <ParameterType Id="%AID%_PT-ChainPicMaster" Name="ChainPicMaster"><TypePicture RefId="%FILE-topo-chainm%" /></ParameterType>
               <ParameterType Id="%AID%_PT-ChainPicSlave"  Name="ChainPicSlave"><TypePicture RefId="%FILE-topo-chains%" /></ParameterType>
-              <!-- Port selection byte (0-9 port, 10 manual GPIO, 15 not selected) -->
+              <!-- Port selection byte (0-9 port, 10 manual GPIO, 15 not selected; 255 = shared copy never written) -->
               <ParameterType Id="%AID%_PT-GPIOPort8Bit" Name="GPIOPort8Bit">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255" />
               </ParameterType>
@@ -1434,9 +1434,9 @@
             </RParameters>
             </ParameterCalculation>
 
-            <!-- Retired: the per-board GPIO copy calculations range-check the port themselves
-                             (NEO_CopyGPIOPortChecked). A blanket reset here cleared every port on each
-                             ETS application update, because ETS re-evaluates calculations on update. -->
+            <!-- Retired: a blanket reset here cleared every port on each ETS application update, because ETS
+                             re-evaluates calculations on update. The per-board parameter type offers only valid values
+                             (placeholder, ports, manual); NEO_CopyGPIOPortChecked copies it (missing value -> 15). -->
 
             <ParameterCalculation Id="%AID%_PC-%TT%00039" Language="JavaScript" Name="NetworkModuleVisibility" LRTransformationFunc="NEO_SetNetworkModuleVisibility" RLTransformationFunc="NEO_Empty">
               <LParameters>
@@ -1585,7 +1585,7 @@
                 <choose ParamRefId="%NEOHW_SelectRef%">
                   <when test="=0">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Keine Hardware ausgewählt" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Bitte wählen Sie zuerst im Kanal 'Hardware' eine Hardware aus, bevor Sie die Relais-Steuerung konfigurieren können." UIHint="Error" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Bitte wählen Sie zuerst auf der Seite OpenKNX → Hardware eine Hardware aus, bevor Sie die Relais-Steuerung konfigurieren können." UIHint="Error" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Relais-Konfiguration ist hardwareabhängig und kann erst nach erfolgreicher Hardware-Auswahl aktiviert werden." />
                   </when>
                   <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayNotSupported']/*" />

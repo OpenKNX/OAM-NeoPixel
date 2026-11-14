@@ -403,14 +403,6 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
 // C++ firmware resolves value k to HW_PORT_{k+1}_GPIO of the board header
 // GPIO numbers are compile-time defines, not available in JavaScript
 
-// Port count per DEVICE_HW_ID
-var portCounts = {
-@@use @hw/JsBoardEntries.js @{ Key = '0x{{X4 $b.HwId}}'; Value = '{{$b.Ports.Count}}'; Comment = '{{$b.Name}}'; Where = { $_.Ports.Count -gt 0 } }
-};
-// Port labels per DEVICE_HW_ID
-var portLabels = {
-@@use @hw/JsBoardPorts.js
-};
 // GPIO of the hard-wired relays of a board (HW_RELAY_<n>_GPIO; relay n at index n-1); boards with relays on free ports have none
 var NEO_RelayGpioByHW = {
 @@use @hw/JsBoardEntries.js @{ Key = '0x{{X4 $b.HwId}}'; Value = '[{{(@($b.Relays | ForEach-Object { $_.Gpio }) -join '', '')}}]'; Comment = '{{$b.Name}}'; Where = { $_.Relays.Count -gt 0 } }
@@ -431,7 +423,6 @@ var hardwareIdMap = {
 // as an input of every copy calculation it chained all copy calculations together, so one change
 // re-ran all of them and the calculations of unused slots overwrote the shared value.
 // ============================================================================================================
-@@use @hw/JsBoardInline.js @{ Prefix = 'var NEO_PortCountByHW = {'; Item = '{{$b.HwId}}: {{$b.Ports.Count}}'; Suffix = '};' }
 function NEO_CopyGPIOPortChecked(input, output, context) {
   output.ShareGPIOPort = toInt(input.TemplateGPIOPort, 15);
 }
@@ -907,11 +898,11 @@ function NEO_FlagGpioConflict(output, u) {
 // the network settings and the network of a TP+WiFi firmware
 function NEO_SetNetworkModuleVisibility(input, output, context) {
     var hwSelect = toInt(input.HardwareSelect, 0);
-@@use @hw/JsBoardInline.js @{ Prefix = '    var wifiHardware = ['; Suffix = '];'; Where = { $_.Cap.Network } }
+@@use @hw/JsBoardInline.js @{ Prefix = '    var networkHardware = ['; Suffix = '];'; Where = { $_.Cap.Network } }
     var hasNetwork = (hwSelect === 0) ? 1 : 0;
 
-    for (var i = 0; i < wifiHardware.length; i++) {
-        if (hwSelect === wifiHardware[i]) {
+    for (var i = 0; i < networkHardware.length; i++) {
+        if (hwSelect === networkHardware[i]) {
             hasNetwork = 1;
             break;
         }

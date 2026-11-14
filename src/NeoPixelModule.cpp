@@ -294,7 +294,7 @@ void NeoPixelBusModule::loop(bool configured)
             {
                 // no hardware selected on the ETS hardware page yet (OpenKNX channel, after "Allgemein")
                 const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
-                logErrorP("*** No hardware selected! ETS channel 'Hardware': select %s (ID: 0x%04X) or use 'Hardware vom Geraet abfragen'",
+                logErrorP("*** No hardware selected! ETS page OpenKNX > Hardware: select %s (ID: 0x%04X) or use 'Hardware vom Geraet abfragen'",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
             }
             else
