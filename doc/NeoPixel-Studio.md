@@ -223,8 +223,8 @@ before mutation. Nested batches, saves, loads, ETS restores and commissioning/te
 only the latest result and serializes commands across browsers.
 
 HTTP callbacks queue commands or copy immutable snapshots. Effects and filesystem
-operations run in the main loop; there are no spin waits. ETS function property 158/10,
-command 0x20, transfers versioned UTF-8 JSON in bounded pages with a transfer token.
+operations run in the main loop; there are no spin waits. ETS function property 158/10
+(used only for this readback; the hardware query is 158/4), command 0x20, transfers versioned UTF-8 JSON in bounded pages with a transfer token.
 The generated ETS/C++ mappings share effect IDs and parameter ordering.
 
 ## Local preview and validation

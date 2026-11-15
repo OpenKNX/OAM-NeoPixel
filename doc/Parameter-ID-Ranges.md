@@ -35,6 +35,9 @@ does not allocate another `nnn`:
 - `rr = 02` is used for several alternate or read-only references.
 - Scene slot aliases use `rr = 03..34` for effects 1..32.
 
+The hardware selection is the generated module `NEOHW` (ModuleType 45, `4500001`, `HardwareProfile.xml`); its IDs
+come from the OGM-HardwareConfig generator.
+
 ## Global NeoPixel namespace: `4000nnn`
 
 Source: [`src/NeoPixel.share.xml`](../src/NeoPixel.share.xml)
@@ -43,41 +46,43 @@ Source: [`src/NeoPixel.share.xml`](../src/NeoPixel.share.xml)
 |---|---|
 | `000..002` | Trigger description and global HCL settings |
 | `011` | Send the seeded status objects once after a restart |
+| `018` | Retired (former hardware selection, now the hardware module `NEOHW`, `4500001`), do not reuse: Release replaces versions down to 0.1, ETS would carry the stored HW-ID into a new parameter with this ID |
 | `020..024` | Strip/segment counts, update speed, restart, and global startup behaviour |
 | `025..029` | Retired (former global start colour R/G/B/W and brightness), do not reuse |
 | `030..059` | Virtual-strip topology, positions, and boundaries |
 | `060..061` | Retired (former global start effect selectors), do not reuse |
 | `068..074` | Power/current limits, ABL, and effect-manager enable |
 | `076..089` | Additional virtual-strip positions, boundaries, and validation flags |
-| `091..098` | Strip data-port conflict flags |
-| `101..108` | Resolved data ports for strips 1..8 |
-| `111..118` | Resolved clock ports for strips 1..8 |
-| `130..150` | External relay configuration, conflicts, delays, and minimum off-times |
+| `091..098` | Retired (former strip data-port conflict flags, memory byte 88), do not reuse |
+| `101..108` | Retired (former copies of the strip data ports, memory bytes 80..87), do not reuse |
+| `111..118` | Retired (former copies of the strip clock ports, memory bytes 90..97), do not reuse |
+| `130..150` | External relay configuration, delays, and minimum off-times (`133`, `134`, `137`, `138` retired: former relay conflict flags, memory byte 103) |
 | `155..162` | Relay GPIOs and output polarity |
-| `163..170` | Strip clock-port conflict flags |
+| `163..170` | Retired (former strip clock-port conflict flags, memory byte 89), do not reuse |
 | `171..181` | Virtual-strip extensions for strips 7 and 8 |
 | `182..186` | Relay names and reserved relay-name storage |
 | `194..196` | Pending LED-type reset state |
-| `200..206` | Relay 1 hardware-specific port alternatives |
-| `250..256` | Relay 2 hardware-specific port alternatives |
-| `300..306` | Relay 3 hardware-specific port alternatives |
-| `350..356` | Relay 4 hardware-specific port alternatives |
+| `200..249` | Relay 1 port per board (200 + board number of `HardwareProfile.slots`, numbers 0..49; used today 200..239) |
+| `250..299` | Relay 2 port per board (250 + board number; used today 250..289) |
+| `300..349` | Relay 3 port per board (300 + board number; used today 300..339) |
+| `350..399` | Relay 4 port per board (350 + board number; used today 350..389) |
 | `410..420` | Topology and chain UI pictures |
+| `900..903`, `911..918`, `921..928` | GPIO conflict flags without memory (generated, `HardwareProfile.xml <Conflicts>`); calculation `PC-900` |
 
 Currently unused global suffixes:
 
 ```text
-003..010, 012..019, 062..067, 075, 090, 099..100, 109..110, 119..129,
-151..154, 187..193, 197..199, 207..249, 257..299, 307..349,
-357..409, 421..999
+003..010, 012..017, 019, 062..067, 075, 090, 099..100, 109..110, 119..129,
+151..154, 187..193, 197..199, 400..409, 421..899, 904..910, 919..920, 929..999
 ```
 
 `003..010` and `062..067` were used by earlier products (git history; `062` was the
 HCL strength in Release 0.1). Release still replaces versions down to 0.1, so ETS
 would carry those old values into a new parameter with the same ID: keep them free.
-`200..399` is computed in `Build-HardwareConfig.ps1` as
-`200 + MAX_HARDWARE_VARIANTS (50) x (relay - 1) + hardware index` for relays 1..4; the
-unused gaps inside it are reserved for further hardware variants.
+`200..399` is computed in `src/hw/NeoPixel.hw.share.xml` as
+`200 + 50 x (relay - 1) + board number` for relays 1..4 (board number = slot of `HardwareProfile.slots`,
+0..49); the unused gaps inside it are reserved for further hardware variants. Boards with hard-wired relays
+(`HW_RELAY_COUNT`: QuinLED, Gledopto) have no relay port parameters; their IDs stay reserved (slot of the board).
 
 ## Segment namespace: `40CCnnn`
 
@@ -85,7 +90,7 @@ Sources:
 
 - [`src/NeoPixel.Segment.templ.xml`](../src/NeoPixel.Segment.templ.xml)
 - [`src/NeoPixel.Scene.part.xml`](../src/NeoPixel.Scene.part.xml)
-- [`src/NeoPixel.Hardware.templ.xml`](../src/NeoPixel.Hardware.templ.xml)
+- [`src/NeoPixel.Strip.templ.xml`](../src/NeoPixel.Strip.templ.xml)
 - [`scripts/Build-EffectParameters.ps1`](../scripts/Build-EffectParameters.ps1)
 
 | Local IDs | Use |
@@ -166,13 +171,14 @@ Source: [`src/NeoPixel.Strip.templ.xml`](../src/NeoPixel.Strip.templ.xml)
 | `030..039` | LED type/order, GPIO/SPI, length, skip count, and voltage |
 | `041..048` | Power/current limits, calibration, and gamma |
 | `066..075` | ABL, white balance, SPI/timing, and white/off modes |
+| `076..077` | Port carriers `NEO<C>DataPort` / `NEO<C>ClockPort` (`Access="None"`, the byte of the per-board data/clock ports, read by the firmware) |
 | `081` | Combined power-limit mode |
 | `233` | Manually selected clock GPIO |
 
 Currently unused strip suffixes:
 
 ```text
-001..029, 040, 049..065, 076..080, 082..232, 234..999
+001..029, 040, 049..065, 078..080, 082..232, 234..999
 ```
 
 ## Effect-manager namespace: `42CCnnn`

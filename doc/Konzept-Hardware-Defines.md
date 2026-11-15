@@ -49,9 +49,8 @@ Häufige Frage — und ein wichtiger Designpunkt. Die vielen GPIO-Defines beschr
 Warum man die ID *braucht*, obwohl die GPIO-Infos vorliegen:
 
 1. **Schlüssel statt Steckbrief:** Um zu wissen „welches Board", vergleicht man **eine
-   Zahl** — nicht 30 GPIO-Werte. Die ID ist der eindeutige Primärschlüssel; daraus wird
-   der Hardware-**Index** abgeleitet (`HardwareMappingData.h`), der wiederum die
-   Parameter-/GPIO-Auswahl steuert.
+   Zahl** — nicht 30 GPIO-Werte. Die ID ist der eindeutige Primärschlüssel: die ETS-Auswahl speichert sie,
+   die Firmware vergleicht sie mit ihrer eigenen und nutzt die Port-Bytes nur bei Gleichheit.
 2. **Stabil über Konfig-Änderungen:** Pins kann man umsortieren, Features ergänzen — die
    `DEVICE_HW_ID` bleibt. Sie ist die kanonische Referenz, die GPIO-Tabelle ist Beiwerk.
 3. **ETS-/Katalog-Identität:** Die ID verknüpft die Variante mit dem ETS-Produkt
@@ -75,124 +74,86 @@ Warum man die ID *braucht*, obwohl die GPIO-Infos vorliegen:
  ┌────────────────────────────────────────────────────────────────────────────┐
  │ 1) QUELLE — Hardware-Beschreibung (Defines)                                │
  │    lib/OGM-HardwareConfig/include/HardwareConfig/**.h                      │
- │    + platformio.hardware.ini                                               │
- │    → pro Board: DEVICE_HW_ID, QUINLED_*_GPIO / XIAO_*_GPIO, Kanalzahl …    │
+ │    → pro Board: DEVICE_HW_ID, DEVICE_NAME, HW_PORT_COUNT/_n_GPIO/_n_LABEL,  │
+ │      DEVICE_THIRD_PARTY …                                                  │
+ │    + Build-Envs (platformio.custom.ini): Board, ohne 2D                    │
  └─────────────────────────────────┬──────────────────────────────────────────┘
-                                   │  liest & wertet aus
+                                   │  Präprozessor je release_*-Env
                                    ▼
  ┌────────────────────────────────────────────────────────────────────────────┐
- │ 2) GENERATOR — scripts/Build-HardwareConfig.ps1                            │
- │    erzeugt automatisch:                                                    │
- │    • src/HardwareMappingData.h   → C++-Tabelle HW-ID ↔ Index (30 Varianten)│
- │    • NeoPixel.share.xml          → pro HW eigene GPIO-ParameterTypes +     │
- │                                    Relais-/GPIO-UI (switch + #ifdef)       │
- │    • NeoPixel.script.js          → ETS-Logik                               │
+ │ 2) GENERATOR — lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1  │
+ │    Manifest HardwareProfile.xml, Vorlagen src/hw/*.xml, script.src.js     │
+ │    schreibt ganze Dateien (nie in handgeschriebene):                       │
+ │    • src/NeoPixel.hw.module.gen.* → Hardware-Modul NEOHW (Auswahl, Abfrage)│
+ │    • src/NeoPixel.hw.*.gen.xml   → per op:include in share/Strip.templ   │
+ │    • src/NeoPixel.hw.conf.xml    → Feature-Flags (%NEOHW_..._CAP_No2D …)   │
+ │    • src/NeoPixel.script.js      → aus script.src.js + Board-Tabellen      │
+ │    • include/HardwareProfileData.h → eigenes Profil, bekannte HW-IDs      │
+ │    • HardwareProfile.slots       → Board-Nummer je HW-ID (wird committet)  │
  └─────────────────────────────────┬──────────────────────────────────────────┘
                                    │  OpenKNXproducer
                                    ▼
  ┌────────────────────────────────────────────────────────────────────────────┐
  │ 3) PRODUCER — erzeugt .knxprod + include/knxprod.h                         │
- │    knxprod.h liefert Makros für alle Varianten des Produkts:               │
- │    #define ParamNEOSTRIP_NEOGPIODataPortHW0 …  (pro HW-Index)              │
- │    #define ParamNEO_NeoPixelHardwareSelect …   (ETS-Dropdown „Hardware")   │
+ │    knxprod.h liefert je Signal einen Träger auf dem gemeinsamen Byte:      │
+ │    #define ParamNEOSTRIP_NEODataPort …  (alle Boards teilen das Byte)      │
+ │    #define ParamNEOHW_HardwareSelect …  (Modul „Hardware", die HW-ID)      │
  └─────────────────────────────────┬──────────────────────────────────────────┘
                                    │  #include
                                    ▼
  ┌────────────────────────────────────────────────────────────────────────────┐
- │ 4) FIRMWARE — src/HardwareMappingLogic.h                                   │
- │    wählt zur Laufzeit/Compilezeit den richtigen GPIO für das Board.        │
+ │ 4) FIRMWARE — src/HardwareMappingLogic.h + HardwarePorts.h (hwPortGpio)    │
+ │    Portwert k → HW_PORT_<k+1>_GPIO des eigenen Board-Headers.              │
  └────────────────────────────────────────────────────────────────────────────┘
 ```
 
+Reihenfolge in `scripts/Build-Release.ps1`: `Build-EffectParameters.ps1` (füllt die Effekt-Blöcke in
+`src/NeoPixel.script.src.js`), dann der Hardware-Generator, dann `Normalize-LineEndings.ps1` und der Producer.
+
 ---
 
-## 4. Auswahl der aktiven Hardware — zwei Modi
+## 4. Auswahl der aktiven Hardware
 
-`getCurrentHardwareIndex()` (in `HardwareMappingLogic.h`) liefert den Index der
-aktiven Variante – je nach Build-Modus:
+Die Hardware wählt der Anwender auf der Seite OpenKNX → „Hardware" (Modul `NEOHW`, vom Generator erzeugt, ModuleType 45); gespeichert
+wird die `DEVICE_HW_ID`, 0 = nicht gewählt. Der Button „Hardware vom Gerät abfragen" liest sie per Function Property
+158/4 vom Gerät (Antwort aus `include/HardwareProfileData.h`: HW-ID und Fähigkeiten; die Relais-Anzahl ist nur ETS)
+und meldet Fähigkeiten, die vom erwarteten Profil abweichen.
+
+Jede Release-Firmware ist für genau ein Board gebaut (`DEVICE_HW_ID` im Board-Header; ohne sie bricht der Build ab).
+`HardwareMappingLogic.h` vergleicht die ETS-Auswahl mit ihr:
 
 ```cpp
-#ifdef DEVICE_HW_ID
-    // (A) Single-Hardware-Build (eine .ini-Variante fest kompiliert):
-    //     der Compiler sucht DEVICE_HW_ID in der Tabelle (OWN_HARDWARE_INDEX).
-    return OWN_HARDWARE_INDEX;
-#else
-    // (B) Multi-Hardware-ETS-Build: die ETS-„Hardware Auswahl" speichert die
-    //     DEVICE_HW_ID; die Tabelle bildet sie auf den Index ab.
-    return HardwareMapping::mapDeviceHwIdToIndex((uint16_t)ParamNEO_NeoPixelHardwareSelect);
-#endif
+_hwConfigMismatch = !hardwareSelectionMatches(selectedHardwareId()); // ParamNEOHW_HardwareSelect == DEVICE_HW_ID
+gpio = HardwareProfile::signalGpio(selectedHardwareId(), portWert, manuellerGpio); // GPIO_NONE (255) = Streifen aus
 ```
 
-Im Modus (A) liest nur der Compiler die Tabelle: Eine Release-Firmware (optimiert) enthält
-keinen Eintrag anderer Hardware; Debug-Builds (`-O0`) können die Namen weiter enthalten.
-Der eigene Name kommt aus `DEVICE_NAME`, andere Hardware (z. B. eine abweichende
-ETS-Auswahl) wird nur mit ihrer ID angezeigt. Fehlt die eigene `DEVICE_HW_ID`
-in der Tabelle, bricht der Build ab (`static_assert`). Das ETS-Produkt enthält immer
-alle Hardware (`HardwareListMode = 'Full'`), die Firmware wächst damit nicht.
-
-### Ausblick: Auto-Detection statt Dropdown
-
-Wichtig: Auch im Multi-Hardware-ETS-Build (B) ist auf dem **Gerät** die konkrete
-Variante bekannt — denn geflasht wird immer eine **board-spezifische Firmware**
-(`.uf2` mit gesetztem `DEVICE_HW_ID`). Die Information ist also im Gerät vorhanden,
-nur die ETS „weiß" sie (noch) nicht und fragt sie per Dropdown ab.
-
-**Idee:** Die Firmware **meldet ihre `DEVICE_HW_ID`** (z. B. über eine OpenKNX-
-Info-Property / ein Lese-KO / Konsole `neoa`), und die ETS **liest sie nach dem
-Setzen der physikalischen Adresse aus** und setzt `ParamNEO_NeoPixelHardwareSelect`
-automatisch.
-
-Vorteile:
-- **Kein manuelles Dropdown** mehr nötig — weniger Fehlbedienung.
-- **Schließt eine Fehlerquelle:** Firmware-Board ≠ im Dropdown gewähltes Board
-  (eine der „komische-Sachen"-Ursachen) kann nicht mehr auftreten — die ETS könnte
-  bei Abweichung sogar warnen.
-
-Status: **Konzept/Ausblick** — die Bausteine sind da (`DEVICE_HW_ID` im Gerät,
-`HardwareMappingData.h` für ID↔Index, ETS kann Geräte-Properties lesen); ein
-Auto-Abgleich/Read-Back wäre als Feature umzusetzen.
+Passt die Auswahl nicht (auch „nicht gewählt"), nutzt die Firmware kein Port-Byte, auch nicht „Manuell": Streifen und
+Relais bleiben aus, die Status-LED blinkt. Fehlt `ParamNEOHW_HardwareSelect` in `knxprod.h`, bricht der Build ab
+(`#error`), statt die Prüfung still wegzulassen. Der eigene Name kommt aus `DEVICE_NAME`, andere Hardware wird nur
+mit ihrer ID angezeigt. Fehlt die eigene `DEVICE_HW_ID` im ETS-Modul, bricht der Build ab (`static_assert`).
 
 ---
 
-## 5. Der Kniff: `switch` + `#ifdef` (warum keine Tabelle?)
+## 5. Ein Byte für alle Boards (Träger-Parameter)
 
-Die GPIO-Auswahl sieht so aus:
-
-```cpp
-inline uint8_t getDataPortSelectionForHardwareIndex(uint8_t stripIndex, uint8_t hwIndex = …)
-{
-    switch (hwIndex)
-    {
-    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW0
-        case 0: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW0;
-    #endif
-    #ifdef ParamNEOSTRIP_NEOGPIODataPortHW1
-        case 1: return (uint8_t)ParamNEOSTRIP_NEOGPIODataPortHW1;
-    #endif
-        … (HW0 … HW29) …
-    }
-}
-```
-
-**Warum `#ifdef` pro `case` und keine Laufzeit-Tabelle?**
-Die `ParamNEOSTRIP_…HWn`-Makros existieren **nur für die tatsächlich
-einkompilierten** Hardware-Varianten (vom Producer in `knxprod.h` erzeugt). Eine
-Tabelle `{ HW0, HW1, … }` würde Makros referenzieren, die je nach Build gar nicht
-definiert sind → **Compile-Fehler**. Das `#ifdef`-Gating ist also kein
-Schönheitsfehler, sondern **Voraussetzung** für die bedingte Kompilierung. Der
-Wert kommt am Ende immer aus den **Defines** (ETS-Parameter bzw. .ini), nicht aus
-hartem Code.
+Jedes Board hat je Streifen eigene Port-Parameter (`…GPIODataPortHW<n>`, eigene Auswahlliste), alle auf **demselben
+Byte** der Streifen-Union (Daten Offset 5, Clock Offset 3; Relais r im Relais-Byte). ETS schreibt das Byte aus dem
+Parameter des gewählten Boards. Die Firmware liest es über einen Träger-Parameter ohne Oberfläche (`Access="None"`):
+`ParamNEOSTRIP_NEODataPort`, `ParamNEOSTRIP_NEOClockPort`, `ParamNEO_NEOExternalRelay<r>Port`. Damit braucht die
+Firmware keine Board-Nummer und keinen `switch` über alle Boards. Den Portwert bildet `hwPortGpio()`
+(OGM-HardwareConfig `include/HardwareConfig/Helpers/HardwarePorts.h`) auf `HW_PORT_<k+1>_GPIO` ab, 255 für einen nicht beschriebenen Port.
 
 ---
 
-## 6. Konkretes Beispiel — KNeoPix RP2350 (WiFi)
+## 6. Konkretes Beispiel — KNeoPix RP2350
 
-1. Header `XIAO.h`: `#define DEVICE_HW_ID 0x131x`, `#define XIAO_*_GPIO …`.
-2. `Build-HardwareConfig.ps1` ordnet ihr z. B. **HW-Index 12** zu (→ `HardwareMappingData.h`)
-   und erzeugt in `share.xml` die GPIO-Auswahl-Parameter `…HW12`.
-3. Producer schreibt `#define ParamNEOSTRIP_NEOGPIODataPortHW12 …` in `knxprod.h`.
-4. ETS: Anwender wählt „OpenKNXiao V1 KNeoPix RP2350" → `ParamNEO_NeoPixelHardwareSelect = 12`.
-5. Firmware: `getDataPortSelectionForHardwareIndex()` → `case 12:` → korrekter Daten-GPIO.
+1. Header `Xiao.h`: `#define DEVICE_HW_ID 0x1310`, Ports über den gemeinsamen Block
+   `HW_PORT_1_GPIO OKNXHW_OPENKNXIAO_D1` … `HW_PORT_8_GPIO OKNXHW_OPENKNXIAO_D10`.
+2. Der Generator liest das Env `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1`; `HardwareProfile.slots` gibt der
+   HW-ID 0x1310 die Board-Nummer 4 (Parameter `…HW4`, nur ETS).
+3. ETS: Anwender wählt auf der Seite OpenKNX → „Hardware" „OpenKNXiao V1 KNeoPix RP2350" (oder fragt das Gerät ab) →
+   `NEOHW_HardwareSelect = 4880`; Port „D3" im Parameter `…HW4` → Wert 2 (Portnummer − 1) im Byte des Streifens.
+4. Firmware: Auswahl 4880 == `DEVICE_HW_ID` → Träger `ParamNEOSTRIP_NEODataPort` = 2 → `hwPortGpio(2)` = `HW_PORT_3_GPIO`.
 
 ---
 
@@ -200,12 +161,13 @@ hartem Code.
 
 | Rolle | Datei |
 |-------|-------|
-| HW-Beschreibung (Defines) | `lib/OGM-HardwareConfig/include/HardwareConfig/**/*.h`, `platformio.hardware.ini` |
-| Generator | `scripts/Build-HardwareConfig.ps1` |
-| Generierte HW-Index-Tabelle | `src/HardwareMappingData.h` (AUTO-GENERATED) |
-| Generierte ETS-Parameter/UI | `src/NeoPixel.share.xml` (in AUTO-GENERATED-Markern) |
+| HW-Beschreibung (Defines) | `lib/OGM-HardwareConfig/include/HardwareConfig/**/*.h` |
+| Generator + Bausteine | `lib/OGM-HardwareConfig/generator/` (README dort) |
+| Manifest, Board-Nummern | `HardwareProfile.xml`, `HardwareProfile.slots` |
+| NeoPixel-Vorlagen | `src/hw/*.xml`, `src/NeoPixel.script.src.js` |
+| Generierte Dateien | `src/NeoPixel.hw.*.gen.xml`, `src/NeoPixel.hw.module.gen.js`, `src/NeoPixel.hw.conf.xml`, `src/NeoPixel.script.js`, `include/HardwareProfileData.h` |
 | Producer-Makros | `include/knxprod.h` |
-| Laufzeit-Auswahl-Logik | `src/HardwareMappingLogic.h` |
+| Laufzeit-Auswahl-Logik | `src/HardwareMappingLogic.h`, `lib/OGM-HardwareConfig/include/HardwareConfig/Helpers/HardwarePorts.h` |
 
 ---
 
@@ -213,7 +175,7 @@ hartem Code.
 
 - **Eine Firmware/ETS-App** für alle Boards – keine Board-Forks.
 - **Neues Board = nur Defines** (Header + .ini, DEVICE_HW_ID) → Generator erledigt den Rest.
-- **Kein toter Code:** per `#ifdef` landen nur die einkompilierten Varianten im Binary.
+- **Kein toter Code:** die Firmware kennt nur ihr eigenes Board (Träger-Byte + `hwPortGpio`).
 - **ETS-geführt:** Anwender wählt sein Board per Dropdown, nur passende Parameter erscheinen.
 - **Konsistenz garantiert:** GPIO-Werte, ETS-Parameter und C++-Mapping stammen aus *einer* Quelle.
 
@@ -225,126 +187,41 @@ Die häufigste Entwicklerfrage — und die Kernbotschaft des Konzepts: **so weni
 Es wird **kein** C++ und **keine** XML von Hand geschrieben — man pflegt nur **Defines**.
 
 ### Einmaliger Aufwand (Framework — bereits erledigt)
-Das ist die Investition, die *einmal* gemacht wurde und für **alle** Boards trägt:
-Generator (`Build-HardwareConfig.ps1`), Marker-Struktur in `share.xml`, das `0xHUVV`-
-ID-Schema, die `switch`+`#ifdef`-Auswahllogik und die ID↔Index-Tabelle. → **Nichts davon
-muss man pro Board nochmal anfassen.**
+Generischer Generator in OGM-HardwareConfig, Manifest `HardwareProfile.xml`, Vorlagen in `src/hw/`, das
+`0xHUVV`-ID-Schema, das Hardware-Modul, die Träger-Parameter und die Slot-Datei. → **Nichts davon muss man pro Board
+nochmal anfassen.**
 
 ### Pro neuer Hardware (der wiederkehrende, minimale Aufwand)
 1. **Hardware-Header anlegen/ergänzen** (`lib/OGM-HardwareConfig/include/HardwareConfig/**`):
    - `#define DEVICE_HW_ID 0x….` (eindeutige ID, Schema aus Abschnitt 2)
-   - die GPIO-`#define`s des Boards (Daten-/Clock-Pins, Relais, Kanalzahl, Features)
-2. **PlatformIO-Build-Target** für das Board in der `platformio.*.ini` ergänzen.
-3. **Generator laufen lassen:** `pwsh scripts/Build-HardwareConfig.ps1`
-   → erzeugt automatisch: ETS-Dropdown-Eintrag, GPIO-Parameter, `HardwareMappingData.h`
-     (ID↔Index), `share.xml`-Blöcke, `script.js`.
-4. **Bauen/Prüfen:** `pwsh scripts/Build-Release.ps1` (Producer + Firmware).
-
-**Das war's.** GPIO-Auswahl-UI, ETS-Parameter, C++-Mapping, Konflikt-Erkennung — alles
-entsteht generiert aus den Defines. Aufwand pro Board: **Minuten, nur Defines** (kein
-Eingriff in Logik/Generator).
+   - die Ports `HW_PORT_COUNT`, `HW_PORT_<n>_GPIO`, `HW_PORT_<n>_LABEL` (lückenlos ab 1)
+2. **PlatformIO-Build-Target** `release_<Board>` in `platformio.custom.ini` ergänzen (Board, Board-Define); das
+   Manifest nimmt jedes `release_*`-Env. Relais in ETS: `<Set>`-Zeile im Manifest.
+3. **Generator laufen lassen** (`lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1`, als VS-Code-Task „Build HardwareConfig", oder `Build-Release.ps1`): neue Board-Nummer am
+   Ende von `HardwareProfile.slots`, Eintrag im Hardware-Modul, Port-Listen, `HardwareProfileData.h`, `script.js`.
+4. **Bauen/Prüfen:** `pwsh scripts/Build-Release.ps1` (Producer + Firmware), neue ApplicationVersion.
 
 > Faustregel: *Neues Board = neuer Header-Eintrag (Defines) + Build-Target + Generatorlauf.*
 
 ---
 
-## 10. Technik (für Tekkies): Extraktion via Präprozessor → ETS-Dropdown
+## 10. Technik (für Tekkies): Präprozessor → ETS-Dropdown
 
-Der Clou: Die Hardware-Werte werden **nicht** doppelt gepflegt oder per Regex aus den
-Headern „geraten" — sie werden mit **demselben C++-Präprozessor** aufgelöst, den auch
-die Firmware nutzt. Dadurch sind die generierten Werte **garantiert identisch** mit dem,
-was die Firmware sieht (kein Drift).
+Die Hardware-Werte werden **nicht** doppelt gepflegt oder per Regex aus den Headern „geraten" — der Generator
+löst sie mit dem C-Präprozessor auf (`clang++`/`g++ -E`, Board-Define + `-D`-Flags des Envs), dieselben Header,
+die auch die Firmware sieht.
 
-### Die Extraktions-Pipeline (`scripts/Build-HardwareConfig.ps1`)
+1. **Boards:** `<Boards platformio="release_*" />` – je Env das Board-Define und die `-D`-Flags
+   (`pio project config`).
+2. **Je Board:** `DEVICE_HW_ID`, `DEVICE_NAME`, Ports (`HW_PORT_*`), Fähigkeiten (`<Capability expr>`) und Werte
+   (`<Value>`) des Manifests per Präprozessor.
+3. **Sortierung/Nummern:** aufsteigend nach HW-ID (`order="hwid"`); die Board-Nummer in Parameter-IDs kommt aus
+   `HardwareProfile.slots` (`ids="slot"`), nie aus der Listenposition.
+4. **Vorlagen:** `<Generate>` erzeugt aus `src/hw/*.xml` und den Bausteinen von OGM-HardwareConfig ganze Dateien;
+   eine Datei wird nur geschrieben, wenn sich ihr Inhalt ändert.
 
-```
- platformio.hardware.ini        scripts/extract_gpio_config_simple.cpp
- (Liste aller Varianten:        (#include der HardwareConfig-Header,
-  je env ein DEVICE_*-Macro)     druckt die aufgelösten Werte)
-        │                                   │
-        └───────────────┬───────────────────┘
-                        ▼
-      Pro Variante:  g++  -D DEVICE_<VARIANTE>  extract_gpio_config_simple.cpp
-      (arm-none-eabi-g++ / xtensa-esp32-elf-g++ / riscv32-esp-elf-g++ — aus der PATH/Toolchain)
-                        │
-                        │  Präprozessor löst die  #ifdef DEVICE_<X>  /  #ifdef *_GPIO  Ketten auf
-                        ▼
-      Extractor gibt die KONKRETEN Werte aus:
-        DEVICE_HW_ID, DEVICE_NAME, Daten-/Clock-GPIOs, Kanalzahl, Relais-Anzahl, Features …
-                        │
-                        │  PowerShell parst die Ausgabe → ein HardwareConfig-Objekt je Variante
-                        ▼
-      Generator schreibt daraus:
-        • src/HardwareMappingData.h         (DEVICE_HW_ID ↔ Index)
-        • NeoPixel.share.xml  →  ETS-„Hardware Auswahl"-Dropdown  +  per-HW GPIO-Parameter
-        • NeoPixel.script.js                (Konflikt-/UI-Logik)
-```
-
-### Schritt für Schritt
-1. **Varianten-Liste:** Der Generator liest `platformio.hardware.ini`. Jede `[env:…]`
-   bzw. jeder `DEVICE_*`-Eintrag = eine Hardware-Variante.
-2. **Toolchain finden:** Er sucht einen `*-g++` (arm-none-eabi / xtensa / riscv) in den
-   installierten PlatformIO-Toolchains.
-3. **Extractor pro Variante laufen lassen:** `extract_gpio_config_simple.cpp` wird je
-   Variante mit deren `DEVICE_*`-Define **präprozessiert/kompiliert & ausgeführt**. Weil
-   es **dieselben** `HardwareConfig/**`-Header inkludiert, liefert der Präprozessor genau
-   die Pins/IDs dieses Boards.
-4. **Ausgabe parsen:** stdout des Extractors → Werte je Variante (Marker-Zeilen).
-5. **Generieren:** Aus der Variantenliste entstehen `HardwareMappingData.h`, die per-HW
-   GPIO-Parameter und das **ETS-Dropdown**.
-
-### Wie die Varianten im ETS-Dropdown landen
-Aus der geparsten Liste erzeugt der Generator den Parameter **„Hardware Auswahl"**
-(`ParamNEO_NeoPixelHardwareSelect`, UI `UP-4000018`) als **Enumeration** — **ein Eintrag
-pro Variante** (`DEVICE_NAME` als Text, der Index als Wert). Genau dieser Index steuert
-dann die `switch`+`#ifdef`-Auswahl aus Abschnitt 5.
-
-→ **Konsequenz:** Eine neue Variante in `.ini` + Header → nach `Build-HardwareConfig.ps1`
-erscheint sie **automatisch** als neuer Eintrag im ETS-Dropdown, mit ihren GPIO-Parametern.
-Kein manuelles Pflegen von Enum-Einträgen oder Parametern.
-
-### Mini-Beispiel (KNeoPix RP2350)
-
-Der Extractor ist **preprocessor-only** — er wird gar nicht kompiliert, nur expandiert.
-Seine `.cpp` enthält wörtliche `KEY = VALUE`-Zeilen, in denen Makros stehen; der
-Präprozessor ersetzt sie durch die Board-Werte.
-
-**Aufruf** (vereinfacht, eine Variante):
-```bash
-g++ -E -P -I lib/OGM-HardwareConfig/include \
-    -D OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1 \
-    scripts/extract_gpio_config_simple.cpp
-```
-
-**Ausgabe** (KEY=VALUE, von PowerShell geparst):
-```
-HW_DEVICE_NAME   = "OpenKNXiao V1 KNeoPix RP2350"
-HW_DEVICE_ID_BIT = 0x1311
-HW_GPIO_DATA_0   = 0
-HW_GPIO_CLOCK_0  = 1
-HW_LED_PORT_COUNT = 1
-HW_EXT_RELAIS_COUNT = 0
-…
-```
-
-**Daraus generiert** der Generator u. a.:
-```xml
-<!-- ETS-Dropdown „Hardware Auswahl" — ein Eintrag je Variante -->
-<Enumeration Text="OpenKNXiao V1 KNeoPix RP2350" Value="12" Id="%ENID%" />
-```
-```cpp
-// HardwareMappingData.h — ID ↔ Index
-{ 0x1311, 12 },   // OpenKNXiao V1 KNeoPix RP2350
-```
-Wert `12` = der Hardware-Index, der zur Laufzeit die `switch`+`#ifdef`-Auswahl (Abschnitt 5) steuert.
-
-### Relevante Dateien
-| Rolle | Datei |
-|-------|-------|
-| Varianten-Liste | `platformio.hardware.ini`, `lib/OGM-HardwareConfig/include/HardwareConfig/OpenKNX/platformio.hardware.ini` |
-| Extractor (Präprozessor-Werkzeug) | `scripts/extract_gpio_config_simple.cpp` |
-| Orchestrierung + Generierung | `scripts/Build-HardwareConfig.ps1` |
-| Toolchains | `~/.platformio/packages/toolchain-*/bin/*-g++` |
+Die Auswahl im Hardware-Modul (`NEOHW_HardwareSelect`, `UP-4500001`) speichert die **HW-ID** (0 = nicht gewählt), der
+Portwert ist die **Portnummer − 1** (`PortListTypes.xml`). Einzelheiten: `lib/OGM-HardwareConfig/generator/README.md`.
 
 ---
 
@@ -364,23 +241,22 @@ Wert `12` = der Hardware-Index, der zur Laufzeit die `switch`+`#ifdef`-Auswahl (
   sofort auf (z. B. die ID-Kollision, die wir beim Relais-Umbau hatten).
 
 ### Schwächen / Risiken
-- **Komplexität im Generator:** Das „Magische" konzentriert sich in `Build-HardwareConfig.ps1`
-  (groß, viele Sonderfälle). Wer *am Generator* arbeitet, hat eine steile Lernkurve — im
+- **Komplexität im Generator:** Das „Magische" konzentriert sich im Generator (OGM-HardwareConfig) und den
+  NeoPixel-Vorlagen in `src/hw/`. Wer *am Generator* arbeitet, hat eine steile Lernkurve — im
   Gegensatz zum trivialen *pro-Board*-Aufwand.
 - **Manuelle ID-/Offset-Vergabe:** Param-IDs und Flash-Offsets werden im Generator von Hand
   vergeben → kollisionsanfällig (real passiert: `00163` doppelt mit Clock-Conflict). Heute
   fängt das nur der Producer ab; ein **Allocator/Registry** wäre robuster.
-- **Toolchain-Abhängigkeit:** Die Extraktion braucht einen `*-g++` im PATH. Fehlt die
-  Toolchain, schlägt die Generierung fehl (Build-Umgebung muss stimmen).
+- **Toolchain-Abhängigkeit:** Der Generator braucht einen C-Präprozessor (`clang++`/`g++`) und `pio`.
 - **Tooling-Reibung:** PowerShell + macOS-Eigenheiten (z. B. `.ps1`-Exit 126, `pwsh` nötig).
 - **Zwei-Stufen-Versionierung muss diszipliniert gepflegt werden:** `ApplicationVersion`
   (ETS-Config) **und** `FLASH_FORMAT_VERSION` (Runtime-State). Vergisst man den Bump →
   „komische Sachen" nach FW-Update (genau der Fall, den wir abgesichert haben).
-- **Generierte Artefakte im Repo:** XML/Header sind eingecheckt → man muss nach Quell-
-  Änderungen ans **Regenerieren** denken; sonst driften Quelle und Generat. (CI-Check empfohlen.)
+- **Generierte Artefakte:** NeoPixel nimmt XML/Header per `.gitignore` aus, der Build erzeugt sie
+  (`Build-Release.ps1`); OGM-HardwareConfig prüft seine Demo in der CI mit `-Check`.
 - **Indirekte Debugbarkeit:** Bei Fehlern debuggt man durch generierte XML/Makros statt durch
   direkten Code — eine zusätzliche Abstraktionsebene.
-- **Fixe Grenzen:** `MAX_HARDWARE_VARIANTS`, feste ID-Bereiche, 3-Bit-Relais-Count o. ä. sind
+- **Fixe Grenzen:** feste ID-Bereiche, 3-Bit-Relais-Count o. ä. sind
   Annahmen, die man bei starkem Wachstum sprengen kann.
 
 ### Fazit
@@ -388,9 +264,8 @@ Das Konzept ist für „**eine Codebasis, viele Boards**" **sehr gut gewählt** 
 Single-Source-Ansatz via Präprozessor ist elegant und vermeidet die klassische
 Drift-Falle. Der Preis ist ein **komplexer, sorgfältig zu pflegender Generator** und
 **Disziplin bei IDs/Offsets/Versionen**. Größter Hebel zur Verbesserung: **Allocator
-statt manueller IDs/Offsets**, ein **CI-Regenerier-Check** und perspektivisch die
-**Auto-Detection** (Abschnitt 4) — damit würde der ohnehin geringe Rest-Aufwand und die
-Hauptfehlerquellen weiter schrumpfen.
+statt manueller IDs/Offsets** (Abschnitt 12.1); CI-Check und Geräteabfrage sind inzwischen umgesetzt
+(12.2, 12.3).
 
 ---
 
@@ -402,8 +277,9 @@ Drei konkrete Verbesserungen — jeweils mit Problem, Lösung und Nutzen begrün
 > 12.2 CI-Check → **verworfen (vorerst nicht verfolgt)**;
 > 12.3 Auto-Fill → **Backlog (später)** — die gefährliche Hälfte (Mismatch) ist
 > bereits abgefangen, siehe Hinweis unten.
+> **Stand 2026-11-14:** 12.3 ist umgesetzt, 12.2 ist angelegt (siehe dort); 12.1 bleibt Backlog.
 
-### 12.1 Offset-/ID-Allocator statt manueller Vergabe  ★ höchster Hebel — Backlog
+### 12.1 Offset-/ID-Allocator statt manueller Vergabe (höchster Hebel, Backlog)
 - **Problem:** Param-IDs und Flash-Offsets werden im Generator **von Hand** vergeben.
   Das ist kollisionsanfällig — real passiert: die neuen Relais-Namen `00163-00166`
   kollidierten mit den Clock-Conflict-Parametern `00163-00170` (Ausweichen auf
@@ -414,8 +290,8 @@ Drei konkrete Verbesserungen — jeweils mit Problem, Lösung und Nutzen begrün
 - **Nutzen:** Kollisionen werden **strukturell unmöglich** statt nachträglich erkannt;
   neue Parameter hinzuzufügen wird trivial und reviewsicher.
 
-### 12.2 CI-Regenerier-Check  — verworfen (vorerst nicht verfolgt)
-- **Problem:** Generierte Artefakte (XML/Header) sind **im Repo eingecheckt**. Vergisst
+### 12.2 CI-Regenerier-Check  — angelegt (2026-11-14: `Build-HardwareProfile.ps1 -Check` + GitHub Action `.github/workflows/hardware-profile.yml` in OGM-HardwareConfig, Windows PowerShell 5.1, prüft die Demo; ein grüner Lauf ist nicht belegt)
+- **Problem (Stand 2026-06):** Generierte Artefakte (XML/Header) waren **im Repo eingecheckt**. Vergisst
   jemand nach einer Quell-/Generator-Änderung das Regenerieren, driften Quelle und
   Generat auseinander → schwer zu findende Fehler.
 - **Lösung:** Ein CI-Schritt läuft den Generator und prüft „**Ergebnis == eingecheckter
@@ -423,15 +299,10 @@ Drei konkrete Verbesserungen — jeweils mit Problem, Lösung und Nutzen begrün
 - **Nutzen:** Drift wird **automatisch** beim Pull-Request erkannt; der eingecheckte Stand
   ist garantiert reproduzierbar.
 
-### 12.3 Auto-Detection statt Dropdown  (siehe Abschnitt 4) — Backlog
-- **Problem:** Der Anwender wählt sein Board manuell im ETS-Dropdown. Fehlerquelle:
-  Firmware-Board ≠ gewähltes Board → Fehlkonfiguration („komische Sachen").
-- **Lösung:** Firmware meldet ihre `DEVICE_HW_ID` (Property/KO/Konsole), ETS liest sie
-  nach dem Setzen der phys. Adresse aus und setzt `ParamNEO_NeoPixelHardwareSelect`
-  automatisch (bzw. warnt bei Abweichung).
-- **Nutzen:** **Kein manuelles Dropdown**, eine ganze Fehlerklasse entfällt. Bausteine
-  sind vorhanden (`DEVICE_HW_ID` im Gerät, ID↔Index-Tabelle, ETS-Property-Read).
+### 12.3 Auto-Detection statt Dropdown  (siehe Abschnitt 4) — umgesetzt
+- Der Button „Hardware vom Gerät abfragen" auf der Seite OpenKNX → „Hardware" liest `DEVICE_HW_ID` und die Fähigkeiten per
+  Function Property 158/4 und setzt die Auswahl; Abweichungen vom erwarteten Profil meldet er.
 
-> **Entscheidung 2026-06-13:** 12.2 (CI) **verworfen**. 12.1 (Allocator) und 12.3 (Auto-Fill)
+> **Entscheidung 2026-06-13 (überholt, siehe Status am Anfang von Abschnitt 12):** 12.2 (CI) **verworfen**. 12.1 (Allocator) und 12.3 (Auto-Fill)
 > bleiben als **Backlog für später** — kein akuter Handlungsbedarf (Mismatch ist gewarnt,
 > Kollisionen fängt der Producer ab). 12.1 vor 12.3, wenn es wieder aufgegriffen wird.
