@@ -111,3 +111,44 @@ Gruppen der Applikation stehen in `src/NeoPixel.EffectGroups.xml`:
   „Effekt nicht verfügbar" (Fehler), wenn jede Firmware-Variante des Boards ihn weglaesst; ein Hinweis,
   wenn nur eine Variante ihn weglaesst; keine Meldung ohne oder mit unbekannter Hardware.
 - Solid laesst sich nicht abschalten, es ist der Rueckfall fuer eine unbekannte Auswahl.
+
+## Erzeugte Ausgaben (für Entwickler)
+
+`scripts/Build-EffectParameters.ps1` erzeugt aus den Effekt-Headern von OFM-NeoPixel die Effekt-Teile der ETS-XML
+(Segment, Szene, Cue, Effektlisten), `src/EffectParameterMapping.h`, `src/EffectTypeMapping.h`,
+`src/NeoPixelEffectGroups.h`, den Effektblock von `src/NeoPixel.script.src.js`, den Web-Katalog
+(`web/assets/effects.json`, `src/WebUi/NeoPixelEffectCatalog.generated.h`), die Hilfedateien der Effekt-Parameter
+(`src/Baggages/Help_de/NEO-<Parameter>-<Effekt>.md`) und die erzeugten Blöcke von `NEO-Effekt-Typ.md`,
+`NEO-Effekt-ID-Referenz.md` und dieser Seite.
+
+- **Committet:** alle Ausgaben liegen im Repo; ein Build ohne Effektänderung erzeugt nichts.
+- **`src/EffectParameters.fingerprint`:** ein Hash über die Eingaben (Effekt-Quellen von OFM-NeoPixel,
+  `src/EffectIds.lock`, `src/EffectParameters.lock`, `src/NeoPixel.EffectGroups.xml`, das Skript selbst, die Sprache)
+  und je Ausgabe ein Inhalts-Hash (bei Dateien mit erzeugten Blöcken nur über diese Blöcke; eine Handänderung außerhalb
+  zählt nicht). Stimmen Eingaben und Ausgaben, meldet der Lauf „Effekte: unverändert" und schreibt nichts.
+- **`-Check`:** schreibt nichts; Exit 0 = aktuell, 1 = Eingabe oder Ausgabe geändert oder Ausgabe fehlt (für CI).
+- **`-Force`:** erzeugt auch bei unverändertem Fingerabdruck; mit `-Clean` ohne Rückfrage.
+- **`-Clean`:** löscht die erzeugten Dateien, leert die Markerblöcke und löscht den Fingerabdruck; der nächste Lauf
+  erzeugt alles neu. `src/NeoPixelEffectGroups.h` und die beiden Lock-Dateien bleiben.
+- **Hilfedateien:** jeder volle Lauf schreibt sie aus dem Effekt-Header (`getParameterDescription()`); eine Handänderung
+  wird beim nächsten Lauf überschrieben. Eine Hilfedatei, die der vorige Lauf erzeugt hat und dieser nicht mehr (z. B.
+  nach dem Entfernen eines Parameters), wird gelöscht. Fehlt in einer anderen gelisteten Ausgabe der Markerblock, bricht
+  der Lauf ab und `-Check` bleibt „veraltet".
+- **`scripts/Build-Release.ps1 -Clean`** lässt die Effekt-Ausgaben und den Fingerabdruck stehen.
+
+### Lock-Dateien
+
+- **`src/EffectIds.lock`:** Effektnummer je Effektklasse. Neue Effekte werden angehängt; eine geänderte Nummer oder ein
+  aus `getEffectByIndex()` entfernter Effekt bricht ab.
+- **`src/EffectParameters.lock`:** je Effekt Index, Name und ETS-Typ jedes Parameters (`bool`, `string`,
+  `enum:<Wert>=<Text>;…`, `number:<min>..<max>`, `color:<min>..<max>`). Die ETS-IDs (`21CC<EE><PP>`, `22CC<Cue><EE><P>`)
+  hängen am Index, also behält ein Parameter Index und Typ. Erlaubt: anhängen, umbenennen bei gleichem Typ, den letzten
+  Parameter entfernen (der Index bleibt als „removed" belegt), Enum-Werte anhängen, einen Zahlenbereich erweitern.
+  Abbruch: einen Parameter verschieben (einfügen, umsortieren, mittendrin entfernen), einen entfernten Index neu
+  vergeben, einen anderen Typ, einen geänderten oder entfernten Enum-Wert, einen engeren Zahlenbereich (wie die ETS beim
+  „Aktualisieren" mit einem gespeicherten Wert außerhalb des neuen Bereichs umgeht, ist nicht geprüft; der Generator
+  verlässt sich nicht darauf). Ausweg: den Parameter lassen und einen neuen anhängen.
+- Beide Locks schreibt nur ein vollständig erfolgreicher Lauf, zusammen mit dem Fingerabdruck; ein abgebrochener Lauf und
+  `-WebCatalogOnly` lassen sie unverändert. Fehlt `src/EffectParameters.lock`, legt der Lauf sie aus dem aktuellen Stand
+  an und meldet das (erster Lauf, nichts verglichen). Beide Dateien werden committet.
+- Regressionstest: `pwsh test/Test-EffectChanges.ps1` spielt die erlaubten und verbotenen Änderungen in einer Kopie durch.
