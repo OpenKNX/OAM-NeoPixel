@@ -14,6 +14,8 @@
         <op:param name="%CUE_TPP%" value="0" increment="1000" digits="4" />
         <!-- Own lane: the CUE_PPP stride of 18 is fully used, 900..909 is free. -->
         <op:param name="%CUE_NO2D%" value="900" increment="1" />
+        <!-- availability flag of the cue effect: P-%TT%%CC%280..289 -->
+        <op:param name="%CUE_FXA%" value="280" increment="1" />
         <!-- CUE_LBL entfernt: Cue-Baum-Titel zeigt jetzt JS-frei direkt auf den rohen Cue-Namen (CUE_PPP+16) -->
     </op:part>
 
@@ -59,6 +61,17 @@
                    Access=None + ohne Offset => NICHT gespeichert (kein Speicher, Union bleibt voll/unveraendert);
                    nur Baum-Titel & EM-KO-Namen zeigen via TextParameterRefId darauf. -->
               <Parameter Id="%AID%_P-%TT%%CC%010" Name="NEOEM%C%DisplayName" ParameterType="%AID%_PT-EMDisplayName" Text="" Value="" Access="None" />
+              <!-- effect availability of cue 1..10 on the selected hardware (memoryless, calculation NEO_EffectAvailability; %CUE_FXA%) -->
+              <Parameter Id="%AID%_P-%TT%%CC%280" Name="NEOEM%C%Cue1FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 1" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%281" Name="NEOEM%C%Cue2FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 2" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%282" Name="NEOEM%C%Cue3FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 3" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%283" Name="NEOEM%C%Cue4FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 4" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%284" Name="NEOEM%C%Cue5FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 5" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%285" Name="NEOEM%C%Cue6FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 6" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%286" Name="NEOEM%C%Cue7FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 7" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%287" Name="NEOEM%C%Cue8FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 8" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%288" Name="NEOEM%C%Cue9FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 9" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%289" Name="NEOEM%C%Cue10FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Cue 10" Value="0" Access="None" />
             </Parameters>
 
             <ParameterRefs>
@@ -71,6 +84,16 @@
               <ParameterRef Id="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" RefId="%AID%_P-%TT%%CC%010" />
               <!-- CueLabel-Refs (910-919) entfernt (JS-frei, siehe oben) -->
               <op:usePart name="Cue" xpath="//ParameterRefs/*" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%280_R-%TT%%CC%28001" RefId="%AID%_P-%TT%%CC%280" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%281_R-%TT%%CC%28101" RefId="%AID%_P-%TT%%CC%281" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%282_R-%TT%%CC%28201" RefId="%AID%_P-%TT%%CC%282" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%283_R-%TT%%CC%28301" RefId="%AID%_P-%TT%%CC%283" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%284_R-%TT%%CC%28401" RefId="%AID%_P-%TT%%CC%284" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%285_R-%TT%%CC%28501" RefId="%AID%_P-%TT%%CC%285" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%286_R-%TT%%CC%28601" RefId="%AID%_P-%TT%%CC%286" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%287_R-%TT%%CC%28701" RefId="%AID%_P-%TT%%CC%287" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%288_R-%TT%%CC%28801" RefId="%AID%_P-%TT%%CC%288" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%289_R-%TT%%CC%28901" RefId="%AID%_P-%TT%%CC%289" />
             </ParameterRefs>
 
             <ParameterCalculations>
@@ -87,6 +110,45 @@
                 </LParameters>
                 <RParameters>
                   <ParameterRefRef RefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" AliasName="TextOutput" />
+                </RParameters>
+              </ParameterCalculation>
+              <!-- effect availability of the cue effects (E0..E9, N = No2D list) -->
+              <ParameterCalculation Id="%AID%_PC-%TT%%CC%002" Language="JavaScript" Name="NEOEM%C%EffectAvailability"
+                  LRTransformationFunc="NEO_EffectAvailability" RLTransformationFunc="NEO_Empty" LRTransformationParameters="{&quot;Count&quot;:10}">
+                <LParameters>
+                  <ParameterRefRef RefId="%NEOHW_SelectRef%" AliasName="Sel" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" AliasName="E0" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%900_R-%TT%%CC%90001" AliasName="N0" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%118_R-%TT%%CC%11801" AliasName="E1" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%901_R-%TT%%CC%90101" AliasName="N1" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%136_R-%TT%%CC%13601" AliasName="E2" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%902_R-%TT%%CC%90201" AliasName="N2" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" AliasName="E3" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%903_R-%TT%%CC%90301" AliasName="N3" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" AliasName="E4" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%904_R-%TT%%CC%90401" AliasName="N4" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%190_R-%TT%%CC%19001" AliasName="E5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%905_R-%TT%%CC%90501" AliasName="N5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" AliasName="E6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%906_R-%TT%%CC%90601" AliasName="N6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%226_R-%TT%%CC%22601" AliasName="E7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%907_R-%TT%%CC%90701" AliasName="N7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401" AliasName="E8" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%908_R-%TT%%CC%90801" AliasName="N8" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%262_R-%TT%%CC%26201" AliasName="E9" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%909_R-%TT%%CC%90901" AliasName="N9" />
+                </LParameters>
+                <RParameters>
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%280_R-%TT%%CC%28001" AliasName="F0" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%281_R-%TT%%CC%28101" AliasName="F1" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%282_R-%TT%%CC%28201" AliasName="F2" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%283_R-%TT%%CC%28301" AliasName="F3" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%284_R-%TT%%CC%28401" AliasName="F4" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%285_R-%TT%%CC%28501" AliasName="F5" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%286_R-%TT%%CC%28601" AliasName="F6" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%287_R-%TT%%CC%28701" AliasName="F7" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%288_R-%TT%%CC%28801" AliasName="F8" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%289_R-%TT%%CC%28901" AliasName="F9" />
                 </RParameters>
               </ParameterCalculation>
             </ParameterCalculations>

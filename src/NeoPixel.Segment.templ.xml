@@ -9,6 +9,8 @@
         <op:param name="%MO%" value="160" increment="36" digits="1"/>
         <op:param name="%SZ%" value="1" increment="1" digits="1"/>
         <op:param name="%SN%" value="0" increment="1" asLetter="true"/>
+        <!-- availability flag of the scene effect: P-%TT%%CC%002..011 -->
+        <op:param name="%FXA%" value="2" increment="1" digits="3"/>
     </op:part>
 
     <ManufacturerData>
@@ -19,6 +21,19 @@
             <Parameters>
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
+              <!-- effect availability on the selected hardware (memoryless, written by the calculation NEO_EffectAvailability):
+                   001 = segment effect, 002..011 = scenes A..J (%FXA% of the Scene part) -->
+              <Parameter Id="%AID%_P-%TT%%CC%001" Name="NEO%C%FxAvail" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%002" Name="NEO%C%FxAvailSceneA" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene A" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%003" Name="NEO%C%FxAvailSceneB" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene B" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%004" Name="NEO%C%FxAvailSceneC" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene C" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%005" Name="NEO%C%FxAvailSceneD" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene D" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%006" Name="NEO%C%FxAvailSceneE" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene E" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%007" Name="NEO%C%FxAvailSceneF" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene F" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%008" Name="NEO%C%FxAvailSceneG" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene G" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%009" Name="NEO%C%FxAvailSceneH" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene H" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%010" Name="NEO%C%FxAvailSceneI" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene I" Value="0" Access="None" />
+              <Parameter Id="%AID%_P-%TT%%CC%011" Name="NEO%C%FxAvailSceneJ" ParameterType="%AID%_PT-NEOEffectAvail" Text="Effekt-Verfuegbarkeit Szene J" Value="0" Access="None" />
               <!-- Segment Parameters (overlapping unions by design: effect params share same offsets, only one effect active at a time) -->
               <!-- Union size 4672→5632 bit (584→704 bytes) for the 2D effects (DNA/Aurora/Lissajous/Metaballs) and room for ~50 more effects; the end of the effect spillover grows with it. LAYOUT MIGRATION: a change of the per-segment block size moves the offsets (RefIds and KO numbers stay), ETS needs a re-import. -->
               <Union SizeInBit="5632">
@@ -320,6 +335,17 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%264_R-%TT%%CC%26401" RefId="%AID%_UP-%TT%%CC%264"/>
 
               <ParameterRef Id="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" RefId="%AID%_P-%TT%%CC%000" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_P-%TT%%CC%001" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201" RefId="%AID%_P-%TT%%CC%002" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301" RefId="%AID%_P-%TT%%CC%003" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%004_R-%TT%%CC%00401" RefId="%AID%_P-%TT%%CC%004" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%005_R-%TT%%CC%00501" RefId="%AID%_P-%TT%%CC%005" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%006_R-%TT%%CC%00601" RefId="%AID%_P-%TT%%CC%006" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%007_R-%TT%%CC%00701" RefId="%AID%_P-%TT%%CC%007" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%008_R-%TT%%CC%00801" RefId="%AID%_P-%TT%%CC%008" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%009_R-%TT%%CC%00901" RefId="%AID%_P-%TT%%CC%009" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" RefId="%AID%_P-%TT%%CC%010" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%011_R-%TT%%CC%01101" RefId="%AID%_P-%TT%%CC%011" />
               <!-- Segment Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%050_R-%TT%%CC%05001" RefId="%AID%_UP-%TT%%CC%050" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%051_R-%TT%%CC%05101" RefId="%AID%_UP-%TT%%CC%051" />
@@ -749,6 +775,48 @@
             </ComObjectRefs>
             <ParameterCalculations>
               <op:usePart name="Scene" xpath="//ParameterCalculations/*" />
+              <!-- effect availability of the segment effect (E0/N0) and the scene effects (E1..E10, N = No2D list) -->
+              <ParameterCalculation Id="%AID%_PC-%TT%%CC%001" Language="JavaScript" Name="NEO%C%EffectAvailability"
+                  LRTransformationFunc="NEO_EffectAvailability" RLTransformationFunc="NEO_Empty" LRTransformationParameters="{&quot;Count&quot;:11}">
+                <LParameters>
+                  <ParameterRefRef RefId="%NEOHW_SelectRef%" AliasName="Sel" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" AliasName="E0" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" AliasName="N0" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%320_R-%TT%%CC%32001" AliasName="E1" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%339_R-%TT%%CC%33901" AliasName="N1" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%340_R-%TT%%CC%34001" AliasName="E2" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%359_R-%TT%%CC%35901" AliasName="N2" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%360_R-%TT%%CC%36001" AliasName="E3" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%379_R-%TT%%CC%37901" AliasName="N3" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%380_R-%TT%%CC%38001" AliasName="E4" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%399_R-%TT%%CC%39901" AliasName="N4" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%400_R-%TT%%CC%40001" AliasName="E5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%419_R-%TT%%CC%41901" AliasName="N5" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%420_R-%TT%%CC%42001" AliasName="E6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%439_R-%TT%%CC%43901" AliasName="N6" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%440_R-%TT%%CC%44001" AliasName="E7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%459_R-%TT%%CC%45901" AliasName="N7" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%460_R-%TT%%CC%46001" AliasName="E8" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%479_R-%TT%%CC%47901" AliasName="N8" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%480_R-%TT%%CC%48001" AliasName="E9" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%499_R-%TT%%CC%49901" AliasName="N9" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%500_R-%TT%%CC%50001" AliasName="E10" />
+                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%519_R-%TT%%CC%51901" AliasName="N10" />
+                </LParameters>
+                <RParameters>
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" AliasName="F0" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201" AliasName="F1" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301" AliasName="F2" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%004_R-%TT%%CC%00401" AliasName="F3" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%005_R-%TT%%CC%00501" AliasName="F4" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%006_R-%TT%%CC%00601" AliasName="F5" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%007_R-%TT%%CC%00701" AliasName="F6" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%008_R-%TT%%CC%00801" AliasName="F7" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%009_R-%TT%%CC%00901" AliasName="F8" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" AliasName="F9" />
+                  <ParameterRefRef RefId="%AID%_P-%TT%%CC%011_R-%TT%%CC%01101" AliasName="F10" />
+                </RParameters>
+              </ParameterCalculation>
             </ParameterCalculations>
           </Static>
           <Dynamic>
@@ -899,6 +967,11 @@
                       <when default="true">
                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" IndentLevel="1" HelpContext="NEO-Effekt-Typ"/>
                       </when>
+                    </choose>
+                    <!-- effect availability on the selected hardware (NEO_EffectAvailability) -->
+                    <choose ParamRefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101">
+                      <when test="1"><ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt nicht verfügbar: Die Firmware dieser Hardware enthält diesen Effekt nicht, es läuft „Solid“." UIHint="Error" /></when>
+                      <when test="2"><ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Dieser Effekt fehlt in einer Firmware-Variante dieser Hardware." UIHint="Information" /></when>
                     </choose>
                     <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
                     <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->

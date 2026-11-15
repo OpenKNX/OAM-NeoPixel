@@ -658,10 +658,24 @@ function Assert-EffectIdNamespace {
   }
 }
 
+# @brief Aborts when two parameters of NeoPixel.Segment.templ.xml or NeoPixel.EM.templ.xml use one literal 3-digit ID
+#        number (UP- and P- count as one space: the ParameterRef suffixes would collide), e.g. the availability flags
+#        P-%TT%%CC%001..011 (segment) / 280..289 (EM); macro-based numbers (%CUE_PPP+k%, %FXA%, ...) and the part and
+#        share files are not checked here
+function Assert-ChannelIdNumbers {
+  foreach ($rel in @($script:Config.SegmentTemplate, "src/NeoPixel.EM.templ.xml")) {
+    $text = [System.IO.File]::ReadAllText((Resolve-RepoPath $rel))
+    $nums = @([regex]::Matches($text, '<Parameter\s+Id="%AID%_U?P-%TT%%CC%(\d{3})"') | ForEach-Object { $_.Groups[1].Value })
+    $dups = @($nums | Group-Object | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+    if ($dups.Count -gt 0) { throw "$(Split-Path -Leaf $rel): parameter ID number(s) used twice (UP-/P-): $($dups -join ', ')" }
+  }
+}
+
 # @brief Read-only ID checks of a skipped run and of -Check (no parsed effects: no count check); prints and exits 1 on a failure
 function Invoke-EffectIdChecks {
   try {
     Assert-CueTypedParamIdBase
+    Assert-ChannelIdNumbers
     Assert-EffectIdNamespace -Prefix $script:Config.EffectParameterIdPrefix -OwnerFile $script:Config.SegmentTemplate
     Assert-EffectIdNamespace -Prefix $script:Config.CueTypedParamIdPrefix -OwnerFile $script:Config.CuePartXml
   }
@@ -4749,6 +4763,7 @@ Write-Host "       $cppMappingHeaderPath" -ForegroundColor DarkGray
 $templatePath = Resolve-RepoPath $script:Config.SegmentTemplate
 $startOffset = [int]$script:Config.EffectParameterStartOffset
 Assert-CueTypedParamIdBase
+Assert-ChannelIdNumbers
 
 Write-Host ""
 Write-Host "Generating XML content..." -ForegroundColor Cyan

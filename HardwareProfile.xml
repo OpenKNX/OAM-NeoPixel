@@ -63,6 +63,10 @@
        Pictures: src/Baggages/NEOHWInfo (generated) -->
   <InfoImage style="card" />
 
+  <!-- effects per target: NEO_FXOFF_<n> of the generated src/NeoPixelEffectGroups.h with the flags of each env (1 = effect n left out);
+       NEOHW_table_EffectsOff in the ETS script, read by NEO_EffectAvailability (message under the effect selectors) -->
+  <BoardTable name="EffectsOff" header="src/NeoPixelEffectGroups.h" scan="^NEO_FXOFF_(\d+)$" />
+
   <Boards platformio="release_*" />
 
   <!-- a port wired to a relay of the board (HW_RELAY_<n>_GPIO) is no LED port; the other ports keep their numbers;
