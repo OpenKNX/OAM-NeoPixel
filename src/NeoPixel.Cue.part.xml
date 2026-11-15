@@ -73,7 +73,7 @@
               <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+70%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="Phasendauer (s)" Value="0" op:nowarn="true"/>
               <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+71%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TestMode" ParameterType="%AID%_PT-TestMode" Text="Modus" Value="0" op:nowarn="true"/>
               <!-- Fire (ID 8) -->
-              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+80%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Geschwindigkeit (ungenutzt)" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+80%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Geschwindigkeit" Value="0" op:nowarn="true"/>
               <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+81%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Abkühlung" Value="0" op:nowarn="true"/>
               <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+82%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Funkenrate" Value="0" op:nowarn="true"/>
               <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+83%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="Richtung umkehren" Value="0" op:nowarn="true"/>

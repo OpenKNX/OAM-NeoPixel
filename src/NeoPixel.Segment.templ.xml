@@ -137,7 +137,7 @@
                 <Parameter Id="%AID%_UP-21%CC%0701" Offset="52" BitOffset="0" Name="NEO%C%TestMode" ParameterType="%AID%_PT-TestMode" Text="Modus (Test)" Value="0"/>
 
                 <!-- Fire Effect (ID 8) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0800" Offset="53" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Geschwindigkeit (ungenutzt) (Fire)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0800" Offset="53" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Geschwindigkeit (Fire)" Value="128"/>
                 <Parameter Id="%AID%_UP-21%CC%0801" Offset="54" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Abkühlung (Fire)" Value="90"/>
                 <Parameter Id="%AID%_UP-21%CC%0802" Offset="55" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Funkenrate (Fire)" Value="120"/>
                 <Parameter Id="%AID%_UP-21%CC%0803" Offset="56" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="Richtung umkehren (Fire)" Value="0"/>

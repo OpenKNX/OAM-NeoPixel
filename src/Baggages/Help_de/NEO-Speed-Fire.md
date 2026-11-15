@@ -1,8 +1,8 @@
-# Geschwindigkeit (ungenutzt)
+# Geschwindigkeit
 
 **Effekt:** Fire
 
-Geschwindigkeit: Animationsgeschwindigkeit (ungenutzt)
+Geschwindigkeit: Simulationsschritte (128 = ein Schritt alle 50 ms, 255 doppelt so schnell, 64 halb so schnell)
 
 **Wertebereich:** 1 - 255
 

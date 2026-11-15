@@ -115,7 +115,7 @@
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Phasendauer (s)" Value="5" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Modus" Value="0" />
                             <!-- Fire (ID 8) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit (ungenutzt)" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Abkühlung" Value="90" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Funkenrate" Value="120" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Richtung umkehren" Value="0" />
