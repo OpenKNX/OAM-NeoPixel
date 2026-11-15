@@ -23,7 +23,6 @@ STUBS = STUBS.replace('    Effect* getEffect()', '''    struct VStrip { bool has
     uint8_t getBrightness() const { return brightness; }
     Effect* getEffect()''')
 STUBS = STUBS.replace('bool locked=false,', 'bool suspendedByPower=false,locked=false,')
-STUBS = STUBS.replace('    bool isRunning() const', '    uint8_t activeEmId() const { return running?1:0; }\n    bool isRunning() const')
 STUBS = STUBS.replace('    int interrupts=0', '''    auto& getSegments() { return _segments; }
     static bool isSegmentVisible(const SegmentConfig& c) { return c.savedPower!=0; }
     void startEffektManager(size_t,uint8_t) {}

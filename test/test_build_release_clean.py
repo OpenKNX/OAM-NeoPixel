@@ -76,7 +76,7 @@ with tempfile.TemporaryDirectory(prefix='neopixel-build-clean-') as directory:
     share.write_bytes(baseline['src/NeoPixel.share.xml'])
 
     # an edit inside a generated block is outdated; one run restores it
-    edit('src/NeoPixel.Segment.templ.xml', b'Text="Speed (Wipe)" Value="25"', b'Text="Speed (Wipe)" Value="26"')
+    edit('src/NeoPixel.Segment.templ.xml', b'Text="Geschwindigkeit (Wipe)" Value="25"', b'Text="Geschwindigkeit (Wipe)" Value="26"')
     assert effect_check(fixture) == 1, 'an edit inside a generated block counts as current'
     generate()
     assert snapshot(fixture, outputs + [FINGERPRINT]) == baseline, 'the run did not restore the generated block'

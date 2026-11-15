@@ -71,7 +71,7 @@ int main() {
     NeoPixelStudio studio(module);
     const std::vector<uint8_t> etsBytes(knx.bytes,knx.bytes+sizeof(knx.bytes));
     assert(studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":4,"end":40,"strips":[{"id":1,"length":40,"skip":3},{"id":2,"length":20,"skip":0}]}})").empty());
-    assert(studio.commissioning(0)!=studio.commissioning(0,true));
+    assert(!studio.commissioningMatches(0,true,true)); // staged plan differs from the ETS download
     assert(!studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":1,"end":40,"strips":[{"id":1,"length":40,"skip":40},{"id":2,"length":20,"skip":0}]}})").empty());
     assert(!studio.apply(R"({"segment":1,"action":"commissioning","value":{"start":1,"end":61,"strips":[{"id":1,"length":40,"skip":0},{"id":2,"length":20,"skip":0}]}})").empty());
     assert(std::equal(etsBytes.begin(),etsBytes.end(),knx.bytes));
@@ -178,15 +178,16 @@ def main():
     with tempfile.TemporaryDirectory(prefix='neopixel-studio-storage-') as directory:
         temp = Path(directory)
         (temp / 'NeoPixelModule.h').write_text('#pragma once\n' + STUBS)
-        for header in ('NetworkModule.h', 'EffectTypeMapping.h', 'EffectParameterMapping.h', 'SceneManager.h', 'NeoPixelFlashPersistence.h'):
+        (temp / 'WebUi').mkdir()
+        for header in ('NetworkModule.h', 'EffectTypeMapping.h', 'EffectParameterMapping.h', 'SceneManager.h', 'NeoPixelFlashPersistence.h', 'WebUi/NeoPixelEffectCatalog.generated.h'):
             (temp / header).write_text('#include "NeoPixelModule.h"\n')
         (temp / 'LittleFS.h').write_text(FS)
         shutil.copyfile(ROOT / 'src/NeoPixelStudio.h', temp / 'NeoPixelStudio.h')
         shutil.copyfile(ROOT / 'src/NeoPixelStudioPersistence.cpp', temp / 'production.cpp')
         shutil.copyfile(ROOT / 'src/NeoPixelStudioCommissioning.cpp', temp / 'commissioning.cpp')
         control = (ROOT / 'src/NeoPixelStudio.cpp').read_text()
-        helpers = control[control.index('    bool integer('):control.index('    std::string utf8(')]
-        methods = control[control.index('std::string NeoPixelStudio::apply('):control.index('std::string NeoPixelStudio::snapshot(')]
+        helpers = control[control.index('    bool integer('):control.index('    void utf8(')]
+        methods = control[control.index('std::string NeoPixelStudio::apply('):control.index('void NeoPixelStudio::snapshot(')]
         (temp / 'SceneManager.h').write_text('#pragma once\n#include "NeoPixelModule.h"\nstruct SceneManager { static constexpr uint8_t MAX_SCENES=10; };\n')
         (temp / 'test.cpp').write_text(TESTS)
         # Geometry rebuilding is covered by test_neopixel_studio_live.py; this fixture

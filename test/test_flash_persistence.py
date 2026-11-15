@@ -15,6 +15,11 @@ STUBS = r'''
 #pragma once
 #include <algorithm>
 #include <cassert>
+#ifndef assert // a foreign assert.h ahead of the SDK one (e.g. /usr/local/include) hides the macro
+#include <cstdio>
+#include <cstdlib>
+#define assert(e) ((e) ? (void)0 : (std::fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e), std::abort()))
+#endif
 #include <cstdint>
 #include <cstring>
 #include <string>

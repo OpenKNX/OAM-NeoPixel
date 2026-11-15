@@ -10,6 +10,11 @@ STUBS=r'''
 #include <string>
 #include <vector>
 #include <cassert>
+#ifndef assert // a foreign assert.h ahead of the SDK one (e.g. /usr/local/include) hides the macro
+#include <cstdio>
+#include <cstdlib>
+#define assert(e) ((e) ? (void)0 : (std::fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e), std::abort()))
+#endif
 struct ProtocolHelper { static bool hasWhiteChannel(unsigned channels) { return channels>=4; } };
 struct PhysicalStrip { unsigned channels; unsigned getColorOrder() const { return channels; } };
 struct NeoPixelBusModule {

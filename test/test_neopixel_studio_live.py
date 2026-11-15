@@ -12,6 +12,11 @@ STUBS = r'''
 #include <vector>
 #include <string>
 #include <cassert>
+#ifndef assert // a foreign assert.h ahead of the SDK one (e.g. /usr/local/include) hides the macro
+#include <cstdio>
+#include <cstdlib>
+#define assert(e) ((e) ? (void)0 : (std::fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e), std::abort()))
+#endif
 using OpenKNX::Format::JSON::Reader;
 using OpenKNX::Format::JSON::Writer;
 #define ParamNEO_NEONumberOfLEDStrips 2
@@ -116,7 +121,7 @@ int main() {
 '''
 def main():
     source=(ROOT/'src/NeoPixelStudioCommissioning.cpp').read_text()
-    bounded=source[source.index('namespace\n{'):source.index('std::string NeoPixelStudio::commissioning')]
+    bounded=source[source.index('namespace\n{'):source.index('bool NeoPixelStudio::commissioningMatches(')]
     stage=source[source.index('std::string NeoPixelStudio::stageCommissioning'):source.index('std::string NeoPixelStudio::commissioningControl')]
     with tempfile.TemporaryDirectory(prefix='neopixel-live-') as directory:
         temp=Path(directory)
