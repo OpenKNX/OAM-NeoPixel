@@ -46,6 +46,10 @@ cap 1 = Network
 cap 2 = No2D
 cap 3 = Wifi
 cap 4 = KnxIp
+# Value sets of <Filters>: the slot is part of the ETS parameter ID of that list; never edit, reuse or remove a line.
+filter RelayCount 0 = 0
+filter RelayCount 0,1 = 1
+filter RelayCount 0,1,2 = 2
 # ETS content per product XML: ets "<file>" <ApplicationVersion> <fingerprint>; kept until the version changes
 ets "NeoPixel-Dev.xml" 2.12 B0316517C3751B76
 ets "NeoPixel-Release.xml" 1.0 F98A6DFA0F5AEAE7

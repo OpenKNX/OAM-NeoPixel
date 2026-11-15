@@ -43,7 +43,7 @@ Für ein Relais, das dieses Gerät versorgt, **„Vor Upload/Neustart“ auf „
 ## Einstellungen
 
 **Externe Relais**
-Legt fest, wie viele Relais aktiv sind. Auf **Deaktiviert** werden alle Relais und die zugehörigen Kommunikationsobjekte ausgeblendet.
+Legt fest, wie viele Relais aktiv sind. Die Auswahl reicht bis zur Relais-Anzahl der gewählten Hardware (z. B. 1 bei QuinLED, 4 bei KNeoPix). Auf **Deaktiviert** werden alle Relais und die zugehörigen Kommunikationsobjekte ausgeblendet.
 
 **Einschaltverzögerung / Ausschaltverzögerung**
 Das Relais schaltet erst nach der eingestellten Zeit (Sekunden). Bei 0 wird sofort geschaltet.
@@ -76,7 +76,7 @@ Werden keine Relais benötigt, die Auswahl einfach auf **Deaktiviert** stellen. 
 
 **Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX, nur bei einer TP-Firmware), den Save-Pin, seine Taster, seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C5 16–18 und 20–22, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“). Auf der Relais-Seite erscheint dazu die Meldung „GPIO reserviert“ (KNeoPiX ESP32-S3 mit TP- und IP-Firmware: ein Hinweis bei den KNX-Pins). Nutzt ein vorheriges Relais denselben GPIO schon, bleibt das spätere Relais ohne Ausgang (Log: „REFUSED“); Relais werden vor den Streifen belegt.
 
-**Onboard-Relais (QuinLED Dig2Go IO12, Gledopto GL-C-017WL und GL-C-620WL IO18):** Relais 1 sitzt fest auf dem Relais der Platine; es hat keine Port-Auswahl, die Relais-Seite zeigt den Anschluss (z. B. „Anschluss: IO18 (Onboard Relais)“). Der Relais-Pin wird nicht als LED-Port angeboten. Weitere Relais (GL-C-017WL: Relais 2) wählen ihren Port wie gewohnt. Mehr Relais einzustellen, als die Hardware bietet, zeigt einen Fehler. Der Relais-Ausgang von QuinLED Uno, Quad, Octa und Next2 sowie IO12 (GL-C-309WL) und IO13 (GL-C-017WL) sind normale Ports: LED oder Relais.
+**Onboard-Relais (QuinLED Dig2Go IO12, Gledopto GL-C-017WL und GL-C-620WL IO18):** Relais 1 sitzt fest auf dem Relais der Platine; es hat keine Port-Auswahl, die Relais-Seite zeigt den Anschluss (z. B. „Anschluss: IO18 (Onboard Relais)“). Der Relais-Pin wird nicht als LED-Port angeboten. Weitere Relais (GL-C-017WL: Relais 2) wählen ihren Port wie gewohnt. Der Relais-Ausgang von QuinLED Uno, Quad, Octa und Next2 sowie IO12 (GL-C-309WL) und IO13 (GL-C-017WL) sind normale Ports: LED oder Relais.
 
 **Hardware-Auswahl:** Die Relais schalten nur, wenn auf der Seite OpenKNX → „Gerät“ die Hardware gewählt ist, für die die Firmware gebaut ist; sonst bleiben alle Relais ohne Ausgang. Belegen zwei Einstellungen denselben GPIO der gewählten Hardware (Port, „Manuell“, ein fest verdrahtetes Relais oder ein Streifen), erscheint bei jeder eine Meldung „GPIO-Konflikt“.
 

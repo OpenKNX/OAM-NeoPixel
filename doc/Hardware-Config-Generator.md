@@ -19,7 +19,8 @@ generic generator of OGM-HardwareConfig. Reference: `lib/OGM-HardwareConfig/gene
 | File | Used by |
 |---|---|
 | `src/NeoPixel.hw.module.gen.xml`, `src/NeoPixel.hw.module.gen.js` | the hardware module (`op:define prefix="NEOHW"` in `NeoPixel-Dev.xml` / `NeoPixel-Release.xml`): the page block `Profile` (intro, selection, button "Vom Gerät lesen" with its help box and steps picture, hints while nothing is selected, board text `HW_INFO_TEXT`, third-party notice, info image; texts from `<Page>` / `<Notice>` of `HardwareProfile.xml`) that `NeoPixel-Dev.xml` / `NeoPixel-Release.xml` compose as page OpenKNX → "Gerät" (tree text from `%NEOHW_PageTextRef%`) directly after "Allgemein" |
-| `src/NeoPixel.hw.types.gen.xml`, `src/NeoPixel.hw.relaytypes.gen.xml` | `NeoPixel.share.xml` (ParameterTypes include) |
+| `src/NeoPixel.hw.types.gen.xml` | `NeoPixel.share.xml` (ParameterTypes include) |
+| `src/NeoPixel.hw.filters.gen.xml` (`<Filters>`: relay count per board) | `NeoPixel.share.xml` (types, union, ParameterRefs, relay page) |
 | `src/NeoPixel.hw.share.gen.xml` | `NeoPixel.share.xml` (`op:include ... xpath="//Block[@name='...']/*"`) |
 | `src/NeoPixel.hw.strip.gen.xml` | `NeoPixel.Strip.templ.xml` |
 | `src/NeoPixel.hw.conf.xml` | application XML (`op:config`, feature flags such as `%NEOHW_SelectRef%`, `%NEOHW_CAP_No2D%`) |

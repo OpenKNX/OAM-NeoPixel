@@ -75,7 +75,6 @@
 
   <!-- ParameterTypes, included by NeoPixel.share.xml (xpath //ApplicationProgram/Static/ParameterTypes/ParameterType) -->
   <Generate template="src/hw/NeoPixel.hw.types.xml" output="src/NeoPixel.hw.types.gen.xml" />
-  <Generate template="src/hw/NeoPixel.hw.relaytypes.xml" output="src/NeoPixel.hw.relaytypes.gen.xml" />
 
   <!-- board-dependent elements, included per <Block> by NeoPixel.share.xml / NeoPixel.Strip.templ.xml -->
   <Generate template="src/hw/NeoPixel.hw.share.xml" output="src/NeoPixel.hw.share.gen.xml" />
@@ -230,4 +229,10 @@
     <Row ref="%AID%_UP-%TT%00021_R-%TT%0002101" expr="defined(INFO2_LED_PIN)" label="INFO2_LED_LABEL" />
     <Row ref="%AID%_UP-%TT%00022_R-%TT%0002201" expr="defined(INFO3_LED_PIN)" label="INFO3_LED_LABEL" />
   </PartRows>
+  <!-- relay count per board: "Externe Relais" offers 0..Relays of the selected board (carrier NEOExternalRelayCount, read by the
+       firmware; KNeoPix with 4 relays shows the carrier itself, every other list is a parameter without memory that copies its
+       value into the carrier) -->
+  <Filters output="src/NeoPixel.hw.filters.gen.xml">
+    <Filter name="RelayCount" ref="%AID%_UP-%TT%00130_R-%TT%0013001" source="src/NeoPixel.share.xml" value="Relays" number="950" />
+  </Filters>
 </HardwareProfile>

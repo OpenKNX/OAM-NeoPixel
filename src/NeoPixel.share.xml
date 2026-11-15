@@ -598,7 +598,17 @@
                 </TypeRestriction>
               </ParameterType>
               <!-- External Relays -->
-              <op:include href="NeoPixel.hw.relaytypes.gen.xml" xpath="//ApplicationProgram/Static/ParameterTypes/ParameterType" />
+              <!-- relay count 0..4; the list per board comes from HardwareProfile.xml <Filter name="RelayCount"> -->
+              <ParameterType Id="%AID%_PT-ExternalRelayCount" Name="ExternalRelayCount">
+                <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
+                  <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
+                  <Enumeration Text="1" Value="1" Id="%ENID%" />
+                  <Enumeration Text="2" Value="2" Id="%ENID%" />
+                  <Enumeration Text="3" Value="3" Id="%ENID%" />
+                  <Enumeration Text="4" Value="4" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//ApplicationProgram/Static/ParameterTypes/ParameterType" />
                             <ParameterType Id="%AID%_PT-RelayName" Name="RelayName">
                               <TypeText SizeInBit="320" />
                             </ParameterType>
@@ -1607,6 +1617,8 @@
               <Parameter Id="%AID%_P-%TT%00183" Name="NEOExternalRelay2Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
               <Parameter Id="%AID%_P-%TT%00184" Name="NEOExternalRelay3Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
               <Parameter Id="%AID%_P-%TT%00185" Name="NEOExternalRelay4Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
+              <!-- relay count list per board without memory (HardwareProfile.xml <Filter name="RelayCount">), copied into NEOExternalRelayCount -->
+              <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_RelayCount_Parameters']/*" />
 
               <!-- GPIO conflict flags without memory, written by the generated calculation (HardwareProfile.xml <Conflicts>) -->
               <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Parameters']/*" />
@@ -1712,6 +1724,7 @@
 
               <!-- External Relay Parameter References -->
               <ParameterRef Id="%AID%_UP-%TT%00130_R-%TT%0013001" RefId="%AID%_UP-%TT%00130" />
+              <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_RelayCount_ParameterRefs']/*" />
               <ParameterRef Id="%AID%_UP-%TT%00131_R-%TT%0013101" RefId="%AID%_UP-%TT%00131" />
               <ParameterRef Id="%AID%_UP-%TT%00132_R-%TT%0013201" RefId="%AID%_UP-%TT%00132" />
               <ParameterRef Id="%AID%_UP-%TT%00135_R-%TT%0013501" RefId="%AID%_UP-%TT%00135" />
@@ -2137,46 +2150,11 @@
                   <when default="true">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Externe Relais" UIHint="Headline" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Aktivieren Sie externe Relais und wählen Sie die passenden GPIO-Ports der Hardware. Pro Relais wird ein 1-Bit Schalt-KO eingeblendet." />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00130_R-%TT%0013001" IndentLevel="1" />
-                    <!-- more relays than the selected hardware offers (Relays value: HW_RELAY_COUNT or the manifest <Set>) -->
-                    <choose ParamRefId="%AID%_UP-%TT%00130_R-%TT%0013001">
-                      <when test="1">
-                        <choose ParamRefId="%NEOHW_SelectRef%">
-                          <when test="%NEOHW_VAL_Relays_GE_1%" />
-                          <when default="true">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Mehr Relais eingestellt, als diese Hardware bietet." UIHint="Error" />
-                          </when>
-                        </choose>
-                      </when>
-                      <when test="2">
-                        <choose ParamRefId="%NEOHW_SelectRef%">
-                          <when test="%NEOHW_VAL_Relays_GE_2%" />
-                          <when default="true">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Mehr Relais eingestellt, als diese Hardware bietet." UIHint="Error" />
-                          </when>
-                        </choose>
-                      </when>
-                      <when test="3">
-                        <choose ParamRefId="%NEOHW_SelectRef%">
-                          <when test="%NEOHW_VAL_Relays_GE_3%" />
-                          <when default="true">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Mehr Relais eingestellt, als diese Hardware bietet." UIHint="Error" />
-                          </when>
-                        </choose>
-                      </when>
-                      <when test="4">
-                        <choose ParamRefId="%NEOHW_SelectRef%">
-                          <when test="%NEOHW_VAL_Relays_GE_4%" />
-                          <when default="true">
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Mehr Relais eingestellt, als diese Hardware bietet." UIHint="Error" />
-                          </when>
-                        </choose>
-                      </when>
-                    </choose>
+                    <!-- relay count: list 0..n of the selected hardware (HardwareProfile.xml <Filter name="RelayCount">) -->
+                    <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_RelayCount']/*" />
                     <choose ParamRefId="%AID%_UP-%TT%00130_R-%TT%0013001">
                       <when test=">=1">
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Versorgt ein per Relais geschaltetes Netzteil auch dieses OpenKNX-Ger&#xE4;t, wird es beim Ausschalten selbst stromlos und vom KNX-Bus getrennt." UIHint="Information" />
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="F&#xFC;r ein solches Relais &quot;Vor Upload/Neustart&quot; auf &quot;unver&#xE4;ndert&quot; lassen (Standard); mit &quot;Aus&quot; schaltet das Ger&#xE4;t vor Download/Neustart seine Versorgung ab. Nach dem Neustart ist es mindestens bis Ende der Startverz&#xF6;gerung aus, mit Mindest-Auszeit l&#xE4;nger." UIHint="Information" />
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Schaltet ein Relais auch die Versorgung dieses Ger&#xE4;ts, &quot;Vor Upload/Neustart&quot; auf &quot;unver&#xE4;ndert&quot; lassen (Details in der Hilfe)." UIHint="Information" />
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="&#xDC;bersicht" UIHint="Headline" />
                         <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid" HelpContext="Empty">
                           <Rows>
