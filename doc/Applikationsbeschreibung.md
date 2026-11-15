@@ -17,7 +17,7 @@ Je nach eingesetzter Hardware stehen zusätzlich Netzwerkfunktionen, OTA-Update,
 * Steuerung von bis zu 8 physischen LED-Streifen
 * Bildung eines virtuellen LED-Streifens zur freien Anordnung der physischen Streifen
 * Bis zu 16 unabhängige Segmente
-* Über 40 Effekte für statische und dynamische Lichtbilder, inklusive echter **2D-Matrix-Effekte** (Lauftext, Uhr, Matrix-Regen, Feuer 2D, Plasma u. v. m.)
+* 33 Effekte (Nummern 0–32) für statische und dynamische Lichtbilder, davon 13 **2D-Matrix-Effekte** (Nummern 20–32, z. B. Uhr 2D, Matrix 2D, Tetris 2D, Plasma Nebula, Starfield Warp); welche davon eine Firmware enthält, hängt von der Hardware ab (siehe „Effekte je Hardware“)
 * Konfiguration von Segmenten als 2D-Matrix (Breite × Höhe, Topologie) für matrixfähige Effekte
 * **Effektmanager**: Cue-basierte Lichtsequenzen mit Überblendung, Loop und Verkettung mehrerer Effektmanager
 * **Effektkette**: ein Effekt nahtlos über mehrere KNX-Geräte (ein Master, mehrere Slaves)
@@ -35,13 +35,14 @@ Die Applikation wird für mehrere Hardwarefamilien bereitgestellt.
 
 **Von OpenKNX unterstützte Hardware** (hier wird entwickelt und getestet):
 
-* OpenKNXiao KNeoPiX und OpenKNXiao Mini auf RP2040- und RP2350-Basis — Referenzplattform, hier läuft es am rundesten
-* OpenKNX UP1 GW-UART
+* OpenKNXiao KNeoPiX V1/V1.5 und OpenKNXiao Mini auf RP2040- und RP2350-Basis — Referenzplattform, hier läuft es am rundesten
+* OpenKNXiao KNeoPiX V1/V1.5 und OpenKNXiao Mini mit ESP32-S3, -C3, -C5 und -C6
+* OpenKNX UP1 UART Gateway
 
 **Weitere Hardware ohne Support** (Drittanbieter):
 
-* Gledopto GL-C-309WL auf ESP32-Basis
-* QuinLED Dig2Go, Dig-Uno V3, Dig-Quad V3, Dig-Octa-32-8L und Dig-Next-2
+* Gledopto GL-C-309WL, GL-C-017WL und GL-C-620WL auf ESP32-Basis
+* QuinLED Dig2Go, Dig-Uno V3/V4, Dig-Quad V3/V4, Dig-Octa 32-8L (V1, V2, V4) und Dig-Next 2
 
 Diese Drittanbieter-Hardware wird zwar mitgebaut, ist aber **weder getestet noch wird sie aktiv durch OpenKNX unterstützt**. Nutzung auf eigenes Risiko: wenn es läuft, gut — wenn nicht, gibt es dafür keinen Support. Für ein zuverlässiges Ergebnis empfehlen wir OpenKNX-Hardware.
 
@@ -58,6 +59,11 @@ Nach dem Laden der physikalischen Adresse und der Applikation sollten zuerst die
 * Festlegung der Anzahl LEDs je physischem Streifen
 * Prüfung der Spannungsversorgung und der Leistungsgrenzen
 
+Die Hardware wird auf der Seite **OpenKNX → Hardware** gewählt:
+
+* **Nicht gewählt:** Unter „Abgleich mit dem Gerät“ fragt der Knopf „Hardware vom Gerät abfragen“ die Hardware vom Gerät ab (vorher physikalische Adresse und Applikation programmieren). Alternativ die Hardware direkt in der Liste wählen. Hardwareabhängige Einstellungen sind bis dahin ausgeblendet. Nach einem Update von einer Applikation ohne diese Seite steht die Auswahl einmalig auf „Nicht gewählt“.
+* **Hardware gewählt:** Die Seite zeigt eine Gerätekarte: OpenKNX-Logo bzw. bei Drittanbieter-Hardware das Badge „Drittanbieter / Hardware“, den Gerätenamen und eine kurze Beschreibung. Hat das Gerät eine Infoseite, steht rechts daneben ein QR-Code mit dem Link (OpenKNXiao KNeoPiX: go.openknx.de/kneopix, UP1 UART Gateway: go.openknx.de/up1-gw-uart). Bei Drittanbieter-Hardware folgt ein Hinweis zu Gewährleistung und Support. Der Abfrage-Knopf ist dann ausgeblendet; zum erneuten Abfragen die Auswahl auf „Nicht gewählt“ stellen.
+
 Wenn Firmware und ETS-Hardwareauswahl nicht zusammenpassen, wird die Hardwarekonfiguration aus Sicherheitsgründen nicht wie vorgesehen übernommen. In diesem Fall muss entweder die passende Firmware geflasht oder die ETS-Parametrierung korrigiert werden.
 
 #### Stabile Hardware-Identität über die eindeutige Geräte-ID
@@ -68,7 +74,7 @@ Das macht die Zuordnung **build- und update-unabhängig**:
 
 * Es ist unerheblich, mit wie vielen Hardwarevarianten eine Firmware oder das ETS-Produkt erzeugt wurde — dieselbe physische Hardware wird immer korrekt erkannt.
 * Das Hinzufügen oder Entfernen *anderer* Hardwarevarianten verschiebt eine bereits im Gerät gespeicherte Auswahl nicht; sie bleibt gültig.
-* Bei einem Firmware- oder ETS-Update bleibt die hardwarebezogene Gerätekonfiguration erhalten.
+* Bei einem späteren Firmware- oder ETS-Update bleiben Auswahl und Port-Einstellungen erhalten (Ausnahme: der einmalige Umstieg auf diese Seite, siehe oben und CHANGELOG).
 
 Die automatische Hardware-Erkennung in der ETS liest dieselbe Geräte-ID direkt aus dem angeschlossenen Gerät aus und setzt die passende Auswahl, sodass keine manuelle Zuordnung nötig ist.
 
@@ -123,7 +129,17 @@ Durch die Segmentierung lassen sich auf einem gemeinsamen LED-Aufbau unterschied
 
 Für jedes Segment kann ein statischer oder dynamischer Effekt gewählt werden. Neben Vollfarbe stehen unterschiedliche Lauf-, Farbwechsel-, Funken-, Feuer-, Regenbogen- und weitere Effektarten zur Verfügung. Die zugehörigen Parameter werden automatisch in die ETS-Applikation eingebunden und sind abhängig vom jeweils gewählten Effekt sichtbar.
 
-Bei einem Firmware-Update sollte geprüft werden, ob sich Effektumfang oder Effektparameter zwischen zwei Versionen geändert haben. In diesem Fall kann eine neue Parametrierung oder ein erneuter Download der Applikation erforderlich sein.
+Jeder Effekt hat eine feste Nummer (0 = Solid). Neue Effekte bekommen die nächste freie Nummer; die Nummer eines bestehenden Effekts ändert sich nicht, auch wenn eine Firmware ihn weglässt.
+
+### Effekte je Hardware
+
+Die Firmware einer Hardware kann Effekte weglassen, um Speicher zu sparen, z. B. alle 2D-Effekte auf Hardware ohne Platz dafür oder ganze Effektgruppen. Die ETS prüft den Effekt des Segments, jeder Szene und jeder Effektmanager-Cue gegen die Firmware der gewählten Hardware:
+
+* **„Effekt nicht verfügbar“** (Fehler): keine Firmware-Variante dieser Hardware enthält den Effekt; das Gerät zeigt „Solid“.
+* **Hinweis:** nur ein Teil der Firmware-Varianten lässt den Effekt weg; ob er läuft, hängt von der geflashten Firmware ab.
+* Keine Meldung, solange keine Hardware gewählt ist.
+
+Kommt eine Effektnummer, die die Firmware nicht enthält, über das Effekt-KO, eine Szene oder eine Cue an, zeigt das Segment „Solid“ (Primärfarbe). „Effekt schalten“ überspringt diese Nummern. Welche Schalter einen Effekt weglassen und wie die Gruppen gebildet werden: `doc/Effect-Flags.md`.
 
 ## 2D-Matrix-Effekte und Topologie
 
@@ -135,7 +151,7 @@ Ein Segment kann als zweidimensionale Matrix konfiguriert werden — über Breit
 
 Der Effektmanager spielt vordefinierte Lichtsequenzen ab. Jeder Effektmanager besteht aus mehreren **Cues** — Momentaufnahmen aus Effekt, Farben, Helligkeit und effekt-spezifischen Parametern. Cues werden mit einstellbarer Dauer und Überblendzeit nacheinander abgespielt, können in einer Schleife laufen (Loop) und auf einen weiteren Effektmanager verketten.
 
-Einem Segment kann ein Effektmanager zugewiesen werden; dieser übernimmt dann die Ausgabe des Segments. Start, Stop und Cue-Wechsel erfolgen über die KOs des Effektmanagers. Solange ein Effektmanager zugewiesen ist, treten der direkt am Segment gewählte Effekt und die Start-Konfiguration zurück.
+Ein Effektmanager ist nicht fest an ein Segment gebunden: Jedes Segment hat eigene Steuer-KOs (Effektmanager Start 1–16, Stop, Pause/Resume, Cue setzen, Cue +/-, Status) und kann jeden der 16 Effektmanager abspielen. Solange ein Effektmanager läuft, übernimmt er die Ausgabe des Segments. Wohin das Segment nach dem Stop zurückkehrt, legt „Effektmanager-Stop: Rückkehr“ fest (Letzter Zustand, Segment-Standardwerte oder Aus). Die KOs und Beispiele stehen in `doc/Benutzerhandbuch.md`.
 
 ## Effektkette
 
@@ -179,21 +195,24 @@ Für 1-Wire-Streifen (WS2812B, SK6812 und Klone) kann das Signaltiming direkt an
 
 | Befehl | Beschreibung |
 |--------|--------------|
-| `neo phys timing <id> auto` | Automatisches Standardtiming (800 kHz) |
-| `neo phys timing <id> slow10pct` | Bitrate um 10 % reduziert (für problematische Klone) |
+| `neo phys timing <id>` | Aktuellen Timing-Modus anzeigen |
+| `neo phys timing <id> info` | Realisierte Wellenform und Timing-Details anzeigen |
+| `neo phys timing <id> auto` | Timing aus dem Chip-Profil des LED-Typs |
+| `neo phys timing <id> slow5` … `slow20` / `fast5` … `fast25` | Bitrate um 5–20 % gesenkt bzw. 5–25 % erhöht (für problematische Klone) |
+| `neo phys timing <id> freq <kHz>` | Bitrate direkt setzen (z. B. 775), wie das ETS-Feld „Timing“ |
 | `neo phys timing <id> custom <t0h> <t0l> <t1h> <t1l>` | Vollständig benutzerdefiniertes Timing in Nanosekunden |
 | `neo phys timing <id> reset` | Zurücksetzen auf AUTO-Timing |
-| `neo phys timing <id> scan` | Automatischer Clone-Scan: durchläuft alle Profile, LEDs zeigen Reaktion optisch an |
+| `neo phys timing <id> qualify` (Alias `scan`) | Interaktiver Clone-Scan über den ganzen Streifen; weiter mit `neo scan next`, übernehmen mit `neo scan apply`, abbrechen mit `neo scan stop` |
 | `neo phys timing <id> profile <N>` | Clone-Profil N dauerhaft anwenden und in Flash speichern |
 
-Der Clone-Scan (`scan`) testet nacheinander 6 vordefinierte Timing-Profile durch. Jedes Profil leuchtet die ersten LEDs für 3 Sekunden in einer profilspezifischen Farbe auf. Reagieren die LEDs, kann das zugehörige Profil über `profile <N>` dauerhaft gespeichert werden.
+Der Clone-Scan (`qualify`/`scan`) testet nacheinander 6 vordefinierte Timing-Profile (800 kHz mit 50, 80 und 280 µs Reset, 720 kHz mit 80 und 280 µs, 640 kHz mit 300 µs). Jedes Profil wird 2 Sekunden in einer eigenen Farbe gezeigt; reagieren die LEDs, übernimmt `neo scan apply` das Profil, alternativ später `profile <N>`. `neo phys timings` listet alle Modi und Profile.
 
 ### Level-Shifter-Konfiguration (`neo phys config levelshifter`)
 
 Die Firmware unterstützt drei typische Level-Shifter-Chips, die auf gängiger LED-Hardware verbaut sind:
 
 ```
-neo phys config <id> levelshifter <none|txs0108|hct125|ahct125>
+neo phys config <id> levelshifter <none|txs0108|hct125|ahct125|lv8t245>
 ```
 
 #### Was passiert bei der Auswahl?
@@ -201,9 +220,10 @@ neo phys config <id> levelshifter <none|txs0108|hct125|ahct125>
 | Wert | Chip | Typische Hardware | Firmware-Aktion | Was verbessert sich |
 |------|------|-------------------|-----------------|---------------------|
 | `none` | — | UP1, direkte Verbindung | Keine GPIO-Änderung | — |
-| `txs0108` | TI TXS0108E | **KNeoPiX** (alle Varianten) | Siehe Tabelle unten | Zuverlässige Richtungserkennung, saubere Flanken |
-| `hct125` | TI 74HCT125 | QuinLED Dig-Uno V3, Dig-Quad V3, Dig-Octa | Keine GPIO-Änderung (transparenter Buffer) | Dokumentation; keine aktive Optimierung nötig |
+| `txs0108` | TI TXS0108E | **KNeoPiX V1** | Siehe Tabelle unten | Zuverlässige Richtungserkennung, saubere Flanken |
+| `hct125` | TI 74HCT125 | QuinLED Dig-Uno V3, Dig-Uno V4 | Keine GPIO-Änderung (transparenter Buffer) | Dokumentation; keine aktive Optimierung nötig |
 | `ahct125` | TI 74AHCT125 | **QuinLED Dig-Next-2** | Keine GPIO-Änderung | Dokumentation; keine aktive Optimierung nötig |
+| `lv8t245` | TI SN74LV8T245 | **KNeoPiX V1.5** | Keine GPIO-Änderung | Dokumentation; keine aktive Optimierung nötig |
 
 #### Detaillierte Maßnahmen für TXS0108E
 
@@ -220,7 +240,7 @@ Der TXS0108E erkennt die Übertragungsrichtung automatisch über eine interne RC
 
 Die Einstellung `hct125`/`ahct125` dient damit primär der **Dokumentation** und der korrekten Anzeige unter `neo phys config <id> info`.
 
-> **Hinweis zur KNeoPiX-Hardware:** Ab Firmware-Version 0.3.0 wird `txs0108` für alle KNeoPiX-Boards **automatisch beim Start** gesetzt (Build-Flag `NEOPIXEL_HW_LEVELSHIFTER=1` in der Hardware-Konfiguration). Eine manuelle Konsolenkonfiguration ist nicht mehr erforderlich. Der Befehl steht weiterhin zur Verfügung, um die Einstellung bei Bedarf zu überschreiben.
+> **Hinweis zur KNeoPiX-Hardware:** Die Firmware setzt den Pegelwandler **automatisch beim Start** (KNeoPiX V1: `txs0108`, V1.5: `lv8t245`) (`HW_LEVELSHIFTER` im Board-Header von OGM-HardwareConfig; ein Build-Flag `NEOPIXEL_HW_LEVELSHIFTER` geht vor). Eine manuelle Konsolenkonfiguration ist nicht mehr erforderlich. Der Befehl steht weiterhin zur Verfügung, um die Einstellung bei Bedarf zu überschreiben.
 
 > **Hinweis zum OE-Pin:** Auf der KNeoPiX-Hardware ist der OE-Pin des TXS0108E fest mit VCCA (3,3 V) verbunden und dauerhaft aktiv. Eine Firmware-gesteuerte Aktivierung/Deaktivierung ist nicht möglich und auch nicht nötig.
 
@@ -255,41 +275,12 @@ Nach Änderungen an Hardwareprofilen, Effektparametern oder der ETS-Struktur sol
 * die Applikation nach einem Versionswechsel erneut geladen wird,
 * bei einer Effektkette alle beteiligten Geräte gemeinsam aktualisiert werden: ein Master mit älterer Firmware meldet immer AUS, und ein Slave mit neuer Firmware schaltet sich danach aus; ein Slave mit älterer Firmware startet seinen Effekt bei jedem Telegramm des Masters neu.
 
+Einmalige Änderungen beim „Aktualisieren“:
+
+* **Ab Dev 2.3 werden die Effekt-Parameter einmalig zurückgesetzt.** Die effektspezifischen Parameter jedes Segments und jeder Effektmanager-Cue haben neue IDs (`21CC…` bzw. `22CC…`, gebildet aus Effektnummer und Parameterindex) und stehen nach dem „Aktualisieren“ auf ihrem Standardwert; sie müssen neu gesetzt werden. Die Effektauswahl, die Szenen und alle übrigen Parameter behalten ihre Werte. Spätere neue Effekte oder angehängte Parameter verschieben keine ID mehr.
+* **Ab Dev 2.4 prüft die ETS die Effekte gegen die gewählte Hardware** („Effekt nicht verfügbar“ bzw. Hinweis am Segment, an Szenen und Cues, siehe „Effekte je Hardware“). Ein Projekt, dessen Effekte die Firmware der Hardware nicht enthält, zeigt nach dem Update diese Meldungen; das Gerät zeigt dort „Solid“.
+* Weitere Migrationshinweise je Version stehen in `CHANGELOG.md`.
+
 ## Änderungshistorie
 
-### Version 0.3.0 (Beta-Release)
-
-Erster Beta-Release. Die Entwicklungsfassung (Dev-Produkt) läuft versionsmäßig voraus (aktuell 0.4); beide können parallel im ETS-Katalog liegen.
-
-Wesentliche Neuerungen:
-
-* **Effektmanager**: Cue-basierte Lichtsequenzen mit Dauer, Überblendung, Loop und Verkettung mehrerer Effektmanager
-* **Effektkette**: ein Effekt nahtlos über mehrere KNX-Geräte (Master/Slave, Offset und Gesamtlänge je Slave, Watchdog)
-* **2D-Matrix-Effekte**: Segmente als Matrix (Breite × Höhe, Topologie) mit echten 2D-Effekten (Lauftext, Uhr, Matrix-Regen, Feuer 2D, Plasma, Starfield, TRON, UFO Swarm, Snake, Tetris …) — über 40 Effekte gesamt
-* Effekt-Parameter mit sinnvollen **Vorgabewerten** in ETS (Segment, Szene und Cue)
-* Überarbeitete ETS-Oberfläche: Segment in *Aufbau / Effektkette / Effekt / Szenen* unterteilt, Topologie-Vorschaubilder, kontextabhängige Ein-/Ausblendungen (z. B. entfallen die Effekt-Parameter bei zugewiesenem Effektmanager)
-* Szenen je Segment (bis zu 10) über Szenensteuerungs-KO (DPT 18.001)
-
-Hardware und Signal:
-
-* Neues Timing-System für 1-Wire-Streifen: individuelle Timing-Modi (AUTO, SLOW/FAST ±5–25 %), vollständig benutzerdefiniertes Custom-Timing in Nanosekunden
-* Clone-Timing-Scan: automatischer, nicht-blockierender Durchlauf von 6 vordefinierten Clone-Profilen mit optischer LED-Rückmeldung (3 s pro Profil)
-* Clone-Profile dauerhaft in Flash speicherbar via `neo phys timing <id> profile <N>`
-* Level-Shifter-Konfiguration: Unterstützung für TXS0108E, 74HCT125 und 74AHCT125; automatische Aktivierung per Board-Build-Flag (`NEOPIXEL_HW_LEVELSHIFTER`) — kein manuelles Konsolenkommando mehr nötig für bekannte Hardware (KNeoPiX, QuinLED)
-* TXS0108E-Optimierungen: RP2040 deaktiviert interne Pull-Widerstände; ESP32 erhöht Treiberleistung auf 40 mA + FLOATING (sauberere Flanken, zuverlässigere Richtungserkennung)
-* HCT/AHCT-Unterstützung: Typen dokumentierend eintragbar, keine GPIO-Eingriffe nötig (transparenter Buffer, Standard-Treiberleistung ausreichend)
-* Konsolenbefehl `neo phys config <id> info` zeigt Timing und Level-Shifter-Status vollständig an
-
-### Version 0.2.0
-
-* Ausbau der Hardwareunterstützung, insbesondere für weitere ESP32- und QuinLED-Varianten
-* Erweiterung der Applikation auf bis zu 8 physische LED-Streifen
-* Überarbeitete Hardwarekonfiguration und verbesserte Hardwareauswahl in ETS
-* Ausbau der Dokumentation und der Release-Artefakte
-
-### Version 0.1.0
-
-* Erste öffentlich nutzbare Entwicklungsfassung der NeoPixel-KNX-Applikation
-
-
-
+Die Änderungen je Version und die Migrationshinweise stehen in [CHANGELOG.md](../CHANGELOG.md).

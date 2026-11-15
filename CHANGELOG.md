@@ -45,7 +45,7 @@ this knxprod and a full ETS download after the firmware update.
 
 What a device needs depends on the version it comes from.
 
-* Dev applications before 0.14 cannot be updated (`ReplacesVersionsDownTo="0.14"`): ETS only offers "Applikationsprogramm ändern", which resets every parameter and drops every link, so configure these devices again. Release updates from 0.1; whether the effect parameters of Release 0.1–0.8 (and of a Dev 0.14 build of 2026-09-02 before `2e7361c`) land on the right parameters is not checked yet (`doc/TODO.md`)
+* Dev applications before 0.14 cannot be updated (`ReplacesVersionsDownTo="0.14"`): ETS only offers "Applikationsprogramm ändern", which resets every parameter and drops every link, so configure these devices again. Release updates from 0.1. Since Dev 2.3 (`faccd02`) every effect parameter has a new ID, so "Aktualisieren" resets the effect parameters to their defaults whatever ID scheme the old version used (Release 0.1–0.8, a Dev 0.14 build of 2026-09-02 before `2e7361c`); see the migration notes of the next version
 * Update the device in ETS with "Aktualisieren", not "Applikationsprogramm ändern": only the update takes the parameter values over
 * From an application before Dev 1.1 / Release 0.11, LightManager 0.4: after the ETS update every light manager is deactivated; activate it again under "Kanalauswahl", its settings are kept
 * Set the port selection of the LED strips and relays again: the port parameters of each hardware are numbered by its position in the hardware list, and that list changed (KNeoPiX V1.5 added, REG2 and the PiPico BCU Connectors removed, the product now lists every hardware)
