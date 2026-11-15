@@ -130,6 +130,10 @@ $script:Config = @{
 
   # Relative paths from repo root
   EffectPoolPath             = "lib/OFM-NeoPixel/src/effects/EffectPool.cpp"
+  EffectPoolHeaderPath       = "lib/OFM-NeoPixel/src/effects/EffectPool.h"
+  # effect groups of the OAM (hand-written) and the generated header (-include in platformio.custom.ini)
+  EffectGroupsXml            = "src/NeoPixel.EffectGroups.xml"
+  EffectGroupsHeader         = "src/NeoPixelEffectGroups.h"
   EffectsDir                 = "lib/OFM-NeoPixel/src/effects"
   SrcDir                     = "src"
   HelpDir                    = "src/Baggages/Help_de"
@@ -431,7 +435,7 @@ $script:CreateOnlyFiles = @{}
 $script:FingerprintPath = "src/EffectParameters.fingerprint"
 $script:OwnScriptPath = "scripts/Build-EffectParameters.ps1"
 
-# @brief Input files as repo path -> full path: effect sources of OFM-NeoPixel, src/EffectIds.lock,
+# @brief Input files as repo path -> full path: effect sources of OFM-NeoPixel, src/EffectIds.lock, src/NeoPixel.EffectGroups.xml,
 #        this script (fixed key, independent of how it was called)
 function Get-EffectInputFiles {
   $entries = @{}
@@ -440,7 +444,7 @@ function Get-EffectInputFiles {
     $sub = $f.FullName.Substring($effectsRoot.Length).TrimStart('\', '/') -replace '\\', '/'
     $entries["$($script:Config.EffectsDir)/$sub"] = $f.FullName
   }
-  foreach ($rel in @("src/EffectIds.lock")) {
+  foreach ($rel in @("src/EffectIds.lock", "src/NeoPixel.EffectGroups.xml")) {
     $full = Resolve-RepoPath $rel
     if (Test-Path -LiteralPath $full -PathType Leaf) { $entries[$rel] = $full }
   }
@@ -2111,13 +2115,15 @@ function Generate-EffectMappingCpp {
       $comment += " (DE: $($effect.NameDE))"
     }
 
-    # Guard the case with the same flag EffectPool.cpp uses, so a disabled effect does not
-    # leave an undefined reference behind. Solid is always present and needs no guard.
-    if ($methodName -ne "Solid") {
-      $cppLines += "#ifndef NEOPIXEL_DISABLE_$($methodName.ToUpper())"
-    }
+    # Guard the case with the build condition of EffectPool.cpp (own flag, NEOPIXEL_MINIMAL_EFFECTS for the extended
+    # effects), so a disabled effect does not leave an undefined reference behind. Solid needs no guard.
+    $member = $script:EffectPoolMembers[$id]
+    if ($member.Getter -ne $methodName) { throw "EffectTypeMapping: effect $id is get$($member.Getter)() in EffectPool.cpp, the header order gives get$methodName()" }
+    $guard = @(Get-EffectOffMacros $member | Where-Object { $_ -ne 'NEOPIXEL_DISABLE_2D' })
+    if ($guard.Count -eq 1) { $cppLines += "#ifndef $($guard[0])" }
+    elseif ($guard.Count -gt 1) { $cppLines += "#if " + (($guard | ForEach-Object { "!defined($_)" }) -join ' && ') }
     $cppLines += "        case PT_NEOEffectType::${enumName}: return EffectPool::get${methodName}(); $comment"
-    if ($methodName -ne "Solid") {
+    if ($guard.Count -gt 0) {
       $cppLines += "#endif"
     }
     $id++
@@ -2154,11 +2160,12 @@ function Generate-EffectMappingCpp {
       $comment += " (DE: $($effect.NameDE))"
     }
 
-    if ($methodName -ne "Solid") {
-      $cppLines += "#ifndef NEOPIXEL_DISABLE_$($methodName.ToUpper())"
-    }
+    # same build condition as getEffectFromType()
+    $guard = @(Get-EffectOffMacros $script:EffectPoolMembers[$id] | Where-Object { $_ -ne 'NEOPIXEL_DISABLE_2D' })
+    if ($guard.Count -eq 1) { $cppLines += "#ifndef $($guard[0])" }
+    elseif ($guard.Count -gt 1) { $cppLines += "#if " + (($guard | ForEach-Object { "!defined($_)" }) -join ' && ') }
     $cppLines += "    if (effect == EffectPool::get${methodName}()) return static_cast<uint8_t>(PT_NEOEffectType::${enumName}); $comment"
-    if ($methodName -ne "Solid") {
+    if ($guard.Count -gt 0) {
       $cppLines += "#endif"
     }
     $id++
@@ -3035,6 +3042,144 @@ function Get-EffectPoolGroups {
     }
   }
   return $groups
+}
+
+# @brief Membership per effect number from EffectPool.cpp getEffectByIndex() and EffectPool.h: OwnFlag (NEOPIXEL_DISABLE_<X>,
+#        $null for Solid), Extended (also NEOPIXEL_MINIMAL_EFFECTS), TwoD (one of the flags NEOPIXEL_DISABLE_2D sets);
+#        stops when the source and the parsed effects disagree
+function Get-EffectPoolMembership {
+  param([array]$Effects)
+  $cpp = [System.IO.File]::ReadAllText((Resolve-RepoPath $script:Config.EffectPoolPath))
+  $fn = [regex]::Match($cpp, $script:Config.Patterns.EffectPoolFunction, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+  if (-not $fn.Success) { throw "EffectPool.cpp: getEffectByIndex() not found" }
+  # guard stack: each entry is the list of macros whose definition removes the lines below it
+  $stack = New-Object System.Collections.Generic.List[object]
+  $list = @()
+  foreach ($line in ($fn.Groups[1].Value -split "`n")) {
+    $t = $line.Trim()
+    if ($t -match '^#\s*ifndef\s+(\w+)') { $stack.Add(@($Matches[1])); continue }
+    if ($t -match '^#\s*if\s+(.*)$') {
+      $expr = $Matches[1] -replace '//.*$', ''
+      $flags = @([regex]::Matches($expr, '!\s*defined\s*\(\s*(\w+)\s*\)') | ForEach-Object { $_.Groups[1].Value })
+      if ($flags.Count -eq 0 -or ($expr -replace '!\s*defined\s*\(\s*\w+\s*\)', '' -replace '&&', '').Trim()) {
+        throw "EffectPool.cpp getEffectByIndex(): '$t' is no list of !defined(...) joined by &&"
+      }
+      $stack.Add($flags); continue
+    }
+    if ($t -match '^#\s*(ifdef|else|elif)\b') { throw "EffectPool.cpp getEffectByIndex(): '$t' is not supported by the membership parser" }
+    if ($t -match '^#\s*endif') { if ($stack.Count -gt 0) { $stack.RemoveAt($stack.Count - 1) }; continue }
+    if ($t -match 'return\s+get(\w+)\(\)') {
+      $flags = @(); foreach ($e in $stack) { $flags += $e }
+      $list += [pscustomobject]@{ Number = $list.Count; Getter = $Matches[1]; Flags = $flags }
+    }
+  }
+  # the members of NEOPIXEL_DISABLE_2D in EffectPool.h
+  $twoDFlags = @()
+  $h = [System.IO.File]::ReadAllText((Resolve-RepoPath $script:Config.EffectPoolHeaderPath))
+  $blk = [regex]::Match($h, '(?s)#ifdef\s+NEOPIXEL_DISABLE_2D\s*\n(.*?)\n#endif')
+  if (-not $blk.Success) { throw "EffectPool.h: #ifdef NEOPIXEL_DISABLE_2D block not found" }
+  foreach ($d in [regex]::Matches($blk.Groups[1].Value, '#\s*define\s+(NEOPIXEL_DISABLE_\w+)')) { $twoDFlags += $d.Groups[1].Value }
+
+  $sorted = @($Effects | Sort-Object { [int]$_.EffectID })
+  if ($list.Count -ne $sorted.Count) { throw "EffectPool.cpp getEffectByIndex() has $($list.Count) effects, the effect headers $($sorted.Count)" }
+  $out = @()
+  foreach ($e in $list) {
+    $effect = $sorted[$e.Number]
+    $own = @($e.Flags | Where-Object { $_ -ne 'NEOPIXEL_MINIMAL_EFFECTS' })
+    if ($e.Number -eq 0) { if ($own.Count -ne 0) { throw "EffectPool.cpp: effect 0 (Solid) must have no disable flag" } }
+    elseif ($own.Count -ne 1 -or $own[0] -notmatch '^NEOPIXEL_DISABLE_\w+$') { throw "EffectPool.cpp: effect $($e.Number) ($($e.Getter)) needs exactly one NEOPIXEL_DISABLE_<X> guard, has: $($e.Flags -join ', ')" }
+    $ownFlag = if ($own.Count) { $own[0] } else { $null }
+    $twoD = ($null -ne $ownFlag -and $twoDFlags -contains $ownFlag)
+    $is2D = [bool](Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN)
+    if ($twoD -ne $is2D) { throw "Effect $($e.Number) ($($effect.ClassName)): member of NEOPIXEL_DISABLE_2D = $twoD, but the 2D name check says $is2D (No2D lists of ETS)" }
+    $out += [pscustomobject]@{ Number = $e.Number; ClassName = $effect.ClassName; Getter = $e.Getter; OwnFlag = $ownFlag
+      Extended = ($e.Flags -contains 'NEOPIXEL_MINIMAL_EFFECTS'); TwoD = $twoD }
+  }
+  return , $out
+}
+
+# @brief Build condition of an effect: macros whose definition compiles it out, in the order own flag, NEOPIXEL_MINIMAL_EFFECTS,
+#        NEOPIXEL_DISABLE_2D (custom groups set the own flags through the groups header)
+function Get-EffectOffMacros {
+  param($Member)
+  $m = @()
+  if ($Member.OwnFlag) { $m += $Member.OwnFlag }
+  if ($Member.Extended) { $m += 'NEOPIXEL_MINIMAL_EFFECTS' }
+  if ($Member.TwoD) { $m += 'NEOPIXEL_DISABLE_2D' }
+  return $m
+}
+
+# @brief Custom effect groups of src/NeoPixel.EffectGroups.xml: Name, Flag (NEOPIXEL_DISABLE_GROUP_<NAME>), Text, Members (numbers)
+function Read-EffectGroups {
+  param([array]$Members)
+  $path = Resolve-RepoPath $script:Config.EffectGroupsXml
+  $groups = @()
+  if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return , $groups }
+  [xml]$doc = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+  if ($doc.DocumentElement.LocalName -cne 'EffectGroups') { throw "$($script:Config.EffectGroupsXml): root element must be <EffectGroups>" }
+  $byClass = @{}
+  foreach ($mb in $Members) { $byClass[$mb.ClassName] = $mb }
+  foreach ($g in @($doc.DocumentElement.SelectNodes("Group"))) {
+    foreach ($at in $g.Attributes) {
+      if (@("name", "text", "effects") -cnotcontains $at.Name) { throw "$($script:Config.EffectGroupsXml): <Group> attribute $($at.Name) is not supported (name, text, effects)" }
+    }
+    $name = "$($g.name)"
+    if ($name -notmatch '^[A-Za-z][A-Za-z0-9_]*$') { throw "$($script:Config.EffectGroupsXml): group name '$name' must be letters, digits and _" }
+    $flag = "NEOPIXEL_DISABLE_GROUP_" + $name.ToUpperInvariant()
+    if (@($groups | Where-Object { $_.Flag -eq $flag }).Count -gt 0) { throw "$($script:Config.EffectGroupsXml): group name '$name' used twice" }
+    $text = "$($g.text)"
+    if ($text.Length -gt 255) { throw "$($script:Config.EffectGroupsXml): group '$name': text is longer than 255 characters" }
+    $nums = @()
+    foreach ($cls in @("$($g.effects)" -split '\s+' | Where-Object { $_ })) {
+      if (-not $byClass.ContainsKey($cls)) { throw "$($script:Config.EffectGroupsXml): group '$name': unknown effect '$cls' (class names as in src/EffectIds.lock)" }
+      $mb = $byClass[$cls]
+      if (-not $mb.OwnFlag) { throw "$($script:Config.EffectGroupsXml): group '$name': $cls cannot be disabled" }
+      if ($nums -contains $mb.Number) { throw "$($script:Config.EffectGroupsXml): group '$name': $cls listed twice" }
+      $nums += $mb.Number
+    }
+    if ($nums.Count -eq 0) { throw "$($script:Config.EffectGroupsXml): group '$name' has no effects" }
+    $groups += [pscustomobject]@{ Name = $name; Flag = $flag; Text = $text; Members = $nums }
+  }
+  return , $groups
+}
+
+# @brief Writes src/NeoPixelEffectGroups.h: per group the members' disable flags, per effect number NEO_FXOFF_<n>
+#        (1 = compiled out, same conditions as EffectPool::getEffectByIndex(); read by the ETS board table)
+function Write-EffectGroupsHeader {
+  param([array]$Members, [array]$Groups)
+  $h = @()
+  $h += '/**'
+  $h += ' * @file NeoPixelEffectGroups.h'
+  $h += ' * @brief Effect groups and per-effect build state (generated by scripts/Build-EffectParameters.ps1 - do not edit)'
+  $h += ' * @note Sources: src/NeoPixel.EffectGroups.xml, lib/OFM-NeoPixel/src/effects/EffectPool.cpp/.h. Force-included into'
+  $h += ' *       every translation unit (-include in platformio.custom.ini), so the group flags act before EffectPool.h.'
+  $h += ' */'
+  $h += '#pragma once'
+  $h += ''
+  $h += '// NEOPIXEL_DISABLE_GROUP_<NAME>: sets the disable flag of every member'
+  if ($Groups.Count -eq 0) { $h += '// (no group in src/NeoPixel.EffectGroups.xml)' }
+  foreach ($g in $Groups) {
+    $h += "#ifdef $($g.Flag)"
+    foreach ($n in $g.Members) {
+      $f = ($Members | Where-Object { $_.Number -eq $n }).OwnFlag
+      $h += "    #ifndef $f"
+      $h += "        #define $f"
+      $h += '    #endif'
+    }
+    $h += '#endif'
+  }
+  $h += ''
+  $h += '// NEO_FXOFF_<n>: 1 = effect number n is compiled out, 0 = built in'
+  foreach ($mb in $Members) {
+    $off = @(Get-EffectOffMacros $mb)
+    if ($off.Count -eq 0) { $h += "#define NEO_FXOFF_$($mb.Number) 0"; continue }
+    $h += '#if ' + (($off | ForEach-Object { "defined($_)" }) -join ' || ')
+    $h += "    #define NEO_FXOFF_$($mb.Number) 1"
+    $h += '#else'
+    $h += "    #define NEO_FXOFF_$($mb.Number) 0"
+    $h += '#endif'
+  }
+  $null = Write-FileIfChanged -Path (Resolve-RepoPath $script:Config.EffectGroupsHeader) -Value (($h -join "`n") + "`n") -NoNewline
 }
 
 function Generate-EffectTypeHelpTable {
@@ -4538,11 +4683,7 @@ function Write-WebEffectCatalog {
   for ($index = 0; $index -lt $ordered.Count; $index++) {
     $effect = $ordered[$index]
     if ([int]$effect.EffectID -ne $index) { throw 'Web catalog requires contiguous registration IDs' }
-    $method = $effect.ClassName -replace 'Effect', ''
-    $conditions = @()
-    if ($method -ne 'Solid') { $conditions += "!defined(NEOPIXEL_DISABLE_$($method.ToUpper()))" }
-    if ($index -ge 8 -and $index -le 18) { $conditions += '!defined(NEOPIXEL_MINIMAL_EFFECTS)' }
-    if ($index -ge 20) { $conditions += '!defined(NEOPIXEL_DISABLE_2D)' }
+    $conditions = @(Get-EffectOffMacros $script:EffectPoolMembers[$index] | ForEach-Object { "!defined($_)" })
     if ($conditions.Count) {
       $header += @(('#if ' + ($conditions -join ' && ')), '        "1"', '#else', '        "0"', '#endif')
     } else { $header += '        "1"' }
@@ -4550,11 +4691,7 @@ function Write-WebEffectCatalog {
   $header += @('        ;', '    inline constexpr char availableJson[] =', '        "\""')
   for ($index = 0; $index -lt $ordered.Count; $index++) {
     $effect = $ordered[$index]
-    $method = $effect.ClassName -replace 'Effect', ''
-    $conditions = @()
-    if ($method -ne 'Solid') { $conditions += "!defined(NEOPIXEL_DISABLE_$($method.ToUpper()))" }
-    if ($index -ge 8 -and $index -le 18) { $conditions += '!defined(NEOPIXEL_MINIMAL_EFFECTS)' }
-    if ($index -ge 20) { $conditions += '!defined(NEOPIXEL_DISABLE_2D)' }
+    $conditions = @(Get-EffectOffMacros $script:EffectPoolMembers[$index] | ForEach-Object { "!defined($_)" })
     if ($conditions.Count) {
       $header += @(('#if ' + ($conditions -join ' && ')), '        "1"', '#else', '        "0"', '#endif')
     } else { $header += '        "1"' }
@@ -4564,6 +4701,10 @@ function Write-WebEffectCatalog {
   $null = Write-FileIfChanged -Path $headerPath -Value (($header -join "`n") + "`n") -NoNewline
   Write-Host "Web effect catalog: $catalogPath ($($catalog.Count) effects)"
 }
+
+# Effect pool membership (getEffectByIndex guards, NEOPIXEL_DISABLE_2D members) and the OAM effect groups
+$script:EffectPoolMembers = Get-EffectPoolMembership -Effects $effects
+$effectGroups = Read-EffectGroups -Members $script:EffectPoolMembers
 
 Write-WebEffectCatalog $effects
 if ($WebCatalogOnly) {
@@ -4589,6 +4730,9 @@ Write-Host "══════════════════════�
 Write-Host "  Generating Files" -ForegroundColor Cyan
 Write-Host "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
+
+# Step 0a: effect groups header (-include of every translation unit, ETS board table)
+Write-EffectGroupsHeader -Members $script:EffectPoolMembers -Groups $effectGroups
 
 # Step 0: Update Effect Type Enumeration in NeoPixel.share.xml
 $shareXmlPath = Resolve-RepoPath $script:Config.ShareXml

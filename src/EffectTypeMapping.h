@@ -52,37 +52,37 @@ inline Effect* getEffectFromType(uint8_t effectType)
 #ifndef NEOPIXEL_DISABLE_RGBWTEST
         case PT_NEOEffectType::RGBWTest: return EffectPool::getRGBWTest(); // Test
 #endif
-#ifndef NEOPIXEL_DISABLE_FIRE
+#if !defined(NEOPIXEL_DISABLE_FIRE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Fire: return EffectPool::getFire(); // Fire
 #endif
-#ifndef NEOPIXEL_DISABLE_THEATERCHASE
+#if !defined(NEOPIXEL_DISABLE_THEATERCHASE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::TheaterChase: return EffectPool::getTheaterChase(); // Theater Chase
 #endif
-#ifndef NEOPIXEL_DISABLE_SPARKLE
+#if !defined(NEOPIXEL_DISABLE_SPARKLE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Sparkle: return EffectPool::getSparkle(); // Sparkle
 #endif
-#ifndef NEOPIXEL_DISABLE_BREATHING
+#if !defined(NEOPIXEL_DISABLE_BREATHING) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Breathing: return EffectPool::getBreathing(); // Breathing
 #endif
-#ifndef NEOPIXEL_DISABLE_STROBE
+#if !defined(NEOPIXEL_DISABLE_STROBE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Strobe: return EffectPool::getStrobe(); // Strobe
 #endif
-#ifndef NEOPIXEL_DISABLE_COMET
+#if !defined(NEOPIXEL_DISABLE_COMET) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Comet: return EffectPool::getComet(); // Comet
 #endif
-#ifndef NEOPIXEL_DISABLE_NOISE
+#if !defined(NEOPIXEL_DISABLE_NOISE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Noise: return EffectPool::getNoise(); // Noise
 #endif
-#ifndef NEOPIXEL_DISABLE_PALETTE
+#if !defined(NEOPIXEL_DISABLE_PALETTE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Palette: return EffectPool::getPalette(); // Palette
 #endif
-#ifndef NEOPIXEL_DISABLE_LIGHTNING
+#if !defined(NEOPIXEL_DISABLE_LIGHTNING) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Lightning: return EffectPool::getLightning(); // Lightning (DE: Blitz)
 #endif
-#ifndef NEOPIXEL_DISABLE_GRADIENT
+#if !defined(NEOPIXEL_DISABLE_GRADIENT) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Gradient: return EffectPool::getGradient(); // Gradient
 #endif
-#ifndef NEOPIXEL_DISABLE_CANDLE
+#if !defined(NEOPIXEL_DISABLE_CANDLE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
         case PT_NEOEffectType::Candle: return EffectPool::getCandle(); // Candle (DE: Kerze)
 #endif
 #ifndef NEOPIXEL_DISABLE_SCROLLTEXT
@@ -166,37 +166,37 @@ inline uint8_t getTypeFromEffect(Effect* effect)
 #ifndef NEOPIXEL_DISABLE_RGBWTEST
     if (effect == EffectPool::getRGBWTest()) return static_cast<uint8_t>(PT_NEOEffectType::RGBWTest); // Test
 #endif
-#ifndef NEOPIXEL_DISABLE_FIRE
+#if !defined(NEOPIXEL_DISABLE_FIRE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getFire()) return static_cast<uint8_t>(PT_NEOEffectType::Fire); // Fire
 #endif
-#ifndef NEOPIXEL_DISABLE_THEATERCHASE
+#if !defined(NEOPIXEL_DISABLE_THEATERCHASE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getTheaterChase()) return static_cast<uint8_t>(PT_NEOEffectType::TheaterChase); // Theater Chase
 #endif
-#ifndef NEOPIXEL_DISABLE_SPARKLE
+#if !defined(NEOPIXEL_DISABLE_SPARKLE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getSparkle()) return static_cast<uint8_t>(PT_NEOEffectType::Sparkle); // Sparkle
 #endif
-#ifndef NEOPIXEL_DISABLE_BREATHING
+#if !defined(NEOPIXEL_DISABLE_BREATHING) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getBreathing()) return static_cast<uint8_t>(PT_NEOEffectType::Breathing); // Breathing
 #endif
-#ifndef NEOPIXEL_DISABLE_STROBE
+#if !defined(NEOPIXEL_DISABLE_STROBE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getStrobe()) return static_cast<uint8_t>(PT_NEOEffectType::Strobe); // Strobe
 #endif
-#ifndef NEOPIXEL_DISABLE_COMET
+#if !defined(NEOPIXEL_DISABLE_COMET) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getComet()) return static_cast<uint8_t>(PT_NEOEffectType::Comet); // Comet
 #endif
-#ifndef NEOPIXEL_DISABLE_NOISE
+#if !defined(NEOPIXEL_DISABLE_NOISE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getNoise()) return static_cast<uint8_t>(PT_NEOEffectType::Noise); // Noise
 #endif
-#ifndef NEOPIXEL_DISABLE_PALETTE
+#if !defined(NEOPIXEL_DISABLE_PALETTE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getPalette()) return static_cast<uint8_t>(PT_NEOEffectType::Palette); // Palette
 #endif
-#ifndef NEOPIXEL_DISABLE_LIGHTNING
+#if !defined(NEOPIXEL_DISABLE_LIGHTNING) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getLightning()) return static_cast<uint8_t>(PT_NEOEffectType::Lightning); // Lightning (DE: Blitz)
 #endif
-#ifndef NEOPIXEL_DISABLE_GRADIENT
+#if !defined(NEOPIXEL_DISABLE_GRADIENT) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getGradient()) return static_cast<uint8_t>(PT_NEOEffectType::Gradient); // Gradient
 #endif
-#ifndef NEOPIXEL_DISABLE_CANDLE
+#if !defined(NEOPIXEL_DISABLE_CANDLE) && !defined(NEOPIXEL_MINIMAL_EFFECTS)
     if (effect == EffectPool::getCandle()) return static_cast<uint8_t>(PT_NEOEffectType::Candle); // Candle (DE: Kerze)
 #endif
 #ifndef NEOPIXEL_DISABLE_SCROLLTEXT

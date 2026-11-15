@@ -1,5 +1,5 @@
 # Input fingerprint of scripts/Build-EffectParameters.ps1 - do not edit (written by every full run)
-sha256 fdd2ee8342de35014900e230d23a6e89b1d0aab25338f486b862c437d5b58b8a
+sha256 168bc0d6e161d91df689042db120456058aa8f2e7860a00db8b36a1545ef2d4d
 1ebff8e32d3fb5198cdc3ee9c02d7093ae3d6fb92fa39d2d1afdb5e3c9ce7db7 doc/Effect-Flags.md
 - src/Baggages/Help_de/NEO-Anzahl-Szenen.md
 - src/Baggages/Help_de/NEO-AutoPlay-Tetris-2D.md
@@ -156,12 +156,13 @@ b32657d979cd816eaf0cb8ec1bd74887a74b1e17927bc10702f5e5407eb63dfa src/Baggages/He
 - src/Baggages/Help_de/NEO-Width-Blitz.md
 - src/Baggages/Help_de/NEO-Zones-Kerze.md
 1becb98802f1f52a3b93324ea46363d929884e68e271a343eb1b6dfdce49377c src/EffectParameterMapping.h
-51b26cc3ec3a4b5d9ae6e3daf7b9e7d4c38e0f33c0dcfa1fe0cbfaba2f4bc98d src/EffectTypeMapping.h
+22683848d283cbf5a8495567a8d1e4e9e900755cc987c0c0c7f04c0081324819 src/EffectTypeMapping.h
 ccad8125730df102f06f5c37c8a989587b839334ac26a20d8330a0735955610e src/NeoPixel.Cue.part.xml
 b75833d975f39e503194e5ad9a87c678da6ae4f7c5d6ca332f2fcad5fc4ec34c src/NeoPixel.EM.share.xml
 fa70dc06fa927673c36be3c3674ec4f50f404a8df445c29802d8fb7bd2d4051c src/NeoPixel.Scene.part.xml
 22385d817ad135b508d6edc285b4367ee5533d7bb78a1e94d26d82be591cd101 src/NeoPixel.Segment.templ.xml
 f83cb5f4db8eead269ab741aaf4859fa203707d240d8083e2a0d79797e8ad016 src/NeoPixel.script.src.js
 2ae35f53c928b81f51bcd3f105c77bff85f188d927b7767d5c76eae2c823d5b8 src/NeoPixel.share.xml
+c24c0e3984fe0f285541b36a9fcf2e0901329d264ac035ce6076446988bfee0d src/NeoPixelEffectGroups.h
 55bda64e6d080cbd5fc91aca7b15f6dbff431d735fc590b426eaffd0d482cc1a src/WebUi/NeoPixelEffectCatalog.generated.h
 3ea89f405834f4382fd9a448db1fffaf9317c3060bf7da015fe467418fa9850d web/assets/effects.json

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Effect groups of OAM-NeoPixel, read by scripts/Build-EffectParameters.ps1 (generates src/NeoPixelEffectGroups.h).
+  A group is a product decision: -D NEOPIXEL_DISABLE_GROUP_<NAME> in an env leaves out every member.
+    <Group name="Small" text="..." effects="FireEffect CandleEffect" />
+  name: letters, digits, _ (flag = upper case); effects: class names as in src/EffectIds.lock (Solid cannot be left out).
+  Built-in groups come from OFM-NeoPixel: NEOPIXEL_DISABLE_2D (EffectPool.h), NEOPIXEL_MINIMAL_EFFECTS (EffectPool.cpp).
+-->
+<EffectGroups>
+</EffectGroups>
