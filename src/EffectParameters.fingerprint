@@ -1,168 +1,167 @@
 # Input fingerprint of scripts/Build-EffectParameters.ps1 - do not edit (written by every full run)
-sha256 3b54a1c79e5d615bce34cac26cc86ca43f255cb4cb01a437986a6390ba678c8e
-doc/Effect-Flags.md
-src/Baggages/Help_de/NEO-Anzahl-Szenen.md
-src/Baggages/Help_de/NEO-AutoPlay-Tetris-2D.md
-src/Baggages/Help_de/NEO-BPM-BPM.md
-src/Baggages/Help_de/NEO-Beam-UFO-Swarm.md
-src/Baggages/Help_de/NEO-BgBrightness-Tetris-2D.md
-src/Baggages/Help_de/NEO-Blend-Palette.md
-src/Baggages/Help_de/NEO-BlinkColon-Uhr-2D.md
-src/Baggages/Help_de/NEO-BlobCount-Metaballs-2D.md
-src/Baggages/Help_de/NEO-BlueFireMode-Fire.md
-src/Baggages/Help_de/NEO-BodyHue-Snake-2D.md
-src/Baggages/Help_de/NEO-BodyMode-Snake-2D.md
-src/Baggages/Help_de/NEO-Bounce-Theater-Chase.md
-src/Baggages/Help_de/NEO-BounceMode-Comet.md
-src/Baggages/Help_de/NEO-BurstMode-Sparkle.md
-src/Baggages/Help_de/NEO-ColorMode-Game-of-Life-2D.md
-src/Baggages/Help_de/NEO-ColorMode-Starfield-Warp.md
-src/Baggages/Help_de/NEO-ColorMode-Tetris-2D.md
-src/Baggages/Help_de/NEO-ColorMode-Theater-Chase.md
-src/Baggages/Help_de/NEO-ColorSpeed-Theater-Chase.md
-src/Baggages/Help_de/NEO-ColourHue-Uhr-2D.md
-src/Baggages/Help_de/NEO-Contrast-Metaballs-2D.md
-src/Baggages/Help_de/NEO-Contrast-Plasma-Nebula.md
-src/Baggages/Help_de/NEO-Cooling-Fire.md
-src/Baggages/Help_de/NEO-Count-UFO-Swarm.md
-src/Baggages/Help_de/NEO-Curve-Breathing.md
-src/Baggages/Help_de/NEO-DateFormat-Uhr-2D.md
-src/Baggages/Help_de/NEO-DateHue-Uhr-2D.md
-src/Baggages/Help_de/NEO-DateMode-Uhr-2D.md
-src/Baggages/Help_de/NEO-Decay-Blitz.md
-src/Baggages/Help_de/NEO-Delta-Rainbow.md
-src/Baggages/Help_de/NEO-Density-Matrix-2D.md
-src/Baggages/Help_de/NEO-Density-Rainbow.md
-src/Baggages/Help_de/NEO-Density-Starfield-Warp.md
-src/Baggages/Help_de/NEO-Direction-Cylon.md
-src/Baggages/Help_de/NEO-Direction-Wipe.md
-src/Baggages/Help_de/NEO-DotSize-Theater-Chase.md
-src/Baggages/Help_de/NEO-Effekt-ID-Referenz.md
-src/Baggages/Help_de/NEO-Effekt-Typ-Szene.md
-src/Baggages/Help_de/NEO-Effekt-Typ.md
-src/Baggages/Help_de/NEO-EndHue-Gradient.md
-src/Baggages/Help_de/NEO-EyeSize-Cylon.md
-src/Baggages/Help_de/NEO-FadeAmount-Cylon.md
-src/Baggages/Help_de/NEO-FadeRate-Comet.md
-src/Baggages/Help_de/NEO-FadeRate-Sparkle.md
-src/Baggages/Help_de/NEO-FadeSpeed-Juggle.md
-src/Baggages/Help_de/NEO-FlashLines-Tetris-2D.md
-src/Baggages/Help_de/NEO-Font-Laufschrift.md
-src/Baggages/Help_de/NEO-Font-Uhr-2D.md
-src/Baggages/Help_de/NEO-FreqA-Lissajous-2D.md
-src/Baggages/Help_de/NEO-FreqB-Lissajous-2D.md
-src/Baggages/Help_de/NEO-Gap-Laufschrift.md
-src/Baggages/Help_de/NEO-GhostPiece-Tetris-2D.md
-src/Baggages/Help_de/NEO-Glitch-Matrix-2D.md
-src/Baggages/Help_de/NEO-Glow-TRON.md
-src/Baggages/Help_de/NEO-GridSpacing-TRON.md
-src/Baggages/Help_de/NEO-HeadHue-Snake-2D.md
-src/Baggages/Help_de/NEO-Helligkeit-Szene.md
-src/Baggages/Help_de/NEO-Hue-Aurora-2D.md
-src/Baggages/Help_de/NEO-Hue-BPM.md
-src/Baggages/Help_de/NEO-Hue-Blitz.md
-src/Baggages/Help_de/NEO-Hue-Cylon.md
-src/Baggages/Help_de/NEO-Hue-DNA-2D.md
-src/Baggages/Help_de/NEO-Hue-Game-of-Life-2D.md
-src/Baggages/Help_de/NEO-Hue-Lissajous-2D.md
-src/Baggages/Help_de/NEO-Hue-Metaballs-2D.md
-src/Baggages/Help_de/NEO-Hue-TRON.md
-src/Baggages/Help_de/NEO-Hue-UFO-Swarm.md
-src/Baggages/Help_de/NEO-HueOffset-Juggle.md
-src/Baggages/Help_de/NEO-HueOffset-Noise.md
-src/Baggages/Help_de/NEO-Intensity-Aurora-2D.md
-src/Baggages/Help_de/NEO-Intensity-Blitz.md
-src/Baggages/Help_de/NEO-Intensity-Kerze.md
-src/Baggages/Help_de/NEO-Loop-Laufschrift.md
-src/Baggages/Help_de/NEO-Loop-Wipe.md
-src/Baggages/Help_de/NEO-MinBrightness-Breathing.md
-src/Baggages/Help_de/NEO-MinBrightness-Strobe.md
-src/Baggages/Help_de/NEO-Mode-Comet.md
-src/Baggages/Help_de/NEO-Mode-Cylon.md
-src/Baggages/Help_de/NEO-Mode-Rainbow.md
-src/Baggages/Help_de/NEO-Mode-Sparkle.md
-src/Baggages/Help_de/NEO-Mode-Test.md
-src/Baggages/Help_de/NEO-NumDots-Juggle.md
-src/Baggages/Help_de/NEO-OnRatio-Strobe.md
-src/Baggages/Help_de/NEO-Palette-Matrix-2D.md
-src/Baggages/Help_de/NEO-Palette-Noise.md
-src/Baggages/Help_de/NEO-Palette-Palette.md
-src/Baggages/Help_de/NEO-PaletteShift-Plasma-Nebula.md
-src/Baggages/Help_de/NEO-PhaseDuration-Test.md
-src/Baggages/Help_de/NEO-Primaerfarbe-Kaltweiss-Szene.md
-src/Baggages/Help_de/NEO-Primaerfarbe-RGB-Szene.md
-src/Baggages/Help_de/NEO-Primaerfarbe-Warmweiss-Szene.md
-src/Baggages/Help_de/NEO-Probability-Sparkle.md
-src/Baggages/Help_de/NEO-RainbowMode-Breathing.md
-src/Baggages/Help_de/NEO-RainbowMode-Comet.md
-src/Baggages/Help_de/NEO-RainbowStrobe-Strobe.md
-src/Baggages/Help_de/NEO-RandomTiming-Strobe.md
-src/Baggages/Help_de/NEO-ReverseDirection-Fire.md
-src/Baggages/Help_de/NEO-RungSpacing-DNA-2D.md
-src/Baggages/Help_de/NEO-Saturation-Gradient.md
-src/Baggages/Help_de/NEO-Saturation-Noise.md
-src/Baggages/Help_de/NEO-Saturation-Plasma-Nebula.md
-src/Baggages/Help_de/NEO-Saturation-Rainbow.md
-src/Baggages/Help_de/NEO-Scale-Aurora-2D.md
-src/Baggages/Help_de/NEO-Scale-Noise.md
-src/Baggages/Help_de/NEO-ScrollSpeed-Uhr-2D.md
-src/Baggages/Help_de/NEO-Sekundaerfarbe-Kaltweiss-Szene.md
-src/Baggages/Help_de/NEO-Sekundaerfarbe-RGB-Szene.md
-src/Baggages/Help_de/NEO-Sekundaerfarbe-Warmweiss-Szene.md
-src/Baggages/Help_de/NEO-ShowSeconds-Uhr-2D.md
-src/Baggages/Help_de/NEO-Spacing-Palette.md
-src/Baggages/Help_de/NEO-Spacing-Theater-Chase.md
-src/Baggages/Help_de/NEO-Sparking-Fire.md
-src/Baggages/Help_de/NEO-SparkleCount-Sparkle.md
-src/Baggages/Help_de/NEO-SpawnDensity-Game-of-Life-2D.md
-src/Baggages/Help_de/NEO-Speed-Aurora-2D.md
-src/Baggages/Help_de/NEO-Speed-Blitz.md
-src/Baggages/Help_de/NEO-Speed-Breathing.md
-src/Baggages/Help_de/NEO-Speed-Comet.md
-src/Baggages/Help_de/NEO-Speed-Cylon.md
-src/Baggages/Help_de/NEO-Speed-DNA-2D.md
-src/Baggages/Help_de/NEO-Speed-Fire.md
-src/Baggages/Help_de/NEO-Speed-Game-of-Life-2D.md
-src/Baggages/Help_de/NEO-Speed-Gradient.md
-src/Baggages/Help_de/NEO-Speed-Juggle.md
-src/Baggages/Help_de/NEO-Speed-Kerze.md
-src/Baggages/Help_de/NEO-Speed-Laufschrift.md
-src/Baggages/Help_de/NEO-Speed-Lissajous-2D.md
-src/Baggages/Help_de/NEO-Speed-Matrix-2D.md
-src/Baggages/Help_de/NEO-Speed-Metaballs-2D.md
-src/Baggages/Help_de/NEO-Speed-Noise.md
-src/Baggages/Help_de/NEO-Speed-Palette.md
-src/Baggages/Help_de/NEO-Speed-Plasma-Nebula.md
-src/Baggages/Help_de/NEO-Speed-Pride2015.md
-src/Baggages/Help_de/NEO-Speed-Rainbow.md
-src/Baggages/Help_de/NEO-Speed-Snake-2D.md
-src/Baggages/Help_de/NEO-Speed-Sparkle.md
-src/Baggages/Help_de/NEO-Speed-Starfield-Warp.md
-src/Baggages/Help_de/NEO-Speed-Strobe.md
-src/Baggages/Help_de/NEO-Speed-TRON.md
-src/Baggages/Help_de/NEO-Speed-Tetris-2D.md
-src/Baggages/Help_de/NEO-Speed-Theater-Chase.md
-src/Baggages/Help_de/NEO-Speed-UFO-Swarm.md
-src/Baggages/Help_de/NEO-Speed-Wipe.md
-src/Baggages/Help_de/NEO-StartHue-Gradient.md
-src/Baggages/Help_de/NEO-SwitchSec-Uhr-2D.md
-src/Baggages/Help_de/NEO-TailLength-Comet.md
-src/Baggages/Help_de/NEO-Text-Laufschrift.md
-src/Baggages/Help_de/NEO-Twist-DNA-2D.md
-src/Baggages/Help_de/NEO-ViewMode-Uhr-2D.md
-src/Baggages/Help_de/NEO-WarpPulse-Starfield-Warp.md
-src/Baggages/Help_de/NEO-Waveform-Breathing.md
-src/Baggages/Help_de/NEO-WhiteOnly-Sparkle.md
-src/Baggages/Help_de/NEO-Width-Blitz.md
-src/Baggages/Help_de/NEO-Zones-Kerze.md
-src/EffectParameterMapping.h
-src/EffectTypeMapping.h
-src/NeoPixel-Dev.xml
-src/NeoPixel.Cue.part.xml
-src/NeoPixel.EM.share.xml
-src/NeoPixel.Scene.part.xml
-src/NeoPixel.Segment.templ.xml
-src/NeoPixel.script.src.js
-src/NeoPixel.share.xml
-src/WebUi/NeoPixelEffectCatalog.generated.h
-web/assets/effects.json
+sha256 b130eae43e72222c0c706f8fbb3aea39de391ee1be36f82c01adbb651bd26e12
+1ebff8e32d3fb5198cdc3ee9c02d7093ae3d6fb92fa39d2d1afdb5e3c9ce7db7 doc/Effect-Flags.md
+- src/Baggages/Help_de/NEO-Anzahl-Szenen.md
+- src/Baggages/Help_de/NEO-AutoPlay-Tetris-2D.md
+- src/Baggages/Help_de/NEO-BPM-BPM.md
+- src/Baggages/Help_de/NEO-Beam-UFO-Swarm.md
+- src/Baggages/Help_de/NEO-BgBrightness-Tetris-2D.md
+- src/Baggages/Help_de/NEO-Blend-Palette.md
+- src/Baggages/Help_de/NEO-BlinkColon-Uhr-2D.md
+- src/Baggages/Help_de/NEO-BlobCount-Metaballs-2D.md
+- src/Baggages/Help_de/NEO-BlueFireMode-Fire.md
+- src/Baggages/Help_de/NEO-BodyHue-Snake-2D.md
+- src/Baggages/Help_de/NEO-BodyMode-Snake-2D.md
+- src/Baggages/Help_de/NEO-Bounce-Theater-Chase.md
+- src/Baggages/Help_de/NEO-BounceMode-Comet.md
+- src/Baggages/Help_de/NEO-BurstMode-Sparkle.md
+- src/Baggages/Help_de/NEO-ColorMode-Game-of-Life-2D.md
+- src/Baggages/Help_de/NEO-ColorMode-Starfield-Warp.md
+- src/Baggages/Help_de/NEO-ColorMode-Tetris-2D.md
+- src/Baggages/Help_de/NEO-ColorMode-Theater-Chase.md
+- src/Baggages/Help_de/NEO-ColorSpeed-Theater-Chase.md
+- src/Baggages/Help_de/NEO-ColourHue-Uhr-2D.md
+- src/Baggages/Help_de/NEO-Contrast-Metaballs-2D.md
+- src/Baggages/Help_de/NEO-Contrast-Plasma-Nebula.md
+- src/Baggages/Help_de/NEO-Cooling-Fire.md
+- src/Baggages/Help_de/NEO-Count-UFO-Swarm.md
+- src/Baggages/Help_de/NEO-Curve-Breathing.md
+- src/Baggages/Help_de/NEO-DateFormat-Uhr-2D.md
+- src/Baggages/Help_de/NEO-DateHue-Uhr-2D.md
+- src/Baggages/Help_de/NEO-DateMode-Uhr-2D.md
+- src/Baggages/Help_de/NEO-Decay-Blitz.md
+- src/Baggages/Help_de/NEO-Delta-Rainbow.md
+- src/Baggages/Help_de/NEO-Density-Matrix-2D.md
+- src/Baggages/Help_de/NEO-Density-Rainbow.md
+- src/Baggages/Help_de/NEO-Density-Starfield-Warp.md
+- src/Baggages/Help_de/NEO-Direction-Cylon.md
+- src/Baggages/Help_de/NEO-Direction-Wipe.md
+- src/Baggages/Help_de/NEO-DotSize-Theater-Chase.md
+7dbe557409343f1aa54762aca944090ca6a85c7a79827b24e8c5e40730ca04d5 src/Baggages/Help_de/NEO-Effekt-ID-Referenz.md
+- src/Baggages/Help_de/NEO-Effekt-Typ-Szene.md
+b32657d979cd816eaf0cb8ec1bd74887a74b1e17927bc10702f5e5407eb63dfa src/Baggages/Help_de/NEO-Effekt-Typ.md
+- src/Baggages/Help_de/NEO-EndHue-Gradient.md
+- src/Baggages/Help_de/NEO-EyeSize-Cylon.md
+- src/Baggages/Help_de/NEO-FadeAmount-Cylon.md
+- src/Baggages/Help_de/NEO-FadeRate-Comet.md
+- src/Baggages/Help_de/NEO-FadeRate-Sparkle.md
+- src/Baggages/Help_de/NEO-FadeSpeed-Juggle.md
+- src/Baggages/Help_de/NEO-FlashLines-Tetris-2D.md
+- src/Baggages/Help_de/NEO-Font-Laufschrift.md
+- src/Baggages/Help_de/NEO-Font-Uhr-2D.md
+- src/Baggages/Help_de/NEO-FreqA-Lissajous-2D.md
+- src/Baggages/Help_de/NEO-FreqB-Lissajous-2D.md
+- src/Baggages/Help_de/NEO-Gap-Laufschrift.md
+- src/Baggages/Help_de/NEO-GhostPiece-Tetris-2D.md
+- src/Baggages/Help_de/NEO-Glitch-Matrix-2D.md
+- src/Baggages/Help_de/NEO-Glow-TRON.md
+- src/Baggages/Help_de/NEO-GridSpacing-TRON.md
+- src/Baggages/Help_de/NEO-HeadHue-Snake-2D.md
+- src/Baggages/Help_de/NEO-Helligkeit-Szene.md
+- src/Baggages/Help_de/NEO-Hue-Aurora-2D.md
+- src/Baggages/Help_de/NEO-Hue-BPM.md
+- src/Baggages/Help_de/NEO-Hue-Blitz.md
+- src/Baggages/Help_de/NEO-Hue-Cylon.md
+- src/Baggages/Help_de/NEO-Hue-DNA-2D.md
+- src/Baggages/Help_de/NEO-Hue-Game-of-Life-2D.md
+- src/Baggages/Help_de/NEO-Hue-Lissajous-2D.md
+- src/Baggages/Help_de/NEO-Hue-Metaballs-2D.md
+- src/Baggages/Help_de/NEO-Hue-TRON.md
+- src/Baggages/Help_de/NEO-Hue-UFO-Swarm.md
+- src/Baggages/Help_de/NEO-HueOffset-Juggle.md
+- src/Baggages/Help_de/NEO-HueOffset-Noise.md
+- src/Baggages/Help_de/NEO-Intensity-Aurora-2D.md
+- src/Baggages/Help_de/NEO-Intensity-Blitz.md
+- src/Baggages/Help_de/NEO-Intensity-Kerze.md
+- src/Baggages/Help_de/NEO-Loop-Laufschrift.md
+- src/Baggages/Help_de/NEO-Loop-Wipe.md
+- src/Baggages/Help_de/NEO-MinBrightness-Breathing.md
+- src/Baggages/Help_de/NEO-MinBrightness-Strobe.md
+- src/Baggages/Help_de/NEO-Mode-Comet.md
+- src/Baggages/Help_de/NEO-Mode-Cylon.md
+- src/Baggages/Help_de/NEO-Mode-Rainbow.md
+- src/Baggages/Help_de/NEO-Mode-Sparkle.md
+- src/Baggages/Help_de/NEO-Mode-Test.md
+- src/Baggages/Help_de/NEO-NumDots-Juggle.md
+- src/Baggages/Help_de/NEO-OnRatio-Strobe.md
+- src/Baggages/Help_de/NEO-Palette-Matrix-2D.md
+- src/Baggages/Help_de/NEO-Palette-Noise.md
+- src/Baggages/Help_de/NEO-Palette-Palette.md
+- src/Baggages/Help_de/NEO-PaletteShift-Plasma-Nebula.md
+- src/Baggages/Help_de/NEO-PhaseDuration-Test.md
+- src/Baggages/Help_de/NEO-Primaerfarbe-Kaltweiss-Szene.md
+- src/Baggages/Help_de/NEO-Primaerfarbe-RGB-Szene.md
+- src/Baggages/Help_de/NEO-Primaerfarbe-Warmweiss-Szene.md
+- src/Baggages/Help_de/NEO-Probability-Sparkle.md
+- src/Baggages/Help_de/NEO-RainbowMode-Breathing.md
+- src/Baggages/Help_de/NEO-RainbowMode-Comet.md
+- src/Baggages/Help_de/NEO-RainbowStrobe-Strobe.md
+- src/Baggages/Help_de/NEO-RandomTiming-Strobe.md
+- src/Baggages/Help_de/NEO-ReverseDirection-Fire.md
+- src/Baggages/Help_de/NEO-RungSpacing-DNA-2D.md
+- src/Baggages/Help_de/NEO-Saturation-Gradient.md
+- src/Baggages/Help_de/NEO-Saturation-Noise.md
+- src/Baggages/Help_de/NEO-Saturation-Plasma-Nebula.md
+- src/Baggages/Help_de/NEO-Saturation-Rainbow.md
+- src/Baggages/Help_de/NEO-Scale-Aurora-2D.md
+- src/Baggages/Help_de/NEO-Scale-Noise.md
+- src/Baggages/Help_de/NEO-ScrollSpeed-Uhr-2D.md
+- src/Baggages/Help_de/NEO-Sekundaerfarbe-Kaltweiss-Szene.md
+- src/Baggages/Help_de/NEO-Sekundaerfarbe-RGB-Szene.md
+- src/Baggages/Help_de/NEO-Sekundaerfarbe-Warmweiss-Szene.md
+- src/Baggages/Help_de/NEO-ShowSeconds-Uhr-2D.md
+- src/Baggages/Help_de/NEO-Spacing-Palette.md
+- src/Baggages/Help_de/NEO-Spacing-Theater-Chase.md
+- src/Baggages/Help_de/NEO-Sparking-Fire.md
+- src/Baggages/Help_de/NEO-SparkleCount-Sparkle.md
+- src/Baggages/Help_de/NEO-SpawnDensity-Game-of-Life-2D.md
+- src/Baggages/Help_de/NEO-Speed-Aurora-2D.md
+- src/Baggages/Help_de/NEO-Speed-Blitz.md
+- src/Baggages/Help_de/NEO-Speed-Breathing.md
+- src/Baggages/Help_de/NEO-Speed-Comet.md
+- src/Baggages/Help_de/NEO-Speed-Cylon.md
+- src/Baggages/Help_de/NEO-Speed-DNA-2D.md
+- src/Baggages/Help_de/NEO-Speed-Fire.md
+- src/Baggages/Help_de/NEO-Speed-Game-of-Life-2D.md
+- src/Baggages/Help_de/NEO-Speed-Gradient.md
+- src/Baggages/Help_de/NEO-Speed-Juggle.md
+- src/Baggages/Help_de/NEO-Speed-Kerze.md
+- src/Baggages/Help_de/NEO-Speed-Laufschrift.md
+- src/Baggages/Help_de/NEO-Speed-Lissajous-2D.md
+- src/Baggages/Help_de/NEO-Speed-Matrix-2D.md
+- src/Baggages/Help_de/NEO-Speed-Metaballs-2D.md
+- src/Baggages/Help_de/NEO-Speed-Noise.md
+- src/Baggages/Help_de/NEO-Speed-Palette.md
+- src/Baggages/Help_de/NEO-Speed-Plasma-Nebula.md
+- src/Baggages/Help_de/NEO-Speed-Pride2015.md
+- src/Baggages/Help_de/NEO-Speed-Rainbow.md
+- src/Baggages/Help_de/NEO-Speed-Snake-2D.md
+- src/Baggages/Help_de/NEO-Speed-Sparkle.md
+- src/Baggages/Help_de/NEO-Speed-Starfield-Warp.md
+- src/Baggages/Help_de/NEO-Speed-Strobe.md
+- src/Baggages/Help_de/NEO-Speed-TRON.md
+- src/Baggages/Help_de/NEO-Speed-Tetris-2D.md
+- src/Baggages/Help_de/NEO-Speed-Theater-Chase.md
+- src/Baggages/Help_de/NEO-Speed-UFO-Swarm.md
+- src/Baggages/Help_de/NEO-Speed-Wipe.md
+- src/Baggages/Help_de/NEO-StartHue-Gradient.md
+- src/Baggages/Help_de/NEO-SwitchSec-Uhr-2D.md
+- src/Baggages/Help_de/NEO-TailLength-Comet.md
+- src/Baggages/Help_de/NEO-Text-Laufschrift.md
+- src/Baggages/Help_de/NEO-Twist-DNA-2D.md
+- src/Baggages/Help_de/NEO-ViewMode-Uhr-2D.md
+- src/Baggages/Help_de/NEO-WarpPulse-Starfield-Warp.md
+- src/Baggages/Help_de/NEO-Waveform-Breathing.md
+- src/Baggages/Help_de/NEO-WhiteOnly-Sparkle.md
+- src/Baggages/Help_de/NEO-Width-Blitz.md
+- src/Baggages/Help_de/NEO-Zones-Kerze.md
+1becb98802f1f52a3b93324ea46363d929884e68e271a343eb1b6dfdce49377c src/EffectParameterMapping.h
+51b26cc3ec3a4b5d9ae6e3daf7b9e7d4c38e0f33c0dcfa1fe0cbfaba2f4bc98d src/EffectTypeMapping.h
+90f187d844ef9053ae8b8fd5350b4db323a2b9c74077d9d7053ebd5bf1d1d296 src/NeoPixel.Cue.part.xml
+b75833d975f39e503194e5ad9a87c678da6ae4f7c5d6ca332f2fcad5fc4ec34c src/NeoPixel.EM.share.xml
+fa70dc06fa927673c36be3c3674ec4f50f404a8df445c29802d8fb7bd2d4051c src/NeoPixel.Scene.part.xml
+a81008737f8adf5c9af85384aba6533ed4c1c6e2ddfc842db5925d674bb00d5e src/NeoPixel.Segment.templ.xml
+f83cb5f4db8eead269ab741aaf4859fa203707d240d8083e2a0d79797e8ad016 src/NeoPixel.script.src.js
+2ae35f53c928b81f51bcd3f105c77bff85f188d927b7767d5c76eae2c823d5b8 src/NeoPixel.share.xml
+55bda64e6d080cbd5fc91aca7b15f6dbff431d735fc590b426eaffd0d482cc1a src/WebUi/NeoPixelEffectCatalog.generated.h
+3ea89f405834f4382fd9a448db1fffaf9317c3060bf7da015fe467418fa9850d web/assets/effects.json

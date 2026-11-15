@@ -31,8 +31,8 @@ FILEPATH: scripts/Build-EffectParameters.ps1
 
     Console output is quiet by default: a progress line per effect (interactive console only),
     errors and warnings with their context, and one summary line. -Detailed prints the full log.
-    Every generated file is written only when its content changed (BOM and CRLF are ignored in the
-    comparison; Normalize-LineEndings.ps1 removes them), so unchanged files keep their timestamp.
+    Every generated file is written as UTF-8 without BOM with LF line ends, and only when its content
+    changed (BOM and CRLF are ignored in the comparison), so unchanged files keep their timestamp.
 
 .PARAMETER Language
     Language for parameter descriptions (de or en), default: de
@@ -65,8 +65,8 @@ FILEPATH: scripts/Build-EffectParameters.ps1
     Generate even when the input fingerprint is unchanged; with -Clean: no confirmation
 
 .PARAMETER Check
-    Generate nothing: exit code 0 when the committed outputs belong to the current inputs
-    (src/EffectParameters.fingerprint), 1 when they are outdated
+    Write nothing (also with -Clean): exit code 0 when the inputs and the committed outputs match
+    src/EffectParameters.fingerprint, 1 when an input or an output changed or an output is missing
 
 .EXAMPLE
     .\scripts\Build-EffectParameters.ps1 -Clean
@@ -122,10 +122,6 @@ $script:Config = @{
   # First offset after reserved area for dynamic effect parameter spillover
   EffectSpilloverStartOffset = 523
 
-  # Application/Module Numbers
-  ApplicationNumber          = 40
-  ModuleType                 = 40
-
   # Parameter Type Defaults
   DefaultMaxUint8            = 255
   DefaultMaxPercent          = 100
@@ -142,7 +138,6 @@ $script:Config = @{
   StripTemplate              = "src/NeoPixel.Strip.templ.xml"
   ShareXml                   = "src/NeoPixel.share.xml"
   EMShareXml                 = "src/NeoPixel.EM.share.xml"
-  MainXml                    = "src/NeoPixel-Dev.xml"
 
   # Generated XML files
   ParameterTypesXml          = "src/NeoPixel.Effects.ParameterTypes.generated.xml"
@@ -204,8 +199,6 @@ $script:Config = @{
     ParamRefsEnd              = "<!-- END AUTO-GENERATED: Effect ParameterRefs -->"
     DynamicUIStart            = "<!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->"
     DynamicUIEnd              = "<!-- END AUTO-GENERATED: Effect Dynamic UI -->"
-    ModuleStart               = "<!-- BEGIN AUTO-GENERATED: NEOEFF Module -->"
-    ModuleEnd                 = "<!-- END AUTO-GENERATED: NEOEFF Module -->"
     EnumStart                 = "<!-- GENERATED_EFFECT_ENUMERATIONS_START -->"
     EnumEnd                   = "<!-- GENERATED_EFFECT_ENUMERATIONS_END -->"
     EnumNo2DStart             = "<!-- GENERATED_EFFECT_ENUMERATIONS_NO2D_START -->"
@@ -423,33 +416,39 @@ function Write-BytesIfChanged {
   return $true
 }
 
-# every file a run writes or would write (input fingerprint: the outputs that must exist)
+# every file a run writes or would write (fingerprint: outputs with content hash)
 $script:TouchedFiles = @{}
+# outputs a run only creates when missing (help seeds): the fingerprint checks that they exist, not their content
+$script:CreateOnlyFiles = @{}
 
 # ====================================================================
 # Input fingerprint
-# The outputs are committed. src/EffectParameters.fingerprint holds a hash over the inputs and the list of the
-# outputs; a run with the same hash and every output present generates nothing.
+# The outputs are committed. src/EffectParameters.fingerprint holds a hash over the inputs and a content hash
+# per output; a run with the same input hash and unchanged outputs generates nothing.
 # ====================================================================
 $script:FingerprintPath = "src/EffectParameters.fingerprint"
+$script:OwnScriptPath = "scripts/Build-EffectParameters.ps1"
 
-# @brief Hash over the inputs: effect sources of OFM-NeoPixel, src/EffectIds.lock, platformio.custom.ini (flag
-#        list), this script and the language; text with LF line ends, files in ordinal order of their repo path
-function Get-EffectInputFingerprint {
-  $root = [System.IO.Path]::GetFullPath((Get-RepoRoot)).TrimEnd('\', '/')
-  $paths = New-Object System.Collections.Generic.List[string]
-  foreach ($f in (Get-ChildItem -Path (Resolve-RepoPath $script:Config.EffectsDir) -Recurse -File -Include *.h, *.cpp)) { $paths.Add($f.FullName) }
-  foreach ($rel in @("src/EffectIds.lock", "platformio.custom.ini")) {
-    $full = Resolve-RepoPath $rel
-    if (Test-Path -LiteralPath $full -PathType Leaf) { $paths.Add($full) }
-  }
-  $paths.Add($PSCommandPath)
+# @brief Input files as repo path -> full path: effect sources of OFM-NeoPixel, src/EffectIds.lock,
+#        this script (fixed key, independent of how it was called)
+function Get-EffectInputFiles {
   $entries = @{}
-  foreach ($full in $paths) {
-    $rel = $full
-    if ($full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) { $rel = $full.Substring($root.Length).TrimStart('\', '/') }
-    $entries[($rel -replace '\\', '/')] = $full
+  $effectsRoot = [System.IO.Path]::GetFullPath((Resolve-RepoPath $script:Config.EffectsDir)).TrimEnd('\', '/')
+  foreach ($f in (Get-ChildItem -Path $effectsRoot -Recurse -File -Include *.h, *.cpp)) {
+    $sub = $f.FullName.Substring($effectsRoot.Length).TrimStart('\', '/') -replace '\\', '/'
+    $entries["$($script:Config.EffectsDir)/$sub"] = $f.FullName
   }
+  foreach ($rel in @("src/EffectIds.lock")) {
+    $full = Resolve-RepoPath $rel
+    if (Test-Path -LiteralPath $full -PathType Leaf) { $entries[$rel] = $full }
+  }
+  $entries[$script:OwnScriptPath] = $PSCommandPath
+  return $entries
+}
+
+# @brief Hash over the input files and the language; text with LF line ends, files in ordinal order of their repo path
+function Get-EffectInputFingerprint {
+  $entries = Get-EffectInputFiles
   $keys = [string[]]@($entries.Keys)
   [System.Array]::Sort($keys, [System.StringComparer]::Ordinal)
   $sb = New-Object System.Text.StringBuilder
@@ -458,13 +457,38 @@ function Get-EffectInputFingerprint {
     $text = [System.IO.File]::ReadAllText($entries[$k]).Replace("`r`n", "`n")
     [void]$sb.Append("== $k`n").Append($text).Append("`n")
   }
+  return (Get-Sha256Hex -Bytes ((New-Object System.Text.UTF8Encoding($false)).GetBytes($sb.ToString())))
+}
+
+# @brief SHA-256 of a byte array as lower-case hex
+function Get-Sha256Hex {
+  param([byte[]]$Bytes)
   $sha = [System.Security.Cryptography.SHA256]::Create()
-  try { $hash = $sha.ComputeHash((New-Object System.Text.UTF8Encoding($false)).GetBytes($sb.ToString())) }
+  try { $hash = $sha.ComputeHash($Bytes) }
   finally { $sha.Dispose() }
   return (($hash | ForEach-Object { $_.ToString("x2") }) -join "")
 }
 
-# @brief True when the fingerprint file holds this hash and every output it lists exists
+# Generated block in a hand-written source: "BEGIN AUTO-GENERATED: <name>" .. "END AUTO-GENERATED: <name>" or
+# "GENERATED_<NAME>_START" .. "GENERATED_<NAME>_END", markers included
+$script:GeneratedBlockPattern = '(?s)BEGIN AUTO-GENERATED: (?<n>[^\n]*?)(?: - DO NOT EDIT MANUALLY)?(?: -->|\n).*?END AUTO-GENERATED: \k<n>(?=[ \t]*(?:-->|\n|$))|GENERATED_(?<g>[A-Z0-9_]+?)_START.*?GENERATED_\k<g>_END'
+
+# @brief Content hash of an output file (bytes without a leading UTF-8 BOM, CRLF as LF): of its generated blocks
+#        when it holds any (a hand edit outside them keeps the hash), else of the whole file
+function Get-EffectOutputHash {
+  param([string]$FullPath)
+  $latin1 = [System.Text.Encoding]::GetEncoding(28591)
+  $text = $latin1.GetString([System.IO.File]::ReadAllBytes($FullPath))
+  $bom = [string][char]0xEF + [char]0xBB + [char]0xBF
+  if ($text.StartsWith($bom, [System.StringComparison]::Ordinal)) { $text = $text.Substring(3) }
+  $text = $text.Replace("`r`n", "`n")
+  $blocks = [regex]::Matches($text, $script:GeneratedBlockPattern)
+  if ($blocks.Count -gt 0) { $text = (@($blocks | ForEach-Object { $_.Value }) -join "`n") }
+  return (Get-Sha256Hex -Bytes $latin1.GetBytes($text))
+}
+
+# @brief True when the fingerprint file holds this input hash and every listed output matches its content hash
+#        ("- path": create-only output, must exist)
 function Test-EffectFingerprintCurrent {
   param([string]$Hash)
   $file = Resolve-RepoPath $script:FingerprintPath
@@ -472,26 +496,53 @@ function Test-EffectFingerprintCurrent {
   $lines = @([System.IO.File]::ReadAllLines($file) | Where-Object { $_ -and -not $_.StartsWith("#") })
   if ($lines.Count -lt 1 -or $lines[0] -ne "sha256 $Hash") { return $false }
   foreach ($line in ($lines | Select-Object -Skip 1)) {
-    if (-not (Test-Path -LiteralPath (Resolve-RepoPath $line) -PathType Leaf)) { return $false }
+    $m = [regex]::Match($line, '^([0-9a-f]{64}|-) (.+)$')
+    if (-not $m.Success) { return $false }
+    $full = Resolve-RepoPath $m.Groups[2].Value
+    if (-not (Test-Path -LiteralPath $full -PathType Leaf)) { return $false }
+    if ($m.Groups[1].Value -ne '-' -and (Get-EffectOutputHash -FullPath $full) -ne $m.Groups[1].Value) { return $false }
   }
   return $true
 }
 
-# @brief Writes the fingerprint file: the hash and the outputs of this run (repo paths, ordinal order)
+# @brief Writes the fingerprint file after all generation: the input hash of the files as they are now (the run
+#        may have rewritten src/EffectIds.lock) and the outputs of this run with their content hash (ordinal order)
 function Write-EffectFingerprint {
-  param([string]$Hash)
   $root = [System.IO.Path]::GetFullPath((Get-RepoRoot)).TrimEnd('\', '/')
   $own = Resolve-RepoPath $script:FingerprintPath
-  $outputs = @()
+  $inputKeys = @((Get-EffectInputFiles).Keys)
+  $outputs = @{}
   foreach ($full in $script:TouchedFiles.Keys) {
     if ([string]::Equals($full, $own, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
     if (-not $full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
-    $outputs += ($full.Substring($root.Length).TrimStart('\', '/') -replace '\\', '/')
+    $rel = $full.Substring($root.Length).TrimStart('\', '/') -replace '\\', '/'
+    if ($inputKeys -contains $rel) { continue }
+    $outputs[$rel] = $full
   }
-  $outputs = [string[]]@($outputs | Select-Object -Unique)
-  [System.Array]::Sort($outputs, [System.StringComparer]::Ordinal)
-  $lines = @("# Input fingerprint of scripts/Build-EffectParameters.ps1 - do not edit (written by every full run)", "sha256 $Hash") + $outputs
+  $keys = [string[]]@($outputs.Keys)
+  [System.Array]::Sort($keys, [System.StringComparer]::Ordinal)
+  $lines = @("# Input fingerprint of scripts/Build-EffectParameters.ps1 - do not edit (written by every full run)", "sha256 $(Get-EffectInputFingerprint)")
+  foreach ($rel in $keys) {
+    if ($script:CreateOnlyFiles.ContainsKey($outputs[$rel])) { $lines += "- $rel" }
+    else { $lines += "$(Get-EffectOutputHash -FullPath $outputs[$rel]) $rel" }
+  }
   $null = Write-BytesIfChanged -FullPath $own -Bytes ((New-Object System.Text.UTF8Encoding($false)).GetBytes(($lines -join "`n") + "`n"))
+}
+
+# @brief Registers an output the run only creates when it is missing
+function Register-CreateOnlyOutput {
+  param([string]$FullPath)
+  $script:TouchedFiles[$FullPath] = $true
+  $script:CreateOnlyFiles[$FullPath] = $true
+}
+
+# @brief Prints the error and exits 1 when the effect sources are missing
+function Assert-EffectsDirPresent {
+  $dir = Resolve-RepoPath $script:Config.EffectsDir
+  if (-not (Test-Path $dir)) {
+    Microsoft.PowerShell.Utility\Write-Host "ERROR: Effects directory not found: $dir" -ForegroundColor Red
+    exit 1
+  }
 }
 
 # Appends one Set-Content -Value item: $null is skipped, a collection is written element by element.
@@ -506,25 +557,19 @@ function Add-SetContentItem {
   if (-not $NoNewline) { [void]$Builder.Append([Environment]::NewLine) }
 }
 
-# Write-if-changed form of 'Set-Content -Encoding UTF8 [-NoNewline]': same text and encoding (BOM in
-# Windows PowerShell 5.1, none in pwsh 6+; -NoBom as UTF8Encoding($false)), same path resolution.
+# Write-if-changed form of 'Set-Content [-NoNewline]': UTF-8 without BOM and LF line ends on every PowerShell
+# (the committed form of the outputs), same path resolution.
 function Write-FileIfChanged {
   param(
     [Parameter(Mandatory)][string]$Path,
     [AllowNull()][AllowEmptyString()][object]$Value,
-    [switch]$NoNewline,
-    [switch]$NoBom
+    [switch]$NoNewline
   )
   $fullPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
   $script:TouchedFiles[$fullPath] = $true
   $builder = New-Object System.Text.StringBuilder
   Add-SetContentItem -Builder $builder -Item $Value -NoNewline ([bool]$NoNewline)
-  $encoding = New-Object System.Text.UTF8Encoding(((-not $NoBom) -and $PSVersionTable.PSVersion.Major -lt 6))
-  $body = $encoding.GetBytes($builder.ToString())
-  $preamble = $encoding.GetPreamble()
-  $bytes = New-Object byte[] ($preamble.Length + $body.Length)
-  [System.Array]::Copy($preamble, 0, $bytes, 0, $preamble.Length)
-  [System.Array]::Copy($body, 0, $bytes, $preamble.Length, $body.Length)
+  $bytes = (New-Object System.Text.UTF8Encoding($false)).GetBytes($builder.ToString().Replace("`r`n", "`n"))
   return (Write-BytesIfChanged -FullPath $fullPath -Bytes $bytes)
 }
 
@@ -658,6 +703,21 @@ function Get-AllEffectHeaders {
   Write-ScriptVerbose "Found $($effectHeaders.Count) effect headers"
 
   return $effectHeaders | Sort-Object Name
+}
+
+# ====================================================================
+# Check Mode - report only, before -Clean so that it never writes
+# ====================================================================
+
+if ($Check) {
+  Assert-EffectsDirPresent
+  $ae = [char]0x00E4
+  if (Test-EffectFingerprintCurrent -Hash (Get-EffectInputFingerprint)) {
+    Microsoft.PowerShell.Utility\Write-Host "Effekte: aktuell" -ForegroundColor Green
+    exit 0
+  }
+  Microsoft.PowerShell.Utility\Write-Host "Effekte: veraltet (Eingaben oder Ausgaben ge${ae}ndert, Ausgabe fehlt) - scripts/Build-EffectParameters.ps1 laufen lassen und die Ausgaben committen" -ForegroundColor Yellow
+  exit 1
 }
 
 # ====================================================================
@@ -922,21 +982,6 @@ if ($Clean) {
 
     $null = Write-FileIfChanged -Path $templateFile -Value $content -NoNewline
     Write-Host "    ✓ NeoPixel.Segment.templ.xml - marker blocks emptied" -ForegroundColor Green
-  }
-
-  # 2. Empty NEOEFF Module in NeoPixel.xml
-  $neoPixelXml = Resolve-RepoPath $script:Config.MainXml
-  if (Test-Path $neoPixelXml) {
-    $content = Get-Content $neoPixelXml -Raw -Encoding UTF8
-
-    # Empty NEOEFF Module block - keep important comment
-    $pattern4 = "(?s)($([regex]::Escape($script:Config.Markers.ModuleStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.ModuleEnd)))"
-    $replacement4 = '$1  <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine +
-    '  $3'
-    $content = $content -replace $pattern4, $replacement4
-
-    $null = Write-FileIfChanged -Path $neoPixelXml -Value $content -NoNewline
-    Write-Host "    ✓ NeoPixel.xml - NEOEFF Module removed" -ForegroundColor Green
   }
 
   # 3. Empty Effect Type Enumeration in NeoPixel.share.xml
@@ -1724,7 +1769,7 @@ function Build-EffectIdMap {
     $oldContent = ""
     if (Test-Path $lockPath) { $oldContent = [System.IO.File]::ReadAllText($lockPath) }
     if ($newContent -ne $oldContent) {
-      if (Write-FileIfChanged -Path $lockPath -Value $newContent -NoNewline -NoBom) {
+      if (Write-FileIfChanged -Path $lockPath -Value $newContent -NoNewline) {
         if ($locked.Count -eq 0) {
           Write-Host "  Created src/EffectIds.lock ($($effectIds.Count) effects, IDs 0-$($id - 1))" -ForegroundColor Green
         }
@@ -2358,46 +2403,6 @@ function Generate-ParameterTypes {
   return $xml -join "`n"
 }
 
-function Update-NeoEffModule {
-  param(
-    [string]$NeoPixelXmlPath,
-    [bool]$Enable
-  )
-
-  $content = Get-Content $NeoPixelXmlPath -Raw -Encoding UTF8
-
-  if ($Enable) {
-    Write-Host "  • Adding NEOEFF module to NeoPixel.xml..." -ForegroundColor Cyan
-
-    $neoeffModule = @"
-
-  <!-- Effect Parameter Types - MUST be loaded BEFORE NEO module! -->
-  <op:define prefix="NEOEFF" ModuleType="$($script:Config.ModuleType)"
-    share="NeoPixel.Effects.ParameterTypes.generated.xml"
-    configTransferName="NeoPixel Effect Parameters">
-  </op:define>
-"@
-
-    # Insert NEOEFF module between markers
-    $content = $content -replace `
-      "(?s)($([regex]::Escape($script:Config.Markers.ModuleStart)).*?<!-- DO NOT REMOVE THIS MARKER[^>]*-->).*?($([regex]::Escape($script:Config.Markers.ModuleEnd)))", `
-      "`$1$neoeffModule`n  `$2"
-  }
-  else {
-    # Yellow, but no warning: -Detailed only
-    if (-not $script:QuietOutput) {
-      Write-Host "  $([char]0x2022) Removing NEOEFF module from NeoPixel.xml..." -ForegroundColor Yellow
-    }
-
-    # Clear content between markers
-    $content = $content -replace `
-      "(?s)($([regex]::Escape($script:Config.Markers.ModuleStart)).*?<!-- DO NOT REMOVE THIS MARKER[^>]*-->).*?($([regex]::Escape($script:Config.Markers.ModuleEnd)))", `
-      "`$1`n  `$2"
-  }
-
-  $null = Write-FileIfChanged -Path $NeoPixelXmlPath -Value $content -NoNewline
-}
-
 function Test-OpenKNXproducer {
   param(
     [string]$WorkingDir = ".",
@@ -2755,8 +2760,8 @@ function Generate-HelpFiles {
       $helpFileName = "$($script:Config.HelpFilePrefix)$paramNameCleaned-$effectNameCleaned$($script:Config.HelpFileSuffix)"
       $helpFilePath = Join-Path $helpDir $helpFileName
 
-      # Skip if help file already exists (still an output of this run for the input fingerprint)
-      $script:TouchedFiles[[System.IO.Path]::GetFullPath($helpFilePath)] = $true
+      # Skip if help file already exists (create-only output of this run for the fingerprint)
+      Register-CreateOnlyOutput -FullPath ([System.IO.Path]::GetFullPath($helpFilePath))
       if (Test-Path $helpFilePath) {
         continue
       }
@@ -3145,7 +3150,7 @@ function Generate-SceneHelpFiles {
 
   # SceneCount (not per-scene, just one file)
   $sceneCountFile = Join-Path $helpDir "NEO-Anzahl-Szenen.md"
-  $script:TouchedFiles[[System.IO.Path]::GetFullPath($sceneCountFile)] = $true
+  Register-CreateOnlyOutput -FullPath ([System.IO.Path]::GetFullPath($sceneCountFile))
   if (-not (Test-Path $sceneCountFile)) {
     $content = @(
       "# Anzahl Szenen"
@@ -3166,7 +3171,7 @@ function Generate-SceneHelpFiles {
   foreach ($fp in $fixedParams) {
     $fileName = "NEO-$($fp.Name)-Szene.md"
     $filePath = Join-Path $helpDir $fileName
-    $script:TouchedFiles[[System.IO.Path]::GetFullPath($filePath)] = $true
+    Register-CreateOnlyOutput -FullPath ([System.IO.Path]::GetFullPath($filePath))
     if (-not (Test-Path $filePath)) {
       $content = @(
         "# $($fp.Name -replace '-', ' ')"
@@ -4377,16 +4382,9 @@ function Generate-SceneCppMapping {
 #Clear-Host
 Show-OpenKNXLogo -SubTitle "Build Effect Parameters" -Version $SCRIPT_VERSION
 
-# Committed outputs: nothing to do while the inputs are unchanged (-Force generates anyway, -Check only reports)
-$inputFingerprint = Get-EffectInputFingerprint
-$fingerprintCurrent = Test-EffectFingerprintCurrent -Hash $inputFingerprint
-if ($Check) {
-  $ae = [char]0x00E4
-  if ($fingerprintCurrent) { Microsoft.PowerShell.Utility\Write-Host "Effekte: aktuell" -ForegroundColor Green; exit 0 }
-  Microsoft.PowerShell.Utility\Write-Host "Effekte: veraltet (Eingaben ge${ae}ndert oder Ausgabe fehlt) - scripts/Build-EffectParameters.ps1 laufen lassen und die Ausgaben committen" -ForegroundColor Yellow
-  exit 1
-}
-if ($fingerprintCurrent -and -not $Force -and -not $WebCatalogOnly) {
+# Committed outputs: nothing to do while inputs and outputs match the fingerprint (-Force generates anyway)
+Assert-EffectsDirPresent
+if (-not $Force -and -not $WebCatalogOnly -and (Test-EffectFingerprintCurrent -Hash (Get-EffectInputFingerprint))) {
   $ae = [char]0x00E4
   Microsoft.PowerShell.Utility\Write-Host "Effekte: unver${ae}ndert (Eingaben gleich)" -ForegroundColor Green
   exit 0
@@ -4485,7 +4483,7 @@ function Write-WebEffectCatalog {
   })
   $catalogPath = Resolve-RepoPath 'web/assets/effects.json'
   $json = ConvertTo-Json -InputObject $catalog -Depth 10 -Compress
-  $null = Write-FileIfChanged -Path $catalogPath -Value $json -NoNewline -NoBom
+  $null = Write-FileIfChanged -Path $catalogPath -Value $json -NoNewline
   $memory = [System.IO.MemoryStream]::new()
   # SmallestSize exists from .NET 6 (pwsh 7); .NET Framework (Windows PowerShell 5.1) has Optimal
   $levelType = [System.IO.Compression.CompressionLevel]
@@ -4530,7 +4528,7 @@ function Write-WebEffectCatalog {
   }
   $header += @('        "\"";', '', '    inline bool isAvailable(uint8_t id)', '    {', '        return id < sizeof(available) - 1 && available[id] == ''1'';', '    }', '}')
   $headerPath = Resolve-RepoPath 'src/WebUi/NeoPixelEffectCatalog.generated.h'
-  $null = Write-FileIfChanged -Path $headerPath -Value (($header -join "`n") + "`n") -NoNewline -NoBom
+  $null = Write-FileIfChanged -Path $headerPath -Value (($header -join "`n") + "`n") -NoNewline
   Write-Host "Web effect catalog: $catalogPath ($($catalog.Count) effects)"
 }
 
@@ -4602,13 +4600,6 @@ $paramTypesInner = Generate-ParameterTypes -Effects $effects
 Update-EffectParameterTypesInShareXml -ShareXmlPath $shareXmlPath -Content $paramTypesInner
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Effect ParameterTypes injected into NeoPixel.share.xml" -ForegroundColor White
-
-# 1b. Remove NEOEFF module from NeoPixel.xml (no longer needed)
-$neoPixelXmlPath = Resolve-RepoPath $script:Config.MainXml
-Update-NeoEffModule -NeoPixelXmlPath $neoPixelXmlPath -Enable $false
-Write-Host "  [OK] " -NoNewline -ForegroundColor Green
-Write-Host "NEOEFF module removed" -ForegroundColor White
-Write-Host "       $neoPixelXmlPath" -ForegroundColor DarkGray
 
 # 2. Union Parameters (returns next ID/Offset)
 $unionResult = Generate-UnionParameters -Effects $effects -StartId $startId -StartOffset $startOffset
@@ -5076,7 +5067,7 @@ try {
       Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
       Write-Host ""
       Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
-      Write-EffectFingerprint -Hash $inputFingerprint
+      Write-EffectFingerprint
       Write-EffectSummary -Processed $effects.Count
     }
     else {
