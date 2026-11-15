@@ -435,7 +435,8 @@ $script:CreateOnlyFiles = @{}
 $script:FingerprintPath = "src/EffectParameters.fingerprint"
 $script:OwnScriptPath = "scripts/Build-EffectParameters.ps1"
 
-# @brief Input files as repo path -> full path: effect sources of OFM-NeoPixel, src/EffectIds.lock, src/NeoPixel.EffectGroups.xml,
+# @brief Input files as repo path -> full path: effect sources of OFM-NeoPixel, src/EffectIds.lock, src/EffectParameters.lock,
+#        src/NeoPixel.EffectGroups.xml,
 #        this script (fixed key, independent of how it was called)
 function Get-EffectInputFiles {
   $entries = @{}
@@ -444,7 +445,7 @@ function Get-EffectInputFiles {
     $sub = $f.FullName.Substring($effectsRoot.Length).TrimStart('\', '/') -replace '\\', '/'
     $entries["$($script:Config.EffectsDir)/$sub"] = $f.FullName
   }
-  foreach ($rel in @("src/EffectIds.lock", "src/NeoPixel.EffectGroups.xml")) {
+  foreach ($rel in @("src/EffectIds.lock", "src/EffectParameters.lock", "src/NeoPixel.EffectGroups.xml")) {
     $full = Resolve-RepoPath $rel
     if (Test-Path -LiteralPath $full -PathType Leaf) { $entries[$rel] = $full }
   }
@@ -535,6 +536,43 @@ function Write-EffectFingerprint {
   $null = Write-BytesIfChanged -FullPath $own -Bytes ((New-Object System.Text.UTF8Encoding($false)).GetBytes(($lines -join "`n") + "`n"))
 }
 
+# @brief Deletes the generated help files (Help_de/*.md) the previous full run listed in the fingerprint and this run
+#        no longer writes (e.g. the help file of a removed parameter). Any other listed file this run did not write
+#        (a source whose block marker is missing, a header) is kept and the run stops before the fingerprint is
+#        written, so -Check keeps reporting it outdated.
+function Remove-OrphanedEffectOutputs {
+  $file = Resolve-RepoPath $script:FingerprintPath
+  if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return }
+  $inputKeys = @((Get-EffectInputFiles).Keys)
+  $helpDir = [System.IO.Path]::GetFullPath((Resolve-RepoPath $script:Config.HelpDir)).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+  $current = @{}
+  $missed = @()
+  foreach ($key in $script:TouchedFiles.Keys) { $current[[System.IO.Path]::GetFullPath($key).ToLowerInvariant()] = $true }
+  foreach ($line in [System.IO.File]::ReadAllLines($file)) {
+    $m = [regex]::Match($line, '^(?:[0-9a-f]{64}|-) (.+)$')
+    if (-not $m.Success) { continue }
+    $rel = $m.Groups[1].Value
+    if ($rel.Contains('..') -or $inputKeys -contains $rel) { continue }
+    $full = [System.IO.Path]::GetFullPath((Resolve-RepoPath $rel))
+    if ($current.ContainsKey($full.ToLowerInvariant()) -or -not (Test-Path -LiteralPath $full -PathType Leaf)) { continue }
+    $isHelp = $full.StartsWith($helpDir, [System.StringComparison]::OrdinalIgnoreCase) -and $full.EndsWith('.md', [System.StringComparison]::OrdinalIgnoreCase)
+    # only a per-parameter help file of Generate-HelpFiles ("# <name>", blank line, "**Effekt:** <name>"); a page with a
+    # generated block (NEO-Effekt-Typ.md) is never deleted
+    if ($isHelp) {
+      $text = [System.IO.File]::ReadAllText($full).Replace("`r`n", "`n").TrimStart([char]0xFEFF)
+      $isHelp = $text -match '\A# [^\n]+\n\n\*\*Effekt:\*\* [^\n]+\n'
+    }
+    if (-not $isHelp) { $missed += $rel; continue }
+    Remove-Item -LiteralPath $full -Force
+    $script:WrittenFiles[$full] = $true
+    Microsoft.PowerShell.Utility\Write-Host "  [OK] removed $rel (no longer generated)" -ForegroundColor DarkGray
+  }
+  if ($missed.Count -gt 0) {
+    Microsoft.PowerShell.Utility\Write-Host ("ERROR: not written by this run, kept (block marker missing?): {0}" -f ($missed -join ", ")) -ForegroundColor Red
+    exit 1
+  }
+}
+
 # @brief Registers an output the run only creates when it is missing
 function Register-CreateOnlyOutput {
   param([string]$FullPath)
@@ -571,6 +609,8 @@ function Write-FileIfChanged {
     [AllowNull()][AllowEmptyString()][object]$Value,
     [switch]$NoNewline
   )
+  # a relative path is relative to the repository, not to the caller's working directory
+  if (-not [System.IO.Path]::IsPathRooted($Path)) { $Path = Resolve-RepoPath $Path }
   $fullPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
   $script:TouchedFiles[$fullPath] = $true
   $builder = New-Object System.Text.StringBuilder
@@ -1119,7 +1159,7 @@ if ($Clean) {
   }
 
   # 4. Empty EffectTypeMapping.h
-  $effectTypeMappingPath = "src/EffectTypeMapping.h"
+  $effectTypeMappingPath = Resolve-RepoPath "src/EffectTypeMapping.h"
   if (Test-Path $effectTypeMappingPath) {
     $placeholderContent = @"
 /**
@@ -1145,7 +1185,7 @@ if ($Clean) {
   }
 
   # 5. Empty EffectParameterMapping.h
-  $effectParamMappingPath = "src/EffectParameterMapping.h"
+  $effectParamMappingPath = Resolve-RepoPath "src/EffectParameterMapping.h"
   if (Test-Path $effectParamMappingPath) {
     $placeholderContent = @"
 /**
@@ -1334,6 +1374,15 @@ function Get-EffectReturnExpression {
   $returns = [regex]::Matches($body, '\breturn\s+([^;]+);')
   if ($returns.Count -gt 0) { return $returns[$returns.Count - 1].Groups[1].Value.Trim() }
   throw "Cannot extract get$FunctionName for parameter $CaseIndex"
+}
+
+# @brief Default text of a string parameter: getParameterDefaultText() of the effect; '' without an override or for nullptr
+function Get-EffectDefaultText {
+  param([string]$Content, [int]$CaseIndex)
+  if ($null -eq (Get-EffectMethodBody $Content 'ParameterDefaultText')) { return '' }
+  $expr = Get-EffectReturnExpression $Content 'ParameterDefaultText' $CaseIndex
+  if ($null -eq $expr -or $expr -eq 'nullptr' -or $expr -eq 'NULL') { return '' }
+  return (Resolve-EffectExpression $Content $expr $CaseIndex)
 }
 
 function Resolve-EffectExpression {
@@ -1835,12 +1884,19 @@ function Build-EffectIdMap {
       Write-Host "External KO effect assignments would break. Build aborted." -ForegroundColor Red
       $violations | ForEach-Object { Write-Host $_ -ForegroundColor Yellow }
       Write-Host "Effects must be APPEND-ONLY in EffectPool.cpp getEffectByIndex()." -ForegroundColor Yellow
-      Write-Host "To retire an effect, keep its slot (tombstone) so following IDs do not shift." -ForegroundColor Yellow
+      Write-Host "To retire an effect, keep it registered and leave it out of the build with its NEOPIXEL_DISABLE_<X> flag" -ForegroundColor Yellow
+      Write-Host "(its number then runs Solid); no following number shifts." -ForegroundColor Yellow
       Write-Host "If an ID change is truly intended, delete src/EffectIds.lock and re-run to re-baseline." -ForegroundColor Yellow
       exit 1
     }
     if ($removed.Count -gt 0) {
-      Write-Warning "Effect(s) removed from registration (ID retired): $($removed -join ', ')"
+      # a removed effect frees its number: a later effect would get its ETS values and KO assignments
+      Write-Host ""
+      Write-Host "FATAL: Effect(s) removed from EffectPool.cpp getEffectByIndex(): $($removed -join ', ')" -ForegroundColor Red
+      Write-Host "A later effect would receive the number and with it the ETS values and KO assignments of the removed one." -ForegroundColor Yellow
+      Write-Host "To retire an effect, keep it registered and leave it out of the build with its NEOPIXEL_DISABLE_<X> flag" -ForegroundColor Yellow
+      Write-Host "(its number then runs Solid). If the removal is truly intended, delete src/EffectIds.lock and re-run." -ForegroundColor Yellow
+      exit 1
     }
 
     # rewrite lock from current state (sorted by id) - auto-appends new effects
@@ -1858,15 +1914,10 @@ function Build-EffectIdMap {
     $newContent = ($lines -join "`n") + "`n"
     $oldContent = ""
     if (Test-Path $lockPath) { $oldContent = [System.IO.File]::ReadAllText($lockPath) }
+    # written by Write-EffectLocks at the end of a successful full run (a stopped run writes nothing)
+    $script:EffectIdsLockPending = $null
     if ($newContent -ne $oldContent) {
-      if (Write-FileIfChanged -Path $lockPath -Value $newContent -NoNewline) {
-        if ($locked.Count -eq 0) {
-          Write-Host "  Created src/EffectIds.lock ($($effectIds.Count) effects, IDs 0-$($id - 1))" -ForegroundColor Green
-        }
-        else {
-          Write-Host "  Updated src/EffectIds.lock (effect(s) appended)" -ForegroundColor Green
-        }
-      }
+      $script:EffectIdsLockPending = @{ Path = $lockPath; Content = $newContent; Created = ($locked.Count -eq 0); Count = $effectIds.Count }
     }
   }
 
@@ -2399,7 +2450,7 @@ function Parse-EffectHeader {
         Description = $paramDesc
         Type        = $paramType
         Default     = $paramDefault
-        DefaultText = if ($paramType -eq 'PARAM_STRING') { Resolve-EffectExpression $content (Get-EffectReturnExpression $content 'ParameterDefaultText' $i) $i } else { '' }
+        DefaultText = if ($paramType -eq 'PARAM_STRING') { Get-EffectDefaultText $content $i } else { '' }
         Min         = $paramMin
         Max         = $paramMax
         EnumOptions = $enumOptions
@@ -2844,11 +2895,7 @@ function Generate-HelpFiles {
       $helpFileName = "$($script:Config.HelpFilePrefix)$paramNameCleaned-$effectNameCleaned$($script:Config.HelpFileSuffix)"
       $helpFilePath = Join-Path $helpDir $helpFileName
 
-      # Skip if help file already exists (create-only output of this run for the fingerprint)
-      Register-CreateOnlyOutput -FullPath ([System.IO.Path]::GetFullPath($helpFilePath))
-      if (Test-Path $helpFilePath) {
-        continue
-      }
+      # always written from the effect header: the header is the only place of the text
 
       # Generate help content
       $helpContent = @()
@@ -2869,9 +2916,9 @@ function Generate-HelpFiles {
       $helpContent += ""
       $helpContent += "**Standardwert:** $($param.Default)"
 
-      $null = Write-FileIfChanged -Path $helpFilePath -Value ($helpContent -join "`n")
+      if (-not (Write-FileIfChanged -Path $helpFilePath -Value ($helpContent -join "`n"))) { continue }
 
-      # Track created file with source info
+      # Track written file with source info
       $source = if ($param.Description) { "aus Header" } else { "Platzhalter" }
       $createdFiles += [PSCustomObject]@{
         FileName = $helpFileName
@@ -2886,7 +2933,7 @@ function Generate-HelpFiles {
     # Yellow, but no warning: -Detailed only
     if (-not $script:QuietOutput) {
       Write-Host "INFO: " -NoNewline -ForegroundColor Yellow
-      Write-Host "$($createdFiles.Count) help file(s) newly created" -ForegroundColor White
+      Write-Host "$($createdFiles.Count) help file(s) written" -ForegroundColor White
     }
     Write-Host "  " -NoNewline
     Write-Host ("─" * 116) -ForegroundColor DarkGray
@@ -3056,6 +3103,179 @@ function Get-EffectPoolGroups {
     }
   }
   return $groups
+}
+
+# @brief Writes src/EffectIds.lock when Build-EffectIdMap appended effects (called by Write-EffectLocks)
+function Write-PendingEffectIdsLock {
+  $p = $script:EffectIdsLockPending
+  if (-not $p) { return }
+  if (Write-FileIfChanged -Path $p.Path -Value $p.Content -NoNewline) {
+    if ($p.Created) { Write-Host "  Created src/EffectIds.lock ($($p.Count) effects)" -ForegroundColor Green }
+    else { Write-Host "  Updated src/EffectIds.lock (effect(s) appended)" -ForegroundColor Green }
+  }
+  $script:EffectIdsLockPending = $null
+}
+
+# @brief Escapes an enum text for src/EffectParameters.lock (% ; = and TAB as %XX)
+function ConvertTo-LockText {
+  param([string]$Text)
+  return $Text.Replace('%', '%25').Replace(';', '%3B').Replace('=', '%3D').Replace("`t", '%09')
+}
+
+# @brief Reverses ConvertTo-LockText
+function ConvertFrom-LockText {
+  param([string]$Text)
+  return $Text.Replace('%09', "`t").Replace('%3D', '=').Replace('%3B', ';').Replace('%25', '%')
+}
+
+# @brief ETS type of an effect parameter as src/EffectParameters.lock stores it, same mapping as the generated
+#        ParameterType: "bool", "string", "enum:<value>=<text>;..." (by value), "number:<min>..<max>", "color:<min>..<max>"
+function Get-EffectParameterSignature {
+  param($Parameter)
+  $type = if ($Parameter.Type) { "$($Parameter.Type)" } else { 'PARAM_UINT8' }
+  if ($type -eq 'PARAM_BOOL') { return 'bool' }
+  if ($type -eq 'PARAM_STRING') { return 'string' }
+  if ($type -eq 'PARAM_ENUM' -and $Parameter.EnumOptions -and @($Parameter.EnumOptions).Count -gt 0) {
+    $items = @(@($Parameter.EnumOptions) | Sort-Object { [int]$_.Value } | ForEach-Object { "{0}={1}" -f [int]$_.Value, (ConvertTo-LockText "$($_.Name)") })
+    return 'enum:' + ($items -join ';')
+  }
+  if ($type -eq 'PARAM_HUE') { return 'number:0..255' }
+  if ($type -eq 'PARAM_PERCENT') { return 'number:0..100' }
+  $kind = if ($type -like 'PARAM_COLOR*') { 'color' } else { 'number' }
+  return "{0}:{1}..{2}" -f $kind, [int]$Parameter.Min, [int]$Parameter.Max
+}
+
+# @brief Why the ETS type change Old -> New would give stored values a new meaning, $null when allowed. Stops: kind change
+#        (bool/enum/number/string/color), an enum value that changes its text or disappears, a narrower number range
+#        (ETS handling of a stored value outside the new range on "Aktualisieren" is not relied on). Allowed: same type,
+#        appended enum values, a wider number range.
+function Get-EffectParameterTypeConflict {
+  param([string]$Old, [string]$New)
+  if ($Old -ceq $New) { return $null }
+  $o = $Old -split ':', 2
+  $n = $New -split ':', 2
+  if ($o[0] -cne $n[0]) { return "type $($o[0]) -> $($n[0])" }
+  if ($o[0] -ceq 'enum') {
+    $values = @{}
+    foreach ($e in ($n[1] -split ';')) { $kv = $e -split '=', 2; $values[$kv[0]] = $kv[1] }
+    foreach ($e in ($o[1] -split ';')) {
+      $kv = $e -split '=', 2
+      if (-not $values.ContainsKey($kv[0])) { return "enum value $($kv[0]) '$(ConvertFrom-LockText $kv[1])' removed" }
+      if ($values[$kv[0]] -cne $kv[1]) { return "enum value $($kv[0]) '$(ConvertFrom-LockText $kv[1])' is now '$(ConvertFrom-LockText $values[$kv[0]])'" }
+    }
+    return $null
+  }
+  if ($o[0] -ceq 'number' -or $o[0] -ceq 'color') {
+    $or = [regex]::Match("$($o[1])", '^(-?\d+)\.\.(-?\d+)$')
+    $nr = [regex]::Match("$($n[1])", '^(-?\d+)\.\.(-?\d+)$')
+    if (-not $or.Success -or -not $nr.Success) { return "range '$($o[1])' -> '$($n[1])' not readable" }
+    if ([int]$nr.Groups[1].Value -gt [int]$or.Groups[1].Value -or [int]$nr.Groups[2].Value -lt [int]$or.Groups[2].Value) {
+      return "range $($o[1]) narrowed to $($n[1])"
+    }
+    return $null
+  }
+  return "type $Old -> $New"
+}
+
+# @brief Parameter index guard (src/EffectParameters.lock): the ETS IDs of an effect parameter depend on its index
+#        (21%CC%EEPP, 22%CC%..., scene slots), so a parameter keeps its index and its ETS type. Appending, renaming
+#        with the same type and removing the last parameter(s) are allowed (a removed index is kept as "removed");
+#        moving a parameter (insert, reorder, remove before the last), giving a removed index to another parameter or
+#        a type change Get-EffectParameterTypeConflict reports stops the run. Also checks every effect parameter ID
+#        (effect number, segment and cue index). Writes nothing: Write-EffectLocks writes the lock at the end of a
+#        successful run. A missing lock is created from the current effects (first run, nothing compared).
+function Assert-EffectParameterLock {
+  param([array]$Effects)
+  $path = Resolve-RepoPath "src/EffectParameters.lock"
+  $locked = @{}
+  $exists = Test-Path -LiteralPath $path -PathType Leaf
+  if ($exists) {
+    foreach ($line in [System.IO.File]::ReadAllLines($path)) {
+      $t = $line.Trim()
+      if ($t -eq '' -or $t.StartsWith('#')) { continue }
+      $c = $t -split "`t"
+      if ($c.Count -lt 5 -or $c[4] -notmatch '^(bool|string|enum|number|color)(:|$)' -or ($c.Count -ge 6 -and $c[5] -ne 'removed') -or $c.Count -gt 6) {
+        throw "src/EffectParameters.lock: line '$t' needs ID, class, index, name, type [removed] (delete the file to create it from the current effects)"
+      }
+      $eid = [int]$c[0]
+      if (-not $locked.ContainsKey($eid)) { $locked[$eid] = @{ Class = $c[1]; Params = @{} } }
+      $locked[$eid].Params[[int]$c[2]] = @{ Name = $c[3]; Type = $c[4]; Removed = ($c.Count -ge 6) }
+    }
+  }
+  $errors = @()
+  $rows = @()
+  foreach ($effect in ($Effects | Sort-Object { [int]$_.EffectID })) {
+    $eid = [int]$effect.EffectID
+    $cur = @{}
+    $curType = @{}
+    foreach ($prm in $effect.Parameters) {
+      [void](Get-EffectParameterIdSuffix -EffectId $eid -ParameterIndex ([int]$prm.Index))
+      if (@($cur.Values) -contains $prm.Name) { $errors += "effect $eid ($($effect.ClassName)): parameter name '$($prm.Name)' used twice" }
+      $cur[[int]$prm.Index] = $prm.Name
+      $curType[[int]$prm.Index] = Get-EffectParameterSignature $prm
+    }
+    $lk = @{}
+    if ($locked.ContainsKey($eid)) {
+      if ($locked[$eid].Class -ne $effect.ClassName) { $errors += "effect $eid is $($effect.ClassName), src/EffectParameters.lock has $($locked[$eid].Class)" }
+      $lk = $locked[$eid].Params
+    }
+    $maxIdx = -1
+    foreach ($k in @($cur.Keys) + @($lk.Keys)) { if ([int]$k -gt $maxIdx) { $maxIdx = [int]$k } }
+    $live = @($lk.Keys | Where-Object { -not $lk[$_].Removed } | ForEach-Object { [int]$_ })
+    $lastLive = -1; foreach ($k in $live) { if ($k -gt $lastLive) { $lastLive = $k } }
+    foreach ($idx in $live) {
+      $name = $lk[$idx].Name
+      $now = @($cur.Keys | Where-Object { $cur[$_] -ceq $name } | ForEach-Object { [int]$_ })
+      if ($now.Count -gt 0 -and $now[0] -ne $idx) { $errors += "effect $eid ($($effect.ClassName)): parameter '$name' moved from index $idx to $($now[0])" }
+      elseif (-not $cur.ContainsKey($idx) -and $idx -lt $lastLive -and @($live | Where-Object { $_ -gt $idx -and $cur.ContainsKey($_) }).Count -gt 0) {
+        $errors += "effect $eid ($($effect.ClassName)): parameter '$name' (index $idx) removed before the last parameter"
+      }
+    }
+    for ($idx = 0; $idx -le $maxIdx; $idx++) {
+      if ($cur.ContainsKey($idx)) {
+        if ($lk.ContainsKey($idx) -and $lk[$idx].Removed -and $lk[$idx].Name -cne $cur[$idx]) {
+          $errors += "effect $eid ($($effect.ClassName)): index $idx was '$($lk[$idx].Name)' (removed); '$($cur[$idx])' there would receive its ETS values"
+        }
+        elseif ($lk.ContainsKey($idx)) {
+          $why = Get-EffectParameterTypeConflict -Old $lk[$idx].Type -New $curType[$idx]
+          if ($why) { $errors += "effect $eid ($($effect.ClassName)): parameter '$($cur[$idx])' (index $idx): $why - stored ETS values would get a new meaning" }
+        }
+        $rows += ("{0}`t{1}`t{2}`t{3}`t{4}" -f $eid, $effect.ClassName, $idx, $cur[$idx], $curType[$idx])
+      }
+      elseif ($lk.ContainsKey($idx)) { $rows += ("{0}`t{1}`t{2}`t{3}`t{4}`tremoved" -f $eid, $effect.ClassName, $idx, $lk[$idx].Name, $lk[$idx].Type) }
+    }
+  }
+  # typed cue IDs (P 0..9, string parameters included) before anything is written
+  try { [void](Get-CueTypedParamPlan -Effects $Effects) } catch { $errors += "$($_.Exception.Message)" }
+  if ($errors.Count -gt 0) {
+    Microsoft.PowerShell.Utility\Write-Host ""
+    Microsoft.PowerShell.Utility\Write-Host "FATAL: effect parameter IDs would change meaning (src/EffectParameters.lock):" -ForegroundColor Red
+    $errors | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "  $_" -ForegroundColor Yellow }
+    Microsoft.PowerShell.Utility\Write-Host "A parameter keeps its index and its type: append new parameters at the end, rename in place, remove only the last one(s)." -ForegroundColor Yellow
+    Microsoft.PowerShell.Utility\Write-Host "For another type, other enum values or a narrower range: keep the parameter and append a new parameter instead." -ForegroundColor Yellow
+    Microsoft.PowerShell.Utility\Write-Host "If the change is truly intended, delete the effect's lines in src/EffectParameters.lock and re-run." -ForegroundColor Yellow
+    exit 1
+  }
+  $lines = @("# AUTO-MANAGED by Build-EffectParameters.ps1 - DO NOT EDIT BY HAND.",
+    "# Frozen parameter index and ETS type per effect: the ETS IDs (21CC<EE><PP>, 22CC<cue><EE><P>) follow the index.",
+    "# Allowed: append, rename with the same type, remove the last parameter, append enum values, widen a number range.",
+    "# Stops: moving a parameter, another type, a changed or removed enum value, a narrower range.",
+    "# Columns (TAB-separated): EffectID  EffectClassName  Index  ParameterName  Type  [removed]") + $rows
+  $script:EffectParamLockPending = @{ Path = $path; Content = (($lines -join "`n") + "`n"); Created = (-not $exists) }
+}
+
+# @brief Writes src/EffectIds.lock and src/EffectParameters.lock at the end of a successful full run, right before the
+#        fingerprint (a stopped run and -WebCatalogOnly leave both locks unchanged)
+function Write-EffectLocks {
+  Write-PendingEffectIdsLock
+  $p = $script:EffectParamLockPending
+  if ($p) {
+    $null = Write-FileIfChanged -Path $p.Path -Value $p.Content -NoNewline
+    if ($p.Created) {
+      Microsoft.PowerShell.Utility\Write-Host "  Created src/EffectParameters.lock from the current effects (no lock found: first run, no index or type compared)" -ForegroundColor Yellow
+    }
+  }
+  $script:EffectParamLockPending = $null
 }
 
 # @brief Membership per effect number from EffectPool.cpp getEffectByIndex() and EffectPool.h: OwnFlag (NEOPIXEL_DISABLE_<X>,
@@ -4716,9 +4936,17 @@ function Write-WebEffectCatalog {
   Write-Host "Web effect catalog: $catalogPath ($($catalog.Count) effects)"
 }
 
-# Effect pool membership (getEffectByIndex guards, NEOPIXEL_DISABLE_2D members) and the OAM effect groups
-$script:EffectPoolMembers = Get-EffectPoolMembership -Effects $effects
-$effectGroups = Read-EffectGroups -Members $script:EffectPoolMembers
+# Checks before anything is written: parameter index guard and IDs, effect pool membership (getEffectByIndex guards,
+# NEOPIXEL_DISABLE_2D members), the OAM effect groups; a failed check stops with its message and writes nothing
+try {
+  Assert-EffectParameterLock -Effects $effects
+  $script:EffectPoolMembers = Get-EffectPoolMembership -Effects $effects
+  $effectGroups = Read-EffectGroups -Members $script:EffectPoolMembers
+}
+catch {
+  Microsoft.PowerShell.Utility\Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+  exit 1
+}
 
 Write-WebEffectCatalog $effects
 if ($WebCatalogOnly) {
@@ -4754,7 +4982,7 @@ Update-EffectTypeEnumerationInShareXml -ShareXmlPath $shareXmlPath
 
 # Step 0b: Generate C++ Effect Type Mapping Header
 $cppMapping = Generate-EffectMappingCpp
-$cppMappingHeaderPath = "src/EffectTypeMapping.h"
+$cppMappingHeaderPath = Resolve-RepoPath "src/EffectTypeMapping.h"
 $null = Write-FileIfChanged -Path $cppMappingHeaderPath -Value $cppMapping
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "C++ effect type mapping header" -ForegroundColor White
@@ -4812,7 +5040,7 @@ if ($studioScript.Contains('// BEGIN AUTO-GENERATED: Studio ETS parameter names'
 $null = Write-FileIfChanged -Path $studioScriptPath -Value $studioScript -NoNewline
 
 $cppMapping = Generate-CppMapping -Effects $effects
-$cppMappingPath = "src/EffectParameterMapping.h"
+$cppMappingPath = Resolve-RepoPath "src/EffectParameterMapping.h"
 # Written once in 5c together with loadSceneEffectParameters(); text as Set-Content wrote it here
 $cppMappingText = (@($cppMapping) | ForEach-Object { [string]$_ + [Environment]::NewLine }) -join ''
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
@@ -4978,7 +5206,7 @@ try {
     # ── Update PT-CueEffect enum in NeoPixel.EM.share.xml ──────────────
     # PT-CueEffect is now an Enum (same entries as PT-NEOEffectType).
     # Uses explicit IDs (%AID%_CE-NN) to avoid %ENID% issues in sub-module context.
-    $emSharePath = "src/NeoPixel.EM.share.xml"
+    $emSharePath = Resolve-RepoPath "src/NeoPixel.EM.share.xml"
     if (Test-Path $emSharePath) {
       $emContent = Get-Content $emSharePath -Raw -Encoding UTF8
       $enumLines = @()
@@ -5013,7 +5241,7 @@ try {
     # ── Update PT-NEOSceneEffectType enum in NeoPixel.share.xml ────────
     # Same effect entries as PT-CueEffect (display-sorted, real EffectIDs);
     # static "Effektmanager N starten" entries (200..215) live outside the markers.
-    $sharePath = "src/NeoPixel.share.xml"
+    $sharePath = Resolve-RepoPath "src/NeoPixel.share.xml"
     if (Test-Path $sharePath) {
       $shareContent = Get-Content $sharePath -Raw -Encoding UTF8
       $sceneEnumLines = @()
@@ -5121,7 +5349,7 @@ try {
       Write-Host "  [OK] knxprod.h and NeoPixel.Segment.xml are valid!" -ForegroundColor Green
 
       # Remove old error log from previous failed builds (cleanup)
-      $errorLogPath = "src/Build-EffectParameters.err"
+      $errorLogPath = Resolve-RepoPath "src/Build-EffectParameters.err"
       if (Test-Path $errorLogPath) {
         Remove-Item $errorLogPath -Force
         Write-ScriptVerbose "Removed old error log: $errorLogPath" "DarkGray"
@@ -5242,6 +5470,9 @@ try {
       Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
       Write-Host ""
       Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
+      Remove-OrphanedEffectOutputs
+      # the locks only after every step passed: a stopped run must not reserve indices or numbers it never built
+      Write-EffectLocks
       Write-EffectFingerprint
       Write-EffectSummary -Processed $effects.Count
     }
@@ -5260,7 +5491,7 @@ try {
       $null = Write-BytesIfChanged -FullPath $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($templatePath) -Bytes $templateBytesBeforeRun
 
       # 2. Save error log
-      $errorLogPath = "src/Build-EffectParameters.err"
+      $errorLogPath = Resolve-RepoPath "src/Build-EffectParameters.err"
       $errorLog = @"
 ============================================================
 OpenKNXproducer Validation Error

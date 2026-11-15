@@ -1,8 +1,9 @@
 """Verify generation/cleanup of the committed effect outputs in a temporary project, without changing the checkout.
 
 The effect generator outputs are committed and listed in src/EffectParameters.fingerprint. Checked here:
-the committed state is current (-Check), -Clean empties/deletes the outputs (idempotent, -Check then
-reports outdated), and one generator run restores every output byte-identical.
+the committed state is current (-Check), Build-Release -Clean leaves them untouched, Build-EffectParameters -Clean
+empties/deletes them (idempotent, -Check then reports outdated), one generator run restores every output
+byte-identical. Help file restore and orphan removal: test/Test-EffectChanges.ps1.
 
 Requires PowerShell and the checked-out lib modules. Pass --full to include the
 complete -SkipFirmware packaging flow (also requires OpenKNXproducer).
@@ -111,8 +112,14 @@ with tempfile.TemporaryDirectory(prefix='neopixel-build-clean-') as directory:
         assert effect_check(fixture) == 0, 'effect outputs not current after Build-Release'
         assert (fixture / 'dependencies.txt').read_bytes() == dependencies, 'dependency snapshot changed'
 
+    # Build-Release -Clean: the effect outputs are committed and stay as they are
     run(fixture, '-File', 'scripts/Build-Release.ps1', '-Clean')
     assert (fixture / 'dependencies.txt').read_bytes() == dependencies, 'cleanup changed dependency snapshot'
+    assert snapshot(fixture, outputs + [FINGERPRINT]) == baseline, 'Build-Release -Clean changed an effect output'
+    assert effect_check(fixture) == 0, 'effect outputs not current after Build-Release -Clean'
+
+    # Build-EffectParameters -Clean: empties/deletes the outputs and the fingerprint
+    run(fixture, '-File', 'scripts/Build-EffectParameters.ps1', '-Clean', '-Force')
     assert not (fixture / FINGERPRINT).exists(), 'cleanup kept the fingerprint'
     assert not (fixture / 'src/EffectParameterMapping.h').exists()
     assert not list((fixture / 'src').glob('NeoPixel.Effects.*.generated.xml'))
@@ -123,7 +130,7 @@ with tempfile.TemporaryDirectory(prefix='neopixel-build-clean-') as directory:
     cleaned = snapshot(fixture, outputs)
     assert cleaned != {p: baseline[p] for p in outputs}, 'cleanup changed nothing'
 
-    run(fixture, '-File', 'scripts/Build-Release.ps1', '-Clean')
+    run(fixture, '-File', 'scripts/Build-EffectParameters.ps1', '-Clean', '-Force')
     assert snapshot(fixture, outputs) == cleaned, 'cleanup is not idempotent'
 
     run(fixture, '-File', 'scripts/Build-EffectParameters.ps1', '-SkipOpenKNXproducer')

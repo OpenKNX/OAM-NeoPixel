@@ -1,0 +1,148 @@
+# AUTO-MANAGED by Build-EffectParameters.ps1 - DO NOT EDIT BY HAND.
+# Frozen parameter index and ETS type per effect: the ETS IDs (21CC<EE><PP>, 22CC<cue><EE><P>) follow the index.
+# Allowed: append, rename with the same type, remove the last parameter, append enum values, widen a number range.
+# Stops: moving a parameter, another type, a changed or removed enum value, a narrower range.
+# Columns (TAB-separated): EffectID  EffectClassName  Index  ParameterName  Type  [removed]
+1	EffectWipe	0	Speed	number:0..255
+1	EffectWipe	1	Direction	enum:0=Links nach rechts;1=Rechts nach links;2=Oben nach unten;3=Unten nach oben;4=Mitte nach aussen;5=Aussen nach Mitte
+1	EffectWipe	2	Loop	bool
+2	RainbowEffect	0	Speed	number:0..255
+2	RainbowEffect	1	Delta	number:0..255
+2	RainbowEffect	2	Saturation	number:0..255
+2	RainbowEffect	3	Density	number:1..10
+2	RainbowEffect	4	Mode	enum:0=Rainbow (Delta);1=Cycle (Dichte)
+3	PrideEffect	0	Speed	number:1..255
+4	JuggleEffect	0	Speed	number:0..255
+4	JuggleEffect	1	NumDots	number:0..255
+4	JuggleEffect	2	FadeSpeed	number:0..255
+4	JuggleEffect	3	HueOffset	number:0..255
+5	BPMEffect	0	BPM	number:0..255
+5	BPMEffect	1	Hue	number:0..255
+6	CylonEffect	0	Speed	number:0..255
+6	CylonEffect	1	Hue	number:0..255
+6	CylonEffect	2	EyeSize	number:1..20
+6	CylonEffect	3	FadeAmount	number:1..255
+6	CylonEffect	4	Direction	enum:0=Horizontal;1=Vertikal
+6	CylonEffect	5	Mode	enum:0=Larson;1=Mitte nach aussen
+7	RGBWTestEffect	0	PhaseDuration	number:1..60
+7	RGBWTestEffect	1	Mode	enum:0=RGBW;1=RGB+CCT
+8	FireEffect	0	Speed	number:1..255
+8	FireEffect	1	Cooling	number:0..255
+8	FireEffect	2	Sparking	number:0..255
+8	FireEffect	3	ReverseDirection	bool
+8	FireEffect	4	BlueFireMode	bool
+9	TheaterChaseEffect	0	Speed	number:1..255
+9	TheaterChaseEffect	1	Spacing	number:1..10
+9	TheaterChaseEffect	2	DotSize	number:1..5
+9	TheaterChaseEffect	3	ColorMode	enum:0=Einfarbig;1=Regenbogen
+9	TheaterChaseEffect	4	ColorSpeed	number:1..20
+9	TheaterChaseEffect	5	Bounce	enum:0=Umlauf;1=Hin und her
+10	SparkleEffect	0	Speed	number:1..255
+10	SparkleEffect	1	FadeRate	number:0..220
+10	SparkleEffect	2	SparkleCount	number:0..255
+10	SparkleEffect	3	Probability	number:50..200
+10	SparkleEffect	4	WhiteOnly	bool
+10	SparkleEffect	5	BurstMode	bool
+10	SparkleEffect	6	Mode	enum:0=Sparkle;1=Twinkle;2=Konfetti
+11	BreathingEffect	0	Speed	number:1..255
+11	BreathingEffect	1	MinBrightness	number:0..255
+11	BreathingEffect	2	Curve	number:0..255
+11	BreathingEffect	3	RainbowMode	bool
+11	BreathingEffect	4	Waveform	enum:0=Weich;1=Halt am Hoehepunkt;2=Puls;3=Scharfer Puls
+12	StrobeEffect	0	Speed	number:1..255
+12	StrobeEffect	1	OnRatio	number:10..200
+12	StrobeEffect	2	MinBrightness	number:0..100
+12	StrobeEffect	3	RandomTiming	bool
+12	StrobeEffect	4	RainbowStrobe	bool
+13	CometEffect	0	Speed	number:1..255
+13	CometEffect	1	FadeRate	number:0..250
+13	CometEffect	2	TailLength	number:5..30
+13	CometEffect	3	BounceMode	bool
+13	CometEffect	4	RainbowMode	bool
+13	CometEffect	5	Mode	enum:0=Komet;1=Meteor;2=Sinelon
+14	NoiseEffect	0	Speed	number:0..255
+14	NoiseEffect	1	Scale	number:0..255
+14	NoiseEffect	2	Saturation	number:0..255
+14	NoiseEffect	3	HueOffset	number:0..255
+14	NoiseEffect	4	Palette	enum:0=HSV-Farbrad;1=Primaerfarbe
+15	PaletteEffect	0	Speed	number:0..255
+15	PaletteEffect	1	Palette	enum:0=Regenbogen;1=Hitze;2=Ozean;3=Wald
+15	PaletteEffect	2	Blend	bool
+15	PaletteEffect	3	Spacing	number:0..255
+16	LightningEffect	0	Speed	number:0..255
+16	LightningEffect	1	Width	number:0..255
+16	LightningEffect	2	Decay	number:0..255
+16	LightningEffect	3	Hue	number:0..255
+16	LightningEffect	4	Intensity	number:0..255
+17	GradientEffect	0	Speed	number:0..255
+17	GradientEffect	1	StartHue	number:0..255
+17	GradientEffect	2	EndHue	number:0..255
+17	GradientEffect	3	Saturation	number:0..255
+18	CandleEffect	0	Speed	number:0..255
+18	CandleEffect	1	Intensity	number:0..255
+18	CandleEffect	2	Zones	number:1..255
+19	ScrollTextEffect	0	Speed	number:1..255
+19	ScrollTextEffect	1	Gap	number:0..255
+19	ScrollTextEffect	2	Loop	bool
+19	ScrollTextEffect	3	Text	string
+19	ScrollTextEffect	4	Font	enum:0=5x7;1=4x6;2=3x5
+20	Clock2DEffect	0	ViewMode	enum:0=Digital;1=Binär BCD-Spalten;2=Binär Zeilen;3=Auto-Wechsel (BCD);4=Auto-Wechsel (Zeilen)
+20	Clock2DEffect	1	ShowSeconds	bool
+20	Clock2DEffect	2	BlinkColon	bool
+20	Clock2DEffect	3	ColourHue	number:0..255
+20	Clock2DEffect	4	DateMode	enum:0=Aus;1=Zeit/Datum Wechsel;2=Nur Datum
+20	Clock2DEffect	5	DateFormat	enum:0=TT.MM.;1=TT.MM.JJ;2=WT TT.MM.
+20	Clock2DEffect	6	DateHue	number:0..255
+20	Clock2DEffect	7	SwitchSec	number:2..30
+20	Clock2DEffect	8	ScrollSpeed	number:0..255
+20	Clock2DEffect	9	Font	enum:0=5x7;1=4x6;2=3x5
+21	Snake2DEffect	0	Speed	number:1..255
+21	Snake2DEffect	1	HeadHue	number:0..255
+21	Snake2DEffect	2	BodyMode	enum:0=Einfarbig;1=Regenbogen;2=Verlauf
+21	Snake2DEffect	3	BodyHue	number:0..255
+22	Matrix2DEffect	0	Speed	number:1..255
+22	Matrix2DEffect	1	Density	number:5..100
+22	Matrix2DEffect	2	Palette	enum:0=Gruen;1=Gold;2=Gemischt
+22	Matrix2DEffect	3	Glitch	bool
+23	Tetris2DEffect	0	Speed	number:1..255
+23	Tetris2DEffect	1	BgBrightness	number:0..64
+23	Tetris2DEffect	2	GhostPiece	bool
+23	Tetris2DEffect	3	ColorMode	enum:0=Form-Farbe;1=Zufall;2=Regenbogen
+23	Tetris2DEffect	4	FlashLines	bool
+23	Tetris2DEffect	5	AutoPlay	enum:0=Aus (manuell);1=Anfaenger;2=Normal;3=Profi
+24	Tron2DEffect	0	Speed	number:1..255
+24	Tron2DEffect	1	Hue	number:0..255
+24	Tron2DEffect	2	GridSpacing	number:2..12
+24	Tron2DEffect	3	Glow	number:20..255
+25	StarfieldWarp2DEffect	0	Speed	number:1..255
+25	StarfieldWarp2DEffect	1	Density	number:10..100
+25	StarfieldWarp2DEffect	2	ColorMode	enum:0=Weiss;1=Cyan;2=Regenbogen
+25	StarfieldWarp2DEffect	3	WarpPulse	bool
+26	PlasmaNebula2DEffect	0	Speed	number:0..255
+26	PlasmaNebula2DEffect	1	Saturation	number:0..255
+26	PlasmaNebula2DEffect	2	Contrast	number:0..255
+26	PlasmaNebula2DEffect	3	PaletteShift	number:0..255
+27	UfoSwarm2DEffect	0	Speed	number:1..255
+27	UfoSwarm2DEffect	1	Count	number:1..8
+27	UfoSwarm2DEffect	2	Hue	number:0..255
+27	UfoSwarm2DEffect	3	Beam	bool
+28	GameOfLife2DEffect	0	Speed	number:1..255
+28	GameOfLife2DEffect	1	Hue	number:0..255
+28	GameOfLife2DEffect	2	ColorMode	enum:0=Einfarbig;1=Alters-Heat;2=Positions-Regenbogen
+28	GameOfLife2DEffect	3	SpawnDensity	number:5..95
+29	DNA2DEffect	0	Speed	number:1..255
+29	DNA2DEffect	1	Hue	number:0..255
+29	DNA2DEffect	2	Twist	number:1..32
+29	DNA2DEffect	3	RungSpacing	number:0..16
+30	Aurora2DEffect	0	Speed	number:1..255
+30	Aurora2DEffect	1	Hue	number:0..255
+30	Aurora2DEffect	2	Scale	number:1..64
+30	Aurora2DEffect	3	Intensity	number:0..255
+31	Lissajous2DEffect	0	Speed	number:1..255
+31	Lissajous2DEffect	1	Hue	number:0..255
+31	Lissajous2DEffect	2	FreqA	number:1..16
+31	Lissajous2DEffect	3	FreqB	number:1..16
+32	Metaballs2DEffect	0	Speed	number:1..255
+32	Metaballs2DEffect	1	Hue	number:0..255
+32	Metaballs2DEffect	2	BlobCount	number:2..6
+32	Metaballs2DEffect	3	Contrast	number:1..255

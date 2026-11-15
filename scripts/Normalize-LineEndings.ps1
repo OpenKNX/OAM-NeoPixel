@@ -44,6 +44,7 @@ $patterns = @(
     "src/EffectParameterMapping.h"
     "src/HardwareMappingLogic.h"
     "src/EffectIds.lock"
+    "src/EffectParameters.lock"
     "src/Baggages/Help_de/*.md"
     "doc/Effect-Flags.md"
     "include/knxprod.h"

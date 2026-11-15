@@ -33,7 +33,8 @@
     the last run. Stops when include/knxprod.h is missing or belongs to the other variant.
 
 .PARAMETER Clean
-    Remove generated files and exit.
+    Remove generated files and exit. The committed effect outputs stay (scripts/Build-EffectParameters.ps1 -Clean
+    empties them); the next build regenerates them when an input changed.
 
 .PARAMETER Detailed
     Passed to Build-EffectParameters.ps1 and Build-HardwareProfile.ps1: full log instead of the summary lines.
@@ -128,7 +129,7 @@ function Show-Help {
     Write-Host "  -SkipOknx      Skip building the PC tool oknx (alias -SkipTool, -SkipHostCli)"
     Write-Host "  -SkipKnxprod   Do not run the generators and OpenKNXproducer; knxprod.h and the ETS data stay from the last run"
     Write-Host "                 (stops when knxprod.h is missing or belongs to the other variant)"
-    Write-Host "  -Clean         Remove generated files and exit"
+    Write-Host "  -Clean         Remove generated files and exit (committed effect outputs stay)"
     Write-Host "  -Detailed      Full log of Build-EffectParameters.ps1 and Build-HardwareProfile.ps1 (default: summary lines)"
     Write-Host "  -Help, -h      Show this help"
     Write-Host ""
@@ -206,9 +207,8 @@ if ($isClean) {
     $ErrorActionPreference = 'Stop'
     Push-Location (Split-Path -Parent $PSScriptRoot)
     try {
-        Write-Host "Cleaning effect parameters..." -ForegroundColor Cyan
-        & ./scripts/Build-EffectParameters.ps1 -Clean -Force -Detailed:$Detailed
-        if (-not $?) { throw "Effect parameter cleanup failed." }
+        # Effect parameters: committed outputs, nothing to clean. The next build regenerates them when an input
+        # changed and removes outputs it no longer writes; scripts/Build-EffectParameters.ps1 -Force rebuilds all.
 
         # Outputs of the hardware generator (HardwareProfile.xml <Output>/<Generate>): not committed
         # (.gitignore), the next Build-Release writes them again. HardwareProfile.slots is a source.
