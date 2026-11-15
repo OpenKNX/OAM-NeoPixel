@@ -15,7 +15,13 @@ local ID can therefore be used in different namespaces without a collision.
 | Segment | `40CCnnn` | Configuration of segment `CC` |
 | Strip | `409Cnnn` | Configuration of physical strip `C` |
 | Effect manager | `42CCnnn` | Effect manager `CC` and its cues |
-| Typed cue parameters | `20CCxxxx` | Effect-specific typed fields for cues |
+| Segment effect parameters | `21CCEEPP` | Effect-specific parameters of segment `CC` |
+| Typed cue parameters | `22CCxxxx` | Effect-specific typed fields for cues |
+
+Effect parameter IDs (`21CC...`, `22CC...`) depend only on the effect number `EE` (the frozen value of
+`src/EffectIds.lock`) and the parameter index of the effect. A new effect, a parameter appended to an
+effect or a removed effect moves no other ID. A parameter must not be inserted before existing ones
+(the index of every later parameter would change). No ID of Dev 2.2 or older uses the prefixes 21 or 22.
 
 The lists below conservatively consider a suffix occupied when it is used by
 either a `P` or `UP` ID. A range described as unused is unused in the current
@@ -85,18 +91,22 @@ Sources:
 | Local IDs | Use |
 |---|---|
 | `000` | Segment description (`P`, not `UP`) |
+| `001..011` | Effect availability flags (`P`, no device memory): `001` segment effect, `002..011` scenes A..J |
 | `050..058` | Geometry, direction, mirroring, and effect selectors |
 | `066..067` | Startup behaviour and RGB colour |
 | `070..072` | Startup W, brightness, and effect-manager stop behaviour |
 | `240..255` | HCL, topology, matrix dimensions, synchronization, virtual offsets, scenes, and startup settings |
 | `320..519` | Ten scene blocks of 20 IDs each |
-| `580..899` | Stable effect-parameter blocks of 10 IDs each |
-| `900..906` | Hardware-specific data GPIO alternatives |
-| `950..956` | Hardware-specific clock GPIO alternatives |
+| `580..899` | Retired (segment effect parameters up to Dev 2.2), do not reuse |
+| `900..949` | Data port of strip `C` per board: `900 + board slot` (slots 0..39 in use: `900..939`) |
+| `950..999` | Clock port of strip `C` per board: `950 + board slot` (slots 0..39 in use: `950..989`) |
 
-The hardware templates use `%TT%0%C%900..906` and `%TT%0%C%950..956`.
-For corresponding channels this is the same namespace as `%TT%%CC%`, so these
-ranges must be treated as occupied by the segment allocator.
+The per-board port parameters come from the OGM-HardwareConfig generator: template
+[`src/hw/NeoPixel.hw.strip.xml`](../src/hw/NeoPixel.hw.strip.xml), output `src/NeoPixel.hw.strip.gen.xml`,
+included by the strip template (module NEOSTRIP, ModuleType 40, strips 1..8). They use `%TT%0%C%nnn` with
+`%C%` = strip, so for strips 1..8 they lie in the namespaces `4001nnn..4008nnn` of segments 1..8. The board
+slot is the number of the board in `HardwareProfile.slots` (fixed per HW-ID, a removed board keeps it); a
+slot above 49 would move the data port into the clock range. Segments 9..16 have no IDs there.
 
 ### Scene blocks
 
@@ -116,62 +126,35 @@ Every scene block uses all 20 IDs:
 - `+18`: effect text
 - `+19`: no-2D effect selector
 
-### Stable effect blocks
+Calculation: `PC-%TT%%CC%001` (effect availability of the segment and its scenes, writes `001..011`).
 
-The generator assigns ten IDs per stable EffectID:
+### Segment effect parameters: `21CCEEPP`
+
+Written by `scripts/Build-EffectParameters.ps1` into the generated blocks of
+`src/NeoPixel.Segment.templ.xml`:
 
 ```text
-parameter ID = 580 + (EffectID - 1) * 10 + ParameterIndex
+Parameter    %AID%_UP-21%CC%EEPP
+ParameterRef %AID%_UP-21%CC%EEPP_R-21%CC%EEPP01
+EE = effect number 01..99, PP = parameter index 00..99
 ```
 
-Unused positions inside these blocks are reserved. They must not be assigned to
-another effect, even though no Parameter currently occupies them.
+Example: Wipe (effect 1) uses `21CC0100..0102`, Metaballs2D (effect 32) `21CC3200..3203`. The byte
+offsets in the segment union stay sequential as before (they follow the parameter order; the ETS
+update maps values by ID, not by offset).
 
-| Block | Effect | Used | Reserved, currently unused |
-|---|---|---|---|
-| `580..589` | Wipe | `580..582` | `583..589` |
-| `590..599` | Rainbow | `590..594` | `595..599` |
-| `600..609` | Pride2015 | `600` | `601..609` |
-| `610..619` | Juggle | `610..613` | `614..619` |
-| `620..629` | BPM | `620..621` | `622..629` |
-| `630..639` | Cylon | `630..635` | `636..639` |
-| `640..649` | Test | `640..641` | `642..649` |
-| `650..659` | Fire | `650..654` | `655..659` |
-| `660..669` | Theater Chase | `660..665` | `666..669` |
-| `670..679` | Sparkle | `670..676` | `677..679` |
-| `680..689` | Breathing | `680..684` | `685..689` |
-| `690..699` | Strobe | `690..694` | `695..699` |
-| `700..709` | Comet | `700..705` | `706..709` |
-| `710..719` | Noise | `710..714` | `715..719` |
-| `720..729` | Palette | `720..723` | `724..729` |
-| `730..739` | Blitz | `730..734` | `735..739` |
-| `740..749` | Gradient | `740..743` | `744..749` |
-| `750..759` | Kerze | `750..752` | `753..759` |
-| `760..769` | Laufschrift | `760..764` | `765..769` |
-| `770..779` | Uhr2D | `770..779` | none |
-| `780..789` | Snake2D | `780..783` | `784..789` |
-| `790..799` | Matrix2D | `790..793` | `794..799` |
-| `800..809` | Tetris2D | `800..805` | `806..809` |
-| `810..819` | TRON | `810..813` | `814..819` |
-| `820..829` | Starfield Warp | `820..823` | `824..829` |
-| `830..839` | Plasma Nebula | `830..833` | `834..839` |
-| `840..849` | UFO Swarm | `840..843` | `844..849` |
-| `850..859` | Game of Life 2D | `850..853` | `854..859` |
-| `860..869` | DNA2D | `860..863` | `864..869` |
-| `870..879` | Aurora2D | `870..873` | `874..879` |
-| `880..889` | Lissajous2D | `880..883` | `884..889` |
-| `890..899` | Metaballs2D | `890..893` | `894..899` |
+The generator stops on an effect number above 99, a parameter index above 99, two parameters with one
+ID, or a `UP-21%CC%` parameter in another source XML.
+
+`580..899` held the effect parameters up to Dev 2.2 (`580 + (EffectID - 1) * 10 + index`). They stay
+unused: ETS would carry an old value of Dev 2.2 into a new parameter with the same ID.
 
 Genuinely free segment ranges in the current product:
 
 ```text
-001..049, 059..065, 068..069, 073..239, 256..319, 520..579,
+012..049, 059..065, 068..069, 073..239, 256..319, 520..579,
 907..949, 957..999
 ```
-
-Effect 33 would naturally receive `900..909`, which collides with the hardware
-IDs `900..906`. New effects therefore cannot simply continue the current formula;
-they need an explicit allocation strategy.
 
 ## Strip namespace: `409Cnnn`
 
@@ -204,6 +187,7 @@ Sources:
 | `001..005` | Name, cue count, loop, next manager, and enabled state |
 | `009..010` | Text-KO setting and display name |
 | `100..279` | Ten generic cue blocks of 18 IDs each |
+| `280..289` | Effect availability flags of cue 1..10 (`P`, no device memory) |
 | `900..909` | One no-2D effect selector per cue |
 
 | Cue | IDs | Cue | IDs |
@@ -217,27 +201,35 @@ Sources:
 Currently unused effect-manager suffixes:
 
 ```text
-000, 006..008, 011..099, 280..899, 910..999
+000, 006..008, 011..099, 290..899, 910..999
 ```
 
-## Typed cue namespace: `20CCxxxx`
+Calculations: `PC-%TT%%CC%001` (state marker of the name), `PC-%TT%%CC%002` (effect availability of
+the cues, writes `280..289`).
 
-Effect-specific typed cue fields use a separate, legacy four-digit suffix
-namespace. Each cue reserves 500 suffixes and currently uses offsets `0..142`.
+## Typed cue namespace: `22CCxxxx`
 
-| Cue | Used | Reserved, currently unused |
-|---|---|---|
-| 1 | `1000..1142` | `1143..1499` |
-| 2 | `1500..1642` | `1643..1999` |
-| 3 | `2000..2142` | `2143..2499` |
-| 4 | `2500..2642` | `2643..2999` |
-| 5 | `3000..3142` | `3143..3499` |
-| 6 | `3500..3642` | `3643..3999` |
-| 7 | `4000..4142` | `4143..4499` |
-| 8 | `4500..4642` | `4643..4999` |
-| 9 | `5000..5142` | `5143..5499` |
-| 10 | `5500..5642` | `5643..5999` |
+Effect-specific typed cue fields overlay the ten generic slot bytes of their cue. The four-digit suffix
+is `%CUE_TPP% + K` (`src/NeoPixel.EM.templ.xml`, `%CUE_TPP%` = cue index x 1000, four digits):
 
-This namespace is independent of the three-digit segment effect allocation and
-was not the source of the `tcccnnn_R-tcccnnnrr` errors fixed by moving stable
-segment effect parameters into `580..899`.
+```text
+suffix = (cue - 1) * 1000 + EE * 10 + P
+EE = effect number 01..99, P = parameter index 0..9
+```
+
+| Cue | Suffixes | Cue | Suffixes |
+|---|---|---|---|
+| 1 | `0010..0999` | 6 | `5010..5999` |
+| 2 | `1010..1999` | 7 | `6010..6999` |
+| 3 | `2010..2999` | 8 | `7010..7999` |
+| 4 | `3010..3999` | 9 | `8010..8999` |
+| 5 | `4010..4999` | 10 | `9010..9999` |
+
+Example: Wipe in cue 1 uses `22CC0010..0012`, Metaballs2D in cue 10 `22CC9320..9323`. Numeric
+parameters with an index above 9 have no cue slot and are left out; a string parameter with an index
+above 9 stops the generator. The generator also stops when `%CUE_TPP%` is not `value="0"
+increment="1000" digits="4"`, when the Cue part has more than 10 instances, on two parameters with one ID,
+or on a `UP-22%CC%` parameter in another source XML.
+
+Up to Dev 2.2 the typed cue fields used `20CCxxxx` with a running counter over all effects
+(`1000 + 500 x (cue - 1) + k`, k 0..142). That namespace is retired and stays unused.
