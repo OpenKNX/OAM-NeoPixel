@@ -58,7 +58,15 @@ FILEPATH: scripts/Build-EffectParameters.ps1
     It integrates with OpenKNXproducer for ETS application generation.
 
 .PARAMETER Clean
-    Remove all auto-generated files and empty marker blocks in templates
+    Remove all auto-generated files and empty marker blocks in templates (and the input fingerprint, so the
+    next run generates everything)
+
+.PARAMETER Force
+    Generate even when the input fingerprint is unchanged; with -Clean: no confirmation
+
+.PARAMETER Check
+    Generate nothing: exit code 0 when the committed outputs belong to the current inputs
+    (src/EffectParameters.fingerprint), 1 when they are outdated
 
 .EXAMPLE
     .\scripts\Build-EffectParameters.ps1 -Clean
@@ -83,7 +91,10 @@ param(
   [switch]$WebCatalogOnly = $false,
 
   [Parameter(Mandatory = $false)]
-  [switch]$Detailed = $false
+  [switch]$Detailed = $false,
+
+  [Parameter(Mandatory = $false)]
+  [switch]$Check = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -412,6 +423,77 @@ function Write-BytesIfChanged {
   return $true
 }
 
+# every file a run writes or would write (input fingerprint: the outputs that must exist)
+$script:TouchedFiles = @{}
+
+# ====================================================================
+# Input fingerprint
+# The outputs are committed. src/EffectParameters.fingerprint holds a hash over the inputs and the list of the
+# outputs; a run with the same hash and every output present generates nothing.
+# ====================================================================
+$script:FingerprintPath = "src/EffectParameters.fingerprint"
+
+# @brief Hash over the inputs: effect sources of OFM-NeoPixel, src/EffectIds.lock, platformio.custom.ini (flag
+#        list), this script and the language; text with LF line ends, files in ordinal order of their repo path
+function Get-EffectInputFingerprint {
+  $root = [System.IO.Path]::GetFullPath((Get-RepoRoot)).TrimEnd('\', '/')
+  $paths = New-Object System.Collections.Generic.List[string]
+  foreach ($f in (Get-ChildItem -Path (Resolve-RepoPath $script:Config.EffectsDir) -Recurse -File -Include *.h, *.cpp)) { $paths.Add($f.FullName) }
+  foreach ($rel in @("src/EffectIds.lock", "platformio.custom.ini")) {
+    $full = Resolve-RepoPath $rel
+    if (Test-Path -LiteralPath $full -PathType Leaf) { $paths.Add($full) }
+  }
+  $paths.Add($PSCommandPath)
+  $entries = @{}
+  foreach ($full in $paths) {
+    $rel = $full
+    if ($full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) { $rel = $full.Substring($root.Length).TrimStart('\', '/') }
+    $entries[($rel -replace '\\', '/')] = $full
+  }
+  $keys = [string[]]@($entries.Keys)
+  [System.Array]::Sort($keys, [System.StringComparer]::Ordinal)
+  $sb = New-Object System.Text.StringBuilder
+  [void]$sb.Append("lang=$Language`n")
+  foreach ($k in $keys) {
+    $text = [System.IO.File]::ReadAllText($entries[$k]).Replace("`r`n", "`n")
+    [void]$sb.Append("== $k`n").Append($text).Append("`n")
+  }
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try { $hash = $sha.ComputeHash((New-Object System.Text.UTF8Encoding($false)).GetBytes($sb.ToString())) }
+  finally { $sha.Dispose() }
+  return (($hash | ForEach-Object { $_.ToString("x2") }) -join "")
+}
+
+# @brief True when the fingerprint file holds this hash and every output it lists exists
+function Test-EffectFingerprintCurrent {
+  param([string]$Hash)
+  $file = Resolve-RepoPath $script:FingerprintPath
+  if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $false }
+  $lines = @([System.IO.File]::ReadAllLines($file) | Where-Object { $_ -and -not $_.StartsWith("#") })
+  if ($lines.Count -lt 1 -or $lines[0] -ne "sha256 $Hash") { return $false }
+  foreach ($line in ($lines | Select-Object -Skip 1)) {
+    if (-not (Test-Path -LiteralPath (Resolve-RepoPath $line) -PathType Leaf)) { return $false }
+  }
+  return $true
+}
+
+# @brief Writes the fingerprint file: the hash and the outputs of this run (repo paths, ordinal order)
+function Write-EffectFingerprint {
+  param([string]$Hash)
+  $root = [System.IO.Path]::GetFullPath((Get-RepoRoot)).TrimEnd('\', '/')
+  $own = Resolve-RepoPath $script:FingerprintPath
+  $outputs = @()
+  foreach ($full in $script:TouchedFiles.Keys) {
+    if ([string]::Equals($full, $own, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+    if (-not $full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+    $outputs += ($full.Substring($root.Length).TrimStart('\', '/') -replace '\\', '/')
+  }
+  $outputs = [string[]]@($outputs | Select-Object -Unique)
+  [System.Array]::Sort($outputs, [System.StringComparer]::Ordinal)
+  $lines = @("# Input fingerprint of scripts/Build-EffectParameters.ps1 - do not edit (written by every full run)", "sha256 $Hash") + $outputs
+  $null = Write-BytesIfChanged -FullPath $own -Bytes ((New-Object System.Text.UTF8Encoding($false)).GetBytes(($lines -join "`n") + "`n"))
+}
+
 # Appends one Set-Content -Value item: $null is skipped, a collection is written element by element.
 function Add-SetContentItem {
   param([System.Text.StringBuilder]$Builder, [object]$Item, [bool]$NoNewline)
@@ -434,6 +516,7 @@ function Write-FileIfChanged {
     [switch]$NoBom
   )
   $fullPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+  $script:TouchedFiles[$fullPath] = $true
   $builder = New-Object System.Text.StringBuilder
   Add-SetContentItem -Builder $builder -Item $Value -NoNewline ([bool]$NoNewline)
   $encoding = New-Object System.Text.UTF8Encoding(((-not $NoBom) -and $PSVersionTable.PSVersion.Major -lt 6))
@@ -615,6 +698,12 @@ if ($Clean) {
     if (Test-Path $catalogFile) {
       $filesToDelete += [PSCustomObject]@{ Type = "Web Catalog"; Name = (Split-Path -Leaf $catalogFile); Path = $catalogFile }
     }
+  }
+
+  # 2b. Input fingerprint: without it the next run generates everything
+  $fingerprintFile = Resolve-RepoPath $script:FingerprintPath
+  if (Test-Path $fingerprintFile) {
+    $filesToDelete += [PSCustomObject]@{ Type = "Fingerprint"; Name = (Split-Path -Leaf $fingerprintFile); Path = $fingerprintFile }
   }
 
   # 3. Collect old .part.xml files (legacy)
@@ -2666,7 +2755,8 @@ function Generate-HelpFiles {
       $helpFileName = "$($script:Config.HelpFilePrefix)$paramNameCleaned-$effectNameCleaned$($script:Config.HelpFileSuffix)"
       $helpFilePath = Join-Path $helpDir $helpFileName
 
-      # Skip if help file already exists
+      # Skip if help file already exists (still an output of this run for the input fingerprint)
+      $script:TouchedFiles[[System.IO.Path]::GetFullPath($helpFilePath)] = $true
       if (Test-Path $helpFilePath) {
         continue
       }
@@ -3055,6 +3145,7 @@ function Generate-SceneHelpFiles {
 
   # SceneCount (not per-scene, just one file)
   $sceneCountFile = Join-Path $helpDir "NEO-Anzahl-Szenen.md"
+  $script:TouchedFiles[[System.IO.Path]::GetFullPath($sceneCountFile)] = $true
   if (-not (Test-Path $sceneCountFile)) {
     $content = @(
       "# Anzahl Szenen"
@@ -3075,6 +3166,7 @@ function Generate-SceneHelpFiles {
   foreach ($fp in $fixedParams) {
     $fileName = "NEO-$($fp.Name)-Szene.md"
     $filePath = Join-Path $helpDir $fileName
+    $script:TouchedFiles[[System.IO.Path]::GetFullPath($filePath)] = $true
     if (-not (Test-Path $filePath)) {
       $content = @(
         "# $($fp.Name -replace '-', ' ')"
@@ -4285,6 +4377,21 @@ function Generate-SceneCppMapping {
 #Clear-Host
 Show-OpenKNXLogo -SubTitle "Build Effect Parameters" -Version $SCRIPT_VERSION
 
+# Committed outputs: nothing to do while the inputs are unchanged (-Force generates anyway, -Check only reports)
+$inputFingerprint = Get-EffectInputFingerprint
+$fingerprintCurrent = Test-EffectFingerprintCurrent -Hash $inputFingerprint
+if ($Check) {
+  $ae = [char]0x00E4
+  if ($fingerprintCurrent) { Microsoft.PowerShell.Utility\Write-Host "Effekte: aktuell" -ForegroundColor Green; exit 0 }
+  Microsoft.PowerShell.Utility\Write-Host "Effekte: veraltet (Eingaben ge${ae}ndert oder Ausgabe fehlt) - scripts/Build-EffectParameters.ps1 laufen lassen und die Ausgaben committen" -ForegroundColor Yellow
+  exit 1
+}
+if ($fingerprintCurrent -and -not $Force -and -not $WebCatalogOnly) {
+  $ae = [char]0x00E4
+  Microsoft.PowerShell.Utility\Write-Host "Effekte: unver${ae}ndert (Eingaben gleich)" -ForegroundColor Green
+  exit 0
+}
+
 # Determine script and repository root directories
 $scriptDir = if ($PSScriptRoot) {
   $PSScriptRoot
@@ -4509,28 +4616,19 @@ $unionParamsXml = $unionResult.Xml
 $nextId = $unionResult.NextId
 $nextOffset = $unionResult.NextOffset
 
-$unionParamsPath = "src/NeoPixel.Effects.UnionParameters.generated.xml"
-$null = Write-FileIfChanged -Path $unionParamsPath -Value $unionParamsXml
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Union Parameters XML" -ForegroundColor White
-Write-Host "       $unionParamsPath" -ForegroundColor DarkGray
 Write-Host "       Next ID: $nextId, Offset: $nextOffset" -ForegroundColor DarkGray
 
 # 3. ParameterRefs (uses same Start ID)
 $paramRefsXml = Generate-ParameterRefs -Effects $effects -StartId $startId
-$paramRefsPath = "src/NeoPixel.Effects.ParameterRefs.generated.xml"
-$null = Write-FileIfChanged -Path $paramRefsPath -Value $paramRefsXml
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "ParameterRefs XML" -ForegroundColor White
-Write-Host "       $paramRefsPath" -ForegroundColor DarkGray
 
 # 4. Dynamic choose/when blocks (uses same Start ID)
 $dynamicChooseXml = Generate-DynamicChoose -Effects $effects -StartId $startId
-$dynamicChoosePath = "src/NeoPixel.Effects.DynamicChoose.generated.xml"
-$null = Write-FileIfChanged -Path $dynamicChoosePath -Value $dynamicChooseXml
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Dynamic choose/when blocks" -ForegroundColor White
-Write-Host "       $dynamicChoosePath" -ForegroundColor DarkGray
 
 # 5. C++ Parameter Mapping Header
 # Studio ETS readback must use the same IDs and parameter order as the firmware.
@@ -4902,26 +5000,11 @@ try {
       $boxContentWidth = $boxTotalWidth - 6
       $labelWidth = 18  # Fixed width for all labels
       $label1 = "ParameterTypes:".PadRight($labelWidth)
-      $label2 = "Union Parameters:".PadRight($labelWidth)
-      $label3 = "ParameterRefs:".PadRight($labelWidth)
-      $label4 = "Dynamic Choose:".PadRight($labelWidth)
       $label5 = "C++ Param Mapping:".PadRight($labelWidth)
       $label6 = "C++ Type Mapping:".PadRight($labelWidth)
 
       Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
       Write-Host ($label1 + "injected into $($script:Config.ShareXml)").PadRight($boxContentWidth) -NoNewline -ForegroundColor White
-      Write-Host " │" -ForegroundColor DarkGray
-
-      Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
-      Write-Host ($label2 + $unionParamsPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
-      Write-Host " │" -ForegroundColor DarkGray
-
-      Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
-      Write-Host ($label3 + $paramRefsPath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
-      Write-Host " │" -ForegroundColor DarkGray
-
-      Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
-      Write-Host ($label4 + $dynamicChoosePath).PadRight($boxContentWidth) -NoNewline -ForegroundColor White
       Write-Host " │" -ForegroundColor DarkGray
 
       Write-Host "  │ " -NoNewline -ForegroundColor DarkGray
@@ -4993,6 +5076,7 @@ try {
       Write-Host "  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
       Write-Host ""
       Show-OpenKNXLogo -SubTitle "EffectParameters Build Script by Erkan Çolak" -Version $SCRIPT_VERSION
+      Write-EffectFingerprint -Hash $inputFingerprint
       Write-EffectSummary -Processed $effects.Count
     }
     else {
@@ -5031,9 +5115,6 @@ Common issues:
 ============================================================
 Generated files (review manually):
   - ParameterTypes injected into $($script:Config.ShareXml)
-  - $unionParamsPath
-  - $paramRefsPath
-  - $dynamicChoosePath
   - $cppMappingPath
 
 Template has been restored to previous state.

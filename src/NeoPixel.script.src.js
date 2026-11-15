@@ -397,11 +397,120 @@ function NEO_SetNetworkModuleVisibility(input, output, context) {
 
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
 
-var NEO_SceneEffectDefaults = {};
+var NEO_SceneEffectDefaults = {
+    "1": [25, 0, 1, 0, 0, 0, 0, 0, 0, 0],  // Wipe
+    "2": [1, 7, 255, 1, 0, 0, 0, 0, 0, 0],  // Rainbow
+    "3": [128, 0, 0, 0, 0, 0, 0, 0, 0, 0],  // Pride2015
+    "4": [80, 8, 20, 0, 0, 0, 0, 0, 0, 0],  // Juggle
+    "5": [62, 0, 0, 0, 0, 0, 0, 0, 0, 0],  // BPM
+    "6": [20, 0, 5, 50, 0, 0, 0, 0, 0, 0],  // Cylon
+    "7": [5, 0, 0, 0, 0, 0, 0, 0, 0, 0],  // Test
+    "8": [128, 90, 120, 0, 0, 0, 0, 0, 0, 0],  // Fire
+    "9": [128, 3, 1, 0, 5, 0, 0, 0, 0, 0],  // Theater Chase
+    "10": [128, 120, 64, 100, 0, 0, 0, 0, 0, 0],  // Sparkle
+    "11": [128, 0, 0, 0, 0, 0, 0, 0, 0, 0],  // Breathing
+    "12": [128, 100, 0, 0, 0, 0, 0, 0, 0, 0],  // Strobe
+    "13": [128, 150, 10, 0, 0, 0, 0, 0, 0, 0],  // Comet
+    "14": [32, 48, 255, 0, 0, 0, 0, 0, 0, 0],  // Noise
+    "15": [32, 0, 1, 0, 0, 0, 0, 0, 0, 0],  // Palette
+    "16": [32, 0, 40, 0, 255, 0, 0, 0, 0, 0],  // Blitz
+    "17": [32, 0, 160, 255, 0, 0, 0, 0, 0, 0],  // Gradient
+    "18": [96, 224, 1, 0, 0, 0, 0, 0, 0, 0],  // Kerze
+    "19": [32, 1, 1, 0, 0, 0, 0, 0, 0, 0],  // Laufschrift
+    "20": [0, 0, 1, 0, 0, 0, 0, 5, 60, 0],  // Uhr 2D
+    "21": [64, 0, 0, 85, 0, 0, 0, 0, 0, 0],  // Snake 2D
+    "22": [80, 35, 0, 1, 0, 0, 0, 0, 0, 0],  // Matrix 2D
+    "23": [128, 8, 1, 0, 1, 3, 0, 0, 0, 0],  // Tetris 2D
+    "24": [90, 150, 4, 170, 0, 0, 0, 0, 0, 0],  // TRON
+    "25": [96, 70, 0, 1, 0, 0, 0, 0, 0, 0],  // Starfield Warp
+    "26": [64, 220, 170, 0, 0, 0, 0, 0, 0, 0],  // Plasma Nebula
+    "27": [90, 4, 150, 1, 0, 0, 0, 0, 0, 0],  // UFO Swarm
+    "28": [64, 96, 1, 30, 0, 0, 0, 0, 0, 0],  // Game of Life 2D
+    "29": [64, 0, 8, 4, 0, 0, 0, 0, 0, 0],  // DNA 2D
+    "30": [48, 96, 18, 220, 0, 0, 0, 0, 0, 0],  // Aurora 2D
+    "31": [56, 160, 3, 2, 0, 0, 0, 0, 0, 0],  // Lissajous 2D
+    "32": [50, 0, 4, 128, 0, 0, 0, 0, 0, 0]  // Metaballs 2D
+};
 // END AUTO-GENERATED: Scene Effect Defaults
 
 // BEGIN AUTO-GENERATED: Scene Effect Defaults Function
-function NEO_SetSceneEffectDefaults(input, output, context) { }
+// Set scene slot defaults when effect type changes
+function NEO_SetSceneEffectDefaults(input, output, context) {
+    var effectType = toInt(input.EffectType, 0);
+    var defaults = NEO_SceneEffectDefaults[String(effectType)];
+    var d0, d1, d2, d3, d4, d5, d6, d7, d8, d9;
+    if (defaults) {
+        d0 = defaults[0];
+        d1 = defaults[1];
+        d2 = defaults[2];
+        d3 = defaults[3];
+        d4 = defaults[4];
+        d5 = defaults[5];
+        d6 = defaults[6];
+        d7 = defaults[7];
+        d8 = defaults[8];
+        d9 = defaults[9];
+    } else {
+        d0 = 0;
+        d1 = 0;
+        d2 = 0;
+        d3 = 0;
+        d4 = 0;
+        d5 = 0;
+        d6 = 0;
+        d7 = 0;
+        d8 = 0;
+        d9 = 0;
+    }
+
+    // Write to generic slots (determines EEPROM value)
+    output.Slot0 = d0;
+    output.Slot1 = d1;
+    output.Slot2 = d2;
+    output.Slot3 = d3;
+    output.Slot4 = d4;
+    output.Slot5 = d5;
+    output.Slot6 = d6;
+    output.Slot7 = d7;
+    output.Slot8 = d8;
+    output.Slot9 = d9;
+
+    // Write to all aliased refs (forces ETS to refresh UI display)
+    // All aliases for a slot share the same underlying Parameter.
+    // Writing to them triggers ETS to update the displayed value.
+    output.E1S0 = d0; output.E1S1 = d1; output.E1S2 = d2;  // Wipe
+    output.E2S0 = d0; output.E2S1 = d1; output.E2S2 = d2; output.E2S3 = d3; output.E2S4 = d4;  // Rainbow
+    output.E3S0 = d0;  // Pride2015
+    output.E4S0 = d0; output.E4S1 = d1; output.E4S2 = d2; output.E4S3 = d3;  // Juggle
+    output.E5S0 = d0; output.E5S1 = d1;  // BPM
+    output.E6S0 = d0; output.E6S1 = d1; output.E6S2 = d2; output.E6S3 = d3; output.E6S4 = d4; output.E6S5 = d5;  // Cylon
+    output.E7S0 = d0; output.E7S1 = d1;  // Test
+    output.E8S0 = d0; output.E8S1 = d1; output.E8S2 = d2; output.E8S3 = d3; output.E8S4 = d4;  // Fire
+    output.E9S0 = d0; output.E9S1 = d1; output.E9S2 = d2; output.E9S3 = d3; output.E9S4 = d4; output.E9S5 = d5;  // Theater Chase
+    output.E10S0 = d0; output.E10S1 = d1; output.E10S2 = d2; output.E10S3 = d3; output.E10S4 = d4; output.E10S5 = d5; output.E10S6 = d6;  // Sparkle
+    output.E11S0 = d0; output.E11S1 = d1; output.E11S2 = d2; output.E11S3 = d3; output.E11S4 = d4;  // Breathing
+    output.E12S0 = d0; output.E12S1 = d1; output.E12S2 = d2; output.E12S3 = d3; output.E12S4 = d4;  // Strobe
+    output.E13S0 = d0; output.E13S1 = d1; output.E13S2 = d2; output.E13S3 = d3; output.E13S4 = d4; output.E13S5 = d5;  // Comet
+    output.E14S0 = d0; output.E14S1 = d1; output.E14S2 = d2; output.E14S3 = d3; output.E14S4 = d4;  // Noise
+    output.E15S0 = d0; output.E15S1 = d1; output.E15S2 = d2; output.E15S3 = d3;  // Palette
+    output.E16S0 = d0; output.E16S1 = d1; output.E16S2 = d2; output.E16S3 = d3; output.E16S4 = d4;  // Blitz
+    output.E17S0 = d0; output.E17S1 = d1; output.E17S2 = d2; output.E17S3 = d3;  // Gradient
+    output.E18S0 = d0; output.E18S1 = d1; output.E18S2 = d2;  // Kerze
+    output.E19S0 = d0; output.E19S1 = d1; output.E19S2 = d2; output.E19S3 = d3; output.E19S4 = d4;  // Laufschrift
+    output.E20S0 = d0; output.E20S1 = d1; output.E20S2 = d2; output.E20S3 = d3; output.E20S4 = d4; output.E20S5 = d5; output.E20S6 = d6; output.E20S7 = d7; output.E20S8 = d8; output.E20S9 = d9;  // Uhr 2D
+    output.E21S0 = d0; output.E21S1 = d1; output.E21S2 = d2; output.E21S3 = d3;  // Snake 2D
+    output.E22S0 = d0; output.E22S1 = d1; output.E22S2 = d2; output.E22S3 = d3;  // Matrix 2D
+    output.E23S0 = d0; output.E23S1 = d1; output.E23S2 = d2; output.E23S3 = d3; output.E23S4 = d4; output.E23S5 = d5;  // Tetris 2D
+    output.E24S0 = d0; output.E24S1 = d1; output.E24S2 = d2; output.E24S3 = d3;  // TRON
+    output.E25S0 = d0; output.E25S1 = d1; output.E25S2 = d2; output.E25S3 = d3;  // Starfield Warp
+    output.E26S0 = d0; output.E26S1 = d1; output.E26S2 = d2; output.E26S3 = d3;  // Plasma Nebula
+    output.E27S0 = d0; output.E27S1 = d1; output.E27S2 = d2; output.E27S3 = d3;  // UFO Swarm
+    output.E28S0 = d0; output.E28S1 = d1; output.E28S2 = d2; output.E28S3 = d3;  // Game of Life 2D
+    output.E29S0 = d0; output.E29S1 = d1; output.E29S2 = d2; output.E29S3 = d3;  // DNA 2D
+    output.E30S0 = d0; output.E30S1 = d1; output.E30S2 = d2; output.E30S3 = d3;  // Aurora 2D
+    output.E31S0 = d0; output.E31S1 = d1; output.E31S2 = d2; output.E31S3 = d3;  // Lissajous 2D
+    output.E32S0 = d0; output.E32S1 = d1; output.E32S2 = d2; output.E32S3 = d3;  // Metaballs 2D
+}
 // END AUTO-GENERATED: Scene Effect Defaults Function
 
 // Active Scripting exposes callable COM methods as object/unknown as well as function.
@@ -725,7 +834,7 @@ function NEO_compareStudioSettings(device, online, progress, context) {
 }
 
 // BEGIN AUTO-GENERATED: Studio ETS parameter names
-var NEO_StudioEffectParameters = {};
+var NEO_StudioEffectParameters = {"0":[],"1":["WipeSpeed","WipeDirection","WipeLoop"],"2":["RainbowSpeed","RainbowDelta","RainbowSaturation","RainbowDensity","RainbowMode"],"3":["Pride2015Speed"],"4":["JuggleSpeed","JuggleNumDots","JuggleFadeSpeed","JuggleHueOffset"],"5":["BPMBPM","BPMHue"],"6":["CylonSpeed","CylonHue","CylonEyeSize","CylonFadeAmount","CylonDirection","CylonMode"],"7":["TestPhaseDuration","TestMode"],"8":["FireSpeed","FireCooling","FireSparking","FireReverseDirection","FireBlueFireMode"],"9":["TheaterChaseSpeed","TheaterChaseSpacing","TheaterChaseDotSize","TheaterChaseColorMode","TheaterChaseColorSpeed","TheaterChaseBounce"],"10":["SparkleSpeed","SparkleFadeRate","SparkleSparkleCount","SparkleProbability","SparkleWhiteOnly","SparkleBurstMode","SparkleMode"],"11":["BreathingSpeed","BreathingMinBrightness","BreathingCurve","BreathingRainbowMode","BreathingWaveform"],"12":["StrobeSpeed","StrobeOnRatio","StrobeMinBrightness","StrobeRandomTiming","StrobeRainbowStrobe"],"13":["CometSpeed","CometFadeRate","CometTailLength","CometBounceMode","CometRainbowMode","CometMode"],"14":["NoiseSpeed","NoiseScale","NoiseSaturation","NoiseHueOffset","NoisePalette"],"15":["PaletteSpeed","PalettePalette","PaletteBlend","PaletteSpacing"],"16":["BlitzSpeed","BlitzWidth","BlitzDecay","BlitzHue","BlitzIntensity"],"17":["GradientSpeed","GradientStartHue","GradientEndHue","GradientSaturation"],"18":["KerzeSpeed","KerzeIntensity","KerzeZones"],"19":["LaufschriftSpeed","LaufschriftGap","LaufschriftLoop","LaufschriftText","LaufschriftFont"],"20":["Uhr2DViewMode","Uhr2DShowSeconds","Uhr2DBlinkColon","Uhr2DColourHue","Uhr2DDateMode","Uhr2DDateFormat","Uhr2DDateHue","Uhr2DSwitchSec","Uhr2DScrollSpeed","Uhr2DFont"],"21":["Snake2DSpeed","Snake2DHeadHue","Snake2DBodyMode","Snake2DBodyHue"],"22":["Matrix2DSpeed","Matrix2DDensity","Matrix2DPalette","Matrix2DGlitch"],"23":["Tetris2DSpeed","Tetris2DBgBrightness","Tetris2DGhostPiece","Tetris2DColorMode","Tetris2DFlashLines","Tetris2DAutoPlay"],"24":["TRONSpeed","TRONHue","TRONGridSpacing","TRONGlow"],"25":["StarfieldWarpSpeed","StarfieldWarpDensity","StarfieldWarpColorMode","StarfieldWarpWarpPulse"],"26":["PlasmaNebulaSpeed","PlasmaNebulaSaturation","PlasmaNebulaContrast","PlasmaNebulaPaletteShift"],"27":["UFOSwarmSpeed","UFOSwarmCount","UFOSwarmHue","UFOSwarmBeam"],"28":["GameofLife2DSpeed","GameofLife2DHue","GameofLife2DColorMode","GameofLife2DSpawnDensity"],"29":["DNA2DSpeed","DNA2DHue","DNA2DTwist","DNA2DRungSpacing"],"30":["Aurora2DSpeed","Aurora2DHue","Aurora2DScale","Aurora2DIntensity"],"31":["Lissajous2DSpeed","Lissajous2DHue","Lissajous2DFreqA","Lissajous2DFreqB"],"32":["Metaballs2DSpeed","Metaballs2DHue","Metaballs2DBlobCount","Metaballs2DContrast"]};
 // END AUTO-GENERATED: Studio ETS parameter names
 
 function NEO_studioSceneBindings(device, context, settings) {
