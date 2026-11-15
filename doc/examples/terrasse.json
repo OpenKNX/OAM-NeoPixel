@@ -27,10 +27,12 @@
       "NEOEM": "-",
       "LOG": "0x44",
       "FCB": "0xA",
-      "LMG": "0x4"
+      "LMG": "0x4",
+      "NEOHW": "-"
     }
   },
   "importOrder": [
+    "NEOHW Kanal 0 (Hardware)",
     "NEO Kanal 0 (Basis)",
     "NEOSTRIP Kanal 1..n",
     "NEO Kanal 1..n (Segmente)",
@@ -88,14 +90,22 @@
       "transferStrings": [
         {
           "order": 1,
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "purpose": "Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
-          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "purpose": "Hardware: OpenKNXiao V1.5 KNeoPix RP2350",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX",
           "kind": "neopixel"
         },
         {
           "order": 2,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
           "module": "NEOSTRIP",
           "channel": 1,
           "purpose": "LED-Streifen 1: Balken 1",
@@ -103,7 +113,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 3,
+          "order": 4,
           "module": "NEOSTRIP",
           "channel": 2,
           "purpose": "LED-Streifen 2: Balken 2",
@@ -111,7 +121,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 4,
+          "order": 5,
           "module": "NEOSTRIP",
           "channel": 3,
           "purpose": "LED-Streifen 3: Balken 3",
@@ -119,7 +129,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 5,
+          "order": 6,
           "module": "NEOSTRIP",
           "channel": 4,
           "purpose": "LED-Streifen 4: Balken 4",
@@ -127,7 +137,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 6,
+          "order": 7,
           "module": "NEOSTRIP",
           "channel": 5,
           "purpose": "LED-Streifen 5: Balken 5",
@@ -135,7 +145,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 7,
+          "order": 8,
           "module": "NEOSTRIP",
           "channel": 6,
           "purpose": "LED-Streifen 6: Balken 6",
@@ -143,7 +153,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 8,
+          "order": 9,
           "module": "NEOSTRIP",
           "channel": 7,
           "purpose": "LED-Streifen 7: Balken 7",
@@ -151,7 +161,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 9,
+          "order": 10,
           "module": "NEOSTRIP",
           "channel": 8,
           "purpose": "LED-Streifen 8: Balken 8",
@@ -159,7 +169,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 10,
+          "order": 11,
           "module": "NEO",
           "channel": 1,
           "purpose": "Segment 1: 2D-Matrix 60×8, Effektkette Master",
@@ -167,7 +177,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 11,
+          "order": 12,
           "module": "NEOEM",
           "channel": 1,
           "purpose": "Effektmanager 1: Abendstimmung",
@@ -175,7 +185,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 12,
+          "order": 13,
           "module": "LOG",
           "channel": 1,
           "purpose": "Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO 642",
@@ -185,9 +195,9 @@
       ],
       "keySettings": [
         {
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "paramName": "NeoPixelHardwareSelect",
+          "paramName": "HardwareSelect",
           "value": 4882,
           "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
         },
@@ -1395,14 +1405,22 @@
       "transferStrings": [
         {
           "order": 1,
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "purpose": "Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
-          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "purpose": "Hardware: OpenKNXiao V1.5 KNeoPix RP2350",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX",
           "kind": "neopixel"
         },
         {
           "order": 2,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
           "module": "NEOSTRIP",
           "channel": 1,
           "purpose": "LED-Streifen 1: Balken 1",
@@ -1410,7 +1428,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 3,
+          "order": 4,
           "module": "NEOSTRIP",
           "channel": 2,
           "purpose": "LED-Streifen 2: Balken 2",
@@ -1418,7 +1436,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 4,
+          "order": 5,
           "module": "NEOSTRIP",
           "channel": 3,
           "purpose": "LED-Streifen 3: Balken 3",
@@ -1426,7 +1444,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 5,
+          "order": 6,
           "module": "NEOSTRIP",
           "channel": 4,
           "purpose": "LED-Streifen 4: Balken 4",
@@ -1434,7 +1452,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 6,
+          "order": 7,
           "module": "NEOSTRIP",
           "channel": 5,
           "purpose": "LED-Streifen 5: Balken 5",
@@ -1442,7 +1460,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 7,
+          "order": 8,
           "module": "NEOSTRIP",
           "channel": 6,
           "purpose": "LED-Streifen 6: Balken 6",
@@ -1450,7 +1468,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 8,
+          "order": 9,
           "module": "NEOSTRIP",
           "channel": 7,
           "purpose": "LED-Streifen 7: Balken 7",
@@ -1458,7 +1476,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 9,
+          "order": 10,
           "module": "NEOSTRIP",
           "channel": 8,
           "purpose": "LED-Streifen 8: Balken 8",
@@ -1466,7 +1484,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 10,
+          "order": 11,
           "module": "NEO",
           "channel": 1,
           "purpose": "Segment 1: 2D-Matrix 60×8, Effektkette Slave",
@@ -1474,7 +1492,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 11,
+          "order": 12,
           "module": "NEOEM",
           "channel": 1,
           "purpose": "Effektmanager 1: Abendstimmung",
@@ -1484,9 +1502,9 @@
       ],
       "keySettings": [
         {
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "paramName": "NeoPixelHardwareSelect",
+          "paramName": "HardwareSelect",
           "value": 4882,
           "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
         },
@@ -2099,14 +2117,22 @@
       "transferStrings": [
         {
           "order": 1,
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "purpose": "Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
-          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "purpose": "Hardware: OpenKNXiao V1.5 KNeoPix RP2350",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX",
           "kind": "neopixel"
         },
         {
           "order": 2,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
           "module": "NEOSTRIP",
           "channel": 1,
           "purpose": "LED-Streifen 1: Balken 1",
@@ -2114,7 +2140,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 3,
+          "order": 4,
           "module": "NEOSTRIP",
           "channel": 2,
           "purpose": "LED-Streifen 2: Balken 2",
@@ -2122,7 +2148,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 4,
+          "order": 5,
           "module": "NEOSTRIP",
           "channel": 3,
           "purpose": "LED-Streifen 3: Balken 3",
@@ -2130,7 +2156,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 5,
+          "order": 6,
           "module": "NEOSTRIP",
           "channel": 4,
           "purpose": "LED-Streifen 4: Balken 4",
@@ -2138,7 +2164,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 6,
+          "order": 7,
           "module": "NEOSTRIP",
           "channel": 5,
           "purpose": "LED-Streifen 5: Balken 5",
@@ -2146,7 +2172,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 7,
+          "order": 8,
           "module": "NEOSTRIP",
           "channel": 6,
           "purpose": "LED-Streifen 6: Balken 6",
@@ -2154,7 +2180,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 8,
+          "order": 9,
           "module": "NEOSTRIP",
           "channel": 7,
           "purpose": "LED-Streifen 7: Balken 7",
@@ -2162,7 +2188,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 9,
+          "order": 10,
           "module": "NEOSTRIP",
           "channel": 8,
           "purpose": "LED-Streifen 8: Balken 8",
@@ -2170,7 +2196,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 10,
+          "order": 11,
           "module": "NEO",
           "channel": 1,
           "purpose": "Segment 1: 2D-Matrix 60×8, Effektkette Slave",
@@ -2178,7 +2204,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 11,
+          "order": 12,
           "module": "NEOEM",
           "channel": 1,
           "purpose": "Effektmanager 1: Abendstimmung",
@@ -2188,9 +2214,9 @@
       ],
       "keySettings": [
         {
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "paramName": "NeoPixelHardwareSelect",
+          "paramName": "HardwareSelect",
           "value": 4882,
           "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
         },

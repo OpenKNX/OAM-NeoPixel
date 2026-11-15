@@ -27,10 +27,12 @@
       "NEOEM": "-",
       "LOG": "0x44",
       "FCB": "0xA",
-      "LMG": "0x4"
+      "LMG": "0x4",
+      "NEOHW": "-"
     }
   },
   "importOrder": [
+    "NEOHW Kanal 0 (Hardware)",
     "NEO Kanal 0 (Basis)",
     "NEOSTRIP Kanal 1..n",
     "NEO Kanal 1..n (Segmente)",
@@ -76,14 +78,22 @@
       "transferStrings": [
         {
           "order": 1,
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "purpose": "Basiseinstellungen: Hardware, Strombegrenzung",
-          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX",
+          "purpose": "Hardware: OpenKNXiao V1.5 KNeoPix RP2350",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX",
           "kind": "neopixel"
         },
         {
           "order": 2,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: Strombegrenzung",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
           "module": "NEOSTRIP",
           "channel": 1,
           "purpose": "LED-Streifen 1: Panel 16x16",
@@ -91,7 +101,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 3,
+          "order": 4,
           "module": "NEO",
           "channel": 1,
           "purpose": "Segment 1: Matrix 16×16, Plasma Nebula",
@@ -101,9 +111,9 @@
       ],
       "keySettings": [
         {
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "paramName": "NeoPixelHardwareSelect",
+          "paramName": "HardwareSelect",
           "value": 4882,
           "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
         },

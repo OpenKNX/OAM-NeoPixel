@@ -45,7 +45,7 @@ Ein Transfer-String enthält die Parameter genau eines Moduls und Kanals, zum Be
 6. Schritte 3–5 für jeden weiteren String in der angegebenen Reihenfolge wiederholen.
 7. Die Punkte unter „Nach dem Import prüfen“ erledigen (vor allem Ports), dann die Applikation herunterladen.
 
-**Reihenfolge:** Basiseinstellungen (Hardware, Anzahl Streifen und Segmente, Effektmanager) → LED-Streifen → Segmente → Effektmanager → Begleitmodule (Lichtmanager, Funktionsblöcke, Logik). Der Import schreibt Parameter auch dann, wenn sie gerade ausgeblendet sind; die Reihenfolge sorgt dafür, dass die Seiten nach jedem Schritt sichtbar sind und das Ergebnis direkt geprüft werden kann. Ports erst nach dem Import auswählen: ein Import der Basiseinstellungen oder eines LED-Streifens setzt die Port-Auswahl dieses Kanals zurück. Ein Wechsel des LED-Typs setzt außerdem die Takt-Ports aller acht Streifen zurück (nur für SPI-LEDs relevant).
+**Reihenfolge:** Hardware (Kanal „Hardware“, Modul `NEOHW`) → Basiseinstellungen (Anzahl Streifen und Segmente, Effektmanager) → LED-Streifen → Segmente → Effektmanager → Begleitmodule (Lichtmanager, Funktionsblöcke, Logik). Der Import schreibt Parameter auch dann, wenn sie gerade ausgeblendet sind; die Reihenfolge sorgt dafür, dass die Seiten nach jedem Schritt sichtbar sind und das Ergebnis direkt geprüft werden kann. Ports erst nach dem Import auswählen: ein Import der Basiseinstellungen oder eines LED-Streifens setzt die Port-Auswahl dieses Kanals zurück. Ein Wechsel des LED-Typs setzt außerdem die Takt-Ports aller acht Streifen zurück (nur für SPI-LEDs relevant).
 
 ## LED-Typen: RGB und RGBW
 
@@ -65,9 +65,9 @@ Ein RGB-Streifen hat keine weiße LED: die Firmware verwirft den W-Anteil für s
 ## Grenzen
 
 - **Gruppenadressen und KO-Flags werden nicht übertragen.** Die Vorschläge in den JSON-Dateien und unten müssen von Hand verknüpft werden. KOs, die durch den Import ausgeblendet werden, verlieren ihre Verknüpfungen.
-- **Ports werden nicht übertragen.** Die Port-Auswahl ist je Hardware ein eigener Parameter, dessen Name von der Position der Hardware in der Liste abhängt; diese Position hängt davon ab, welche Hardware ein Produkt-Build enthält (die Hardwareliste wird beim Build zusammengestellt). Hardware-Auswahl (Geräte-ID) wird übertragen, die Ports werden nach dem Import gewählt.
+- **Ports werden nicht übertragen.** Die Port-Auswahl ist je Hardware ein eigener Parameter, dessen Name an der Board-Nummer der Hardware hängt (`HardwareProfile.slots`). Die Hardware-Auswahl (Geräte-ID, Modul `NEOHW`, Parameter `HardwareSelect`) wird übertragen, die Ports werden nach dem Import gewählt.
 - **Allgemeine Einstellungen** (Standort, Zeitzone, Zeitquelle) sind nicht enthalten.
-- **Modulversionen:** Die Strings sind gegen Dev (0xAD01/0x12; NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0) und Release (0xAD00/0x0C; NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0) geprüft; Modulversionen NEO 0x5, LOG 0x44, FCB 0xA, LMG 0x4. Kennt eine spätere Version einen Parameter nicht mehr, meldet der Import „Unbekannter Parameter“; diese Werte fehlen dann.
+- **Modulversionen:** Die Strings wurden gegen Dev 2.1 (0xAD01/0x12; NeoPixel-Dev-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0) und Release (0xAD00/0x0C; NeoPixel-Release-v12.knxprod, OAM 0dcdd26, OFM-NeoPixel 40a20b0) geprüft, mit den Modulversionen NEO 0x5, LOG 0x44, FCB 0xA, LMG 0x4. Gegen Dev 2.4 (0xAD01/0x24; laut `src/NeoPixel-Dev.debug.xml` NEO 0x5, LOG 0x45, FCB 0xA, LMG 0x4) sind sie nicht neu geprüft; die Effekt-Parameter haben seit Dev 2.3 neue IDs. Die Logik-Strings tragen LOG 0x44, Dev 2.4 hat 0x45: mit eingeschalteter Prüfung der Modul-Version bricht ihr Import mit „Modul-Version … erwartet, aber … gefunden!“ ab. Der Hardware-String (`NEOHW:-`) braucht eine Applikation mit dem Kanal „Hardware“ (ab Dev 2.1 / Release 1.0, Versionsnummern vorläufig); eine ältere Applikation meldet „Modul NEOHW ist NICHT Teil dieser ETS-Applikation“, dort die Hardware von Hand wählen. Kennt eine spätere Version einen Parameter nicht mehr, meldet der Import „Unbekannter Parameter“; diese Werte fehlen dann.
 - Die Beispiele verwenden die Hardware OpenKNXiao V1.5 KNeoPix RP2350 (Geräte-ID 4882). Für andere Hardware die Auswahl ändern und die Ports neu wählen.
 
 ## 1. Einfach – Küchenzeile
@@ -86,19 +86,25 @@ Ein Streifen mit 120 LEDs unter den Hängeschränken (WS2812B), ein Segment übe
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, Strombegrenzung
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350
 
     ```text
-    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX
+    OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX
     ```
 
-2. LED-Streifen 1: Küchenzeile
+2. Basiseinstellungen: Strombegrenzung
+
+    ```text
+    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX
+    ```
+
+3. LED-Streifen 1: Küchenzeile
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=K%C3%BCchenzeile§NEO~Length=120§;OpenKNX
     ```
 
-3. Segment 1: Küchenzeile
+4. Segment 1: Küchenzeile
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=K%C3%BCchenzeile§NEO~SegmentEnd=120§NEO~SegmentStartupColor=-19349§NEO~SegmentStartupBrightness=204§NEO~SceneCount=2§NEO~SceneAPrimaryColor=-10328§NEO~SceneBPrimaryColor=-29632§NEO~SceneBBrightness=90§;OpenKNX
@@ -186,55 +192,61 @@ Zwei Streifen (SK6812/WS2814 (RGBW)) mit 150 und 150 LEDs. Segmente: Dachkante l
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, 2 Streifen, 3 Segmente, HCL, Strombegrenzung, Relais
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350
 
     ```text
-    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§HCLMaster=1§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=2§NEONumberOfSegments=3§NEOpowerLimitGlobal=5000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOStatusSendOnStartup=1§NEOExternalRelayCount=1§NEOExternalRelay1Name=LED-Netzteil§NEOExternalRelay1OffDelay=30§NEOExternalRelay1MinOffTime=10§;OpenKNX
+    OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX
     ```
 
-2. LED-Streifen 1: Dachkante links
+2. Basiseinstellungen: 2 Streifen, 3 Segmente, HCL, Strombegrenzung, Relais
+
+    ```text
+    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§HCLMaster=1§NEONumberOfLEDStrips=2§NEONumberOfSegments=3§NEOpowerLimitGlobal=5000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOStatusSendOnStartup=1§NEOExternalRelayCount=1§NEOExternalRelay1Name=LED-Netzteil§NEOExternalRelay1OffDelay=30§NEOExternalRelay1MinOffTime=10§;OpenKNX
+    ```
+
+3. LED-Streifen 1: Dachkante links
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Dachkante%20links§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=150§;OpenKNX
     ```
 
-3. LED-Streifen 2: Dachkante rechts + Sitzecke
+4. LED-Streifen 2: Dachkante rechts + Sitzecke
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Dachkante%20rechts%20%2B%20Sitzecke§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=150§;OpenKNX
     ```
 
-4. Segment 1: Dachkante links
+5. Segment 1: Dachkante links
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Dachkante%20links§NEO~SegmentEnd=150§NEO~SegmentStartupColor=-16777216§NEO~SegmentStartupW=255§;OpenKNX
     ```
 
-5. Segment 2: Dachkante rechts
+6. Segment 2: Dachkante rechts
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/2§Description~=Dachkante%20rechts§NEO~SegmentStart=151§NEO~SegmentEnd=240§NEO~SegmentStartupColor=-16777216§NEO~SegmentStartupW=255§;OpenKNX
     ```
 
-6. Segment 3: Sitzecke
+7. Segment 3: Sitzecke
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/3§Description~=Sitzecke§NEO~SegmentStart=241§NEO~SegmentEnd=300§NEO~SegmentStartupColor=-26048§NEO~SegmentStartupW=60§NEO~SegmentStartupBrightness=180§NEO~HCLMode=0§;OpenKNX
     ```
 
-7. Lichtmanager 1: HCL-Kurve für die Dachkanten, an allen Tagen
+8. Lichtmanager 1: HCL-Kurve für die Dachkanten, an allen Tagen
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LMG:0x4/1§CH~Name=Wintergarten%20HCL§CH~Active=1§CH~ProfileCount=1§CH~DayNightSource=2§CH~P1_Name=Alle%20Tage§CH~P1_DaySa=1§CH~P1_DaySo=1§CH~P1_DayUrl=1§CH~P1_DayFei=1§;OpenKNX
     ```
 
-8. Logik 1: ODER der Status-KOs Segment 1 und 2 (gerätintern über KO-Nummer)
+9. Logik 1: ODER der Status-KOs Segment 1 und 2 (gerätintern über KO-Nummer)
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Netzteil%3A%20Dachkanten%20an§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=601§f~E1UseOtherKO=1§f~E2=1§f~E2OtherKO:2=654§f~E2UseOtherKO=1§;OpenKNX
     ```
 
-9. Logik 2: ODER aus Segment 3 und Logik 1, schreibt in KO 408 (Relais 1)
+10. Logik 2: ODER aus Segment 3 und Logik 1, schreibt in KO 408 (Relais 1)
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Netzteil%20Relais%201§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=707§f~E1UseOtherKO=1§f~I1=1§f~I1Function=1§f~OOnKOSend=1§f~OOnKOSendNumber=408§f~OOffKOSend=1§f~OOffKOSendNumber=408§;OpenKNX
@@ -329,79 +341,85 @@ Drei Streifen (WS2812B): Einfahrt (120 LEDs), Wand links (180) und Wand rechts (
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, 3 Streifen, 3 Segmente, 1 Effektmanager
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350
 
     ```text
-    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=3§NEONumberOfSegments=3§NEOEMEnabled=1§;OpenKNX
+    OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX
     ```
 
-2. LED-Streifen 1: Einfahrt
+2. Basiseinstellungen: 3 Streifen, 3 Segmente, 1 Effektmanager
+
+    ```text
+    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEONumberOfLEDStrips=3§NEONumberOfSegments=3§NEOEMEnabled=1§;OpenKNX
+    ```
+
+3. LED-Streifen 1: Einfahrt
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Einfahrt§NEO~Length=120§NEO~powerLimitCombined=2§NEO~currentPerChannel=4000§NEO~autoBrightnessLimit=80§;OpenKNX
     ```
 
-3. LED-Streifen 2: Wand links
+4. LED-Streifen 2: Wand links
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Wand%20links§NEO~Length=180§NEO~powerLimitCombined=2§NEO~currentPerChannel=6400§NEO~autoBrightnessLimit=80§;OpenKNX
     ```
 
-4. LED-Streifen 3: Wand rechts
+5. LED-Streifen 3: Wand rechts
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Wand%20rechts§NEO~Length=180§NEO~powerLimitCombined=2§NEO~currentPerChannel=6400§NEO~autoBrightnessLimit=80§;OpenKNX
     ```
 
-5. Segment 1: Einfahrt
+6. Segment 1: Einfahrt
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Einfahrt§NEO~SegmentEnd=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
     ```
 
-6. Segment 2: Links
+7. Segment 2: Links
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/2§Description~=Links§NEO~SegmentStart=121§NEO~SegmentEnd=300§NEO~SegmentEmStopReturnMode=2§;OpenKNX
     ```
 
-7. Segment 3: Rechts
+8. Segment 3: Rechts
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/3§Description~=Rechts§NEO~SegmentStart=301§NEO~SegmentEnd=480§NEO~SegmentEmStopReturnMode=2§;OpenKNX
     ```
 
-8. Effektmanager 1: Einfahrt
+9. Effektmanager 1: Einfahrt
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Cue1Effect:1=13§NEOEM~Cue1Effect:2=13§NEOEM~Cue1Duration:1=10§NEOEM~Cue1Duration:2=10§NEOEM~Cue1Fade:1=1000§NEOEM~Cue1Fade:2=1000§NEOEM~Cue1Text:1=Begr%C3%BC%C3%9Fung§NEOEM~Cue1Text:2=Begr%C3%BC%C3%9Fung§NEOEM~Cue1CometSpeed=170§NEOEM~Cue1CometTailLength=20§NEOEM~Cue2Text:1=Ausleuchten§NEOEM~Cue2Text:2=Ausleuchten§NEOEM~Cue3Effect:1=11§NEOEM~Cue3Effect:2=11§NEOEM~Cue3Brightness=160§NEOEM~Cue3Duration:1=30§NEOEM~Cue3Duration:2=30§NEOEM~Cue3Fade:1=3000§NEOEM~Cue3Fade:2=3000§NEOEM~Cue3Text:1=Nachlauf§NEOEM~Cue3Text:2=Nachlauf§NEOEM~Cue3BreathingSpeed=60§NEOEM~Name=Einfahrt§;OpenKNX
     ```
 
-9. Funktionsblöcke: 1 Kanal sichtbar
+10. Funktionsblöcke: 1 Kanal sichtbar
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/FCB:0xA/0§VisibleChannels=1§;OpenKNX
     ```
 
-10. Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)
+11. Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/FCB:0xA/1§Channel~Name=Garage%20Anwesenheit§CH~ChannelType=2§CH~NameKo0=Torkontakt§CH~NameKo1=BM%20links§CH~NameKo2=BM%20rechts§CH~LogicKo2D=1§CH~LogicBehavOut=0§;OpenKNX
     ```
 
-11. Logik 1: Anwesenheit → EM 1 auf Segment 1 (Einfahrt) starten, nach 5 min Cue 3 „Nachlauf“
+12. Logik 1: Anwesenheit → EM 1 auf Segment 1 (Einfahrt) starten, nach 5 min Cue 3 „Nachlauf“
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Garage%20EM%20Einfahrt§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=646§;OpenKNX
     ```
 
-12. Logik 2: Anwesenheit → EM 1 auf Segment 2 (Links) starten, nach 5 min Cue 3 „Nachlauf“
+13. Logik 2: Anwesenheit → EM 1 auf Segment 2 (Links) starten, nach 5 min Cue 3 „Nachlauf“
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LOG:0x44/2§f~Name=Garage%20EM%20Links§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=695§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=699§;OpenKNX
     ```
 
-13. Logik 3: Anwesenheit → EM 1 auf Segment 3 (Rechts) starten, nach 5 min Cue 3 „Nachlauf“
+14. Logik 3: Anwesenheit → EM 1 auf Segment 3 (Rechts) starten, nach 5 min Cue 3 „Nachlauf“
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LOG:0x44/3§f~Name=Garage%20EM%20Rechts§f~LogicType=2§f~Logic=2§f~E1=1§f~E1OtherKO:2=259§f~E1UseOtherKO=1§f~OStairtimeBase=1§f~OStairtimeTime=5§f~OStair=1§f~OStairOff=0§f~OOutputFilter=3§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=748§f~OOffDpt5=3§f~OOffKOSend=1§f~OOffKOSendNumber=752§;OpenKNX
@@ -500,73 +518,79 @@ Drei Abschnitte, jeder mit eigenem NeoPixel-Gerät und eigenem Netzteil. Pro Ger
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350
 
     ```text
-    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX
+    OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX
     ```
 
-2. LED-Streifen 1: Balken 1
+2. Basiseinstellungen: 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung
+
+    ```text
+    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEONumberOfLEDStrips=8§NEOpowerLimitGlobal=16000§NEOcurrentPerLED=0§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§NEOEMEnabled=1§;OpenKNX
+    ```
+
+3. LED-Streifen 1: Balken 1
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Balken%201§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-3. LED-Streifen 2: Balken 2
+4. LED-Streifen 2: Balken 2
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/2§Description~=Balken%202§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-4. LED-Streifen 3: Balken 3
+5. LED-Streifen 3: Balken 3
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/3§Description~=Balken%203§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-5. LED-Streifen 4: Balken 4
+6. LED-Streifen 4: Balken 4
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/4§Description~=Balken%204§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-6. LED-Streifen 5: Balken 5
+7. LED-Streifen 5: Balken 5
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/5§Description~=Balken%205§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-7. LED-Streifen 6: Balken 6
+8. LED-Streifen 6: Balken 6
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/6§Description~=Balken%206§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-8. LED-Streifen 7: Balken 7
+9. LED-Streifen 7: Balken 7
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/7§Description~=Balken%207§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-9. LED-Streifen 8: Balken 8
+10. LED-Streifen 8: Balken 8
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/8§Description~=Balken%208§NEO~LEDType=8§NEO~ColourOrder=7§NEO~Length=60§;OpenKNX
     ```
 
-10. Segment 1: 2D-Matrix 60×8, Effektkette Master
+11. Segment 1: 2D-Matrix 60×8, Effektkette Master
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%201§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=1§NEO~VirtualTotalLength=1440§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
     ```
 
-11. Effektmanager 1: Abendstimmung
+12. Effektmanager 1: Abendstimmung
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOEM:-/1§NEOEM~CueCount=3§NEOEM~Loop=1§NEOEM~Cue1Effect:1=17§NEOEM~Cue1Effect:2=17§NEOEM~Cue1Brightness=220§NEOEM~Cue1Duration:1=600§NEOEM~Cue1Duration:2=600§NEOEM~Cue1Fade:1=4000§NEOEM~Cue1Fade:2=4000§NEOEM~Cue1Text:1=Sonnenunterg.§NEOEM~Cue1Text:2=Sonnenunterg.§NEOEM~Cue1GradientSpeed=16§NEOEM~Cue1GradientEndHue=32§NEOEM~Cue2Effect:1=30§NEOEM~Cue2Effect:2=30§NEOEM~Cue2Duration:1=600§NEOEM~Cue2Duration:2=600§NEOEM~Cue2Fade:1=4000§NEOEM~Cue2Fade:2=4000§NEOEM~Cue2Text:1=Welle§NEOEM~Cue2Text:2=Welle§NEOEM~Cue2Aurora2DSpeed=40§NEOEM~Cue2Aurora2DHue=20§NEOEM~Cue2Aurora2DScale=24§NEOEM~Cue3Effect:1=8§NEOEM~Cue3Effect:2=8§NEOEM~Cue3Brightness=180§NEOEM~Cue3Duration:1=600§NEOEM~Cue3Duration:2=600§NEOEM~Cue3Fade:1=4000§NEOEM~Cue3Fade:2=4000§NEOEM~Cue3Text:1=Glut§NEOEM~Cue3Text:2=Glut§NEOEM~Cue3FireSpeed=60§NEOEM~Cue3FireCooling=110§NEOEM~Cue3FireSparking=60§NEOEM~Name=Abendstimmung§;OpenKNX
     ```
 
-12. Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO 642
+13. Logik 1: Zeitschaltuhr, EIN bei Sonnenuntergang, AUS um 23:00; sendet 1/0 auf die EM-GA und schreibt gerätintern in KO 642
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/LOG:0x44/1§f~Name=Terrasse%20Abendstimmung§f~LogicType=5§f~Logic=5§f~Td1DuskDawn=8§f~Td2DuskDawn=1§f~TRestoreState=1§f~Td1Value=1§f~Td2HourAbs=23§f~Td2MinuteAbs=0§f~ODpt=2§f~OOnKOSend=1§f~OOnKOSendNumber=642§f~OOffKOSend=1§f~OOffKOSendNumber=642§;OpenKNX
@@ -597,61 +621,65 @@ Gruppenadressen (Vorschlag):
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 1
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 1
 
-2. LED-Streifen 1: Balken 1 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 2
+2. Basiseinstellungen: 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 2
 
-3. LED-Streifen 2: Balken 2 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 3
+3. LED-Streifen 1: Balken 1 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 3
 
-4. LED-Streifen 3: Balken 3 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 4
+4. LED-Streifen 2: Balken 2 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 4
 
-5. LED-Streifen 4: Balken 4 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 5
+5. LED-Streifen 3: Balken 3 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 5
 
-6. LED-Streifen 5: Balken 5 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 6
+6. LED-Streifen 4: Balken 4 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 6
 
-7. LED-Streifen 6: Balken 6 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 7
+7. LED-Streifen 5: Balken 5 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 7
 
-8. LED-Streifen 7: Balken 7 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 8
+8. LED-Streifen 6: Balken 6 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 8
 
-9. LED-Streifen 8: Balken 8 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 9
+9. LED-Streifen 7: Balken 7 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 9
 
-10. Segment 1: 2D-Matrix 60×8, Effektkette Slave
+10. LED-Streifen 8: Balken 8 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 10
+
+11. Segment 1: 2D-Matrix 60×8, Effektkette Slave
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%202§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=2§NEO~VirtualTotalLength=1440§NEO~VirtualOffset=480§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
     ```
 
-11. Effektmanager 1: Abendstimmung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 11
+12. Effektmanager 1: Abendstimmung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 12
 
 ### NeoPixel Terrasse Abschnitt 3 (Slave)
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 1
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 1
 
-2. LED-Streifen 1: Balken 1 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 2
+2. Basiseinstellungen: 8 Streifen, 1 Segment, 1 Effektmanager, Strombegrenzung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 2
 
-3. LED-Streifen 2: Balken 2 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 3
+3. LED-Streifen 1: Balken 1 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 3
 
-4. LED-Streifen 3: Balken 3 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 4
+4. LED-Streifen 2: Balken 2 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 4
 
-5. LED-Streifen 4: Balken 4 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 5
+5. LED-Streifen 3: Balken 3 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 5
 
-6. LED-Streifen 5: Balken 5 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 6
+6. LED-Streifen 4: Balken 4 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 6
 
-7. LED-Streifen 6: Balken 6 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 7
+7. LED-Streifen 5: Balken 5 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 7
 
-8. LED-Streifen 7: Balken 7 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 8
+8. LED-Streifen 6: Balken 6 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 8
 
-9. LED-Streifen 8: Balken 8 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 9
+9. LED-Streifen 7: Balken 7 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 9
 
-10. Segment 1: 2D-Matrix 60×8, Effektkette Slave
+10. LED-Streifen 8: Balken 8 – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 10
+
+11. Segment 1: 2D-Matrix 60×8, Effektkette Slave
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Terrasse%203§NEO~SegmentEnd=480§NEO~SegmentTopology=2§NEO~MatrixWidth=60§NEO~SyncMode=2§NEO~VirtualTotalLength=1440§NEO~VirtualOffset=960§NEO~SegmentStartupColor=-28608§NEO~SegmentStartupW=120§NEO~SegmentEmStopReturnMode=2§;OpenKNX
     ```
 
-11. Effektmanager 1: Abendstimmung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 11
+12. Effektmanager 1: Abendstimmung – identisch mit NeoPixel Terrasse Abschnitt 1 (Master), Schritt 12
 
 ### Tasterbelegung (z. B. MDT Taster 6- oder 8-fach)
 
@@ -716,19 +744,25 @@ Ein Panel mit 16×16 LEDs (WS2812B), verdrahtet als 2D — Schlangen, Zeilen (�
 
 Transfer-Strings (Reihenfolge einhalten):
 
-1. Basiseinstellungen: Hardware, Strombegrenzung
+1. Hardware: OpenKNXiao V1.5 KNeoPix RP2350
 
     ```text
-    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX
+    OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX
     ```
 
-2. LED-Streifen 1: Panel 16x16
+2. Basiseinstellungen: Strombegrenzung
+
+    ```text
+    OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEOpowerLimitGlobal=3000§NEOpowerLimitCombined=1§NEOautoBrightnessLimit=80§;OpenKNX
+    ```
+
+3. LED-Streifen 1: Panel 16x16
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEOSTRIP:-/1§Description~=Panel%2016x16§NEO~Length=256§;OpenKNX
     ```
 
-3. Segment 1: Matrix 16×16, Plasma Nebula
+4. Segment 1: Matrix 16×16, Plasma Nebula
 
     ```text
     OpenKNX,cv1,0xAD00:0xC/NEO:0x5/1§Description~=Matrix§NEO~SegmentEnd=256§NEO~SegmentTopology=1§NEO~NEOEffectType:1=26§NEO~NEOEffectType:2=26§NEO~MatrixWidth=16§NEO~MatrixHeight=16§NEO~SegmentStartupBrightness=128§NEO~PlasmaNebulaSpeed=48§;OpenKNX

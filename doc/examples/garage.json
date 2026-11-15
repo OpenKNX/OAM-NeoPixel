@@ -27,10 +27,12 @@
       "NEOEM": "-",
       "LOG": "0x44",
       "FCB": "0xA",
-      "LMG": "0x4"
+      "LMG": "0x4",
+      "NEOHW": "-"
     }
   },
   "importOrder": [
+    "NEOHW Kanal 0 (Hardware)",
     "NEO Kanal 0 (Basis)",
     "NEOSTRIP Kanal 1..n",
     "NEO Kanal 1..n (Segmente)",
@@ -80,14 +82,22 @@
       "transferStrings": [
         {
           "order": 1,
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "purpose": "Basiseinstellungen: Hardware, 3 Streifen, 3 Segmente, 1 Effektmanager",
-          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NeoPixelHardwareSelect=4882§NEONumberOfLEDStrips=3§NEONumberOfSegments=3§NEOEMEnabled=1§;OpenKNX",
+          "purpose": "Hardware: OpenKNXiao V1.5 KNeoPix RP2350",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEOHW:-/0§HardwareSelect=4882§;OpenKNX",
           "kind": "neopixel"
         },
         {
           "order": 2,
+          "module": "NEO",
+          "channel": 0,
+          "purpose": "Basiseinstellungen: 3 Streifen, 3 Segmente, 1 Effektmanager",
+          "string": "OpenKNX,cv1,0xAD00:0xC/NEO:0x5/0§NEONumberOfLEDStrips=3§NEONumberOfSegments=3§NEOEMEnabled=1§;OpenKNX",
+          "kind": "neopixel"
+        },
+        {
+          "order": 3,
           "module": "NEOSTRIP",
           "channel": 1,
           "purpose": "LED-Streifen 1: Einfahrt",
@@ -95,7 +105,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 3,
+          "order": 4,
           "module": "NEOSTRIP",
           "channel": 2,
           "purpose": "LED-Streifen 2: Wand links",
@@ -103,7 +113,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 4,
+          "order": 5,
           "module": "NEOSTRIP",
           "channel": 3,
           "purpose": "LED-Streifen 3: Wand rechts",
@@ -111,7 +121,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 5,
+          "order": 6,
           "module": "NEO",
           "channel": 1,
           "purpose": "Segment 1: Einfahrt",
@@ -119,7 +129,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 6,
+          "order": 7,
           "module": "NEO",
           "channel": 2,
           "purpose": "Segment 2: Links",
@@ -127,7 +137,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 7,
+          "order": 8,
           "module": "NEO",
           "channel": 3,
           "purpose": "Segment 3: Rechts",
@@ -135,7 +145,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 8,
+          "order": 9,
           "module": "NEOEM",
           "channel": 1,
           "purpose": "Effektmanager 1: Einfahrt",
@@ -143,7 +153,7 @@
           "kind": "neopixel"
         },
         {
-          "order": 9,
+          "order": 10,
           "module": "FCB",
           "channel": 0,
           "purpose": "Funktionsblöcke: 1 Kanal sichtbar",
@@ -151,7 +161,7 @@
           "kind": "companion"
         },
         {
-          "order": 10,
+          "order": 11,
           "module": "FCB",
           "channel": 1,
           "purpose": "Funktion 1: ODER aus Torkontakt und zwei Bewegungsmeldern (3 Bus-Eingänge)",
@@ -159,7 +169,7 @@
           "kind": "companion"
         },
         {
-          "order": 11,
+          "order": 12,
           "module": "LOG",
           "channel": 1,
           "purpose": "Logik 1: Anwesenheit → EM 1 auf Segment 1 (Einfahrt) starten, nach 5 min Cue 3 „Nachlauf“",
@@ -167,7 +177,7 @@
           "kind": "companion"
         },
         {
-          "order": 12,
+          "order": 13,
           "module": "LOG",
           "channel": 2,
           "purpose": "Logik 2: Anwesenheit → EM 1 auf Segment 2 (Links) starten, nach 5 min Cue 3 „Nachlauf“",
@@ -175,7 +185,7 @@
           "kind": "companion"
         },
         {
-          "order": 13,
+          "order": 14,
           "module": "LOG",
           "channel": 3,
           "purpose": "Logik 3: Anwesenheit → EM 1 auf Segment 3 (Rechts) starten, nach 5 min Cue 3 „Nachlauf“",
@@ -185,9 +195,9 @@
       ],
       "keySettings": [
         {
-          "module": "NEO",
+          "module": "NEOHW",
           "channel": 0,
-          "paramName": "NeoPixelHardwareSelect",
+          "paramName": "HardwareSelect",
           "value": 4882,
           "valueText": "OpenKNXiao V1.5 KNeoPix RP2350"
         },
