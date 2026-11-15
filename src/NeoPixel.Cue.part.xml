@@ -43,180 +43,180 @@
               <Parameter Id="%AID%_UP-%TT%%CC%%CUE_PPP+17%" Offset="%CUE_OFF+34%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%EffectText" ParameterType="%AID%_PT-CueText" Text="Effekt-Text" Value="" op:nowarn="true"/>
               <!-- BEGIN AUTO-GENERATED: Cue Effect Typed Parameters -->
               <!-- Wipe (ID 1) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+0%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+1%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+2%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%WipeLoop" ParameterType="%AID%_PT-WipeLoop" Text="Loop" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+10%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+11%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+12%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%WipeLoop" ParameterType="%AID%_PT-WipeLoop" Text="Loop" Value="0" op:nowarn="true"/>
               <!-- Rainbow (ID 2) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+3%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+4%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+5%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowSaturation" ParameterType="%AID%_PT-RainbowSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+6%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowDensity" ParameterType="%AID%_PT-RainbowDensity" Text="Density" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+7%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowMode" ParameterType="%AID%_PT-RainbowMode" Text="Mode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+20%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+21%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+22%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowSaturation" ParameterType="%AID%_PT-RainbowSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+23%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowDensity" ParameterType="%AID%_PT-RainbowDensity" Text="Density" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+24%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%RainbowMode" ParameterType="%AID%_PT-RainbowMode" Text="Mode" Value="0" op:nowarn="true"/>
               <!-- Pride2015 (ID 3) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+8%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+30%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed" Value="0" op:nowarn="true"/>
               <!-- Juggle (ID 4) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+9%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+10%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+11%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+12%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+40%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+41%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+42%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+43%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset" Value="0" op:nowarn="true"/>
               <!-- BPM (ID 5) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+13%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+14%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+50%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+51%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue" Value="0" op:nowarn="true"/>
               <!-- Cylon (ID 6) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+15%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+16%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+17%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+18%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+19%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonDirection" ParameterType="%AID%_PT-CylonDirection" Text="Direction" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+20%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonMode" ParameterType="%AID%_PT-CylonMode" Text="Mode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+60%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+61%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+62%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+63%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+64%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonDirection" ParameterType="%AID%_PT-CylonDirection" Text="Direction" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+65%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CylonMode" ParameterType="%AID%_PT-CylonMode" Text="Mode" Value="0" op:nowarn="true"/>
               <!-- Test (ID 7) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+21%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="PhaseDuration" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+22%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TestMode" ParameterType="%AID%_PT-TestMode" Text="Mode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+70%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="PhaseDuration" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+71%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TestMode" ParameterType="%AID%_PT-TestMode" Text="Mode" Value="0" op:nowarn="true"/>
               <!-- Fire (ID 8) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+23%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+24%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+25%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+26%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+27%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+80%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+81%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+82%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+83%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+84%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode" Value="0" op:nowarn="true"/>
               <!-- Theater Chase (ID 9) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+28%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+29%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+30%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+31%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseColorMode" ParameterType="%AID%_PT-TheaterChaseColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+32%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseColorSpeed" ParameterType="%AID%_PT-TheaterChaseColorSpeed" Text="ColorSpeed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+33%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseBounce" ParameterType="%AID%_PT-TheaterChaseBounce" Text="Bounce" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+90%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+91%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+92%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+93%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseColorMode" ParameterType="%AID%_PT-TheaterChaseColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+94%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseColorSpeed" ParameterType="%AID%_PT-TheaterChaseColorSpeed" Text="ColorSpeed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+95%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TheaterChaseBounce" ParameterType="%AID%_PT-TheaterChaseBounce" Text="Bounce" Value="0" op:nowarn="true"/>
               <!-- Sparkle (ID 10) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+34%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+35%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+36%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+37%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+38%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+39%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+40%" Offset="%CUE_OFF+7%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleMode" ParameterType="%AID%_PT-SparkleMode" Text="Mode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+100%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+101%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+102%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+103%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+104%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+105%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+106%" Offset="%CUE_OFF+7%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%SparkleMode" ParameterType="%AID%_PT-SparkleMode" Text="Mode" Value="0" op:nowarn="true"/>
               <!-- Breathing (ID 11) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+41%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+42%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+43%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+44%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingRainbowMode" ParameterType="%AID%_PT-BreathingRainbowMode" Text="RainbowMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+45%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingWaveform" ParameterType="%AID%_PT-BreathingWaveform" Text="Waveform" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+110%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+111%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+112%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+113%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingRainbowMode" ParameterType="%AID%_PT-BreathingRainbowMode" Text="RainbowMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+114%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BreathingWaveform" ParameterType="%AID%_PT-BreathingWaveform" Text="Waveform" Value="0" op:nowarn="true"/>
               <!-- Strobe (ID 12) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+46%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+47%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+48%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+49%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+50%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+120%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+121%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+122%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+123%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+124%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe" Value="0" op:nowarn="true"/>
               <!-- Comet (ID 13) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+51%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+52%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+53%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+54%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+55%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+56%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometMode" ParameterType="%AID%_PT-CometMode" Text="Mode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+130%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+131%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+132%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+133%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+134%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+135%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%CometMode" ParameterType="%AID%_PT-CometMode" Text="Mode" Value="0" op:nowarn="true"/>
               <!-- Noise (ID 14) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+57%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+58%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+59%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+60%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+61%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoisePalette" ParameterType="%AID%_PT-NoisePalette" Text="Palette" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+140%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+141%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+142%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+143%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+144%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%NoisePalette" ParameterType="%AID%_PT-NoisePalette" Text="Palette" Value="0" op:nowarn="true"/>
               <!-- Palette (ID 15) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+62%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+63%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+64%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+65%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+150%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+151%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+152%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+153%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing" Value="0" op:nowarn="true"/>
               <!-- Blitz (ID 16) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+66%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+67%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+68%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+69%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+70%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzIntensity" ParameterType="%AID%_PT-BlitzIntensity" Text="Intensity" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+160%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+161%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+162%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+163%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+164%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%BlitzIntensity" ParameterType="%AID%_PT-BlitzIntensity" Text="Intensity" Value="0" op:nowarn="true"/>
               <!-- Gradient (ID 17) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+71%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+72%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+73%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+74%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+170%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+171%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+172%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+173%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
               <!-- Kerze (ID 18) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+75%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%KerzeSpeed" ParameterType="%AID%_PT-KerzeSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+76%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%KerzeIntensity" ParameterType="%AID%_PT-KerzeIntensity" Text="Intensity" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+77%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%KerzeZones" ParameterType="%AID%_PT-KerzeZones" Text="Zones" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+180%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%KerzeSpeed" ParameterType="%AID%_PT-KerzeSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+181%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%KerzeIntensity" ParameterType="%AID%_PT-KerzeIntensity" Text="Intensity" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+182%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%KerzeZones" ParameterType="%AID%_PT-KerzeZones" Text="Zones" Value="0" op:nowarn="true"/>
               <!-- Laufschrift (ID 19) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+78%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftSpeed" ParameterType="%AID%_PT-LaufschriftSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+79%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftGap" ParameterType="%AID%_PT-LaufschriftGap" Text="Gap" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+80%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftLoop" ParameterType="%AID%_PT-LaufschriftLoop" Text="Loop" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+81%" Offset="%CUE_OFF+34%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftText" ParameterType="%AID%_PT-LaufschriftText" Text="Laufschrift-Text" Value="" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+82%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftFont" ParameterType="%AID%_PT-LaufschriftFont" Text="Font" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+190%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftSpeed" ParameterType="%AID%_PT-LaufschriftSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+191%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftGap" ParameterType="%AID%_PT-LaufschriftGap" Text="Gap" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+192%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftLoop" ParameterType="%AID%_PT-LaufschriftLoop" Text="Loop" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+193%" Offset="%CUE_OFF+34%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftText" ParameterType="%AID%_PT-LaufschriftText" Text="Laufschrift-Text" Value="" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+194%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%LaufschriftFont" ParameterType="%AID%_PT-LaufschriftFont" Text="Font" Value="0" op:nowarn="true"/>
               <!-- Uhr 2D (ID 20) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+83%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DViewMode" ParameterType="%AID%_PT-Uhr2DViewMode" Text="ViewMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+84%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DShowSeconds" ParameterType="%AID%_PT-Uhr2DShowSeconds" Text="ShowSeconds" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+85%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DBlinkColon" ParameterType="%AID%_PT-Uhr2DBlinkColon" Text="BlinkColon" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+86%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DColourHue" ParameterType="%AID%_PT-Uhr2DColourHue" Text="ColourHue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+87%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DDateMode" ParameterType="%AID%_PT-Uhr2DDateMode" Text="DateMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+88%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DDateFormat" ParameterType="%AID%_PT-Uhr2DDateFormat" Text="DateFormat" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+89%" Offset="%CUE_OFF+7%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DDateHue" ParameterType="%AID%_PT-Uhr2DDateHue" Text="DateHue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+90%" Offset="%CUE_OFF+8%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DSwitchSec" ParameterType="%AID%_PT-Uhr2DSwitchSec" Text="SwitchSec" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+91%" Offset="%CUE_OFF+9%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DScrollSpeed" ParameterType="%AID%_PT-Uhr2DScrollSpeed" Text="ScrollSpeed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+92%" Offset="%CUE_OFF+10%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DFont" ParameterType="%AID%_PT-Uhr2DFont" Text="Font" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+200%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DViewMode" ParameterType="%AID%_PT-Uhr2DViewMode" Text="ViewMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+201%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DShowSeconds" ParameterType="%AID%_PT-Uhr2DShowSeconds" Text="ShowSeconds" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+202%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DBlinkColon" ParameterType="%AID%_PT-Uhr2DBlinkColon" Text="BlinkColon" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+203%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DColourHue" ParameterType="%AID%_PT-Uhr2DColourHue" Text="ColourHue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+204%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DDateMode" ParameterType="%AID%_PT-Uhr2DDateMode" Text="DateMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+205%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DDateFormat" ParameterType="%AID%_PT-Uhr2DDateFormat" Text="DateFormat" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+206%" Offset="%CUE_OFF+7%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DDateHue" ParameterType="%AID%_PT-Uhr2DDateHue" Text="DateHue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+207%" Offset="%CUE_OFF+8%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DSwitchSec" ParameterType="%AID%_PT-Uhr2DSwitchSec" Text="SwitchSec" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+208%" Offset="%CUE_OFF+9%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DScrollSpeed" ParameterType="%AID%_PT-Uhr2DScrollSpeed" Text="ScrollSpeed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+209%" Offset="%CUE_OFF+10%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Uhr2DFont" ParameterType="%AID%_PT-Uhr2DFont" Text="Font" Value="0" op:nowarn="true"/>
               <!-- Snake 2D (ID 21) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+93%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DSpeed" ParameterType="%AID%_PT-Snake2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+94%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DHeadHue" ParameterType="%AID%_PT-Snake2DHeadHue" Text="HeadHue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+95%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DBodyMode" ParameterType="%AID%_PT-Snake2DBodyMode" Text="BodyMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+96%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DBodyHue" ParameterType="%AID%_PT-Snake2DBodyHue" Text="BodyHue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+210%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DSpeed" ParameterType="%AID%_PT-Snake2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+211%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DHeadHue" ParameterType="%AID%_PT-Snake2DHeadHue" Text="HeadHue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+212%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DBodyMode" ParameterType="%AID%_PT-Snake2DBodyMode" Text="BodyMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+213%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Snake2DBodyHue" ParameterType="%AID%_PT-Snake2DBodyHue" Text="BodyHue" Value="0" op:nowarn="true"/>
               <!-- Matrix 2D (ID 22) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+97%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DSpeed" ParameterType="%AID%_PT-Matrix2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+98%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DDensity" ParameterType="%AID%_PT-Matrix2DDensity" Text="Density" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+99%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DPalette" ParameterType="%AID%_PT-Matrix2DPalette" Text="Palette" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+100%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DGlitch" ParameterType="%AID%_PT-Matrix2DGlitch" Text="Glitch" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+220%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DSpeed" ParameterType="%AID%_PT-Matrix2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+221%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DDensity" ParameterType="%AID%_PT-Matrix2DDensity" Text="Density" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+222%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DPalette" ParameterType="%AID%_PT-Matrix2DPalette" Text="Palette" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+223%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Matrix2DGlitch" ParameterType="%AID%_PT-Matrix2DGlitch" Text="Glitch" Value="0" op:nowarn="true"/>
               <!-- Tetris 2D (ID 23) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+101%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DSpeed" ParameterType="%AID%_PT-Tetris2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+102%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DBgBrightness" ParameterType="%AID%_PT-Tetris2DBgBrightness" Text="BgBrightness" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+103%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DGhostPiece" ParameterType="%AID%_PT-Tetris2DGhostPiece" Text="GhostPiece" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+104%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DColorMode" ParameterType="%AID%_PT-Tetris2DColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+105%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DFlashLines" ParameterType="%AID%_PT-Tetris2DFlashLines" Text="FlashLines" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+106%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DAutoPlay" ParameterType="%AID%_PT-Tetris2DAutoPlay" Text="AutoPlay" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+230%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DSpeed" ParameterType="%AID%_PT-Tetris2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+231%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DBgBrightness" ParameterType="%AID%_PT-Tetris2DBgBrightness" Text="BgBrightness" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+232%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DGhostPiece" ParameterType="%AID%_PT-Tetris2DGhostPiece" Text="GhostPiece" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+233%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DColorMode" ParameterType="%AID%_PT-Tetris2DColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+234%" Offset="%CUE_OFF+5%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DFlashLines" ParameterType="%AID%_PT-Tetris2DFlashLines" Text="FlashLines" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+235%" Offset="%CUE_OFF+6%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Tetris2DAutoPlay" ParameterType="%AID%_PT-Tetris2DAutoPlay" Text="AutoPlay" Value="0" op:nowarn="true"/>
               <!-- TRON (ID 24) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+107%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONSpeed" ParameterType="%AID%_PT-TRONSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+108%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONHue" ParameterType="%AID%_PT-TRONHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+109%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONGridSpacing" ParameterType="%AID%_PT-TRONGridSpacing" Text="GridSpacing" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+110%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONGlow" ParameterType="%AID%_PT-TRONGlow" Text="Glow" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+240%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONSpeed" ParameterType="%AID%_PT-TRONSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+241%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONHue" ParameterType="%AID%_PT-TRONHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+242%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONGridSpacing" ParameterType="%AID%_PT-TRONGridSpacing" Text="GridSpacing" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+243%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%TRONGlow" ParameterType="%AID%_PT-TRONGlow" Text="Glow" Value="0" op:nowarn="true"/>
               <!-- Starfield Warp (ID 25) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+111%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpSpeed" ParameterType="%AID%_PT-StarfieldWarpSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+112%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpDensity" ParameterType="%AID%_PT-StarfieldWarpDensity" Text="Density" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+113%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpColorMode" ParameterType="%AID%_PT-StarfieldWarpColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+114%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpWarpPulse" ParameterType="%AID%_PT-StarfieldWarpWarpPulse" Text="WarpPulse" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+250%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpSpeed" ParameterType="%AID%_PT-StarfieldWarpSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+251%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpDensity" ParameterType="%AID%_PT-StarfieldWarpDensity" Text="Density" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+252%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpColorMode" ParameterType="%AID%_PT-StarfieldWarpColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+253%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%StarfieldWarpWarpPulse" ParameterType="%AID%_PT-StarfieldWarpWarpPulse" Text="WarpPulse" Value="0" op:nowarn="true"/>
               <!-- Plasma Nebula (ID 26) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+115%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaSpeed" ParameterType="%AID%_PT-PlasmaNebulaSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+116%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaSaturation" ParameterType="%AID%_PT-PlasmaNebulaSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+117%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaContrast" ParameterType="%AID%_PT-PlasmaNebulaContrast" Text="Contrast" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+118%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaPaletteShift" ParameterType="%AID%_PT-PlasmaNebulaPaletteShift" Text="PaletteShift" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+260%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaSpeed" ParameterType="%AID%_PT-PlasmaNebulaSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+261%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaSaturation" ParameterType="%AID%_PT-PlasmaNebulaSaturation" Text="Saturation" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+262%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaContrast" ParameterType="%AID%_PT-PlasmaNebulaContrast" Text="Contrast" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+263%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%PlasmaNebulaPaletteShift" ParameterType="%AID%_PT-PlasmaNebulaPaletteShift" Text="PaletteShift" Value="0" op:nowarn="true"/>
               <!-- UFO Swarm (ID 27) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+119%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmSpeed" ParameterType="%AID%_PT-UFOSwarmSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+120%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmCount" ParameterType="%AID%_PT-UFOSwarmCount" Text="Count" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+121%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmHue" ParameterType="%AID%_PT-UFOSwarmHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+122%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmBeam" ParameterType="%AID%_PT-UFOSwarmBeam" Text="Beam" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+270%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmSpeed" ParameterType="%AID%_PT-UFOSwarmSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+271%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmCount" ParameterType="%AID%_PT-UFOSwarmCount" Text="Count" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+272%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmHue" ParameterType="%AID%_PT-UFOSwarmHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+273%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%UFOSwarmBeam" ParameterType="%AID%_PT-UFOSwarmBeam" Text="Beam" Value="0" op:nowarn="true"/>
               <!-- Game of Life 2D (ID 28) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+123%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DSpeed" ParameterType="%AID%_PT-GameofLife2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+124%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DHue" ParameterType="%AID%_PT-GameofLife2DHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+125%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DColorMode" ParameterType="%AID%_PT-GameofLife2DColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+126%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DSpawnDensity" ParameterType="%AID%_PT-GameofLife2DSpawnDensity" Text="SpawnDensity" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+280%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DSpeed" ParameterType="%AID%_PT-GameofLife2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+281%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DHue" ParameterType="%AID%_PT-GameofLife2DHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+282%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DColorMode" ParameterType="%AID%_PT-GameofLife2DColorMode" Text="ColorMode" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+283%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%GameofLife2DSpawnDensity" ParameterType="%AID%_PT-GameofLife2DSpawnDensity" Text="SpawnDensity" Value="0" op:nowarn="true"/>
               <!-- DNA 2D (ID 29) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+127%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DSpeed" ParameterType="%AID%_PT-DNA2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+128%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DHue" ParameterType="%AID%_PT-DNA2DHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+129%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DTwist" ParameterType="%AID%_PT-DNA2DTwist" Text="Twist" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+130%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DRungSpacing" ParameterType="%AID%_PT-DNA2DRungSpacing" Text="RungSpacing" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+290%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DSpeed" ParameterType="%AID%_PT-DNA2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+291%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DHue" ParameterType="%AID%_PT-DNA2DHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+292%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DTwist" ParameterType="%AID%_PT-DNA2DTwist" Text="Twist" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+293%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%DNA2DRungSpacing" ParameterType="%AID%_PT-DNA2DRungSpacing" Text="RungSpacing" Value="0" op:nowarn="true"/>
               <!-- Aurora 2D (ID 30) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+131%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DSpeed" ParameterType="%AID%_PT-Aurora2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+132%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DHue" ParameterType="%AID%_PT-Aurora2DHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+133%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DScale" ParameterType="%AID%_PT-Aurora2DScale" Text="Scale" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+134%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DIntensity" ParameterType="%AID%_PT-Aurora2DIntensity" Text="Intensity" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+300%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DSpeed" ParameterType="%AID%_PT-Aurora2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+301%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DHue" ParameterType="%AID%_PT-Aurora2DHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+302%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DScale" ParameterType="%AID%_PT-Aurora2DScale" Text="Scale" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+303%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Aurora2DIntensity" ParameterType="%AID%_PT-Aurora2DIntensity" Text="Intensity" Value="0" op:nowarn="true"/>
               <!-- Lissajous 2D (ID 31) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+135%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DSpeed" ParameterType="%AID%_PT-Lissajous2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+136%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DHue" ParameterType="%AID%_PT-Lissajous2DHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+137%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DFreqA" ParameterType="%AID%_PT-Lissajous2DFreqA" Text="FreqA" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+138%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DFreqB" ParameterType="%AID%_PT-Lissajous2DFreqB" Text="FreqB" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+310%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DSpeed" ParameterType="%AID%_PT-Lissajous2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+311%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DHue" ParameterType="%AID%_PT-Lissajous2DHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+312%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DFreqA" ParameterType="%AID%_PT-Lissajous2DFreqA" Text="FreqA" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+313%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Lissajous2DFreqB" ParameterType="%AID%_PT-Lissajous2DFreqB" Text="FreqB" Value="0" op:nowarn="true"/>
               <!-- Metaballs 2D (ID 32) -->
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+139%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DSpeed" ParameterType="%AID%_PT-Metaballs2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+140%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DHue" ParameterType="%AID%_PT-Metaballs2DHue" Text="Hue" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+141%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DBlobCount" ParameterType="%AID%_PT-Metaballs2DBlobCount" Text="BlobCount" Value="0" op:nowarn="true"/>
-              <Parameter Id="%AID%_UP-20%CC%%CUE_TPP+142%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Contrast" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+320%" Offset="%CUE_OFF+1%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DSpeed" ParameterType="%AID%_PT-Metaballs2DSpeed" Text="Speed" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+321%" Offset="%CUE_OFF+2%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DHue" ParameterType="%AID%_PT-Metaballs2DHue" Text="Hue" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+322%" Offset="%CUE_OFF+3%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DBlobCount" ParameterType="%AID%_PT-Metaballs2DBlobCount" Text="BlobCount" Value="0" op:nowarn="true"/>
+              <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+323%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Contrast" Value="0" op:nowarn="true"/>
               <!-- END AUTO-GENERATED: Cue Effect Typed Parameters -->
             </Parameters>
             <ParameterRefs>
@@ -238,180 +238,180 @@
 
               <!-- Typed Cue ParameterRefs: per-effect typed fields overlaying the cue slots -->
               <!-- Wipe (ID 1) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+0%_R-20%CC%%CUE_TPP+0%01" RefId="%AID%_UP-20%CC%%CUE_TPP+0%" Value="25" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+1%_R-20%CC%%CUE_TPP+1%01" RefId="%AID%_UP-20%CC%%CUE_TPP+1%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+2%_R-20%CC%%CUE_TPP+2%01" RefId="%AID%_UP-20%CC%%CUE_TPP+2%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+10%_R-22%CC%%CUE_TPP+10%01" RefId="%AID%_UP-22%CC%%CUE_TPP+10%" Value="25" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+11%_R-22%CC%%CUE_TPP+11%01" RefId="%AID%_UP-22%CC%%CUE_TPP+11%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+12%_R-22%CC%%CUE_TPP+12%01" RefId="%AID%_UP-22%CC%%CUE_TPP+12%" Value="1" />
               <!-- Rainbow (ID 2) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+3%_R-20%CC%%CUE_TPP+3%01" RefId="%AID%_UP-20%CC%%CUE_TPP+3%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+4%_R-20%CC%%CUE_TPP+4%01" RefId="%AID%_UP-20%CC%%CUE_TPP+4%" Value="7" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+5%_R-20%CC%%CUE_TPP+5%01" RefId="%AID%_UP-20%CC%%CUE_TPP+5%" Value="255" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+6%_R-20%CC%%CUE_TPP+6%01" RefId="%AID%_UP-20%CC%%CUE_TPP+6%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+7%_R-20%CC%%CUE_TPP+7%01" RefId="%AID%_UP-20%CC%%CUE_TPP+7%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+20%_R-22%CC%%CUE_TPP+20%01" RefId="%AID%_UP-22%CC%%CUE_TPP+20%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+21%_R-22%CC%%CUE_TPP+21%01" RefId="%AID%_UP-22%CC%%CUE_TPP+21%" Value="7" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+22%_R-22%CC%%CUE_TPP+22%01" RefId="%AID%_UP-22%CC%%CUE_TPP+22%" Value="255" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+23%_R-22%CC%%CUE_TPP+23%01" RefId="%AID%_UP-22%CC%%CUE_TPP+23%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+24%_R-22%CC%%CUE_TPP+24%01" RefId="%AID%_UP-22%CC%%CUE_TPP+24%" Value="0" />
               <!-- Pride2015 (ID 3) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+8%_R-20%CC%%CUE_TPP+8%01" RefId="%AID%_UP-20%CC%%CUE_TPP+8%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+30%_R-22%CC%%CUE_TPP+30%01" RefId="%AID%_UP-22%CC%%CUE_TPP+30%" Value="128" />
               <!-- Juggle (ID 4) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+9%_R-20%CC%%CUE_TPP+9%01" RefId="%AID%_UP-20%CC%%CUE_TPP+9%" Value="80" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+10%_R-20%CC%%CUE_TPP+10%01" RefId="%AID%_UP-20%CC%%CUE_TPP+10%" Value="8" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+11%_R-20%CC%%CUE_TPP+11%01" RefId="%AID%_UP-20%CC%%CUE_TPP+11%" Value="20" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+12%_R-20%CC%%CUE_TPP+12%01" RefId="%AID%_UP-20%CC%%CUE_TPP+12%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+40%_R-22%CC%%CUE_TPP+40%01" RefId="%AID%_UP-22%CC%%CUE_TPP+40%" Value="80" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+41%_R-22%CC%%CUE_TPP+41%01" RefId="%AID%_UP-22%CC%%CUE_TPP+41%" Value="8" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+42%_R-22%CC%%CUE_TPP+42%01" RefId="%AID%_UP-22%CC%%CUE_TPP+42%" Value="20" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+43%_R-22%CC%%CUE_TPP+43%01" RefId="%AID%_UP-22%CC%%CUE_TPP+43%" Value="0" />
               <!-- BPM (ID 5) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+13%_R-20%CC%%CUE_TPP+13%01" RefId="%AID%_UP-20%CC%%CUE_TPP+13%" Value="62" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+14%_R-20%CC%%CUE_TPP+14%01" RefId="%AID%_UP-20%CC%%CUE_TPP+14%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+50%_R-22%CC%%CUE_TPP+50%01" RefId="%AID%_UP-22%CC%%CUE_TPP+50%" Value="62" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+51%_R-22%CC%%CUE_TPP+51%01" RefId="%AID%_UP-22%CC%%CUE_TPP+51%" Value="0" />
               <!-- Cylon (ID 6) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+15%_R-20%CC%%CUE_TPP+15%01" RefId="%AID%_UP-20%CC%%CUE_TPP+15%" Value="20" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+16%_R-20%CC%%CUE_TPP+16%01" RefId="%AID%_UP-20%CC%%CUE_TPP+16%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+17%_R-20%CC%%CUE_TPP+17%01" RefId="%AID%_UP-20%CC%%CUE_TPP+17%" Value="5" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+18%_R-20%CC%%CUE_TPP+18%01" RefId="%AID%_UP-20%CC%%CUE_TPP+18%" Value="50" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+19%_R-20%CC%%CUE_TPP+19%01" RefId="%AID%_UP-20%CC%%CUE_TPP+19%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+20%_R-20%CC%%CUE_TPP+20%01" RefId="%AID%_UP-20%CC%%CUE_TPP+20%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+60%_R-22%CC%%CUE_TPP+60%01" RefId="%AID%_UP-22%CC%%CUE_TPP+60%" Value="20" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+61%_R-22%CC%%CUE_TPP+61%01" RefId="%AID%_UP-22%CC%%CUE_TPP+61%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+62%_R-22%CC%%CUE_TPP+62%01" RefId="%AID%_UP-22%CC%%CUE_TPP+62%" Value="5" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+63%_R-22%CC%%CUE_TPP+63%01" RefId="%AID%_UP-22%CC%%CUE_TPP+63%" Value="50" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+64%_R-22%CC%%CUE_TPP+64%01" RefId="%AID%_UP-22%CC%%CUE_TPP+64%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+65%_R-22%CC%%CUE_TPP+65%01" RefId="%AID%_UP-22%CC%%CUE_TPP+65%" Value="0" />
               <!-- Test (ID 7) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+21%_R-20%CC%%CUE_TPP+21%01" RefId="%AID%_UP-20%CC%%CUE_TPP+21%" Value="5" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+22%_R-20%CC%%CUE_TPP+22%01" RefId="%AID%_UP-20%CC%%CUE_TPP+22%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+70%_R-22%CC%%CUE_TPP+70%01" RefId="%AID%_UP-22%CC%%CUE_TPP+70%" Value="5" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+71%_R-22%CC%%CUE_TPP+71%01" RefId="%AID%_UP-22%CC%%CUE_TPP+71%" Value="0" />
               <!-- Fire (ID 8) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+23%_R-20%CC%%CUE_TPP+23%01" RefId="%AID%_UP-20%CC%%CUE_TPP+23%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+24%_R-20%CC%%CUE_TPP+24%01" RefId="%AID%_UP-20%CC%%CUE_TPP+24%" Value="90" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+25%_R-20%CC%%CUE_TPP+25%01" RefId="%AID%_UP-20%CC%%CUE_TPP+25%" Value="120" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+26%_R-20%CC%%CUE_TPP+26%01" RefId="%AID%_UP-20%CC%%CUE_TPP+26%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+27%_R-20%CC%%CUE_TPP+27%01" RefId="%AID%_UP-20%CC%%CUE_TPP+27%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+80%_R-22%CC%%CUE_TPP+80%01" RefId="%AID%_UP-22%CC%%CUE_TPP+80%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+81%_R-22%CC%%CUE_TPP+81%01" RefId="%AID%_UP-22%CC%%CUE_TPP+81%" Value="90" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+82%_R-22%CC%%CUE_TPP+82%01" RefId="%AID%_UP-22%CC%%CUE_TPP+82%" Value="120" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+83%_R-22%CC%%CUE_TPP+83%01" RefId="%AID%_UP-22%CC%%CUE_TPP+83%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+84%_R-22%CC%%CUE_TPP+84%01" RefId="%AID%_UP-22%CC%%CUE_TPP+84%" Value="0" />
               <!-- Theater Chase (ID 9) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+28%_R-20%CC%%CUE_TPP+28%01" RefId="%AID%_UP-20%CC%%CUE_TPP+28%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+29%_R-20%CC%%CUE_TPP+29%01" RefId="%AID%_UP-20%CC%%CUE_TPP+29%" Value="3" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+30%_R-20%CC%%CUE_TPP+30%01" RefId="%AID%_UP-20%CC%%CUE_TPP+30%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+31%_R-20%CC%%CUE_TPP+31%01" RefId="%AID%_UP-20%CC%%CUE_TPP+31%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+32%_R-20%CC%%CUE_TPP+32%01" RefId="%AID%_UP-20%CC%%CUE_TPP+32%" Value="5" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+33%_R-20%CC%%CUE_TPP+33%01" RefId="%AID%_UP-20%CC%%CUE_TPP+33%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+90%_R-22%CC%%CUE_TPP+90%01" RefId="%AID%_UP-22%CC%%CUE_TPP+90%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+91%_R-22%CC%%CUE_TPP+91%01" RefId="%AID%_UP-22%CC%%CUE_TPP+91%" Value="3" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+92%_R-22%CC%%CUE_TPP+92%01" RefId="%AID%_UP-22%CC%%CUE_TPP+92%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+93%_R-22%CC%%CUE_TPP+93%01" RefId="%AID%_UP-22%CC%%CUE_TPP+93%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+94%_R-22%CC%%CUE_TPP+94%01" RefId="%AID%_UP-22%CC%%CUE_TPP+94%" Value="5" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+95%_R-22%CC%%CUE_TPP+95%01" RefId="%AID%_UP-22%CC%%CUE_TPP+95%" Value="0" />
               <!-- Sparkle (ID 10) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+34%_R-20%CC%%CUE_TPP+34%01" RefId="%AID%_UP-20%CC%%CUE_TPP+34%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+35%_R-20%CC%%CUE_TPP+35%01" RefId="%AID%_UP-20%CC%%CUE_TPP+35%" Value="120" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+36%_R-20%CC%%CUE_TPP+36%01" RefId="%AID%_UP-20%CC%%CUE_TPP+36%" Value="64" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+37%_R-20%CC%%CUE_TPP+37%01" RefId="%AID%_UP-20%CC%%CUE_TPP+37%" Value="100" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+38%_R-20%CC%%CUE_TPP+38%01" RefId="%AID%_UP-20%CC%%CUE_TPP+38%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+39%_R-20%CC%%CUE_TPP+39%01" RefId="%AID%_UP-20%CC%%CUE_TPP+39%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+40%_R-20%CC%%CUE_TPP+40%01" RefId="%AID%_UP-20%CC%%CUE_TPP+40%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+100%_R-22%CC%%CUE_TPP+100%01" RefId="%AID%_UP-22%CC%%CUE_TPP+100%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+101%_R-22%CC%%CUE_TPP+101%01" RefId="%AID%_UP-22%CC%%CUE_TPP+101%" Value="120" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+102%_R-22%CC%%CUE_TPP+102%01" RefId="%AID%_UP-22%CC%%CUE_TPP+102%" Value="64" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+103%_R-22%CC%%CUE_TPP+103%01" RefId="%AID%_UP-22%CC%%CUE_TPP+103%" Value="100" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+104%_R-22%CC%%CUE_TPP+104%01" RefId="%AID%_UP-22%CC%%CUE_TPP+104%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+105%_R-22%CC%%CUE_TPP+105%01" RefId="%AID%_UP-22%CC%%CUE_TPP+105%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+106%_R-22%CC%%CUE_TPP+106%01" RefId="%AID%_UP-22%CC%%CUE_TPP+106%" Value="0" />
               <!-- Breathing (ID 11) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+41%_R-20%CC%%CUE_TPP+41%01" RefId="%AID%_UP-20%CC%%CUE_TPP+41%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+42%_R-20%CC%%CUE_TPP+42%01" RefId="%AID%_UP-20%CC%%CUE_TPP+42%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+43%_R-20%CC%%CUE_TPP+43%01" RefId="%AID%_UP-20%CC%%CUE_TPP+43%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+44%_R-20%CC%%CUE_TPP+44%01" RefId="%AID%_UP-20%CC%%CUE_TPP+44%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+45%_R-20%CC%%CUE_TPP+45%01" RefId="%AID%_UP-20%CC%%CUE_TPP+45%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+110%_R-22%CC%%CUE_TPP+110%01" RefId="%AID%_UP-22%CC%%CUE_TPP+110%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+111%_R-22%CC%%CUE_TPP+111%01" RefId="%AID%_UP-22%CC%%CUE_TPP+111%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+112%_R-22%CC%%CUE_TPP+112%01" RefId="%AID%_UP-22%CC%%CUE_TPP+112%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+113%_R-22%CC%%CUE_TPP+113%01" RefId="%AID%_UP-22%CC%%CUE_TPP+113%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+114%_R-22%CC%%CUE_TPP+114%01" RefId="%AID%_UP-22%CC%%CUE_TPP+114%" Value="0" />
               <!-- Strobe (ID 12) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+46%_R-20%CC%%CUE_TPP+46%01" RefId="%AID%_UP-20%CC%%CUE_TPP+46%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+47%_R-20%CC%%CUE_TPP+47%01" RefId="%AID%_UP-20%CC%%CUE_TPP+47%" Value="100" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+48%_R-20%CC%%CUE_TPP+48%01" RefId="%AID%_UP-20%CC%%CUE_TPP+48%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+49%_R-20%CC%%CUE_TPP+49%01" RefId="%AID%_UP-20%CC%%CUE_TPP+49%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+50%_R-20%CC%%CUE_TPP+50%01" RefId="%AID%_UP-20%CC%%CUE_TPP+50%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+120%_R-22%CC%%CUE_TPP+120%01" RefId="%AID%_UP-22%CC%%CUE_TPP+120%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+121%_R-22%CC%%CUE_TPP+121%01" RefId="%AID%_UP-22%CC%%CUE_TPP+121%" Value="100" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+122%_R-22%CC%%CUE_TPP+122%01" RefId="%AID%_UP-22%CC%%CUE_TPP+122%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+123%_R-22%CC%%CUE_TPP+123%01" RefId="%AID%_UP-22%CC%%CUE_TPP+123%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+124%_R-22%CC%%CUE_TPP+124%01" RefId="%AID%_UP-22%CC%%CUE_TPP+124%" Value="0" />
               <!-- Comet (ID 13) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+51%_R-20%CC%%CUE_TPP+51%01" RefId="%AID%_UP-20%CC%%CUE_TPP+51%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+52%_R-20%CC%%CUE_TPP+52%01" RefId="%AID%_UP-20%CC%%CUE_TPP+52%" Value="150" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+53%_R-20%CC%%CUE_TPP+53%01" RefId="%AID%_UP-20%CC%%CUE_TPP+53%" Value="10" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+54%_R-20%CC%%CUE_TPP+54%01" RefId="%AID%_UP-20%CC%%CUE_TPP+54%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+55%_R-20%CC%%CUE_TPP+55%01" RefId="%AID%_UP-20%CC%%CUE_TPP+55%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+56%_R-20%CC%%CUE_TPP+56%01" RefId="%AID%_UP-20%CC%%CUE_TPP+56%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+130%_R-22%CC%%CUE_TPP+130%01" RefId="%AID%_UP-22%CC%%CUE_TPP+130%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+131%_R-22%CC%%CUE_TPP+131%01" RefId="%AID%_UP-22%CC%%CUE_TPP+131%" Value="150" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+132%_R-22%CC%%CUE_TPP+132%01" RefId="%AID%_UP-22%CC%%CUE_TPP+132%" Value="10" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+133%_R-22%CC%%CUE_TPP+133%01" RefId="%AID%_UP-22%CC%%CUE_TPP+133%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+134%_R-22%CC%%CUE_TPP+134%01" RefId="%AID%_UP-22%CC%%CUE_TPP+134%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+135%_R-22%CC%%CUE_TPP+135%01" RefId="%AID%_UP-22%CC%%CUE_TPP+135%" Value="0" />
               <!-- Noise (ID 14) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+57%_R-20%CC%%CUE_TPP+57%01" RefId="%AID%_UP-20%CC%%CUE_TPP+57%" Value="32" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+58%_R-20%CC%%CUE_TPP+58%01" RefId="%AID%_UP-20%CC%%CUE_TPP+58%" Value="48" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+59%_R-20%CC%%CUE_TPP+59%01" RefId="%AID%_UP-20%CC%%CUE_TPP+59%" Value="255" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+60%_R-20%CC%%CUE_TPP+60%01" RefId="%AID%_UP-20%CC%%CUE_TPP+60%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+61%_R-20%CC%%CUE_TPP+61%01" RefId="%AID%_UP-20%CC%%CUE_TPP+61%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+140%_R-22%CC%%CUE_TPP+140%01" RefId="%AID%_UP-22%CC%%CUE_TPP+140%" Value="32" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+141%_R-22%CC%%CUE_TPP+141%01" RefId="%AID%_UP-22%CC%%CUE_TPP+141%" Value="48" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+142%_R-22%CC%%CUE_TPP+142%01" RefId="%AID%_UP-22%CC%%CUE_TPP+142%" Value="255" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+143%_R-22%CC%%CUE_TPP+143%01" RefId="%AID%_UP-22%CC%%CUE_TPP+143%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+144%_R-22%CC%%CUE_TPP+144%01" RefId="%AID%_UP-22%CC%%CUE_TPP+144%" Value="0" />
               <!-- Palette (ID 15) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+62%_R-20%CC%%CUE_TPP+62%01" RefId="%AID%_UP-20%CC%%CUE_TPP+62%" Value="32" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+63%_R-20%CC%%CUE_TPP+63%01" RefId="%AID%_UP-20%CC%%CUE_TPP+63%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+64%_R-20%CC%%CUE_TPP+64%01" RefId="%AID%_UP-20%CC%%CUE_TPP+64%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+65%_R-20%CC%%CUE_TPP+65%01" RefId="%AID%_UP-20%CC%%CUE_TPP+65%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+150%_R-22%CC%%CUE_TPP+150%01" RefId="%AID%_UP-22%CC%%CUE_TPP+150%" Value="32" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+151%_R-22%CC%%CUE_TPP+151%01" RefId="%AID%_UP-22%CC%%CUE_TPP+151%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+152%_R-22%CC%%CUE_TPP+152%01" RefId="%AID%_UP-22%CC%%CUE_TPP+152%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+153%_R-22%CC%%CUE_TPP+153%01" RefId="%AID%_UP-22%CC%%CUE_TPP+153%" Value="0" />
               <!-- Blitz (ID 16) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+66%_R-20%CC%%CUE_TPP+66%01" RefId="%AID%_UP-20%CC%%CUE_TPP+66%" Value="32" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+67%_R-20%CC%%CUE_TPP+67%01" RefId="%AID%_UP-20%CC%%CUE_TPP+67%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+68%_R-20%CC%%CUE_TPP+68%01" RefId="%AID%_UP-20%CC%%CUE_TPP+68%" Value="40" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+69%_R-20%CC%%CUE_TPP+69%01" RefId="%AID%_UP-20%CC%%CUE_TPP+69%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+70%_R-20%CC%%CUE_TPP+70%01" RefId="%AID%_UP-20%CC%%CUE_TPP+70%" Value="255" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+160%_R-22%CC%%CUE_TPP+160%01" RefId="%AID%_UP-22%CC%%CUE_TPP+160%" Value="32" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+161%_R-22%CC%%CUE_TPP+161%01" RefId="%AID%_UP-22%CC%%CUE_TPP+161%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+162%_R-22%CC%%CUE_TPP+162%01" RefId="%AID%_UP-22%CC%%CUE_TPP+162%" Value="40" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+163%_R-22%CC%%CUE_TPP+163%01" RefId="%AID%_UP-22%CC%%CUE_TPP+163%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+164%_R-22%CC%%CUE_TPP+164%01" RefId="%AID%_UP-22%CC%%CUE_TPP+164%" Value="255" />
               <!-- Gradient (ID 17) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+71%_R-20%CC%%CUE_TPP+71%01" RefId="%AID%_UP-20%CC%%CUE_TPP+71%" Value="32" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+72%_R-20%CC%%CUE_TPP+72%01" RefId="%AID%_UP-20%CC%%CUE_TPP+72%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+73%_R-20%CC%%CUE_TPP+73%01" RefId="%AID%_UP-20%CC%%CUE_TPP+73%" Value="160" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+74%_R-20%CC%%CUE_TPP+74%01" RefId="%AID%_UP-20%CC%%CUE_TPP+74%" Value="255" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+170%_R-22%CC%%CUE_TPP+170%01" RefId="%AID%_UP-22%CC%%CUE_TPP+170%" Value="32" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+171%_R-22%CC%%CUE_TPP+171%01" RefId="%AID%_UP-22%CC%%CUE_TPP+171%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+172%_R-22%CC%%CUE_TPP+172%01" RefId="%AID%_UP-22%CC%%CUE_TPP+172%" Value="160" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+173%_R-22%CC%%CUE_TPP+173%01" RefId="%AID%_UP-22%CC%%CUE_TPP+173%" Value="255" />
               <!-- Kerze (ID 18) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+75%_R-20%CC%%CUE_TPP+75%01" RefId="%AID%_UP-20%CC%%CUE_TPP+75%" Value="96" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+76%_R-20%CC%%CUE_TPP+76%01" RefId="%AID%_UP-20%CC%%CUE_TPP+76%" Value="224" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+77%_R-20%CC%%CUE_TPP+77%01" RefId="%AID%_UP-20%CC%%CUE_TPP+77%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+180%_R-22%CC%%CUE_TPP+180%01" RefId="%AID%_UP-22%CC%%CUE_TPP+180%" Value="96" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+181%_R-22%CC%%CUE_TPP+181%01" RefId="%AID%_UP-22%CC%%CUE_TPP+181%" Value="224" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+182%_R-22%CC%%CUE_TPP+182%01" RefId="%AID%_UP-22%CC%%CUE_TPP+182%" Value="1" />
               <!-- Laufschrift (ID 19) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+78%_R-20%CC%%CUE_TPP+78%01" RefId="%AID%_UP-20%CC%%CUE_TPP+78%" Value="32" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+79%_R-20%CC%%CUE_TPP+79%01" RefId="%AID%_UP-20%CC%%CUE_TPP+79%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+80%_R-20%CC%%CUE_TPP+80%01" RefId="%AID%_UP-20%CC%%CUE_TPP+80%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+81%_R-20%CC%%CUE_TPP+81%01" RefId="%AID%_UP-20%CC%%CUE_TPP+81%" Value="" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+82%_R-20%CC%%CUE_TPP+82%01" RefId="%AID%_UP-20%CC%%CUE_TPP+82%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+190%_R-22%CC%%CUE_TPP+190%01" RefId="%AID%_UP-22%CC%%CUE_TPP+190%" Value="32" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+191%_R-22%CC%%CUE_TPP+191%01" RefId="%AID%_UP-22%CC%%CUE_TPP+191%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+192%_R-22%CC%%CUE_TPP+192%01" RefId="%AID%_UP-22%CC%%CUE_TPP+192%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+193%_R-22%CC%%CUE_TPP+193%01" RefId="%AID%_UP-22%CC%%CUE_TPP+193%" Value="" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+194%_R-22%CC%%CUE_TPP+194%01" RefId="%AID%_UP-22%CC%%CUE_TPP+194%" Value="0" />
               <!-- Uhr 2D (ID 20) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+83%_R-20%CC%%CUE_TPP+83%01" RefId="%AID%_UP-20%CC%%CUE_TPP+83%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+84%_R-20%CC%%CUE_TPP+84%01" RefId="%AID%_UP-20%CC%%CUE_TPP+84%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+85%_R-20%CC%%CUE_TPP+85%01" RefId="%AID%_UP-20%CC%%CUE_TPP+85%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+86%_R-20%CC%%CUE_TPP+86%01" RefId="%AID%_UP-20%CC%%CUE_TPP+86%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+87%_R-20%CC%%CUE_TPP+87%01" RefId="%AID%_UP-20%CC%%CUE_TPP+87%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+88%_R-20%CC%%CUE_TPP+88%01" RefId="%AID%_UP-20%CC%%CUE_TPP+88%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+89%_R-20%CC%%CUE_TPP+89%01" RefId="%AID%_UP-20%CC%%CUE_TPP+89%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+90%_R-20%CC%%CUE_TPP+90%01" RefId="%AID%_UP-20%CC%%CUE_TPP+90%" Value="5" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+91%_R-20%CC%%CUE_TPP+91%01" RefId="%AID%_UP-20%CC%%CUE_TPP+91%" Value="60" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+92%_R-20%CC%%CUE_TPP+92%01" RefId="%AID%_UP-20%CC%%CUE_TPP+92%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+200%_R-22%CC%%CUE_TPP+200%01" RefId="%AID%_UP-22%CC%%CUE_TPP+200%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+201%_R-22%CC%%CUE_TPP+201%01" RefId="%AID%_UP-22%CC%%CUE_TPP+201%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+202%_R-22%CC%%CUE_TPP+202%01" RefId="%AID%_UP-22%CC%%CUE_TPP+202%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+203%_R-22%CC%%CUE_TPP+203%01" RefId="%AID%_UP-22%CC%%CUE_TPP+203%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+204%_R-22%CC%%CUE_TPP+204%01" RefId="%AID%_UP-22%CC%%CUE_TPP+204%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+205%_R-22%CC%%CUE_TPP+205%01" RefId="%AID%_UP-22%CC%%CUE_TPP+205%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+206%_R-22%CC%%CUE_TPP+206%01" RefId="%AID%_UP-22%CC%%CUE_TPP+206%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+207%_R-22%CC%%CUE_TPP+207%01" RefId="%AID%_UP-22%CC%%CUE_TPP+207%" Value="5" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+208%_R-22%CC%%CUE_TPP+208%01" RefId="%AID%_UP-22%CC%%CUE_TPP+208%" Value="60" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+209%_R-22%CC%%CUE_TPP+209%01" RefId="%AID%_UP-22%CC%%CUE_TPP+209%" Value="0" />
               <!-- Snake 2D (ID 21) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+93%_R-20%CC%%CUE_TPP+93%01" RefId="%AID%_UP-20%CC%%CUE_TPP+93%" Value="64" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+94%_R-20%CC%%CUE_TPP+94%01" RefId="%AID%_UP-20%CC%%CUE_TPP+94%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+95%_R-20%CC%%CUE_TPP+95%01" RefId="%AID%_UP-20%CC%%CUE_TPP+95%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+96%_R-20%CC%%CUE_TPP+96%01" RefId="%AID%_UP-20%CC%%CUE_TPP+96%" Value="85" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+210%_R-22%CC%%CUE_TPP+210%01" RefId="%AID%_UP-22%CC%%CUE_TPP+210%" Value="64" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+211%_R-22%CC%%CUE_TPP+211%01" RefId="%AID%_UP-22%CC%%CUE_TPP+211%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+212%_R-22%CC%%CUE_TPP+212%01" RefId="%AID%_UP-22%CC%%CUE_TPP+212%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+213%_R-22%CC%%CUE_TPP+213%01" RefId="%AID%_UP-22%CC%%CUE_TPP+213%" Value="85" />
               <!-- Matrix 2D (ID 22) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+97%_R-20%CC%%CUE_TPP+97%01" RefId="%AID%_UP-20%CC%%CUE_TPP+97%" Value="80" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+98%_R-20%CC%%CUE_TPP+98%01" RefId="%AID%_UP-20%CC%%CUE_TPP+98%" Value="35" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+99%_R-20%CC%%CUE_TPP+99%01" RefId="%AID%_UP-20%CC%%CUE_TPP+99%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+100%_R-20%CC%%CUE_TPP+100%01" RefId="%AID%_UP-20%CC%%CUE_TPP+100%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+220%_R-22%CC%%CUE_TPP+220%01" RefId="%AID%_UP-22%CC%%CUE_TPP+220%" Value="80" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+221%_R-22%CC%%CUE_TPP+221%01" RefId="%AID%_UP-22%CC%%CUE_TPP+221%" Value="35" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+222%_R-22%CC%%CUE_TPP+222%01" RefId="%AID%_UP-22%CC%%CUE_TPP+222%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+223%_R-22%CC%%CUE_TPP+223%01" RefId="%AID%_UP-22%CC%%CUE_TPP+223%" Value="1" />
               <!-- Tetris 2D (ID 23) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+101%_R-20%CC%%CUE_TPP+101%01" RefId="%AID%_UP-20%CC%%CUE_TPP+101%" Value="128" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+102%_R-20%CC%%CUE_TPP+102%01" RefId="%AID%_UP-20%CC%%CUE_TPP+102%" Value="8" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+103%_R-20%CC%%CUE_TPP+103%01" RefId="%AID%_UP-20%CC%%CUE_TPP+103%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+104%_R-20%CC%%CUE_TPP+104%01" RefId="%AID%_UP-20%CC%%CUE_TPP+104%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+105%_R-20%CC%%CUE_TPP+105%01" RefId="%AID%_UP-20%CC%%CUE_TPP+105%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+106%_R-20%CC%%CUE_TPP+106%01" RefId="%AID%_UP-20%CC%%CUE_TPP+106%" Value="3" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+230%_R-22%CC%%CUE_TPP+230%01" RefId="%AID%_UP-22%CC%%CUE_TPP+230%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+231%_R-22%CC%%CUE_TPP+231%01" RefId="%AID%_UP-22%CC%%CUE_TPP+231%" Value="8" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+232%_R-22%CC%%CUE_TPP+232%01" RefId="%AID%_UP-22%CC%%CUE_TPP+232%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+233%_R-22%CC%%CUE_TPP+233%01" RefId="%AID%_UP-22%CC%%CUE_TPP+233%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+234%_R-22%CC%%CUE_TPP+234%01" RefId="%AID%_UP-22%CC%%CUE_TPP+234%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+235%_R-22%CC%%CUE_TPP+235%01" RefId="%AID%_UP-22%CC%%CUE_TPP+235%" Value="3" />
               <!-- TRON (ID 24) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+107%_R-20%CC%%CUE_TPP+107%01" RefId="%AID%_UP-20%CC%%CUE_TPP+107%" Value="90" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+108%_R-20%CC%%CUE_TPP+108%01" RefId="%AID%_UP-20%CC%%CUE_TPP+108%" Value="150" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+109%_R-20%CC%%CUE_TPP+109%01" RefId="%AID%_UP-20%CC%%CUE_TPP+109%" Value="4" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+110%_R-20%CC%%CUE_TPP+110%01" RefId="%AID%_UP-20%CC%%CUE_TPP+110%" Value="170" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+240%_R-22%CC%%CUE_TPP+240%01" RefId="%AID%_UP-22%CC%%CUE_TPP+240%" Value="90" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+241%_R-22%CC%%CUE_TPP+241%01" RefId="%AID%_UP-22%CC%%CUE_TPP+241%" Value="150" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+242%_R-22%CC%%CUE_TPP+242%01" RefId="%AID%_UP-22%CC%%CUE_TPP+242%" Value="4" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+243%_R-22%CC%%CUE_TPP+243%01" RefId="%AID%_UP-22%CC%%CUE_TPP+243%" Value="170" />
               <!-- Starfield Warp (ID 25) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+111%_R-20%CC%%CUE_TPP+111%01" RefId="%AID%_UP-20%CC%%CUE_TPP+111%" Value="96" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+112%_R-20%CC%%CUE_TPP+112%01" RefId="%AID%_UP-20%CC%%CUE_TPP+112%" Value="70" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+113%_R-20%CC%%CUE_TPP+113%01" RefId="%AID%_UP-20%CC%%CUE_TPP+113%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+114%_R-20%CC%%CUE_TPP+114%01" RefId="%AID%_UP-20%CC%%CUE_TPP+114%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+250%_R-22%CC%%CUE_TPP+250%01" RefId="%AID%_UP-22%CC%%CUE_TPP+250%" Value="96" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+251%_R-22%CC%%CUE_TPP+251%01" RefId="%AID%_UP-22%CC%%CUE_TPP+251%" Value="70" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+252%_R-22%CC%%CUE_TPP+252%01" RefId="%AID%_UP-22%CC%%CUE_TPP+252%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+253%_R-22%CC%%CUE_TPP+253%01" RefId="%AID%_UP-22%CC%%CUE_TPP+253%" Value="1" />
               <!-- Plasma Nebula (ID 26) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+115%_R-20%CC%%CUE_TPP+115%01" RefId="%AID%_UP-20%CC%%CUE_TPP+115%" Value="64" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+116%_R-20%CC%%CUE_TPP+116%01" RefId="%AID%_UP-20%CC%%CUE_TPP+116%" Value="220" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+117%_R-20%CC%%CUE_TPP+117%01" RefId="%AID%_UP-20%CC%%CUE_TPP+117%" Value="170" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+118%_R-20%CC%%CUE_TPP+118%01" RefId="%AID%_UP-20%CC%%CUE_TPP+118%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+260%_R-22%CC%%CUE_TPP+260%01" RefId="%AID%_UP-22%CC%%CUE_TPP+260%" Value="64" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+261%_R-22%CC%%CUE_TPP+261%01" RefId="%AID%_UP-22%CC%%CUE_TPP+261%" Value="220" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+262%_R-22%CC%%CUE_TPP+262%01" RefId="%AID%_UP-22%CC%%CUE_TPP+262%" Value="170" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+263%_R-22%CC%%CUE_TPP+263%01" RefId="%AID%_UP-22%CC%%CUE_TPP+263%" Value="0" />
               <!-- UFO Swarm (ID 27) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+119%_R-20%CC%%CUE_TPP+119%01" RefId="%AID%_UP-20%CC%%CUE_TPP+119%" Value="90" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+120%_R-20%CC%%CUE_TPP+120%01" RefId="%AID%_UP-20%CC%%CUE_TPP+120%" Value="4" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+121%_R-20%CC%%CUE_TPP+121%01" RefId="%AID%_UP-20%CC%%CUE_TPP+121%" Value="150" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+122%_R-20%CC%%CUE_TPP+122%01" RefId="%AID%_UP-20%CC%%CUE_TPP+122%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+270%_R-22%CC%%CUE_TPP+270%01" RefId="%AID%_UP-22%CC%%CUE_TPP+270%" Value="90" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+271%_R-22%CC%%CUE_TPP+271%01" RefId="%AID%_UP-22%CC%%CUE_TPP+271%" Value="4" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+272%_R-22%CC%%CUE_TPP+272%01" RefId="%AID%_UP-22%CC%%CUE_TPP+272%" Value="150" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+273%_R-22%CC%%CUE_TPP+273%01" RefId="%AID%_UP-22%CC%%CUE_TPP+273%" Value="1" />
               <!-- Game of Life 2D (ID 28) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+123%_R-20%CC%%CUE_TPP+123%01" RefId="%AID%_UP-20%CC%%CUE_TPP+123%" Value="64" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+124%_R-20%CC%%CUE_TPP+124%01" RefId="%AID%_UP-20%CC%%CUE_TPP+124%" Value="96" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+125%_R-20%CC%%CUE_TPP+125%01" RefId="%AID%_UP-20%CC%%CUE_TPP+125%" Value="1" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+126%_R-20%CC%%CUE_TPP+126%01" RefId="%AID%_UP-20%CC%%CUE_TPP+126%" Value="30" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+280%_R-22%CC%%CUE_TPP+280%01" RefId="%AID%_UP-22%CC%%CUE_TPP+280%" Value="64" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+281%_R-22%CC%%CUE_TPP+281%01" RefId="%AID%_UP-22%CC%%CUE_TPP+281%" Value="96" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+282%_R-22%CC%%CUE_TPP+282%01" RefId="%AID%_UP-22%CC%%CUE_TPP+282%" Value="1" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+283%_R-22%CC%%CUE_TPP+283%01" RefId="%AID%_UP-22%CC%%CUE_TPP+283%" Value="30" />
               <!-- DNA 2D (ID 29) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+127%_R-20%CC%%CUE_TPP+127%01" RefId="%AID%_UP-20%CC%%CUE_TPP+127%" Value="64" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+128%_R-20%CC%%CUE_TPP+128%01" RefId="%AID%_UP-20%CC%%CUE_TPP+128%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+129%_R-20%CC%%CUE_TPP+129%01" RefId="%AID%_UP-20%CC%%CUE_TPP+129%" Value="8" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+130%_R-20%CC%%CUE_TPP+130%01" RefId="%AID%_UP-20%CC%%CUE_TPP+130%" Value="4" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+290%_R-22%CC%%CUE_TPP+290%01" RefId="%AID%_UP-22%CC%%CUE_TPP+290%" Value="64" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+291%_R-22%CC%%CUE_TPP+291%01" RefId="%AID%_UP-22%CC%%CUE_TPP+291%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+292%_R-22%CC%%CUE_TPP+292%01" RefId="%AID%_UP-22%CC%%CUE_TPP+292%" Value="8" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+293%_R-22%CC%%CUE_TPP+293%01" RefId="%AID%_UP-22%CC%%CUE_TPP+293%" Value="4" />
               <!-- Aurora 2D (ID 30) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+131%_R-20%CC%%CUE_TPP+131%01" RefId="%AID%_UP-20%CC%%CUE_TPP+131%" Value="48" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+132%_R-20%CC%%CUE_TPP+132%01" RefId="%AID%_UP-20%CC%%CUE_TPP+132%" Value="96" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+133%_R-20%CC%%CUE_TPP+133%01" RefId="%AID%_UP-20%CC%%CUE_TPP+133%" Value="18" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+134%_R-20%CC%%CUE_TPP+134%01" RefId="%AID%_UP-20%CC%%CUE_TPP+134%" Value="220" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+300%_R-22%CC%%CUE_TPP+300%01" RefId="%AID%_UP-22%CC%%CUE_TPP+300%" Value="48" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+301%_R-22%CC%%CUE_TPP+301%01" RefId="%AID%_UP-22%CC%%CUE_TPP+301%" Value="96" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+302%_R-22%CC%%CUE_TPP+302%01" RefId="%AID%_UP-22%CC%%CUE_TPP+302%" Value="18" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+303%_R-22%CC%%CUE_TPP+303%01" RefId="%AID%_UP-22%CC%%CUE_TPP+303%" Value="220" />
               <!-- Lissajous 2D (ID 31) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+135%_R-20%CC%%CUE_TPP+135%01" RefId="%AID%_UP-20%CC%%CUE_TPP+135%" Value="56" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+136%_R-20%CC%%CUE_TPP+136%01" RefId="%AID%_UP-20%CC%%CUE_TPP+136%" Value="160" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+137%_R-20%CC%%CUE_TPP+137%01" RefId="%AID%_UP-20%CC%%CUE_TPP+137%" Value="3" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+138%_R-20%CC%%CUE_TPP+138%01" RefId="%AID%_UP-20%CC%%CUE_TPP+138%" Value="2" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+310%_R-22%CC%%CUE_TPP+310%01" RefId="%AID%_UP-22%CC%%CUE_TPP+310%" Value="56" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+311%_R-22%CC%%CUE_TPP+311%01" RefId="%AID%_UP-22%CC%%CUE_TPP+311%" Value="160" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+312%_R-22%CC%%CUE_TPP+312%01" RefId="%AID%_UP-22%CC%%CUE_TPP+312%" Value="3" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+313%_R-22%CC%%CUE_TPP+313%01" RefId="%AID%_UP-22%CC%%CUE_TPP+313%" Value="2" />
               <!-- Metaballs 2D (ID 32) -->
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+139%_R-20%CC%%CUE_TPP+139%01" RefId="%AID%_UP-20%CC%%CUE_TPP+139%" Value="50" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+140%_R-20%CC%%CUE_TPP+140%01" RefId="%AID%_UP-20%CC%%CUE_TPP+140%" Value="0" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+141%_R-20%CC%%CUE_TPP+141%01" RefId="%AID%_UP-20%CC%%CUE_TPP+141%" Value="4" />
-              <ParameterRef Id="%AID%_UP-20%CC%%CUE_TPP+142%_R-20%CC%%CUE_TPP+142%01" RefId="%AID%_UP-20%CC%%CUE_TPP+142%" Value="128" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+320%_R-22%CC%%CUE_TPP+320%01" RefId="%AID%_UP-22%CC%%CUE_TPP+320%" Value="50" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+321%_R-22%CC%%CUE_TPP+321%01" RefId="%AID%_UP-22%CC%%CUE_TPP+321%" Value="0" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+322%_R-22%CC%%CUE_TPP+322%01" RefId="%AID%_UP-22%CC%%CUE_TPP+322%" Value="4" />
+              <ParameterRef Id="%AID%_UP-22%CC%%CUE_TPP+323%_R-22%CC%%CUE_TPP+323%01" RefId="%AID%_UP-22%CC%%CUE_TPP+323%" Value="128" />
               <!-- END AUTO-GENERATED: Cue Effect ParameterRefs -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+11%_R-%TT%%CC%%CUE_PPP+11%01" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+11%" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%%CUE_PPP+12%_R-%TT%%CC%%CUE_PPP+12%01" RefId="%AID%_UP-%TT%%CC%%CUE_PPP+12%" />
@@ -461,273 +461,273 @@
                       <when test="1">
                         <!-- Wipe Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+0%_R-20%CC%%CUE_TPP+0%01" IndentLevel="2" HelpContext="NEO-Speed-Wipe"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+1%_R-20%CC%%CUE_TPP+1%01" IndentLevel="2" HelpContext="NEO-Direction-Wipe"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+2%_R-20%CC%%CUE_TPP+2%01" IndentLevel="2" HelpContext="NEO-Loop-Wipe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+10%_R-22%CC%%CUE_TPP+10%01" IndentLevel="2" HelpContext="NEO-Speed-Wipe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+11%_R-22%CC%%CUE_TPP+11%01" IndentLevel="2" HelpContext="NEO-Direction-Wipe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+12%_R-22%CC%%CUE_TPP+12%01" IndentLevel="2" HelpContext="NEO-Loop-Wipe"/>
                       </when>
                       <when test="2">
                         <!-- Rainbow Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+3%_R-20%CC%%CUE_TPP+3%01" IndentLevel="2" HelpContext="NEO-Speed-Rainbow"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+4%_R-20%CC%%CUE_TPP+4%01" IndentLevel="2" HelpContext="NEO-Delta-Rainbow"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+5%_R-20%CC%%CUE_TPP+5%01" IndentLevel="2" HelpContext="NEO-Saturation-Rainbow"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+6%_R-20%CC%%CUE_TPP+6%01" IndentLevel="2" HelpContext="NEO-Density-Rainbow"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+7%_R-20%CC%%CUE_TPP+7%01" IndentLevel="2" HelpContext="NEO-Mode-Rainbow"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+20%_R-22%CC%%CUE_TPP+20%01" IndentLevel="2" HelpContext="NEO-Speed-Rainbow"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+21%_R-22%CC%%CUE_TPP+21%01" IndentLevel="2" HelpContext="NEO-Delta-Rainbow"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+22%_R-22%CC%%CUE_TPP+22%01" IndentLevel="2" HelpContext="NEO-Saturation-Rainbow"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+23%_R-22%CC%%CUE_TPP+23%01" IndentLevel="2" HelpContext="NEO-Density-Rainbow"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+24%_R-22%CC%%CUE_TPP+24%01" IndentLevel="2" HelpContext="NEO-Mode-Rainbow"/>
                       </when>
                       <when test="3">
                         <!-- Pride2015 Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+8%_R-20%CC%%CUE_TPP+8%01" IndentLevel="2" HelpContext="NEO-Speed-Pride2015"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+30%_R-22%CC%%CUE_TPP+30%01" IndentLevel="2" HelpContext="NEO-Speed-Pride2015"/>
                       </when>
                       <when test="4">
                         <!-- Juggle Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+9%_R-20%CC%%CUE_TPP+9%01" IndentLevel="2" HelpContext="NEO-Speed-Juggle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+10%_R-20%CC%%CUE_TPP+10%01" IndentLevel="2" HelpContext="NEO-NumDots-Juggle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+11%_R-20%CC%%CUE_TPP+11%01" IndentLevel="2" HelpContext="NEO-FadeSpeed-Juggle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+12%_R-20%CC%%CUE_TPP+12%01" IndentLevel="2" HelpContext="NEO-HueOffset-Juggle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+40%_R-22%CC%%CUE_TPP+40%01" IndentLevel="2" HelpContext="NEO-Speed-Juggle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+41%_R-22%CC%%CUE_TPP+41%01" IndentLevel="2" HelpContext="NEO-NumDots-Juggle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+42%_R-22%CC%%CUE_TPP+42%01" IndentLevel="2" HelpContext="NEO-FadeSpeed-Juggle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+43%_R-22%CC%%CUE_TPP+43%01" IndentLevel="2" HelpContext="NEO-HueOffset-Juggle"/>
                       </when>
                       <when test="5">
                         <!-- BPM Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+13%_R-20%CC%%CUE_TPP+13%01" IndentLevel="2" HelpContext="NEO-BPM-BPM"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+14%_R-20%CC%%CUE_TPP+14%01" IndentLevel="2" HelpContext="NEO-Hue-BPM"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+50%_R-22%CC%%CUE_TPP+50%01" IndentLevel="2" HelpContext="NEO-BPM-BPM"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+51%_R-22%CC%%CUE_TPP+51%01" IndentLevel="2" HelpContext="NEO-Hue-BPM"/>
                       </when>
                       <when test="6">
                         <!-- Cylon Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+15%_R-20%CC%%CUE_TPP+15%01" IndentLevel="2" HelpContext="NEO-Speed-Cylon"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+16%_R-20%CC%%CUE_TPP+16%01" IndentLevel="2" HelpContext="NEO-Hue-Cylon"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+17%_R-20%CC%%CUE_TPP+17%01" IndentLevel="2" HelpContext="NEO-EyeSize-Cylon"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+18%_R-20%CC%%CUE_TPP+18%01" IndentLevel="2" HelpContext="NEO-FadeAmount-Cylon"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+19%_R-20%CC%%CUE_TPP+19%01" IndentLevel="2" HelpContext="NEO-Direction-Cylon"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+20%_R-20%CC%%CUE_TPP+20%01" IndentLevel="2" HelpContext="NEO-Mode-Cylon"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+60%_R-22%CC%%CUE_TPP+60%01" IndentLevel="2" HelpContext="NEO-Speed-Cylon"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+61%_R-22%CC%%CUE_TPP+61%01" IndentLevel="2" HelpContext="NEO-Hue-Cylon"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+62%_R-22%CC%%CUE_TPP+62%01" IndentLevel="2" HelpContext="NEO-EyeSize-Cylon"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+63%_R-22%CC%%CUE_TPP+63%01" IndentLevel="2" HelpContext="NEO-FadeAmount-Cylon"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+64%_R-22%CC%%CUE_TPP+64%01" IndentLevel="2" HelpContext="NEO-Direction-Cylon"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+65%_R-22%CC%%CUE_TPP+65%01" IndentLevel="2" HelpContext="NEO-Mode-Cylon"/>
                       </when>
                       <when test="7">
                         <!-- Test Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+21%_R-20%CC%%CUE_TPP+21%01" IndentLevel="2" HelpContext="NEO-PhaseDuration-Test"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+22%_R-20%CC%%CUE_TPP+22%01" IndentLevel="2" HelpContext="NEO-Mode-Test"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+70%_R-22%CC%%CUE_TPP+70%01" IndentLevel="2" HelpContext="NEO-PhaseDuration-Test"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+71%_R-22%CC%%CUE_TPP+71%01" IndentLevel="2" HelpContext="NEO-Mode-Test"/>
                       </when>
                       <when test="8">
                         <!-- Fire Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+23%_R-20%CC%%CUE_TPP+23%01" IndentLevel="2" HelpContext="NEO-Speed-Fire"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+24%_R-20%CC%%CUE_TPP+24%01" IndentLevel="2" HelpContext="NEO-Cooling-Fire"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+25%_R-20%CC%%CUE_TPP+25%01" IndentLevel="2" HelpContext="NEO-Sparking-Fire"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+26%_R-20%CC%%CUE_TPP+26%01" IndentLevel="2" HelpContext="NEO-ReverseDirection-Fire"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+27%_R-20%CC%%CUE_TPP+27%01" IndentLevel="2" HelpContext="NEO-BlueFireMode-Fire"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+80%_R-22%CC%%CUE_TPP+80%01" IndentLevel="2" HelpContext="NEO-Speed-Fire"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+81%_R-22%CC%%CUE_TPP+81%01" IndentLevel="2" HelpContext="NEO-Cooling-Fire"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+82%_R-22%CC%%CUE_TPP+82%01" IndentLevel="2" HelpContext="NEO-Sparking-Fire"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+83%_R-22%CC%%CUE_TPP+83%01" IndentLevel="2" HelpContext="NEO-ReverseDirection-Fire"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+84%_R-22%CC%%CUE_TPP+84%01" IndentLevel="2" HelpContext="NEO-BlueFireMode-Fire"/>
                       </when>
                       <when test="9">
                         <!-- Theater Chase Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+28%_R-20%CC%%CUE_TPP+28%01" IndentLevel="2" HelpContext="NEO-Speed-Theater-Chase"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+29%_R-20%CC%%CUE_TPP+29%01" IndentLevel="2" HelpContext="NEO-Spacing-Theater-Chase"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+30%_R-20%CC%%CUE_TPP+30%01" IndentLevel="2" HelpContext="NEO-DotSize-Theater-Chase"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+31%_R-20%CC%%CUE_TPP+31%01" IndentLevel="2" HelpContext="NEO-ColorMode-Theater-Chase"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+32%_R-20%CC%%CUE_TPP+32%01" IndentLevel="2" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+33%_R-20%CC%%CUE_TPP+33%01" IndentLevel="2" HelpContext="NEO-Bounce-Theater-Chase"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+90%_R-22%CC%%CUE_TPP+90%01" IndentLevel="2" HelpContext="NEO-Speed-Theater-Chase"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+91%_R-22%CC%%CUE_TPP+91%01" IndentLevel="2" HelpContext="NEO-Spacing-Theater-Chase"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+92%_R-22%CC%%CUE_TPP+92%01" IndentLevel="2" HelpContext="NEO-DotSize-Theater-Chase"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+93%_R-22%CC%%CUE_TPP+93%01" IndentLevel="2" HelpContext="NEO-ColorMode-Theater-Chase"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+94%_R-22%CC%%CUE_TPP+94%01" IndentLevel="2" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+95%_R-22%CC%%CUE_TPP+95%01" IndentLevel="2" HelpContext="NEO-Bounce-Theater-Chase"/>
                       </when>
                       <when test="10">
                         <!-- Sparkle Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+34%_R-20%CC%%CUE_TPP+34%01" IndentLevel="2" HelpContext="NEO-Speed-Sparkle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+35%_R-20%CC%%CUE_TPP+35%01" IndentLevel="2" HelpContext="NEO-FadeRate-Sparkle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+36%_R-20%CC%%CUE_TPP+36%01" IndentLevel="2" HelpContext="NEO-SparkleCount-Sparkle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+37%_R-20%CC%%CUE_TPP+37%01" IndentLevel="2" HelpContext="NEO-Probability-Sparkle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+38%_R-20%CC%%CUE_TPP+38%01" IndentLevel="2" HelpContext="NEO-WhiteOnly-Sparkle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+39%_R-20%CC%%CUE_TPP+39%01" IndentLevel="2" HelpContext="NEO-BurstMode-Sparkle"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+40%_R-20%CC%%CUE_TPP+40%01" IndentLevel="2" HelpContext="NEO-Mode-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+100%_R-22%CC%%CUE_TPP+100%01" IndentLevel="2" HelpContext="NEO-Speed-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+101%_R-22%CC%%CUE_TPP+101%01" IndentLevel="2" HelpContext="NEO-FadeRate-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+102%_R-22%CC%%CUE_TPP+102%01" IndentLevel="2" HelpContext="NEO-SparkleCount-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+103%_R-22%CC%%CUE_TPP+103%01" IndentLevel="2" HelpContext="NEO-Probability-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+104%_R-22%CC%%CUE_TPP+104%01" IndentLevel="2" HelpContext="NEO-WhiteOnly-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+105%_R-22%CC%%CUE_TPP+105%01" IndentLevel="2" HelpContext="NEO-BurstMode-Sparkle"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+106%_R-22%CC%%CUE_TPP+106%01" IndentLevel="2" HelpContext="NEO-Mode-Sparkle"/>
                       </when>
                       <when test="11">
                         <!-- Breathing Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+41%_R-20%CC%%CUE_TPP+41%01" IndentLevel="2" HelpContext="NEO-Speed-Breathing"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+42%_R-20%CC%%CUE_TPP+42%01" IndentLevel="2" HelpContext="NEO-MinBrightness-Breathing"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+43%_R-20%CC%%CUE_TPP+43%01" IndentLevel="2" HelpContext="NEO-Curve-Breathing"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+44%_R-20%CC%%CUE_TPP+44%01" IndentLevel="2" HelpContext="NEO-RainbowMode-Breathing"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+45%_R-20%CC%%CUE_TPP+45%01" IndentLevel="2" HelpContext="NEO-Waveform-Breathing"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+110%_R-22%CC%%CUE_TPP+110%01" IndentLevel="2" HelpContext="NEO-Speed-Breathing"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+111%_R-22%CC%%CUE_TPP+111%01" IndentLevel="2" HelpContext="NEO-MinBrightness-Breathing"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+112%_R-22%CC%%CUE_TPP+112%01" IndentLevel="2" HelpContext="NEO-Curve-Breathing"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+113%_R-22%CC%%CUE_TPP+113%01" IndentLevel="2" HelpContext="NEO-RainbowMode-Breathing"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+114%_R-22%CC%%CUE_TPP+114%01" IndentLevel="2" HelpContext="NEO-Waveform-Breathing"/>
                       </when>
                       <when test="12">
                         <!-- Strobe Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+46%_R-20%CC%%CUE_TPP+46%01" IndentLevel="2" HelpContext="NEO-Speed-Strobe"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+47%_R-20%CC%%CUE_TPP+47%01" IndentLevel="2" HelpContext="NEO-OnRatio-Strobe"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+48%_R-20%CC%%CUE_TPP+48%01" IndentLevel="2" HelpContext="NEO-MinBrightness-Strobe"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+49%_R-20%CC%%CUE_TPP+49%01" IndentLevel="2" HelpContext="NEO-RandomTiming-Strobe"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+50%_R-20%CC%%CUE_TPP+50%01" IndentLevel="2" HelpContext="NEO-RainbowStrobe-Strobe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+120%_R-22%CC%%CUE_TPP+120%01" IndentLevel="2" HelpContext="NEO-Speed-Strobe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+121%_R-22%CC%%CUE_TPP+121%01" IndentLevel="2" HelpContext="NEO-OnRatio-Strobe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+122%_R-22%CC%%CUE_TPP+122%01" IndentLevel="2" HelpContext="NEO-MinBrightness-Strobe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+123%_R-22%CC%%CUE_TPP+123%01" IndentLevel="2" HelpContext="NEO-RandomTiming-Strobe"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+124%_R-22%CC%%CUE_TPP+124%01" IndentLevel="2" HelpContext="NEO-RainbowStrobe-Strobe"/>
                       </when>
                       <when test="13">
                         <!-- Comet Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+51%_R-20%CC%%CUE_TPP+51%01" IndentLevel="2" HelpContext="NEO-Speed-Comet"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+52%_R-20%CC%%CUE_TPP+52%01" IndentLevel="2" HelpContext="NEO-FadeRate-Comet"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+53%_R-20%CC%%CUE_TPP+53%01" IndentLevel="2" HelpContext="NEO-TailLength-Comet"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+54%_R-20%CC%%CUE_TPP+54%01" IndentLevel="2" HelpContext="NEO-BounceMode-Comet"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+55%_R-20%CC%%CUE_TPP+55%01" IndentLevel="2" HelpContext="NEO-RainbowMode-Comet"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+56%_R-20%CC%%CUE_TPP+56%01" IndentLevel="2" HelpContext="NEO-Mode-Comet"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+130%_R-22%CC%%CUE_TPP+130%01" IndentLevel="2" HelpContext="NEO-Speed-Comet"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+131%_R-22%CC%%CUE_TPP+131%01" IndentLevel="2" HelpContext="NEO-FadeRate-Comet"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+132%_R-22%CC%%CUE_TPP+132%01" IndentLevel="2" HelpContext="NEO-TailLength-Comet"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+133%_R-22%CC%%CUE_TPP+133%01" IndentLevel="2" HelpContext="NEO-BounceMode-Comet"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+134%_R-22%CC%%CUE_TPP+134%01" IndentLevel="2" HelpContext="NEO-RainbowMode-Comet"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+135%_R-22%CC%%CUE_TPP+135%01" IndentLevel="2" HelpContext="NEO-Mode-Comet"/>
                       </when>
                       <when test="14">
                         <!-- Noise Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+57%_R-20%CC%%CUE_TPP+57%01" IndentLevel="2" HelpContext="NEO-Speed-Noise"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+58%_R-20%CC%%CUE_TPP+58%01" IndentLevel="2" HelpContext="NEO-Scale-Noise"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+59%_R-20%CC%%CUE_TPP+59%01" IndentLevel="2" HelpContext="NEO-Saturation-Noise"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+60%_R-20%CC%%CUE_TPP+60%01" IndentLevel="2" HelpContext="NEO-HueOffset-Noise"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+61%_R-20%CC%%CUE_TPP+61%01" IndentLevel="2" HelpContext="NEO-Palette-Noise"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+140%_R-22%CC%%CUE_TPP+140%01" IndentLevel="2" HelpContext="NEO-Speed-Noise"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+141%_R-22%CC%%CUE_TPP+141%01" IndentLevel="2" HelpContext="NEO-Scale-Noise"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+142%_R-22%CC%%CUE_TPP+142%01" IndentLevel="2" HelpContext="NEO-Saturation-Noise"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+143%_R-22%CC%%CUE_TPP+143%01" IndentLevel="2" HelpContext="NEO-HueOffset-Noise"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+144%_R-22%CC%%CUE_TPP+144%01" IndentLevel="2" HelpContext="NEO-Palette-Noise"/>
                       </when>
                       <when test="15">
                         <!-- Palette Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+62%_R-20%CC%%CUE_TPP+62%01" IndentLevel="2" HelpContext="NEO-Speed-Palette"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+63%_R-20%CC%%CUE_TPP+63%01" IndentLevel="2" HelpContext="NEO-Palette-Palette"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+64%_R-20%CC%%CUE_TPP+64%01" IndentLevel="2" HelpContext="NEO-Blend-Palette"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+65%_R-20%CC%%CUE_TPP+65%01" IndentLevel="2" HelpContext="NEO-Spacing-Palette"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+150%_R-22%CC%%CUE_TPP+150%01" IndentLevel="2" HelpContext="NEO-Speed-Palette"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+151%_R-22%CC%%CUE_TPP+151%01" IndentLevel="2" HelpContext="NEO-Palette-Palette"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+152%_R-22%CC%%CUE_TPP+152%01" IndentLevel="2" HelpContext="NEO-Blend-Palette"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+153%_R-22%CC%%CUE_TPP+153%01" IndentLevel="2" HelpContext="NEO-Spacing-Palette"/>
                       </when>
                       <when test="16">
                         <!-- Blitz Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+66%_R-20%CC%%CUE_TPP+66%01" IndentLevel="2" HelpContext="NEO-Speed-Blitz"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+67%_R-20%CC%%CUE_TPP+67%01" IndentLevel="2" HelpContext="NEO-Width-Blitz"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+68%_R-20%CC%%CUE_TPP+68%01" IndentLevel="2" HelpContext="NEO-Decay-Blitz"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+69%_R-20%CC%%CUE_TPP+69%01" IndentLevel="2" HelpContext="NEO-Hue-Blitz"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+70%_R-20%CC%%CUE_TPP+70%01" IndentLevel="2" HelpContext="NEO-Intensity-Blitz"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+160%_R-22%CC%%CUE_TPP+160%01" IndentLevel="2" HelpContext="NEO-Speed-Blitz"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+161%_R-22%CC%%CUE_TPP+161%01" IndentLevel="2" HelpContext="NEO-Width-Blitz"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+162%_R-22%CC%%CUE_TPP+162%01" IndentLevel="2" HelpContext="NEO-Decay-Blitz"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+163%_R-22%CC%%CUE_TPP+163%01" IndentLevel="2" HelpContext="NEO-Hue-Blitz"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+164%_R-22%CC%%CUE_TPP+164%01" IndentLevel="2" HelpContext="NEO-Intensity-Blitz"/>
                       </when>
                       <when test="17">
                         <!-- Gradient Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+71%_R-20%CC%%CUE_TPP+71%01" IndentLevel="2" HelpContext="NEO-Speed-Gradient"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+72%_R-20%CC%%CUE_TPP+72%01" IndentLevel="2" HelpContext="NEO-StartHue-Gradient"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+73%_R-20%CC%%CUE_TPP+73%01" IndentLevel="2" HelpContext="NEO-EndHue-Gradient"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+74%_R-20%CC%%CUE_TPP+74%01" IndentLevel="2" HelpContext="NEO-Saturation-Gradient"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+170%_R-22%CC%%CUE_TPP+170%01" IndentLevel="2" HelpContext="NEO-Speed-Gradient"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+171%_R-22%CC%%CUE_TPP+171%01" IndentLevel="2" HelpContext="NEO-StartHue-Gradient"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+172%_R-22%CC%%CUE_TPP+172%01" IndentLevel="2" HelpContext="NEO-EndHue-Gradient"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+173%_R-22%CC%%CUE_TPP+173%01" IndentLevel="2" HelpContext="NEO-Saturation-Gradient"/>
                       </when>
                       <when test="18">
                         <!-- Kerze Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+75%_R-20%CC%%CUE_TPP+75%01" IndentLevel="2" HelpContext="NEO-Speed-Kerze"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+76%_R-20%CC%%CUE_TPP+76%01" IndentLevel="2" HelpContext="NEO-Intensity-Kerze"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+77%_R-20%CC%%CUE_TPP+77%01" IndentLevel="2" HelpContext="NEO-Zones-Kerze"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+180%_R-22%CC%%CUE_TPP+180%01" IndentLevel="2" HelpContext="NEO-Speed-Kerze"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+181%_R-22%CC%%CUE_TPP+181%01" IndentLevel="2" HelpContext="NEO-Intensity-Kerze"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+182%_R-22%CC%%CUE_TPP+182%01" IndentLevel="2" HelpContext="NEO-Zones-Kerze"/>
                       </when>
                       <when test="19">
                         <!-- Laufschrift Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+78%_R-20%CC%%CUE_TPP+78%01" IndentLevel="2" HelpContext="NEO-Speed-Laufschrift"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+79%_R-20%CC%%CUE_TPP+79%01" IndentLevel="2" HelpContext="NEO-Gap-Laufschrift"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+80%_R-20%CC%%CUE_TPP+80%01" IndentLevel="2" HelpContext="NEO-Loop-Laufschrift"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+81%_R-20%CC%%CUE_TPP+81%01" IndentLevel="2" HelpContext="NEO-Text-Laufschrift"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+82%_R-20%CC%%CUE_TPP+82%01" IndentLevel="2" HelpContext="NEO-Font-Laufschrift"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+190%_R-22%CC%%CUE_TPP+190%01" IndentLevel="2" HelpContext="NEO-Speed-Laufschrift"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+191%_R-22%CC%%CUE_TPP+191%01" IndentLevel="2" HelpContext="NEO-Gap-Laufschrift"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+192%_R-22%CC%%CUE_TPP+192%01" IndentLevel="2" HelpContext="NEO-Loop-Laufschrift"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+193%_R-22%CC%%CUE_TPP+193%01" IndentLevel="2" HelpContext="NEO-Text-Laufschrift"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+194%_R-22%CC%%CUE_TPP+194%01" IndentLevel="2" HelpContext="NEO-Font-Laufschrift"/>
                       </when>
                       <when test="20">
                         <!-- Uhr 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+83%_R-20%CC%%CUE_TPP+83%01" IndentLevel="2" HelpContext="NEO-ViewMode-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+84%_R-20%CC%%CUE_TPP+84%01" IndentLevel="2" HelpContext="NEO-ShowSeconds-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+85%_R-20%CC%%CUE_TPP+85%01" IndentLevel="2" HelpContext="NEO-BlinkColon-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+86%_R-20%CC%%CUE_TPP+86%01" IndentLevel="2" HelpContext="NEO-ColourHue-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+87%_R-20%CC%%CUE_TPP+87%01" IndentLevel="2" HelpContext="NEO-DateMode-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+88%_R-20%CC%%CUE_TPP+88%01" IndentLevel="2" HelpContext="NEO-DateFormat-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+89%_R-20%CC%%CUE_TPP+89%01" IndentLevel="2" HelpContext="NEO-DateHue-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+90%_R-20%CC%%CUE_TPP+90%01" IndentLevel="2" HelpContext="NEO-SwitchSec-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+91%_R-20%CC%%CUE_TPP+91%01" IndentLevel="2" HelpContext="NEO-ScrollSpeed-Uhr-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+92%_R-20%CC%%CUE_TPP+92%01" IndentLevel="2" HelpContext="NEO-Font-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+200%_R-22%CC%%CUE_TPP+200%01" IndentLevel="2" HelpContext="NEO-ViewMode-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+201%_R-22%CC%%CUE_TPP+201%01" IndentLevel="2" HelpContext="NEO-ShowSeconds-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+202%_R-22%CC%%CUE_TPP+202%01" IndentLevel="2" HelpContext="NEO-BlinkColon-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+203%_R-22%CC%%CUE_TPP+203%01" IndentLevel="2" HelpContext="NEO-ColourHue-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+204%_R-22%CC%%CUE_TPP+204%01" IndentLevel="2" HelpContext="NEO-DateMode-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+205%_R-22%CC%%CUE_TPP+205%01" IndentLevel="2" HelpContext="NEO-DateFormat-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+206%_R-22%CC%%CUE_TPP+206%01" IndentLevel="2" HelpContext="NEO-DateHue-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+207%_R-22%CC%%CUE_TPP+207%01" IndentLevel="2" HelpContext="NEO-SwitchSec-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+208%_R-22%CC%%CUE_TPP+208%01" IndentLevel="2" HelpContext="NEO-ScrollSpeed-Uhr-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+209%_R-22%CC%%CUE_TPP+209%01" IndentLevel="2" HelpContext="NEO-Font-Uhr-2D"/>
                       </when>
                       <when test="21">
                         <!-- Snake 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+93%_R-20%CC%%CUE_TPP+93%01" IndentLevel="2" HelpContext="NEO-Speed-Snake-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+94%_R-20%CC%%CUE_TPP+94%01" IndentLevel="2" HelpContext="NEO-HeadHue-Snake-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+95%_R-20%CC%%CUE_TPP+95%01" IndentLevel="2" HelpContext="NEO-BodyMode-Snake-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+96%_R-20%CC%%CUE_TPP+96%01" IndentLevel="2" HelpContext="NEO-BodyHue-Snake-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+210%_R-22%CC%%CUE_TPP+210%01" IndentLevel="2" HelpContext="NEO-Speed-Snake-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+211%_R-22%CC%%CUE_TPP+211%01" IndentLevel="2" HelpContext="NEO-HeadHue-Snake-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+212%_R-22%CC%%CUE_TPP+212%01" IndentLevel="2" HelpContext="NEO-BodyMode-Snake-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+213%_R-22%CC%%CUE_TPP+213%01" IndentLevel="2" HelpContext="NEO-BodyHue-Snake-2D"/>
                       </when>
                       <when test="22">
                         <!-- Matrix 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+97%_R-20%CC%%CUE_TPP+97%01" IndentLevel="2" HelpContext="NEO-Speed-Matrix-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+98%_R-20%CC%%CUE_TPP+98%01" IndentLevel="2" HelpContext="NEO-Density-Matrix-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+99%_R-20%CC%%CUE_TPP+99%01" IndentLevel="2" HelpContext="NEO-Palette-Matrix-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+100%_R-20%CC%%CUE_TPP+100%01" IndentLevel="2" HelpContext="NEO-Glitch-Matrix-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+220%_R-22%CC%%CUE_TPP+220%01" IndentLevel="2" HelpContext="NEO-Speed-Matrix-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+221%_R-22%CC%%CUE_TPP+221%01" IndentLevel="2" HelpContext="NEO-Density-Matrix-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+222%_R-22%CC%%CUE_TPP+222%01" IndentLevel="2" HelpContext="NEO-Palette-Matrix-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+223%_R-22%CC%%CUE_TPP+223%01" IndentLevel="2" HelpContext="NEO-Glitch-Matrix-2D"/>
                       </when>
                       <when test="23">
                         <!-- Tetris 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+101%_R-20%CC%%CUE_TPP+101%01" IndentLevel="2" HelpContext="NEO-Speed-Tetris-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+102%_R-20%CC%%CUE_TPP+102%01" IndentLevel="2" HelpContext="NEO-BgBrightness-Tetris-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+103%_R-20%CC%%CUE_TPP+103%01" IndentLevel="2" HelpContext="NEO-GhostPiece-Tetris-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+104%_R-20%CC%%CUE_TPP+104%01" IndentLevel="2" HelpContext="NEO-ColorMode-Tetris-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+105%_R-20%CC%%CUE_TPP+105%01" IndentLevel="2" HelpContext="NEO-FlashLines-Tetris-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+106%_R-20%CC%%CUE_TPP+106%01" IndentLevel="2" HelpContext="NEO-AutoPlay-Tetris-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+230%_R-22%CC%%CUE_TPP+230%01" IndentLevel="2" HelpContext="NEO-Speed-Tetris-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+231%_R-22%CC%%CUE_TPP+231%01" IndentLevel="2" HelpContext="NEO-BgBrightness-Tetris-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+232%_R-22%CC%%CUE_TPP+232%01" IndentLevel="2" HelpContext="NEO-GhostPiece-Tetris-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+233%_R-22%CC%%CUE_TPP+233%01" IndentLevel="2" HelpContext="NEO-ColorMode-Tetris-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+234%_R-22%CC%%CUE_TPP+234%01" IndentLevel="2" HelpContext="NEO-FlashLines-Tetris-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+235%_R-22%CC%%CUE_TPP+235%01" IndentLevel="2" HelpContext="NEO-AutoPlay-Tetris-2D"/>
                       </when>
                       <when test="24">
                         <!-- TRON Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+107%_R-20%CC%%CUE_TPP+107%01" IndentLevel="2" HelpContext="NEO-Speed-TRON"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+108%_R-20%CC%%CUE_TPP+108%01" IndentLevel="2" HelpContext="NEO-Hue-TRON"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+109%_R-20%CC%%CUE_TPP+109%01" IndentLevel="2" HelpContext="NEO-GridSpacing-TRON"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+110%_R-20%CC%%CUE_TPP+110%01" IndentLevel="2" HelpContext="NEO-Glow-TRON"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+240%_R-22%CC%%CUE_TPP+240%01" IndentLevel="2" HelpContext="NEO-Speed-TRON"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+241%_R-22%CC%%CUE_TPP+241%01" IndentLevel="2" HelpContext="NEO-Hue-TRON"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+242%_R-22%CC%%CUE_TPP+242%01" IndentLevel="2" HelpContext="NEO-GridSpacing-TRON"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+243%_R-22%CC%%CUE_TPP+243%01" IndentLevel="2" HelpContext="NEO-Glow-TRON"/>
                       </when>
                       <when test="25">
                         <!-- Starfield Warp Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+111%_R-20%CC%%CUE_TPP+111%01" IndentLevel="2" HelpContext="NEO-Speed-Starfield-Warp"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+112%_R-20%CC%%CUE_TPP+112%01" IndentLevel="2" HelpContext="NEO-Density-Starfield-Warp"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+113%_R-20%CC%%CUE_TPP+113%01" IndentLevel="2" HelpContext="NEO-ColorMode-Starfield-Warp"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+114%_R-20%CC%%CUE_TPP+114%01" IndentLevel="2" HelpContext="NEO-WarpPulse-Starfield-Warp"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+250%_R-22%CC%%CUE_TPP+250%01" IndentLevel="2" HelpContext="NEO-Speed-Starfield-Warp"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+251%_R-22%CC%%CUE_TPP+251%01" IndentLevel="2" HelpContext="NEO-Density-Starfield-Warp"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+252%_R-22%CC%%CUE_TPP+252%01" IndentLevel="2" HelpContext="NEO-ColorMode-Starfield-Warp"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+253%_R-22%CC%%CUE_TPP+253%01" IndentLevel="2" HelpContext="NEO-WarpPulse-Starfield-Warp"/>
                       </when>
                       <when test="26">
                         <!-- Plasma Nebula Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+115%_R-20%CC%%CUE_TPP+115%01" IndentLevel="2" HelpContext="NEO-Speed-Plasma-Nebula"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+116%_R-20%CC%%CUE_TPP+116%01" IndentLevel="2" HelpContext="NEO-Saturation-Plasma-Nebula"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+117%_R-20%CC%%CUE_TPP+117%01" IndentLevel="2" HelpContext="NEO-Contrast-Plasma-Nebula"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+118%_R-20%CC%%CUE_TPP+118%01" IndentLevel="2" HelpContext="NEO-PaletteShift-Plasma-Nebula"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+260%_R-22%CC%%CUE_TPP+260%01" IndentLevel="2" HelpContext="NEO-Speed-Plasma-Nebula"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+261%_R-22%CC%%CUE_TPP+261%01" IndentLevel="2" HelpContext="NEO-Saturation-Plasma-Nebula"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+262%_R-22%CC%%CUE_TPP+262%01" IndentLevel="2" HelpContext="NEO-Contrast-Plasma-Nebula"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+263%_R-22%CC%%CUE_TPP+263%01" IndentLevel="2" HelpContext="NEO-PaletteShift-Plasma-Nebula"/>
                       </when>
                       <when test="27">
                         <!-- UFO Swarm Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+119%_R-20%CC%%CUE_TPP+119%01" IndentLevel="2" HelpContext="NEO-Speed-UFO-Swarm"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+120%_R-20%CC%%CUE_TPP+120%01" IndentLevel="2" HelpContext="NEO-Count-UFO-Swarm"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+121%_R-20%CC%%CUE_TPP+121%01" IndentLevel="2" HelpContext="NEO-Hue-UFO-Swarm"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+122%_R-20%CC%%CUE_TPP+122%01" IndentLevel="2" HelpContext="NEO-Beam-UFO-Swarm"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+270%_R-22%CC%%CUE_TPP+270%01" IndentLevel="2" HelpContext="NEO-Speed-UFO-Swarm"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+271%_R-22%CC%%CUE_TPP+271%01" IndentLevel="2" HelpContext="NEO-Count-UFO-Swarm"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+272%_R-22%CC%%CUE_TPP+272%01" IndentLevel="2" HelpContext="NEO-Hue-UFO-Swarm"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+273%_R-22%CC%%CUE_TPP+273%01" IndentLevel="2" HelpContext="NEO-Beam-UFO-Swarm"/>
                       </when>
                       <when test="28">
                         <!-- Game of Life 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+123%_R-20%CC%%CUE_TPP+123%01" IndentLevel="2" HelpContext="NEO-Speed-Game-of-Life-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+124%_R-20%CC%%CUE_TPP+124%01" IndentLevel="2" HelpContext="NEO-Hue-Game-of-Life-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+125%_R-20%CC%%CUE_TPP+125%01" IndentLevel="2" HelpContext="NEO-ColorMode-Game-of-Life-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+126%_R-20%CC%%CUE_TPP+126%01" IndentLevel="2" HelpContext="NEO-SpawnDensity-Game-of-Life-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+280%_R-22%CC%%CUE_TPP+280%01" IndentLevel="2" HelpContext="NEO-Speed-Game-of-Life-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+281%_R-22%CC%%CUE_TPP+281%01" IndentLevel="2" HelpContext="NEO-Hue-Game-of-Life-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+282%_R-22%CC%%CUE_TPP+282%01" IndentLevel="2" HelpContext="NEO-ColorMode-Game-of-Life-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+283%_R-22%CC%%CUE_TPP+283%01" IndentLevel="2" HelpContext="NEO-SpawnDensity-Game-of-Life-2D"/>
                       </when>
                       <when test="29">
                         <!-- DNA 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+127%_R-20%CC%%CUE_TPP+127%01" IndentLevel="2" HelpContext="NEO-Speed-DNA-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+128%_R-20%CC%%CUE_TPP+128%01" IndentLevel="2" HelpContext="NEO-Hue-DNA-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+129%_R-20%CC%%CUE_TPP+129%01" IndentLevel="2" HelpContext="NEO-Twist-DNA-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+130%_R-20%CC%%CUE_TPP+130%01" IndentLevel="2" HelpContext="NEO-RungSpacing-DNA-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+290%_R-22%CC%%CUE_TPP+290%01" IndentLevel="2" HelpContext="NEO-Speed-DNA-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+291%_R-22%CC%%CUE_TPP+291%01" IndentLevel="2" HelpContext="NEO-Hue-DNA-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+292%_R-22%CC%%CUE_TPP+292%01" IndentLevel="2" HelpContext="NEO-Twist-DNA-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+293%_R-22%CC%%CUE_TPP+293%01" IndentLevel="2" HelpContext="NEO-RungSpacing-DNA-2D"/>
                       </when>
                       <when test="30">
                         <!-- Aurora 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+131%_R-20%CC%%CUE_TPP+131%01" IndentLevel="2" HelpContext="NEO-Speed-Aurora-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+132%_R-20%CC%%CUE_TPP+132%01" IndentLevel="2" HelpContext="NEO-Hue-Aurora-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+133%_R-20%CC%%CUE_TPP+133%01" IndentLevel="2" HelpContext="NEO-Scale-Aurora-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+134%_R-20%CC%%CUE_TPP+134%01" IndentLevel="2" HelpContext="NEO-Intensity-Aurora-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+300%_R-22%CC%%CUE_TPP+300%01" IndentLevel="2" HelpContext="NEO-Speed-Aurora-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+301%_R-22%CC%%CUE_TPP+301%01" IndentLevel="2" HelpContext="NEO-Hue-Aurora-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+302%_R-22%CC%%CUE_TPP+302%01" IndentLevel="2" HelpContext="NEO-Scale-Aurora-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+303%_R-22%CC%%CUE_TPP+303%01" IndentLevel="2" HelpContext="NEO-Intensity-Aurora-2D"/>
                       </when>
                       <when test="31">
                         <!-- Lissajous 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+135%_R-20%CC%%CUE_TPP+135%01" IndentLevel="2" HelpContext="NEO-Speed-Lissajous-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+136%_R-20%CC%%CUE_TPP+136%01" IndentLevel="2" HelpContext="NEO-Hue-Lissajous-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+137%_R-20%CC%%CUE_TPP+137%01" IndentLevel="2" HelpContext="NEO-FreqA-Lissajous-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+138%_R-20%CC%%CUE_TPP+138%01" IndentLevel="2" HelpContext="NEO-FreqB-Lissajous-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+310%_R-22%CC%%CUE_TPP+310%01" IndentLevel="2" HelpContext="NEO-Speed-Lissajous-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+311%_R-22%CC%%CUE_TPP+311%01" IndentLevel="2" HelpContext="NEO-Hue-Lissajous-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+312%_R-22%CC%%CUE_TPP+312%01" IndentLevel="2" HelpContext="NEO-FreqA-Lissajous-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+313%_R-22%CC%%CUE_TPP+313%01" IndentLevel="2" HelpContext="NEO-FreqB-Lissajous-2D"/>
                       </when>
                       <when test="32">
                         <!-- Metaballs 2D Effect -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+139%_R-20%CC%%CUE_TPP+139%01" IndentLevel="2" HelpContext="NEO-Speed-Metaballs-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+140%_R-20%CC%%CUE_TPP+140%01" IndentLevel="2" HelpContext="NEO-Hue-Metaballs-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+141%_R-20%CC%%CUE_TPP+141%01" IndentLevel="2" HelpContext="NEO-BlobCount-Metaballs-2D"/>
-                        <ParameterRefRef RefId="%AID%_UP-20%CC%%CUE_TPP+142%_R-20%CC%%CUE_TPP+142%01" IndentLevel="2" HelpContext="NEO-Contrast-Metaballs-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+320%_R-22%CC%%CUE_TPP+320%01" IndentLevel="2" HelpContext="NEO-Speed-Metaballs-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+321%_R-22%CC%%CUE_TPP+321%01" IndentLevel="2" HelpContext="NEO-Hue-Metaballs-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+322%_R-22%CC%%CUE_TPP+322%01" IndentLevel="2" HelpContext="NEO-BlobCount-Metaballs-2D"/>
+                        <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+323%_R-22%CC%%CUE_TPP+323%01" IndentLevel="2" HelpContext="NEO-Contrast-Metaballs-2D"/>
                       </when>
                     </choose>
 

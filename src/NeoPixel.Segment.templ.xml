@@ -81,215 +81,215 @@
                 <!-- Bytes 30+: Effect-specific parameters (AUTO-GENERATED) -->
                 <!-- BEGIN AUTO-GENERATED: Effect Parameters Union -->
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-                <!-- Start ID: 580, Start Offset: 30 (FIXED - do not change!) -->
-                <!-- Generated: ID 580-893, Offset 30-549 -->
+                <!-- IDs: UP-21%CC%EEPP (EE = effect number, PP = parameter index), Start Offset: 30 (FIXED - do not change!) -->
+                <!-- Generated: Offset 30-549 -->
 
                 <!-- Wipe Effect (ID 1) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%580" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed (Wipe)" Value="25"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%581" Offset="31" BitOffset="0" Name="NEO%C%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction (Wipe)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%582" Offset="32" BitOffset="7" Name="NEO%C%WipeLoop" ParameterType="%AID%_PT-WipeLoop" Text="Loop (Wipe)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0100" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed (Wipe)" Value="25"/>
+                <Parameter Id="%AID%_UP-21%CC%0101" Offset="31" BitOffset="0" Name="NEO%C%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction (Wipe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0102" Offset="32" BitOffset="7" Name="NEO%C%WipeLoop" ParameterType="%AID%_PT-WipeLoop" Text="Loop (Wipe)" Value="1"/>
 
                 <!-- Rainbow Effect (ID 2) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%590" Offset="33" BitOffset="0" Name="NEO%C%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed (Rainbow)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%591" Offset="34" BitOffset="0" Name="NEO%C%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta (Rainbow)" Value="7"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%592" Offset="35" BitOffset="0" Name="NEO%C%RainbowSaturation" ParameterType="%AID%_PT-RainbowSaturation" Text="Saturation (Rainbow)" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%593" Offset="36" BitOffset="0" Name="NEO%C%RainbowDensity" ParameterType="%AID%_PT-RainbowDensity" Text="Density (Rainbow)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%594" Offset="37" BitOffset="0" Name="NEO%C%RainbowMode" ParameterType="%AID%_PT-RainbowMode" Text="Mode (Rainbow)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0200" Offset="33" BitOffset="0" Name="NEO%C%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed (Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0201" Offset="34" BitOffset="0" Name="NEO%C%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta (Rainbow)" Value="7"/>
+                <Parameter Id="%AID%_UP-21%CC%0202" Offset="35" BitOffset="0" Name="NEO%C%RainbowSaturation" ParameterType="%AID%_PT-RainbowSaturation" Text="Saturation (Rainbow)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%0203" Offset="36" BitOffset="0" Name="NEO%C%RainbowDensity" ParameterType="%AID%_PT-RainbowDensity" Text="Density (Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0204" Offset="37" BitOffset="0" Name="NEO%C%RainbowMode" ParameterType="%AID%_PT-RainbowMode" Text="Mode (Rainbow)" Value="0"/>
 
                 <!-- Pride2015 Effect (ID 3) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%600" Offset="38" BitOffset="0" Name="NEO%C%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed (Pride2015)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0300" Offset="38" BitOffset="0" Name="NEO%C%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed (Pride2015)" Value="128"/>
 
                 <!-- Juggle Effect (ID 4) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%610" Offset="39" BitOffset="0" Name="NEO%C%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed (Juggle)" Value="80"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%611" Offset="40" BitOffset="0" Name="NEO%C%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots (Juggle)" Value="8"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%612" Offset="41" BitOffset="0" Name="NEO%C%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed (Juggle)" Value="20"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%613" Offset="42" BitOffset="0" Name="NEO%C%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset (Juggle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0400" Offset="39" BitOffset="0" Name="NEO%C%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed (Juggle)" Value="80"/>
+                <Parameter Id="%AID%_UP-21%CC%0401" Offset="40" BitOffset="0" Name="NEO%C%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots (Juggle)" Value="8"/>
+                <Parameter Id="%AID%_UP-21%CC%0402" Offset="41" BitOffset="0" Name="NEO%C%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed (Juggle)" Value="20"/>
+                <Parameter Id="%AID%_UP-21%CC%0403" Offset="42" BitOffset="0" Name="NEO%C%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset (Juggle)" Value="0"/>
 
                 <!-- BPM Effect (ID 5) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%620" Offset="43" BitOffset="0" Name="NEO%C%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM (BPM)" Value="62"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%621" Offset="44" BitOffset="0" Name="NEO%C%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue (BPM)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0500" Offset="43" BitOffset="0" Name="NEO%C%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM (BPM)" Value="62"/>
+                <Parameter Id="%AID%_UP-21%CC%0501" Offset="44" BitOffset="0" Name="NEO%C%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue (BPM)" Value="0"/>
 
                 <!-- Cylon Effect (ID 6) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%630" Offset="45" BitOffset="0" Name="NEO%C%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed (Cylon)" Value="20"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%631" Offset="46" BitOffset="0" Name="NEO%C%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue (Cylon)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%632" Offset="47" BitOffset="0" Name="NEO%C%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize (Cylon)" Value="5"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%633" Offset="48" BitOffset="0" Name="NEO%C%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount (Cylon)" Value="50"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%634" Offset="49" BitOffset="0" Name="NEO%C%CylonDirection" ParameterType="%AID%_PT-CylonDirection" Text="Direction (Cylon)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%635" Offset="50" BitOffset="0" Name="NEO%C%CylonMode" ParameterType="%AID%_PT-CylonMode" Text="Mode (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0600" Offset="45" BitOffset="0" Name="NEO%C%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed (Cylon)" Value="20"/>
+                <Parameter Id="%AID%_UP-21%CC%0601" Offset="46" BitOffset="0" Name="NEO%C%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0602" Offset="47" BitOffset="0" Name="NEO%C%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize (Cylon)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%0603" Offset="48" BitOffset="0" Name="NEO%C%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount (Cylon)" Value="50"/>
+                <Parameter Id="%AID%_UP-21%CC%0604" Offset="49" BitOffset="0" Name="NEO%C%CylonDirection" ParameterType="%AID%_PT-CylonDirection" Text="Direction (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0605" Offset="50" BitOffset="0" Name="NEO%C%CylonMode" ParameterType="%AID%_PT-CylonMode" Text="Mode (Cylon)" Value="0"/>
 
                 <!-- Test Effect (ID 7) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%640" Offset="51" BitOffset="0" Name="NEO%C%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="PhaseDuration (Test)" Value="5"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%641" Offset="52" BitOffset="0" Name="NEO%C%TestMode" ParameterType="%AID%_PT-TestMode" Text="Mode (Test)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0700" Offset="51" BitOffset="0" Name="NEO%C%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="PhaseDuration (Test)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%0701" Offset="52" BitOffset="0" Name="NEO%C%TestMode" ParameterType="%AID%_PT-TestMode" Text="Mode (Test)" Value="0"/>
 
                 <!-- Fire Effect (ID 8) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%650" Offset="53" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed (Fire)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%651" Offset="54" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling (Fire)" Value="90"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%652" Offset="55" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking (Fire)" Value="120"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%653" Offset="56" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection (Fire)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%654" Offset="57" BitOffset="7" Name="NEO%C%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode (Fire)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0800" Offset="53" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed (Fire)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0801" Offset="54" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling (Fire)" Value="90"/>
+                <Parameter Id="%AID%_UP-21%CC%0802" Offset="55" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking (Fire)" Value="120"/>
+                <Parameter Id="%AID%_UP-21%CC%0803" Offset="56" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection (Fire)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0804" Offset="57" BitOffset="7" Name="NEO%C%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode (Fire)" Value="0"/>
 
                 <!-- Theater Chase Effect (ID 9) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%660" Offset="58" BitOffset="0" Name="NEO%C%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed (Theater Chase)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%661" Offset="59" BitOffset="0" Name="NEO%C%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing (Theater Chase)" Value="3"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%662" Offset="60" BitOffset="0" Name="NEO%C%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize (Theater Chase)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%663" Offset="61" BitOffset="0" Name="NEO%C%TheaterChaseColorMode" ParameterType="%AID%_PT-TheaterChaseColorMode" Text="ColorMode (Theater Chase)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%664" Offset="62" BitOffset="0" Name="NEO%C%TheaterChaseColorSpeed" ParameterType="%AID%_PT-TheaterChaseColorSpeed" Text="ColorSpeed (Theater Chase)" Value="5"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%665" Offset="63" BitOffset="0" Name="NEO%C%TheaterChaseBounce" ParameterType="%AID%_PT-TheaterChaseBounce" Text="Bounce (Theater Chase)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0900" Offset="58" BitOffset="0" Name="NEO%C%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed (Theater Chase)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0901" Offset="59" BitOffset="0" Name="NEO%C%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing (Theater Chase)" Value="3"/>
+                <Parameter Id="%AID%_UP-21%CC%0902" Offset="60" BitOffset="0" Name="NEO%C%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize (Theater Chase)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0903" Offset="61" BitOffset="0" Name="NEO%C%TheaterChaseColorMode" ParameterType="%AID%_PT-TheaterChaseColorMode" Text="ColorMode (Theater Chase)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0904" Offset="62" BitOffset="0" Name="NEO%C%TheaterChaseColorSpeed" ParameterType="%AID%_PT-TheaterChaseColorSpeed" Text="ColorSpeed (Theater Chase)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%0905" Offset="63" BitOffset="0" Name="NEO%C%TheaterChaseBounce" ParameterType="%AID%_PT-TheaterChaseBounce" Text="Bounce (Theater Chase)" Value="0"/>
 
                 <!-- Sparkle Effect (ID 10) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%670" Offset="64" BitOffset="0" Name="NEO%C%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed (Sparkle)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%671" Offset="65" BitOffset="0" Name="NEO%C%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate (Sparkle)" Value="120"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%672" Offset="66" BitOffset="0" Name="NEO%C%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount (Sparkle)" Value="64"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%673" Offset="67" BitOffset="0" Name="NEO%C%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability (Sparkle)" Value="100"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%674" Offset="68" BitOffset="7" Name="NEO%C%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly (Sparkle)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%675" Offset="69" BitOffset="7" Name="NEO%C%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode (Sparkle)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%676" Offset="70" BitOffset="0" Name="NEO%C%SparkleMode" ParameterType="%AID%_PT-SparkleMode" Text="Mode (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1000" Offset="64" BitOffset="0" Name="NEO%C%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed (Sparkle)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1001" Offset="65" BitOffset="0" Name="NEO%C%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate (Sparkle)" Value="120"/>
+                <Parameter Id="%AID%_UP-21%CC%1002" Offset="66" BitOffset="0" Name="NEO%C%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount (Sparkle)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%1003" Offset="67" BitOffset="0" Name="NEO%C%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability (Sparkle)" Value="100"/>
+                <Parameter Id="%AID%_UP-21%CC%1004" Offset="68" BitOffset="7" Name="NEO%C%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1005" Offset="69" BitOffset="7" Name="NEO%C%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1006" Offset="70" BitOffset="0" Name="NEO%C%SparkleMode" ParameterType="%AID%_PT-SparkleMode" Text="Mode (Sparkle)" Value="0"/>
 
                 <!-- Breathing Effect (ID 11) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%680" Offset="71" BitOffset="0" Name="NEO%C%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed (Breathing)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%681" Offset="72" BitOffset="0" Name="NEO%C%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness (Breathing)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%682" Offset="73" BitOffset="0" Name="NEO%C%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve (Breathing)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%683" Offset="74" BitOffset="7" Name="NEO%C%BreathingRainbowMode" ParameterType="%AID%_PT-BreathingRainbowMode" Text="RainbowMode (Breathing)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%684" Offset="75" BitOffset="0" Name="NEO%C%BreathingWaveform" ParameterType="%AID%_PT-BreathingWaveform" Text="Waveform (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1100" Offset="71" BitOffset="0" Name="NEO%C%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed (Breathing)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1101" Offset="72" BitOffset="0" Name="NEO%C%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1102" Offset="73" BitOffset="0" Name="NEO%C%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1103" Offset="74" BitOffset="7" Name="NEO%C%BreathingRainbowMode" ParameterType="%AID%_PT-BreathingRainbowMode" Text="RainbowMode (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1104" Offset="75" BitOffset="0" Name="NEO%C%BreathingWaveform" ParameterType="%AID%_PT-BreathingWaveform" Text="Waveform (Breathing)" Value="0"/>
 
                 <!-- Strobe Effect (ID 12) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%690" Offset="76" BitOffset="0" Name="NEO%C%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed (Strobe)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%691" Offset="77" BitOffset="0" Name="NEO%C%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio (Strobe)" Value="100"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%692" Offset="78" BitOffset="0" Name="NEO%C%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness (Strobe)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%693" Offset="79" BitOffset="7" Name="NEO%C%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming (Strobe)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%694" Offset="80" BitOffset="7" Name="NEO%C%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1200" Offset="76" BitOffset="0" Name="NEO%C%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed (Strobe)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1201" Offset="77" BitOffset="0" Name="NEO%C%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio (Strobe)" Value="100"/>
+                <Parameter Id="%AID%_UP-21%CC%1202" Offset="78" BitOffset="0" Name="NEO%C%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1203" Offset="79" BitOffset="7" Name="NEO%C%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1204" Offset="80" BitOffset="7" Name="NEO%C%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe (Strobe)" Value="0"/>
 
                 <!-- Comet Effect (ID 13) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%700" Offset="81" BitOffset="0" Name="NEO%C%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed (Comet)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%701" Offset="82" BitOffset="0" Name="NEO%C%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate (Comet)" Value="150"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%702" Offset="83" BitOffset="0" Name="NEO%C%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength (Comet)" Value="10"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%703" Offset="84" BitOffset="7" Name="NEO%C%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode (Comet)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%704" Offset="85" BitOffset="7" Name="NEO%C%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode (Comet)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%705" Offset="86" BitOffset="0" Name="NEO%C%CometMode" ParameterType="%AID%_PT-CometMode" Text="Mode (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1300" Offset="81" BitOffset="0" Name="NEO%C%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed (Comet)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1301" Offset="82" BitOffset="0" Name="NEO%C%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate (Comet)" Value="150"/>
+                <Parameter Id="%AID%_UP-21%CC%1302" Offset="83" BitOffset="0" Name="NEO%C%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength (Comet)" Value="10"/>
+                <Parameter Id="%AID%_UP-21%CC%1303" Offset="84" BitOffset="7" Name="NEO%C%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1304" Offset="85" BitOffset="7" Name="NEO%C%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1305" Offset="86" BitOffset="0" Name="NEO%C%CometMode" ParameterType="%AID%_PT-CometMode" Text="Mode (Comet)" Value="0"/>
 
                 <!-- Noise Effect (ID 14) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%710" Offset="87" BitOffset="0" Name="NEO%C%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed (Noise)" Value="32"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%711" Offset="88" BitOffset="0" Name="NEO%C%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale (Noise)" Value="48"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%712" Offset="89" BitOffset="0" Name="NEO%C%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation (Noise)" Value="255"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%713" Offset="90" BitOffset="0" Name="NEO%C%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset (Noise)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%714" Offset="91" BitOffset="0" Name="NEO%C%NoisePalette" ParameterType="%AID%_PT-NoisePalette" Text="Palette (Noise)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1400" Offset="87" BitOffset="0" Name="NEO%C%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed (Noise)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1401" Offset="88" BitOffset="0" Name="NEO%C%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale (Noise)" Value="48"/>
+                <Parameter Id="%AID%_UP-21%CC%1402" Offset="89" BitOffset="0" Name="NEO%C%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation (Noise)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%1403" Offset="90" BitOffset="0" Name="NEO%C%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset (Noise)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1404" Offset="91" BitOffset="0" Name="NEO%C%NoisePalette" ParameterType="%AID%_PT-NoisePalette" Text="Palette (Noise)" Value="0"/>
 
                 <!-- Palette Effect (ID 15) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%720" Offset="92" BitOffset="0" Name="NEO%C%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed (Palette)" Value="32"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%721" Offset="93" BitOffset="0" Name="NEO%C%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette (Palette)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%722" Offset="94" BitOffset="7" Name="NEO%C%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend (Palette)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%723" Offset="95" BitOffset="0" Name="NEO%C%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing (Palette)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1500" Offset="92" BitOffset="0" Name="NEO%C%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed (Palette)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1501" Offset="93" BitOffset="0" Name="NEO%C%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette (Palette)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1502" Offset="94" BitOffset="7" Name="NEO%C%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend (Palette)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1503" Offset="95" BitOffset="0" Name="NEO%C%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing (Palette)" Value="0"/>
 
                 <!-- Blitz Effect (ID 16) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%730" Offset="96" BitOffset="0" Name="NEO%C%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed (Blitz)" Value="32"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%731" Offset="97" BitOffset="0" Name="NEO%C%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width (Blitz)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%732" Offset="98" BitOffset="0" Name="NEO%C%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay (Blitz)" Value="40"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%733" Offset="99" BitOffset="0" Name="NEO%C%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue (Blitz)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%734" Offset="100" BitOffset="0" Name="NEO%C%BlitzIntensity" ParameterType="%AID%_PT-BlitzIntensity" Text="Intensity (Blitz)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%1600" Offset="96" BitOffset="0" Name="NEO%C%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed (Blitz)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1601" Offset="97" BitOffset="0" Name="NEO%C%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width (Blitz)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1602" Offset="98" BitOffset="0" Name="NEO%C%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay (Blitz)" Value="40"/>
+                <Parameter Id="%AID%_UP-21%CC%1603" Offset="99" BitOffset="0" Name="NEO%C%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue (Blitz)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1604" Offset="100" BitOffset="0" Name="NEO%C%BlitzIntensity" ParameterType="%AID%_PT-BlitzIntensity" Text="Intensity (Blitz)" Value="255"/>
 
                 <!-- Gradient Effect (ID 17) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%740" Offset="101" BitOffset="0" Name="NEO%C%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed (Gradient)" Value="32"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%741" Offset="102" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue (Gradient)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%742" Offset="103" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%743" Offset="104" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%1700" Offset="101" BitOffset="0" Name="NEO%C%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed (Gradient)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1701" Offset="102" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue (Gradient)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1702" Offset="103" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
+                <Parameter Id="%AID%_UP-21%CC%1703" Offset="104" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
 
                 <!-- Kerze Effect (ID 18) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%750" Offset="105" BitOffset="0" Name="NEO%C%KerzeSpeed" ParameterType="%AID%_PT-KerzeSpeed" Text="Speed (Kerze)" Value="96"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%751" Offset="106" BitOffset="0" Name="NEO%C%KerzeIntensity" ParameterType="%AID%_PT-KerzeIntensity" Text="Intensity (Kerze)" Value="224"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%752" Offset="107" BitOffset="0" Name="NEO%C%KerzeZones" ParameterType="%AID%_PT-KerzeZones" Text="Zones (Kerze)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1800" Offset="105" BitOffset="0" Name="NEO%C%KerzeSpeed" ParameterType="%AID%_PT-KerzeSpeed" Text="Speed (Kerze)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%1801" Offset="106" BitOffset="0" Name="NEO%C%KerzeIntensity" ParameterType="%AID%_PT-KerzeIntensity" Text="Intensity (Kerze)" Value="224"/>
+                <Parameter Id="%AID%_UP-21%CC%1802" Offset="107" BitOffset="0" Name="NEO%C%KerzeZones" ParameterType="%AID%_PT-KerzeZones" Text="Zones (Kerze)" Value="1"/>
 
                 <!-- Laufschrift Effect (ID 19) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%760" Offset="108" BitOffset="0" Name="NEO%C%LaufschriftSpeed" ParameterType="%AID%_PT-LaufschriftSpeed" Text="Speed (Laufschrift)" Value="32"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%761" Offset="109" BitOffset="0" Name="NEO%C%LaufschriftGap" ParameterType="%AID%_PT-LaufschriftGap" Text="Gap (Laufschrift)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%762" Offset="110" BitOffset="7" Name="NEO%C%LaufschriftLoop" ParameterType="%AID%_PT-LaufschriftLoop" Text="Loop (Laufschrift)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%763" Offset="111" BitOffset="0" Name="NEO%C%LaufschriftText" ParameterType="%AID%_PT-LaufschriftText" Text="Text (Laufschrift)" Value=""/>
-                <Parameter Id="%AID%_UP-%TT%%CC%764" Offset="125" BitOffset="0" Name="NEO%C%LaufschriftFont" ParameterType="%AID%_PT-LaufschriftFont" Text="Font (Laufschrift)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1900" Offset="108" BitOffset="0" Name="NEO%C%LaufschriftSpeed" ParameterType="%AID%_PT-LaufschriftSpeed" Text="Speed (Laufschrift)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1901" Offset="109" BitOffset="0" Name="NEO%C%LaufschriftGap" ParameterType="%AID%_PT-LaufschriftGap" Text="Gap (Laufschrift)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1902" Offset="110" BitOffset="7" Name="NEO%C%LaufschriftLoop" ParameterType="%AID%_PT-LaufschriftLoop" Text="Loop (Laufschrift)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1903" Offset="111" BitOffset="0" Name="NEO%C%LaufschriftText" ParameterType="%AID%_PT-LaufschriftText" Text="Text (Laufschrift)" Value=""/>
+                <Parameter Id="%AID%_UP-21%CC%1904" Offset="125" BitOffset="0" Name="NEO%C%LaufschriftFont" ParameterType="%AID%_PT-LaufschriftFont" Text="Font (Laufschrift)" Value="0"/>
 
                 <!-- Uhr 2D Effect (ID 20) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%770" Offset="126" BitOffset="0" Name="NEO%C%Uhr2DViewMode" ParameterType="%AID%_PT-Uhr2DViewMode" Text="ViewMode (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%771" Offset="127" BitOffset="7" Name="NEO%C%Uhr2DShowSeconds" ParameterType="%AID%_PT-Uhr2DShowSeconds" Text="ShowSeconds (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%772" Offset="128" BitOffset="7" Name="NEO%C%Uhr2DBlinkColon" ParameterType="%AID%_PT-Uhr2DBlinkColon" Text="BlinkColon (Uhr 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%773" Offset="129" BitOffset="0" Name="NEO%C%Uhr2DColourHue" ParameterType="%AID%_PT-Uhr2DColourHue" Text="ColourHue (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%774" Offset="130" BitOffset="0" Name="NEO%C%Uhr2DDateMode" ParameterType="%AID%_PT-Uhr2DDateMode" Text="DateMode (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%775" Offset="131" BitOffset="0" Name="NEO%C%Uhr2DDateFormat" ParameterType="%AID%_PT-Uhr2DDateFormat" Text="DateFormat (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%776" Offset="132" BitOffset="0" Name="NEO%C%Uhr2DDateHue" ParameterType="%AID%_PT-Uhr2DDateHue" Text="DateHue (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%777" Offset="133" BitOffset="0" Name="NEO%C%Uhr2DSwitchSec" ParameterType="%AID%_PT-Uhr2DSwitchSec" Text="SwitchSec (Uhr 2D)" Value="5"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%778" Offset="134" BitOffset="0" Name="NEO%C%Uhr2DScrollSpeed" ParameterType="%AID%_PT-Uhr2DScrollSpeed" Text="ScrollSpeed (Uhr 2D)" Value="60"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%779" Offset="135" BitOffset="0" Name="NEO%C%Uhr2DFont" ParameterType="%AID%_PT-Uhr2DFont" Text="Font (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2000" Offset="126" BitOffset="0" Name="NEO%C%Uhr2DViewMode" ParameterType="%AID%_PT-Uhr2DViewMode" Text="ViewMode (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2001" Offset="127" BitOffset="7" Name="NEO%C%Uhr2DShowSeconds" ParameterType="%AID%_PT-Uhr2DShowSeconds" Text="ShowSeconds (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2002" Offset="128" BitOffset="7" Name="NEO%C%Uhr2DBlinkColon" ParameterType="%AID%_PT-Uhr2DBlinkColon" Text="BlinkColon (Uhr 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2003" Offset="129" BitOffset="0" Name="NEO%C%Uhr2DColourHue" ParameterType="%AID%_PT-Uhr2DColourHue" Text="ColourHue (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2004" Offset="130" BitOffset="0" Name="NEO%C%Uhr2DDateMode" ParameterType="%AID%_PT-Uhr2DDateMode" Text="DateMode (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2005" Offset="131" BitOffset="0" Name="NEO%C%Uhr2DDateFormat" ParameterType="%AID%_PT-Uhr2DDateFormat" Text="DateFormat (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2006" Offset="132" BitOffset="0" Name="NEO%C%Uhr2DDateHue" ParameterType="%AID%_PT-Uhr2DDateHue" Text="DateHue (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2007" Offset="133" BitOffset="0" Name="NEO%C%Uhr2DSwitchSec" ParameterType="%AID%_PT-Uhr2DSwitchSec" Text="SwitchSec (Uhr 2D)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%2008" Offset="134" BitOffset="0" Name="NEO%C%Uhr2DScrollSpeed" ParameterType="%AID%_PT-Uhr2DScrollSpeed" Text="ScrollSpeed (Uhr 2D)" Value="60"/>
+                <Parameter Id="%AID%_UP-21%CC%2009" Offset="135" BitOffset="0" Name="NEO%C%Uhr2DFont" ParameterType="%AID%_PT-Uhr2DFont" Text="Font (Uhr 2D)" Value="0"/>
 
                 <!-- Snake 2D Effect (ID 21) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%780" Offset="136" BitOffset="0" Name="NEO%C%Snake2DSpeed" ParameterType="%AID%_PT-Snake2DSpeed" Text="Speed (Snake 2D)" Value="64"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%781" Offset="137" BitOffset="0" Name="NEO%C%Snake2DHeadHue" ParameterType="%AID%_PT-Snake2DHeadHue" Text="HeadHue (Snake 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%782" Offset="138" BitOffset="0" Name="NEO%C%Snake2DBodyMode" ParameterType="%AID%_PT-Snake2DBodyMode" Text="BodyMode (Snake 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%783" Offset="139" BitOffset="0" Name="NEO%C%Snake2DBodyHue" ParameterType="%AID%_PT-Snake2DBodyHue" Text="BodyHue (Snake 2D)" Value="85"/>
+                <Parameter Id="%AID%_UP-21%CC%2100" Offset="136" BitOffset="0" Name="NEO%C%Snake2DSpeed" ParameterType="%AID%_PT-Snake2DSpeed" Text="Speed (Snake 2D)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2101" Offset="137" BitOffset="0" Name="NEO%C%Snake2DHeadHue" ParameterType="%AID%_PT-Snake2DHeadHue" Text="HeadHue (Snake 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2102" Offset="138" BitOffset="0" Name="NEO%C%Snake2DBodyMode" ParameterType="%AID%_PT-Snake2DBodyMode" Text="BodyMode (Snake 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2103" Offset="139" BitOffset="0" Name="NEO%C%Snake2DBodyHue" ParameterType="%AID%_PT-Snake2DBodyHue" Text="BodyHue (Snake 2D)" Value="85"/>
 
                 <!-- Matrix 2D Effect (ID 22) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%790" Offset="140" BitOffset="0" Name="NEO%C%Matrix2DSpeed" ParameterType="%AID%_PT-Matrix2DSpeed" Text="Speed (Matrix 2D)" Value="80"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%791" Offset="141" BitOffset="0" Name="NEO%C%Matrix2DDensity" ParameterType="%AID%_PT-Matrix2DDensity" Text="Density (Matrix 2D)" Value="35"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%792" Offset="142" BitOffset="0" Name="NEO%C%Matrix2DPalette" ParameterType="%AID%_PT-Matrix2DPalette" Text="Palette (Matrix 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%793" Offset="143" BitOffset="7" Name="NEO%C%Matrix2DGlitch" ParameterType="%AID%_PT-Matrix2DGlitch" Text="Glitch (Matrix 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2200" Offset="140" BitOffset="0" Name="NEO%C%Matrix2DSpeed" ParameterType="%AID%_PT-Matrix2DSpeed" Text="Speed (Matrix 2D)" Value="80"/>
+                <Parameter Id="%AID%_UP-21%CC%2201" Offset="141" BitOffset="0" Name="NEO%C%Matrix2DDensity" ParameterType="%AID%_PT-Matrix2DDensity" Text="Density (Matrix 2D)" Value="35"/>
+                <Parameter Id="%AID%_UP-21%CC%2202" Offset="142" BitOffset="0" Name="NEO%C%Matrix2DPalette" ParameterType="%AID%_PT-Matrix2DPalette" Text="Palette (Matrix 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2203" Offset="143" BitOffset="7" Name="NEO%C%Matrix2DGlitch" ParameterType="%AID%_PT-Matrix2DGlitch" Text="Glitch (Matrix 2D)" Value="1"/>
 
                 <!-- Tetris 2D Effect (ID 23) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%800" Offset="144" BitOffset="0" Name="NEO%C%Tetris2DSpeed" ParameterType="%AID%_PT-Tetris2DSpeed" Text="Speed (Tetris 2D)" Value="128"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%801" Offset="145" BitOffset="0" Name="NEO%C%Tetris2DBgBrightness" ParameterType="%AID%_PT-Tetris2DBgBrightness" Text="BgBrightness (Tetris 2D)" Value="8"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%802" Offset="146" BitOffset="7" Name="NEO%C%Tetris2DGhostPiece" ParameterType="%AID%_PT-Tetris2DGhostPiece" Text="GhostPiece (Tetris 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%803" Offset="147" BitOffset="0" Name="NEO%C%Tetris2DColorMode" ParameterType="%AID%_PT-Tetris2DColorMode" Text="ColorMode (Tetris 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%804" Offset="148" BitOffset="7" Name="NEO%C%Tetris2DFlashLines" ParameterType="%AID%_PT-Tetris2DFlashLines" Text="FlashLines (Tetris 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%805" Offset="149" BitOffset="0" Name="NEO%C%Tetris2DAutoPlay" ParameterType="%AID%_PT-Tetris2DAutoPlay" Text="AutoPlay (Tetris 2D)" Value="3"/>
+                <Parameter Id="%AID%_UP-21%CC%2300" Offset="144" BitOffset="0" Name="NEO%C%Tetris2DSpeed" ParameterType="%AID%_PT-Tetris2DSpeed" Text="Speed (Tetris 2D)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%2301" Offset="145" BitOffset="0" Name="NEO%C%Tetris2DBgBrightness" ParameterType="%AID%_PT-Tetris2DBgBrightness" Text="BgBrightness (Tetris 2D)" Value="8"/>
+                <Parameter Id="%AID%_UP-21%CC%2302" Offset="146" BitOffset="7" Name="NEO%C%Tetris2DGhostPiece" ParameterType="%AID%_PT-Tetris2DGhostPiece" Text="GhostPiece (Tetris 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2303" Offset="147" BitOffset="0" Name="NEO%C%Tetris2DColorMode" ParameterType="%AID%_PT-Tetris2DColorMode" Text="ColorMode (Tetris 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2304" Offset="148" BitOffset="7" Name="NEO%C%Tetris2DFlashLines" ParameterType="%AID%_PT-Tetris2DFlashLines" Text="FlashLines (Tetris 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2305" Offset="149" BitOffset="0" Name="NEO%C%Tetris2DAutoPlay" ParameterType="%AID%_PT-Tetris2DAutoPlay" Text="AutoPlay (Tetris 2D)" Value="3"/>
 
                 <!-- TRON Effect (ID 24) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%810" Offset="150" BitOffset="0" Name="NEO%C%TRONSpeed" ParameterType="%AID%_PT-TRONSpeed" Text="Speed (TRON)" Value="90"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%811" Offset="151" BitOffset="0" Name="NEO%C%TRONHue" ParameterType="%AID%_PT-TRONHue" Text="Hue (TRON)" Value="150"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%812" Offset="152" BitOffset="0" Name="NEO%C%TRONGridSpacing" ParameterType="%AID%_PT-TRONGridSpacing" Text="GridSpacing (TRON)" Value="4"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%813" Offset="153" BitOffset="0" Name="NEO%C%TRONGlow" ParameterType="%AID%_PT-TRONGlow" Text="Glow (TRON)" Value="170"/>
+                <Parameter Id="%AID%_UP-21%CC%2400" Offset="150" BitOffset="0" Name="NEO%C%TRONSpeed" ParameterType="%AID%_PT-TRONSpeed" Text="Speed (TRON)" Value="90"/>
+                <Parameter Id="%AID%_UP-21%CC%2401" Offset="151" BitOffset="0" Name="NEO%C%TRONHue" ParameterType="%AID%_PT-TRONHue" Text="Hue (TRON)" Value="150"/>
+                <Parameter Id="%AID%_UP-21%CC%2402" Offset="152" BitOffset="0" Name="NEO%C%TRONGridSpacing" ParameterType="%AID%_PT-TRONGridSpacing" Text="GridSpacing (TRON)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%2403" Offset="153" BitOffset="0" Name="NEO%C%TRONGlow" ParameterType="%AID%_PT-TRONGlow" Text="Glow (TRON)" Value="170"/>
 
                 <!-- Starfield Warp Effect (ID 25) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%820" Offset="154" BitOffset="0" Name="NEO%C%StarfieldWarpSpeed" ParameterType="%AID%_PT-StarfieldWarpSpeed" Text="Speed (Starfield Warp)" Value="96"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%821" Offset="155" BitOffset="0" Name="NEO%C%StarfieldWarpDensity" ParameterType="%AID%_PT-StarfieldWarpDensity" Text="Density (Starfield Warp)" Value="70"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%822" Offset="156" BitOffset="0" Name="NEO%C%StarfieldWarpColorMode" ParameterType="%AID%_PT-StarfieldWarpColorMode" Text="ColorMode (Starfield Warp)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%823" Offset="157" BitOffset="7" Name="NEO%C%StarfieldWarpWarpPulse" ParameterType="%AID%_PT-StarfieldWarpWarpPulse" Text="WarpPulse (Starfield Warp)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2500" Offset="154" BitOffset="0" Name="NEO%C%StarfieldWarpSpeed" ParameterType="%AID%_PT-StarfieldWarpSpeed" Text="Speed (Starfield Warp)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%2501" Offset="155" BitOffset="0" Name="NEO%C%StarfieldWarpDensity" ParameterType="%AID%_PT-StarfieldWarpDensity" Text="Density (Starfield Warp)" Value="70"/>
+                <Parameter Id="%AID%_UP-21%CC%2502" Offset="156" BitOffset="0" Name="NEO%C%StarfieldWarpColorMode" ParameterType="%AID%_PT-StarfieldWarpColorMode" Text="ColorMode (Starfield Warp)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2503" Offset="157" BitOffset="7" Name="NEO%C%StarfieldWarpWarpPulse" ParameterType="%AID%_PT-StarfieldWarpWarpPulse" Text="WarpPulse (Starfield Warp)" Value="1"/>
 
                 <!-- Plasma Nebula Effect (ID 26) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%830" Offset="158" BitOffset="0" Name="NEO%C%PlasmaNebulaSpeed" ParameterType="%AID%_PT-PlasmaNebulaSpeed" Text="Speed (Plasma Nebula)" Value="64"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%831" Offset="523" BitOffset="0" Name="NEO%C%PlasmaNebulaSaturation" ParameterType="%AID%_PT-PlasmaNebulaSaturation" Text="Saturation (Plasma Nebula)" Value="220"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%832" Offset="524" BitOffset="0" Name="NEO%C%PlasmaNebulaContrast" ParameterType="%AID%_PT-PlasmaNebulaContrast" Text="Contrast (Plasma Nebula)" Value="170"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%833" Offset="525" BitOffset="0" Name="NEO%C%PlasmaNebulaPaletteShift" ParameterType="%AID%_PT-PlasmaNebulaPaletteShift" Text="PaletteShift (Plasma Nebula)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2600" Offset="158" BitOffset="0" Name="NEO%C%PlasmaNebulaSpeed" ParameterType="%AID%_PT-PlasmaNebulaSpeed" Text="Speed (Plasma Nebula)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2601" Offset="523" BitOffset="0" Name="NEO%C%PlasmaNebulaSaturation" ParameterType="%AID%_PT-PlasmaNebulaSaturation" Text="Saturation (Plasma Nebula)" Value="220"/>
+                <Parameter Id="%AID%_UP-21%CC%2602" Offset="524" BitOffset="0" Name="NEO%C%PlasmaNebulaContrast" ParameterType="%AID%_PT-PlasmaNebulaContrast" Text="Contrast (Plasma Nebula)" Value="170"/>
+                <Parameter Id="%AID%_UP-21%CC%2603" Offset="525" BitOffset="0" Name="NEO%C%PlasmaNebulaPaletteShift" ParameterType="%AID%_PT-PlasmaNebulaPaletteShift" Text="PaletteShift (Plasma Nebula)" Value="0"/>
 
                 <!-- UFO Swarm Effect (ID 27) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%840" Offset="526" BitOffset="0" Name="NEO%C%UFOSwarmSpeed" ParameterType="%AID%_PT-UFOSwarmSpeed" Text="Speed (UFO Swarm)" Value="90"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%841" Offset="527" BitOffset="0" Name="NEO%C%UFOSwarmCount" ParameterType="%AID%_PT-UFOSwarmCount" Text="Count (UFO Swarm)" Value="4"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%842" Offset="528" BitOffset="0" Name="NEO%C%UFOSwarmHue" ParameterType="%AID%_PT-UFOSwarmHue" Text="Hue (UFO Swarm)" Value="150"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%843" Offset="529" BitOffset="7" Name="NEO%C%UFOSwarmBeam" ParameterType="%AID%_PT-UFOSwarmBeam" Text="Beam (UFO Swarm)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2700" Offset="526" BitOffset="0" Name="NEO%C%UFOSwarmSpeed" ParameterType="%AID%_PT-UFOSwarmSpeed" Text="Speed (UFO Swarm)" Value="90"/>
+                <Parameter Id="%AID%_UP-21%CC%2701" Offset="527" BitOffset="0" Name="NEO%C%UFOSwarmCount" ParameterType="%AID%_PT-UFOSwarmCount" Text="Count (UFO Swarm)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%2702" Offset="528" BitOffset="0" Name="NEO%C%UFOSwarmHue" ParameterType="%AID%_PT-UFOSwarmHue" Text="Hue (UFO Swarm)" Value="150"/>
+                <Parameter Id="%AID%_UP-21%CC%2703" Offset="529" BitOffset="7" Name="NEO%C%UFOSwarmBeam" ParameterType="%AID%_PT-UFOSwarmBeam" Text="Beam (UFO Swarm)" Value="1"/>
 
                 <!-- Game of Life 2D Effect (ID 28) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%850" Offset="530" BitOffset="0" Name="NEO%C%GameofLife2DSpeed" ParameterType="%AID%_PT-GameofLife2DSpeed" Text="Speed (Game of Life 2D)" Value="64"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%851" Offset="531" BitOffset="0" Name="NEO%C%GameofLife2DHue" ParameterType="%AID%_PT-GameofLife2DHue" Text="Hue (Game of Life 2D)" Value="96"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%852" Offset="532" BitOffset="0" Name="NEO%C%GameofLife2DColorMode" ParameterType="%AID%_PT-GameofLife2DColorMode" Text="ColorMode (Game of Life 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%853" Offset="533" BitOffset="0" Name="NEO%C%GameofLife2DSpawnDensity" ParameterType="%AID%_PT-GameofLife2DSpawnDensity" Text="SpawnDensity (Game of Life 2D)" Value="30"/>
+                <Parameter Id="%AID%_UP-21%CC%2800" Offset="530" BitOffset="0" Name="NEO%C%GameofLife2DSpeed" ParameterType="%AID%_PT-GameofLife2DSpeed" Text="Speed (Game of Life 2D)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2801" Offset="531" BitOffset="0" Name="NEO%C%GameofLife2DHue" ParameterType="%AID%_PT-GameofLife2DHue" Text="Hue (Game of Life 2D)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%2802" Offset="532" BitOffset="0" Name="NEO%C%GameofLife2DColorMode" ParameterType="%AID%_PT-GameofLife2DColorMode" Text="ColorMode (Game of Life 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2803" Offset="533" BitOffset="0" Name="NEO%C%GameofLife2DSpawnDensity" ParameterType="%AID%_PT-GameofLife2DSpawnDensity" Text="SpawnDensity (Game of Life 2D)" Value="30"/>
 
                 <!-- DNA 2D Effect (ID 29) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%860" Offset="534" BitOffset="0" Name="NEO%C%DNA2DSpeed" ParameterType="%AID%_PT-DNA2DSpeed" Text="Speed (DNA 2D)" Value="64"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%861" Offset="535" BitOffset="0" Name="NEO%C%DNA2DHue" ParameterType="%AID%_PT-DNA2DHue" Text="Hue (DNA 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%862" Offset="536" BitOffset="0" Name="NEO%C%DNA2DTwist" ParameterType="%AID%_PT-DNA2DTwist" Text="Twist (DNA 2D)" Value="8"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%863" Offset="537" BitOffset="0" Name="NEO%C%DNA2DRungSpacing" ParameterType="%AID%_PT-DNA2DRungSpacing" Text="RungSpacing (DNA 2D)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%2900" Offset="534" BitOffset="0" Name="NEO%C%DNA2DSpeed" ParameterType="%AID%_PT-DNA2DSpeed" Text="Speed (DNA 2D)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2901" Offset="535" BitOffset="0" Name="NEO%C%DNA2DHue" ParameterType="%AID%_PT-DNA2DHue" Text="Hue (DNA 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2902" Offset="536" BitOffset="0" Name="NEO%C%DNA2DTwist" ParameterType="%AID%_PT-DNA2DTwist" Text="Twist (DNA 2D)" Value="8"/>
+                <Parameter Id="%AID%_UP-21%CC%2903" Offset="537" BitOffset="0" Name="NEO%C%DNA2DRungSpacing" ParameterType="%AID%_PT-DNA2DRungSpacing" Text="RungSpacing (DNA 2D)" Value="4"/>
 
                 <!-- Aurora 2D Effect (ID 30) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%870" Offset="538" BitOffset="0" Name="NEO%C%Aurora2DSpeed" ParameterType="%AID%_PT-Aurora2DSpeed" Text="Speed (Aurora 2D)" Value="48"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%871" Offset="539" BitOffset="0" Name="NEO%C%Aurora2DHue" ParameterType="%AID%_PT-Aurora2DHue" Text="Hue (Aurora 2D)" Value="96"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%872" Offset="540" BitOffset="0" Name="NEO%C%Aurora2DScale" ParameterType="%AID%_PT-Aurora2DScale" Text="Scale (Aurora 2D)" Value="18"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%873" Offset="541" BitOffset="0" Name="NEO%C%Aurora2DIntensity" ParameterType="%AID%_PT-Aurora2DIntensity" Text="Intensity (Aurora 2D)" Value="220"/>
+                <Parameter Id="%AID%_UP-21%CC%3000" Offset="538" BitOffset="0" Name="NEO%C%Aurora2DSpeed" ParameterType="%AID%_PT-Aurora2DSpeed" Text="Speed (Aurora 2D)" Value="48"/>
+                <Parameter Id="%AID%_UP-21%CC%3001" Offset="539" BitOffset="0" Name="NEO%C%Aurora2DHue" ParameterType="%AID%_PT-Aurora2DHue" Text="Hue (Aurora 2D)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%3002" Offset="540" BitOffset="0" Name="NEO%C%Aurora2DScale" ParameterType="%AID%_PT-Aurora2DScale" Text="Scale (Aurora 2D)" Value="18"/>
+                <Parameter Id="%AID%_UP-21%CC%3003" Offset="541" BitOffset="0" Name="NEO%C%Aurora2DIntensity" ParameterType="%AID%_PT-Aurora2DIntensity" Text="Intensity (Aurora 2D)" Value="220"/>
 
                 <!-- Lissajous 2D Effect (ID 31) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%880" Offset="542" BitOffset="0" Name="NEO%C%Lissajous2DSpeed" ParameterType="%AID%_PT-Lissajous2DSpeed" Text="Speed (Lissajous 2D)" Value="56"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%881" Offset="543" BitOffset="0" Name="NEO%C%Lissajous2DHue" ParameterType="%AID%_PT-Lissajous2DHue" Text="Hue (Lissajous 2D)" Value="160"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%882" Offset="544" BitOffset="0" Name="NEO%C%Lissajous2DFreqA" ParameterType="%AID%_PT-Lissajous2DFreqA" Text="FreqA (Lissajous 2D)" Value="3"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%883" Offset="545" BitOffset="0" Name="NEO%C%Lissajous2DFreqB" ParameterType="%AID%_PT-Lissajous2DFreqB" Text="FreqB (Lissajous 2D)" Value="2"/>
+                <Parameter Id="%AID%_UP-21%CC%3100" Offset="542" BitOffset="0" Name="NEO%C%Lissajous2DSpeed" ParameterType="%AID%_PT-Lissajous2DSpeed" Text="Speed (Lissajous 2D)" Value="56"/>
+                <Parameter Id="%AID%_UP-21%CC%3101" Offset="543" BitOffset="0" Name="NEO%C%Lissajous2DHue" ParameterType="%AID%_PT-Lissajous2DHue" Text="Hue (Lissajous 2D)" Value="160"/>
+                <Parameter Id="%AID%_UP-21%CC%3102" Offset="544" BitOffset="0" Name="NEO%C%Lissajous2DFreqA" ParameterType="%AID%_PT-Lissajous2DFreqA" Text="FreqA (Lissajous 2D)" Value="3"/>
+                <Parameter Id="%AID%_UP-21%CC%3103" Offset="545" BitOffset="0" Name="NEO%C%Lissajous2DFreqB" ParameterType="%AID%_PT-Lissajous2DFreqB" Text="FreqB (Lissajous 2D)" Value="2"/>
 
                 <!-- Metaballs 2D Effect (ID 32) Parameters -->
-                <Parameter Id="%AID%_UP-%TT%%CC%890" Offset="546" BitOffset="0" Name="NEO%C%Metaballs2DSpeed" ParameterType="%AID%_PT-Metaballs2DSpeed" Text="Speed (Metaballs 2D)" Value="50"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%891" Offset="547" BitOffset="0" Name="NEO%C%Metaballs2DHue" ParameterType="%AID%_PT-Metaballs2DHue" Text="Hue (Metaballs 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%892" Offset="548" BitOffset="0" Name="NEO%C%Metaballs2DBlobCount" ParameterType="%AID%_PT-Metaballs2DBlobCount" Text="BlobCount (Metaballs 2D)" Value="4"/>
-                <Parameter Id="%AID%_UP-%TT%%CC%893" Offset="549" BitOffset="0" Name="NEO%C%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Contrast (Metaballs 2D)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%3200" Offset="546" BitOffset="0" Name="NEO%C%Metaballs2DSpeed" ParameterType="%AID%_PT-Metaballs2DSpeed" Text="Speed (Metaballs 2D)" Value="50"/>
+                <Parameter Id="%AID%_UP-21%CC%3201" Offset="547" BitOffset="0" Name="NEO%C%Metaballs2DHue" ParameterType="%AID%_PT-Metaballs2DHue" Text="Hue (Metaballs 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%3202" Offset="548" BitOffset="0" Name="NEO%C%Metaballs2DBlobCount" ParameterType="%AID%_PT-Metaballs2DBlobCount" Text="BlobCount (Metaballs 2D)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%3203" Offset="549" BitOffset="0" Name="NEO%C%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Contrast (Metaballs 2D)" Value="128"/>
                 <!-- END AUTO-GENERATED: Effect Parameters Union -->
 
                  <!-- ═══════════════════════════════════════════════════════════════════════════════════
@@ -353,183 +353,183 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%072_R-%TT%%CC%07201" RefId="%AID%_UP-%TT%%CC%072" />
               <!-- BEGIN AUTO-GENERATED: Effect ParameterRefs -->
               <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-              <!-- Generated effect-specific parameter refs (ID 580-893) -->
+              <!-- Generated effect-specific parameter refs (IDs UP-21%CC%EEPP) -->
 
               <!-- Wipe Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%580_R-%TT%%CC%58001" RefId="%AID%_UP-%TT%%CC%580" Value="25" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%581_R-%TT%%CC%58101" RefId="%AID%_UP-%TT%%CC%581" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%582_R-%TT%%CC%58201" RefId="%AID%_UP-%TT%%CC%582" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%0100_R-21%CC%010001" RefId="%AID%_UP-21%CC%0100" Value="25" />
+              <ParameterRef Id="%AID%_UP-21%CC%0101_R-21%CC%010101" RefId="%AID%_UP-21%CC%0101" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0102_R-21%CC%010201" RefId="%AID%_UP-21%CC%0102" Value="1" />
               <!-- Rainbow Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%590_R-%TT%%CC%59001" RefId="%AID%_UP-%TT%%CC%590" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%591_R-%TT%%CC%59101" RefId="%AID%_UP-%TT%%CC%591" Value="7" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%592_R-%TT%%CC%59201" RefId="%AID%_UP-%TT%%CC%592" Value="255" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%593_R-%TT%%CC%59301" RefId="%AID%_UP-%TT%%CC%593" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%594_R-%TT%%CC%59401" RefId="%AID%_UP-%TT%%CC%594" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0200_R-21%CC%020001" RefId="%AID%_UP-21%CC%0200" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%0201_R-21%CC%020101" RefId="%AID%_UP-21%CC%0201" Value="7" />
+              <ParameterRef Id="%AID%_UP-21%CC%0202_R-21%CC%020201" RefId="%AID%_UP-21%CC%0202" Value="255" />
+              <ParameterRef Id="%AID%_UP-21%CC%0203_R-21%CC%020301" RefId="%AID%_UP-21%CC%0203" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%0204_R-21%CC%020401" RefId="%AID%_UP-21%CC%0204" Value="0" />
               <!-- Pride2015 Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%600_R-%TT%%CC%60001" RefId="%AID%_UP-%TT%%CC%600" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%0300_R-21%CC%030001" RefId="%AID%_UP-21%CC%0300" Value="128" />
               <!-- Juggle Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%610_R-%TT%%CC%61001" RefId="%AID%_UP-%TT%%CC%610" Value="80" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%611_R-%TT%%CC%61101" RefId="%AID%_UP-%TT%%CC%611" Value="8" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%612_R-%TT%%CC%61201" RefId="%AID%_UP-%TT%%CC%612" Value="20" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%613_R-%TT%%CC%61301" RefId="%AID%_UP-%TT%%CC%613" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0400_R-21%CC%040001" RefId="%AID%_UP-21%CC%0400" Value="80" />
+              <ParameterRef Id="%AID%_UP-21%CC%0401_R-21%CC%040101" RefId="%AID%_UP-21%CC%0401" Value="8" />
+              <ParameterRef Id="%AID%_UP-21%CC%0402_R-21%CC%040201" RefId="%AID%_UP-21%CC%0402" Value="20" />
+              <ParameterRef Id="%AID%_UP-21%CC%0403_R-21%CC%040301" RefId="%AID%_UP-21%CC%0403" Value="0" />
               <!-- BPM Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%620_R-%TT%%CC%62001" RefId="%AID%_UP-%TT%%CC%620" Value="62" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%621_R-%TT%%CC%62101" RefId="%AID%_UP-%TT%%CC%621" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0500_R-21%CC%050001" RefId="%AID%_UP-21%CC%0500" Value="62" />
+              <ParameterRef Id="%AID%_UP-21%CC%0501_R-21%CC%050101" RefId="%AID%_UP-21%CC%0501" Value="0" />
               <!-- Cylon Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%630_R-%TT%%CC%63001" RefId="%AID%_UP-%TT%%CC%630" Value="20" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%631_R-%TT%%CC%63101" RefId="%AID%_UP-%TT%%CC%631" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%632_R-%TT%%CC%63201" RefId="%AID%_UP-%TT%%CC%632" Value="5" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%633_R-%TT%%CC%63301" RefId="%AID%_UP-%TT%%CC%633" Value="50" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%634_R-%TT%%CC%63401" RefId="%AID%_UP-%TT%%CC%634" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%635_R-%TT%%CC%63501" RefId="%AID%_UP-%TT%%CC%635" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0600_R-21%CC%060001" RefId="%AID%_UP-21%CC%0600" Value="20" />
+              <ParameterRef Id="%AID%_UP-21%CC%0601_R-21%CC%060101" RefId="%AID%_UP-21%CC%0601" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0602_R-21%CC%060201" RefId="%AID%_UP-21%CC%0602" Value="5" />
+              <ParameterRef Id="%AID%_UP-21%CC%0603_R-21%CC%060301" RefId="%AID%_UP-21%CC%0603" Value="50" />
+              <ParameterRef Id="%AID%_UP-21%CC%0604_R-21%CC%060401" RefId="%AID%_UP-21%CC%0604" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0605_R-21%CC%060501" RefId="%AID%_UP-21%CC%0605" Value="0" />
               <!-- Test Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%640_R-%TT%%CC%64001" RefId="%AID%_UP-%TT%%CC%640" Value="5" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%641_R-%TT%%CC%64101" RefId="%AID%_UP-%TT%%CC%641" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0700_R-21%CC%070001" RefId="%AID%_UP-21%CC%0700" Value="5" />
+              <ParameterRef Id="%AID%_UP-21%CC%0701_R-21%CC%070101" RefId="%AID%_UP-21%CC%0701" Value="0" />
               <!-- Fire Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%650_R-%TT%%CC%65001" RefId="%AID%_UP-%TT%%CC%650" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%651_R-%TT%%CC%65101" RefId="%AID%_UP-%TT%%CC%651" Value="90" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%652_R-%TT%%CC%65201" RefId="%AID%_UP-%TT%%CC%652" Value="120" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%653_R-%TT%%CC%65301" RefId="%AID%_UP-%TT%%CC%653" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%654_R-%TT%%CC%65401" RefId="%AID%_UP-%TT%%CC%654" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0800_R-21%CC%080001" RefId="%AID%_UP-21%CC%0800" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%0801_R-21%CC%080101" RefId="%AID%_UP-21%CC%0801" Value="90" />
+              <ParameterRef Id="%AID%_UP-21%CC%0802_R-21%CC%080201" RefId="%AID%_UP-21%CC%0802" Value="120" />
+              <ParameterRef Id="%AID%_UP-21%CC%0803_R-21%CC%080301" RefId="%AID%_UP-21%CC%0803" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0804_R-21%CC%080401" RefId="%AID%_UP-21%CC%0804" Value="0" />
               <!-- Theater Chase Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%660_R-%TT%%CC%66001" RefId="%AID%_UP-%TT%%CC%660" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%661_R-%TT%%CC%66101" RefId="%AID%_UP-%TT%%CC%661" Value="3" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%662_R-%TT%%CC%66201" RefId="%AID%_UP-%TT%%CC%662" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%663_R-%TT%%CC%66301" RefId="%AID%_UP-%TT%%CC%663" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%664_R-%TT%%CC%66401" RefId="%AID%_UP-%TT%%CC%664" Value="5" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%665_R-%TT%%CC%66501" RefId="%AID%_UP-%TT%%CC%665" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0900_R-21%CC%090001" RefId="%AID%_UP-21%CC%0900" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%0901_R-21%CC%090101" RefId="%AID%_UP-21%CC%0901" Value="3" />
+              <ParameterRef Id="%AID%_UP-21%CC%0902_R-21%CC%090201" RefId="%AID%_UP-21%CC%0902" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%0903_R-21%CC%090301" RefId="%AID%_UP-21%CC%0903" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%0904_R-21%CC%090401" RefId="%AID%_UP-21%CC%0904" Value="5" />
+              <ParameterRef Id="%AID%_UP-21%CC%0905_R-21%CC%090501" RefId="%AID%_UP-21%CC%0905" Value="0" />
               <!-- Sparkle Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%670_R-%TT%%CC%67001" RefId="%AID%_UP-%TT%%CC%670" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%671_R-%TT%%CC%67101" RefId="%AID%_UP-%TT%%CC%671" Value="120" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%672_R-%TT%%CC%67201" RefId="%AID%_UP-%TT%%CC%672" Value="64" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%673_R-%TT%%CC%67301" RefId="%AID%_UP-%TT%%CC%673" Value="100" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%674_R-%TT%%CC%67401" RefId="%AID%_UP-%TT%%CC%674" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%675_R-%TT%%CC%67501" RefId="%AID%_UP-%TT%%CC%675" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%676_R-%TT%%CC%67601" RefId="%AID%_UP-%TT%%CC%676" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1000_R-21%CC%100001" RefId="%AID%_UP-21%CC%1000" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%1001_R-21%CC%100101" RefId="%AID%_UP-21%CC%1001" Value="120" />
+              <ParameterRef Id="%AID%_UP-21%CC%1002_R-21%CC%100201" RefId="%AID%_UP-21%CC%1002" Value="64" />
+              <ParameterRef Id="%AID%_UP-21%CC%1003_R-21%CC%100301" RefId="%AID%_UP-21%CC%1003" Value="100" />
+              <ParameterRef Id="%AID%_UP-21%CC%1004_R-21%CC%100401" RefId="%AID%_UP-21%CC%1004" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1005_R-21%CC%100501" RefId="%AID%_UP-21%CC%1005" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1006_R-21%CC%100601" RefId="%AID%_UP-21%CC%1006" Value="0" />
               <!-- Breathing Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%680_R-%TT%%CC%68001" RefId="%AID%_UP-%TT%%CC%680" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%681_R-%TT%%CC%68101" RefId="%AID%_UP-%TT%%CC%681" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%682_R-%TT%%CC%68201" RefId="%AID%_UP-%TT%%CC%682" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%683_R-%TT%%CC%68301" RefId="%AID%_UP-%TT%%CC%683" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%684_R-%TT%%CC%68401" RefId="%AID%_UP-%TT%%CC%684" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1100_R-21%CC%110001" RefId="%AID%_UP-21%CC%1100" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%1101_R-21%CC%110101" RefId="%AID%_UP-21%CC%1101" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1102_R-21%CC%110201" RefId="%AID%_UP-21%CC%1102" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1103_R-21%CC%110301" RefId="%AID%_UP-21%CC%1103" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1104_R-21%CC%110401" RefId="%AID%_UP-21%CC%1104" Value="0" />
               <!-- Strobe Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%690_R-%TT%%CC%69001" RefId="%AID%_UP-%TT%%CC%690" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%691_R-%TT%%CC%69101" RefId="%AID%_UP-%TT%%CC%691" Value="100" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%692_R-%TT%%CC%69201" RefId="%AID%_UP-%TT%%CC%692" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%693_R-%TT%%CC%69301" RefId="%AID%_UP-%TT%%CC%693" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%694_R-%TT%%CC%69401" RefId="%AID%_UP-%TT%%CC%694" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1200_R-21%CC%120001" RefId="%AID%_UP-21%CC%1200" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%1201_R-21%CC%120101" RefId="%AID%_UP-21%CC%1201" Value="100" />
+              <ParameterRef Id="%AID%_UP-21%CC%1202_R-21%CC%120201" RefId="%AID%_UP-21%CC%1202" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1203_R-21%CC%120301" RefId="%AID%_UP-21%CC%1203" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1204_R-21%CC%120401" RefId="%AID%_UP-21%CC%1204" Value="0" />
               <!-- Comet Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%700_R-%TT%%CC%70001" RefId="%AID%_UP-%TT%%CC%700" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%701_R-%TT%%CC%70101" RefId="%AID%_UP-%TT%%CC%701" Value="150" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%702_R-%TT%%CC%70201" RefId="%AID%_UP-%TT%%CC%702" Value="10" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%703_R-%TT%%CC%70301" RefId="%AID%_UP-%TT%%CC%703" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%704_R-%TT%%CC%70401" RefId="%AID%_UP-%TT%%CC%704" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%705_R-%TT%%CC%70501" RefId="%AID%_UP-%TT%%CC%705" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1300_R-21%CC%130001" RefId="%AID%_UP-21%CC%1300" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%1301_R-21%CC%130101" RefId="%AID%_UP-21%CC%1301" Value="150" />
+              <ParameterRef Id="%AID%_UP-21%CC%1302_R-21%CC%130201" RefId="%AID%_UP-21%CC%1302" Value="10" />
+              <ParameterRef Id="%AID%_UP-21%CC%1303_R-21%CC%130301" RefId="%AID%_UP-21%CC%1303" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1304_R-21%CC%130401" RefId="%AID%_UP-21%CC%1304" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1305_R-21%CC%130501" RefId="%AID%_UP-21%CC%1305" Value="0" />
               <!-- Noise Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%710_R-%TT%%CC%71001" RefId="%AID%_UP-%TT%%CC%710" Value="32" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%711_R-%TT%%CC%71101" RefId="%AID%_UP-%TT%%CC%711" Value="48" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%712_R-%TT%%CC%71201" RefId="%AID%_UP-%TT%%CC%712" Value="255" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%713_R-%TT%%CC%71301" RefId="%AID%_UP-%TT%%CC%713" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%714_R-%TT%%CC%71401" RefId="%AID%_UP-%TT%%CC%714" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1400_R-21%CC%140001" RefId="%AID%_UP-21%CC%1400" Value="32" />
+              <ParameterRef Id="%AID%_UP-21%CC%1401_R-21%CC%140101" RefId="%AID%_UP-21%CC%1401" Value="48" />
+              <ParameterRef Id="%AID%_UP-21%CC%1402_R-21%CC%140201" RefId="%AID%_UP-21%CC%1402" Value="255" />
+              <ParameterRef Id="%AID%_UP-21%CC%1403_R-21%CC%140301" RefId="%AID%_UP-21%CC%1403" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1404_R-21%CC%140401" RefId="%AID%_UP-21%CC%1404" Value="0" />
               <!-- Palette Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%720_R-%TT%%CC%72001" RefId="%AID%_UP-%TT%%CC%720" Value="32" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%721_R-%TT%%CC%72101" RefId="%AID%_UP-%TT%%CC%721" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%722_R-%TT%%CC%72201" RefId="%AID%_UP-%TT%%CC%722" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%723_R-%TT%%CC%72301" RefId="%AID%_UP-%TT%%CC%723" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1500_R-21%CC%150001" RefId="%AID%_UP-21%CC%1500" Value="32" />
+              <ParameterRef Id="%AID%_UP-21%CC%1501_R-21%CC%150101" RefId="%AID%_UP-21%CC%1501" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1502_R-21%CC%150201" RefId="%AID%_UP-21%CC%1502" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%1503_R-21%CC%150301" RefId="%AID%_UP-21%CC%1503" Value="0" />
               <!-- Blitz Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%730_R-%TT%%CC%73001" RefId="%AID%_UP-%TT%%CC%730" Value="32" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%731_R-%TT%%CC%73101" RefId="%AID%_UP-%TT%%CC%731" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%732_R-%TT%%CC%73201" RefId="%AID%_UP-%TT%%CC%732" Value="40" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%733_R-%TT%%CC%73301" RefId="%AID%_UP-%TT%%CC%733" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%734_R-%TT%%CC%73401" RefId="%AID%_UP-%TT%%CC%734" Value="255" />
+              <ParameterRef Id="%AID%_UP-21%CC%1600_R-21%CC%160001" RefId="%AID%_UP-21%CC%1600" Value="32" />
+              <ParameterRef Id="%AID%_UP-21%CC%1601_R-21%CC%160101" RefId="%AID%_UP-21%CC%1601" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1602_R-21%CC%160201" RefId="%AID%_UP-21%CC%1602" Value="40" />
+              <ParameterRef Id="%AID%_UP-21%CC%1603_R-21%CC%160301" RefId="%AID%_UP-21%CC%1603" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1604_R-21%CC%160401" RefId="%AID%_UP-21%CC%1604" Value="255" />
               <!-- Gradient Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%740_R-%TT%%CC%74001" RefId="%AID%_UP-%TT%%CC%740" Value="32" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%741_R-%TT%%CC%74101" RefId="%AID%_UP-%TT%%CC%741" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%742_R-%TT%%CC%74201" RefId="%AID%_UP-%TT%%CC%742" Value="160" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%743_R-%TT%%CC%74301" RefId="%AID%_UP-%TT%%CC%743" Value="255" />
+              <ParameterRef Id="%AID%_UP-21%CC%1700_R-21%CC%170001" RefId="%AID%_UP-21%CC%1700" Value="32" />
+              <ParameterRef Id="%AID%_UP-21%CC%1701_R-21%CC%170101" RefId="%AID%_UP-21%CC%1701" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1702_R-21%CC%170201" RefId="%AID%_UP-21%CC%1702" Value="160" />
+              <ParameterRef Id="%AID%_UP-21%CC%1703_R-21%CC%170301" RefId="%AID%_UP-21%CC%1703" Value="255" />
               <!-- Kerze Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%750_R-%TT%%CC%75001" RefId="%AID%_UP-%TT%%CC%750" Value="96" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%751_R-%TT%%CC%75101" RefId="%AID%_UP-%TT%%CC%751" Value="224" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%752_R-%TT%%CC%75201" RefId="%AID%_UP-%TT%%CC%752" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%1800_R-21%CC%180001" RefId="%AID%_UP-21%CC%1800" Value="96" />
+              <ParameterRef Id="%AID%_UP-21%CC%1801_R-21%CC%180101" RefId="%AID%_UP-21%CC%1801" Value="224" />
+              <ParameterRef Id="%AID%_UP-21%CC%1802_R-21%CC%180201" RefId="%AID%_UP-21%CC%1802" Value="1" />
               <!-- Laufschrift Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%760_R-%TT%%CC%76001" RefId="%AID%_UP-%TT%%CC%760" Value="32" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%761_R-%TT%%CC%76101" RefId="%AID%_UP-%TT%%CC%761" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%762_R-%TT%%CC%76201" RefId="%AID%_UP-%TT%%CC%762" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%763_R-%TT%%CC%76301" RefId="%AID%_UP-%TT%%CC%763" Value="" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%764_R-%TT%%CC%76401" RefId="%AID%_UP-%TT%%CC%764" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%1900_R-21%CC%190001" RefId="%AID%_UP-21%CC%1900" Value="32" />
+              <ParameterRef Id="%AID%_UP-21%CC%1901_R-21%CC%190101" RefId="%AID%_UP-21%CC%1901" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%1902_R-21%CC%190201" RefId="%AID%_UP-21%CC%1902" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%1903_R-21%CC%190301" RefId="%AID%_UP-21%CC%1903" Value="" />
+              <ParameterRef Id="%AID%_UP-21%CC%1904_R-21%CC%190401" RefId="%AID%_UP-21%CC%1904" Value="0" />
               <!-- Uhr 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%770_R-%TT%%CC%77001" RefId="%AID%_UP-%TT%%CC%770" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%771_R-%TT%%CC%77101" RefId="%AID%_UP-%TT%%CC%771" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%772_R-%TT%%CC%77201" RefId="%AID%_UP-%TT%%CC%772" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%773_R-%TT%%CC%77301" RefId="%AID%_UP-%TT%%CC%773" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%774_R-%TT%%CC%77401" RefId="%AID%_UP-%TT%%CC%774" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%775_R-%TT%%CC%77501" RefId="%AID%_UP-%TT%%CC%775" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%776_R-%TT%%CC%77601" RefId="%AID%_UP-%TT%%CC%776" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%777_R-%TT%%CC%77701" RefId="%AID%_UP-%TT%%CC%777" Value="5" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%778_R-%TT%%CC%77801" RefId="%AID%_UP-%TT%%CC%778" Value="60" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%779_R-%TT%%CC%77901" RefId="%AID%_UP-%TT%%CC%779" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2000_R-21%CC%200001" RefId="%AID%_UP-21%CC%2000" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2001_R-21%CC%200101" RefId="%AID%_UP-21%CC%2001" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2002_R-21%CC%200201" RefId="%AID%_UP-21%CC%2002" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2003_R-21%CC%200301" RefId="%AID%_UP-21%CC%2003" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2004_R-21%CC%200401" RefId="%AID%_UP-21%CC%2004" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2005_R-21%CC%200501" RefId="%AID%_UP-21%CC%2005" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2006_R-21%CC%200601" RefId="%AID%_UP-21%CC%2006" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2007_R-21%CC%200701" RefId="%AID%_UP-21%CC%2007" Value="5" />
+              <ParameterRef Id="%AID%_UP-21%CC%2008_R-21%CC%200801" RefId="%AID%_UP-21%CC%2008" Value="60" />
+              <ParameterRef Id="%AID%_UP-21%CC%2009_R-21%CC%200901" RefId="%AID%_UP-21%CC%2009" Value="0" />
               <!-- Snake 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%780_R-%TT%%CC%78001" RefId="%AID%_UP-%TT%%CC%780" Value="64" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%781_R-%TT%%CC%78101" RefId="%AID%_UP-%TT%%CC%781" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%782_R-%TT%%CC%78201" RefId="%AID%_UP-%TT%%CC%782" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%783_R-%TT%%CC%78301" RefId="%AID%_UP-%TT%%CC%783" Value="85" />
+              <ParameterRef Id="%AID%_UP-21%CC%2100_R-21%CC%210001" RefId="%AID%_UP-21%CC%2100" Value="64" />
+              <ParameterRef Id="%AID%_UP-21%CC%2101_R-21%CC%210101" RefId="%AID%_UP-21%CC%2101" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2102_R-21%CC%210201" RefId="%AID%_UP-21%CC%2102" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2103_R-21%CC%210301" RefId="%AID%_UP-21%CC%2103" Value="85" />
               <!-- Matrix 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%790_R-%TT%%CC%79001" RefId="%AID%_UP-%TT%%CC%790" Value="80" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%791_R-%TT%%CC%79101" RefId="%AID%_UP-%TT%%CC%791" Value="35" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%792_R-%TT%%CC%79201" RefId="%AID%_UP-%TT%%CC%792" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%793_R-%TT%%CC%79301" RefId="%AID%_UP-%TT%%CC%793" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2200_R-21%CC%220001" RefId="%AID%_UP-21%CC%2200" Value="80" />
+              <ParameterRef Id="%AID%_UP-21%CC%2201_R-21%CC%220101" RefId="%AID%_UP-21%CC%2201" Value="35" />
+              <ParameterRef Id="%AID%_UP-21%CC%2202_R-21%CC%220201" RefId="%AID%_UP-21%CC%2202" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2203_R-21%CC%220301" RefId="%AID%_UP-21%CC%2203" Value="1" />
               <!-- Tetris 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%800_R-%TT%%CC%80001" RefId="%AID%_UP-%TT%%CC%800" Value="128" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%801_R-%TT%%CC%80101" RefId="%AID%_UP-%TT%%CC%801" Value="8" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%802_R-%TT%%CC%80201" RefId="%AID%_UP-%TT%%CC%802" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%803_R-%TT%%CC%80301" RefId="%AID%_UP-%TT%%CC%803" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%804_R-%TT%%CC%80401" RefId="%AID%_UP-%TT%%CC%804" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%805_R-%TT%%CC%80501" RefId="%AID%_UP-%TT%%CC%805" Value="3" />
+              <ParameterRef Id="%AID%_UP-21%CC%2300_R-21%CC%230001" RefId="%AID%_UP-21%CC%2300" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%2301_R-21%CC%230101" RefId="%AID%_UP-21%CC%2301" Value="8" />
+              <ParameterRef Id="%AID%_UP-21%CC%2302_R-21%CC%230201" RefId="%AID%_UP-21%CC%2302" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2303_R-21%CC%230301" RefId="%AID%_UP-21%CC%2303" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2304_R-21%CC%230401" RefId="%AID%_UP-21%CC%2304" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2305_R-21%CC%230501" RefId="%AID%_UP-21%CC%2305" Value="3" />
               <!-- TRON Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%810_R-%TT%%CC%81001" RefId="%AID%_UP-%TT%%CC%810" Value="90" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%811_R-%TT%%CC%81101" RefId="%AID%_UP-%TT%%CC%811" Value="150" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%812_R-%TT%%CC%81201" RefId="%AID%_UP-%TT%%CC%812" Value="4" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%813_R-%TT%%CC%81301" RefId="%AID%_UP-%TT%%CC%813" Value="170" />
+              <ParameterRef Id="%AID%_UP-21%CC%2400_R-21%CC%240001" RefId="%AID%_UP-21%CC%2400" Value="90" />
+              <ParameterRef Id="%AID%_UP-21%CC%2401_R-21%CC%240101" RefId="%AID%_UP-21%CC%2401" Value="150" />
+              <ParameterRef Id="%AID%_UP-21%CC%2402_R-21%CC%240201" RefId="%AID%_UP-21%CC%2402" Value="4" />
+              <ParameterRef Id="%AID%_UP-21%CC%2403_R-21%CC%240301" RefId="%AID%_UP-21%CC%2403" Value="170" />
               <!-- Starfield Warp Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%820_R-%TT%%CC%82001" RefId="%AID%_UP-%TT%%CC%820" Value="96" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%821_R-%TT%%CC%82101" RefId="%AID%_UP-%TT%%CC%821" Value="70" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%822_R-%TT%%CC%82201" RefId="%AID%_UP-%TT%%CC%822" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%823_R-%TT%%CC%82301" RefId="%AID%_UP-%TT%%CC%823" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2500_R-21%CC%250001" RefId="%AID%_UP-21%CC%2500" Value="96" />
+              <ParameterRef Id="%AID%_UP-21%CC%2501_R-21%CC%250101" RefId="%AID%_UP-21%CC%2501" Value="70" />
+              <ParameterRef Id="%AID%_UP-21%CC%2502_R-21%CC%250201" RefId="%AID%_UP-21%CC%2502" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2503_R-21%CC%250301" RefId="%AID%_UP-21%CC%2503" Value="1" />
               <!-- Plasma Nebula Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%830_R-%TT%%CC%83001" RefId="%AID%_UP-%TT%%CC%830" Value="64" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%831_R-%TT%%CC%83101" RefId="%AID%_UP-%TT%%CC%831" Value="220" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%832_R-%TT%%CC%83201" RefId="%AID%_UP-%TT%%CC%832" Value="170" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%833_R-%TT%%CC%83301" RefId="%AID%_UP-%TT%%CC%833" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2600_R-21%CC%260001" RefId="%AID%_UP-21%CC%2600" Value="64" />
+              <ParameterRef Id="%AID%_UP-21%CC%2601_R-21%CC%260101" RefId="%AID%_UP-21%CC%2601" Value="220" />
+              <ParameterRef Id="%AID%_UP-21%CC%2602_R-21%CC%260201" RefId="%AID%_UP-21%CC%2602" Value="170" />
+              <ParameterRef Id="%AID%_UP-21%CC%2603_R-21%CC%260301" RefId="%AID%_UP-21%CC%2603" Value="0" />
               <!-- UFO Swarm Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%840_R-%TT%%CC%84001" RefId="%AID%_UP-%TT%%CC%840" Value="90" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%841_R-%TT%%CC%84101" RefId="%AID%_UP-%TT%%CC%841" Value="4" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%842_R-%TT%%CC%84201" RefId="%AID%_UP-%TT%%CC%842" Value="150" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%843_R-%TT%%CC%84301" RefId="%AID%_UP-%TT%%CC%843" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2700_R-21%CC%270001" RefId="%AID%_UP-21%CC%2700" Value="90" />
+              <ParameterRef Id="%AID%_UP-21%CC%2701_R-21%CC%270101" RefId="%AID%_UP-21%CC%2701" Value="4" />
+              <ParameterRef Id="%AID%_UP-21%CC%2702_R-21%CC%270201" RefId="%AID%_UP-21%CC%2702" Value="150" />
+              <ParameterRef Id="%AID%_UP-21%CC%2703_R-21%CC%270301" RefId="%AID%_UP-21%CC%2703" Value="1" />
               <!-- Game of Life 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%850_R-%TT%%CC%85001" RefId="%AID%_UP-%TT%%CC%850" Value="64" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%851_R-%TT%%CC%85101" RefId="%AID%_UP-%TT%%CC%851" Value="96" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%852_R-%TT%%CC%85201" RefId="%AID%_UP-%TT%%CC%852" Value="1" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%853_R-%TT%%CC%85301" RefId="%AID%_UP-%TT%%CC%853" Value="30" />
+              <ParameterRef Id="%AID%_UP-21%CC%2800_R-21%CC%280001" RefId="%AID%_UP-21%CC%2800" Value="64" />
+              <ParameterRef Id="%AID%_UP-21%CC%2801_R-21%CC%280101" RefId="%AID%_UP-21%CC%2801" Value="96" />
+              <ParameterRef Id="%AID%_UP-21%CC%2802_R-21%CC%280201" RefId="%AID%_UP-21%CC%2802" Value="1" />
+              <ParameterRef Id="%AID%_UP-21%CC%2803_R-21%CC%280301" RefId="%AID%_UP-21%CC%2803" Value="30" />
               <!-- DNA 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%860_R-%TT%%CC%86001" RefId="%AID%_UP-%TT%%CC%860" Value="64" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%861_R-%TT%%CC%86101" RefId="%AID%_UP-%TT%%CC%861" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%862_R-%TT%%CC%86201" RefId="%AID%_UP-%TT%%CC%862" Value="8" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%863_R-%TT%%CC%86301" RefId="%AID%_UP-%TT%%CC%863" Value="4" />
+              <ParameterRef Id="%AID%_UP-21%CC%2900_R-21%CC%290001" RefId="%AID%_UP-21%CC%2900" Value="64" />
+              <ParameterRef Id="%AID%_UP-21%CC%2901_R-21%CC%290101" RefId="%AID%_UP-21%CC%2901" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%2902_R-21%CC%290201" RefId="%AID%_UP-21%CC%2902" Value="8" />
+              <ParameterRef Id="%AID%_UP-21%CC%2903_R-21%CC%290301" RefId="%AID%_UP-21%CC%2903" Value="4" />
               <!-- Aurora 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%870_R-%TT%%CC%87001" RefId="%AID%_UP-%TT%%CC%870" Value="48" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%871_R-%TT%%CC%87101" RefId="%AID%_UP-%TT%%CC%871" Value="96" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%872_R-%TT%%CC%87201" RefId="%AID%_UP-%TT%%CC%872" Value="18" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%873_R-%TT%%CC%87301" RefId="%AID%_UP-%TT%%CC%873" Value="220" />
+              <ParameterRef Id="%AID%_UP-21%CC%3000_R-21%CC%300001" RefId="%AID%_UP-21%CC%3000" Value="48" />
+              <ParameterRef Id="%AID%_UP-21%CC%3001_R-21%CC%300101" RefId="%AID%_UP-21%CC%3001" Value="96" />
+              <ParameterRef Id="%AID%_UP-21%CC%3002_R-21%CC%300201" RefId="%AID%_UP-21%CC%3002" Value="18" />
+              <ParameterRef Id="%AID%_UP-21%CC%3003_R-21%CC%300301" RefId="%AID%_UP-21%CC%3003" Value="220" />
               <!-- Lissajous 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%880_R-%TT%%CC%88001" RefId="%AID%_UP-%TT%%CC%880" Value="56" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%881_R-%TT%%CC%88101" RefId="%AID%_UP-%TT%%CC%881" Value="160" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%882_R-%TT%%CC%88201" RefId="%AID%_UP-%TT%%CC%882" Value="3" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%883_R-%TT%%CC%88301" RefId="%AID%_UP-%TT%%CC%883" Value="2" />
+              <ParameterRef Id="%AID%_UP-21%CC%3100_R-21%CC%310001" RefId="%AID%_UP-21%CC%3100" Value="56" />
+              <ParameterRef Id="%AID%_UP-21%CC%3101_R-21%CC%310101" RefId="%AID%_UP-21%CC%3101" Value="160" />
+              <ParameterRef Id="%AID%_UP-21%CC%3102_R-21%CC%310201" RefId="%AID%_UP-21%CC%3102" Value="3" />
+              <ParameterRef Id="%AID%_UP-21%CC%3103_R-21%CC%310301" RefId="%AID%_UP-21%CC%3103" Value="2" />
               <!-- Metaballs 2D Effect ParameterRefs -->
-              <ParameterRef Id="%AID%_UP-%TT%%CC%890_R-%TT%%CC%89001" RefId="%AID%_UP-%TT%%CC%890" Value="50" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%891_R-%TT%%CC%89101" RefId="%AID%_UP-%TT%%CC%891" Value="0" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%892_R-%TT%%CC%89201" RefId="%AID%_UP-%TT%%CC%892" Value="4" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%893_R-%TT%%CC%89301" RefId="%AID%_UP-%TT%%CC%893" Value="128" />
+              <ParameterRef Id="%AID%_UP-21%CC%3200_R-21%CC%320001" RefId="%AID%_UP-21%CC%3200" Value="50" />
+              <ParameterRef Id="%AID%_UP-21%CC%3201_R-21%CC%320101" RefId="%AID%_UP-21%CC%3201" Value="0" />
+              <ParameterRef Id="%AID%_UP-21%CC%3202_R-21%CC%320201" RefId="%AID%_UP-21%CC%3202" Value="4" />
+              <ParameterRef Id="%AID%_UP-21%CC%3203_R-21%CC%320301" RefId="%AID%_UP-21%CC%3203" Value="128" />
               <!-- END AUTO-GENERATED: Effect ParameterRefs -->
 
               <!-- Scene Count ParameterRef -->
@@ -908,273 +908,273 @@
                       <when test="1">
                         <!-- Wipe Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%580_R-%TT%%CC%58001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%581_R-%TT%%CC%58101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%582_R-%TT%%CC%58201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="2">
                         <!-- Rainbow Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%590_R-%TT%%CC%59001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%591_R-%TT%%CC%59101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%592_R-%TT%%CC%59201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%593_R-%TT%%CC%59301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%594_R-%TT%%CC%59401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="3">
                         <!-- Pride2015 Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%600_R-%TT%%CC%60001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="4">
                         <!-- Juggle Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%610_R-%TT%%CC%61001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%611_R-%TT%%CC%61101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%612_R-%TT%%CC%61201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%613_R-%TT%%CC%61301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="5">
                         <!-- BPM Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%620_R-%TT%%CC%62001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%621_R-%TT%%CC%62101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="6">
                         <!-- Cylon Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%630_R-%TT%%CC%63001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%631_R-%TT%%CC%63101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%632_R-%TT%%CC%63201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%633_R-%TT%%CC%63301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%634_R-%TT%%CC%63401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%635_R-%TT%%CC%63501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="7">
                         <!-- Test Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%640_R-%TT%%CC%64001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%641_R-%TT%%CC%64101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="8">
                         <!-- Fire Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%650_R-%TT%%CC%65001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%651_R-%TT%%CC%65101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%652_R-%TT%%CC%65201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%653_R-%TT%%CC%65301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%654_R-%TT%%CC%65401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="9">
                         <!-- Theater Chase Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%660_R-%TT%%CC%66001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%661_R-%TT%%CC%66101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%662_R-%TT%%CC%66201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%663_R-%TT%%CC%66301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%664_R-%TT%%CC%66401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%665_R-%TT%%CC%66501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="10">
                         <!-- Sparkle Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%670_R-%TT%%CC%67001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%671_R-%TT%%CC%67101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%672_R-%TT%%CC%67201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%673_R-%TT%%CC%67301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%674_R-%TT%%CC%67401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%675_R-%TT%%CC%67501" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%676_R-%TT%%CC%67601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="11">
                         <!-- Breathing Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%680_R-%TT%%CC%68001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%681_R-%TT%%CC%68101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%682_R-%TT%%CC%68201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%683_R-%TT%%CC%68301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%684_R-%TT%%CC%68401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="12">
                         <!-- Strobe Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%690_R-%TT%%CC%69001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%691_R-%TT%%CC%69101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%692_R-%TT%%CC%69201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%693_R-%TT%%CC%69301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%694_R-%TT%%CC%69401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="13">
                         <!-- Comet Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%700_R-%TT%%CC%70001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%701_R-%TT%%CC%70101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%702_R-%TT%%CC%70201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%703_R-%TT%%CC%70301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%704_R-%TT%%CC%70401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%705_R-%TT%%CC%70501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="14">
                         <!-- Noise Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%710_R-%TT%%CC%71001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%711_R-%TT%%CC%71101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%712_R-%TT%%CC%71201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%713_R-%TT%%CC%71301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%714_R-%TT%%CC%71401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="15">
                         <!-- Palette Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%720_R-%TT%%CC%72001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%721_R-%TT%%CC%72101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%722_R-%TT%%CC%72201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%723_R-%TT%%CC%72301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="16">
                         <!-- Blitz Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%730_R-%TT%%CC%73001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%731_R-%TT%%CC%73101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%732_R-%TT%%CC%73201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%733_R-%TT%%CC%73301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%734_R-%TT%%CC%73401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="17">
                         <!-- Gradient Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%740_R-%TT%%CC%74001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%741_R-%TT%%CC%74101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%742_R-%TT%%CC%74201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%743_R-%TT%%CC%74301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="18">
                         <!-- Kerze Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%750_R-%TT%%CC%75001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%751_R-%TT%%CC%75101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%752_R-%TT%%CC%75201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="19">
                         <!-- Laufschrift Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%760_R-%TT%%CC%76001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%761_R-%TT%%CC%76101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%762_R-%TT%%CC%76201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%763_R-%TT%%CC%76301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%764_R-%TT%%CC%76401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="20">
                         <!-- Uhr 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%770_R-%TT%%CC%77001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%771_R-%TT%%CC%77101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%772_R-%TT%%CC%77201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%773_R-%TT%%CC%77301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%774_R-%TT%%CC%77401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%775_R-%TT%%CC%77501" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%776_R-%TT%%CC%77601" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%777_R-%TT%%CC%77701" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%778_R-%TT%%CC%77801" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%779_R-%TT%%CC%77901" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2000_R-21%CC%200001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2001_R-21%CC%200101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2002_R-21%CC%200201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2003_R-21%CC%200301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2004_R-21%CC%200401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2005_R-21%CC%200501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2006_R-21%CC%200601" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2007_R-21%CC%200701" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2008_R-21%CC%200801" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2009_R-21%CC%200901" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="21">
                         <!-- Snake 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%780_R-%TT%%CC%78001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%781_R-%TT%%CC%78101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%782_R-%TT%%CC%78201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%783_R-%TT%%CC%78301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2100_R-21%CC%210001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2101_R-21%CC%210101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2102_R-21%CC%210201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2103_R-21%CC%210301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="22">
                         <!-- Matrix 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%790_R-%TT%%CC%79001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%791_R-%TT%%CC%79101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%792_R-%TT%%CC%79201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%793_R-%TT%%CC%79301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2200_R-21%CC%220001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2201_R-21%CC%220101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2202_R-21%CC%220201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2203_R-21%CC%220301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="23">
                         <!-- Tetris 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%800_R-%TT%%CC%80001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%801_R-%TT%%CC%80101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%802_R-%TT%%CC%80201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%803_R-%TT%%CC%80301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%804_R-%TT%%CC%80401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%805_R-%TT%%CC%80501" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2300_R-21%CC%230001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2301_R-21%CC%230101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2302_R-21%CC%230201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2303_R-21%CC%230301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2304_R-21%CC%230401" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2305_R-21%CC%230501" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="24">
                         <!-- TRON Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%810_R-%TT%%CC%81001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%811_R-%TT%%CC%81101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%812_R-%TT%%CC%81201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%813_R-%TT%%CC%81301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2400_R-21%CC%240001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2401_R-21%CC%240101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2402_R-21%CC%240201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2403_R-21%CC%240301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="25">
                         <!-- Starfield Warp Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%820_R-%TT%%CC%82001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%821_R-%TT%%CC%82101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%822_R-%TT%%CC%82201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%823_R-%TT%%CC%82301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2500_R-21%CC%250001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2501_R-21%CC%250101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2502_R-21%CC%250201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2503_R-21%CC%250301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="26">
                         <!-- Plasma Nebula Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%830_R-%TT%%CC%83001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%831_R-%TT%%CC%83101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%832_R-%TT%%CC%83201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%833_R-%TT%%CC%83301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2600_R-21%CC%260001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2601_R-21%CC%260101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2602_R-21%CC%260201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2603_R-21%CC%260301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="27">
                         <!-- UFO Swarm Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%840_R-%TT%%CC%84001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%841_R-%TT%%CC%84101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%842_R-%TT%%CC%84201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%843_R-%TT%%CC%84301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2700_R-21%CC%270001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2701_R-21%CC%270101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2702_R-21%CC%270201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2703_R-21%CC%270301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="28">
                         <!-- Game of Life 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%850_R-%TT%%CC%85001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%851_R-%TT%%CC%85101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%852_R-%TT%%CC%85201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%853_R-%TT%%CC%85301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2800_R-21%CC%280001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2801_R-21%CC%280101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2802_R-21%CC%280201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2803_R-21%CC%280301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="29">
                         <!-- DNA 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%860_R-%TT%%CC%86001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%861_R-%TT%%CC%86101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%862_R-%TT%%CC%86201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%863_R-%TT%%CC%86301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2900_R-21%CC%290001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2901_R-21%CC%290101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2902_R-21%CC%290201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%2903_R-21%CC%290301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="30">
                         <!-- Aurora 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%870_R-%TT%%CC%87001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%871_R-%TT%%CC%87101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%872_R-%TT%%CC%87201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%873_R-%TT%%CC%87301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3000_R-21%CC%300001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3001_R-21%CC%300101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3002_R-21%CC%300201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3003_R-21%CC%300301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="31">
                         <!-- Lissajous 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%880_R-%TT%%CC%88001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%881_R-%TT%%CC%88101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%882_R-%TT%%CC%88201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%883_R-%TT%%CC%88301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3100_R-21%CC%310001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3101_R-21%CC%310101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3102_R-21%CC%310201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3103_R-21%CC%310301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                       <when test="32">
                         <!-- Metaballs 2D Effect Parameters -->
                         <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%890_R-%TT%%CC%89001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%891_R-%TT%%CC%89101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%892_R-%TT%%CC%89201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%893_R-%TT%%CC%89301" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3200_R-21%CC%320001" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3201_R-21%CC%320101" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3202_R-21%CC%320201" IndentLevel="2" HelpContext="%DOC%"/>
+                        <ParameterRefRef RefId="%AID%_UP-21%CC%3203_R-21%CC%320301" IndentLevel="2" HelpContext="%DOC%"/>
                       </when>
                     </choose>
                     <!-- END AUTO-GENERATED: Effect Dynamic UI -->

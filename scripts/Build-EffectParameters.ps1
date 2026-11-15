@@ -110,11 +110,13 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 # Configuration - Central place for all magic numbers and paths
 # ====================================================================
 $script:Config = @{
-  # Effect Parameter IDs (FIXED - referenced in XML comments).
-  # Each effect owns a fixed-size ID range so adding a parameter cannot renumber
-  # parameters of later effects during an ETS application upgrade.
-  EffectParameterStartId     = 580
-  EffectParameterIdStride    = 10
+  # Effect parameter IDs depend only on (effect number, parameter index):
+  # segment UP-21%CC%EEPP, cue UP-22%CC%<cue digit>EEP (see Get-EffectParameterIdSuffix); no 2.2 product ID uses 21 or 22.
+  EffectParameterIdPrefix    = "21"
+  CueTypedParamIdPrefix      = "22"
+  EffectMaxNumber            = 99   # EE has two digits
+  EffectParameterMaxIndex    = 99   # PP has two digits (segment)
+  CueTypedParamMaxIndex      = 9    # P has one digit (cue); matches CueGenericSlotCount
   EffectParameterStartOffset = 30
   # Reserved area in segment union that dynamic effect parameters must not overwrite
   EffectReservedStartOffset  = 159
@@ -573,27 +575,96 @@ function Write-FileIfChanged {
   return (Write-BytesIfChanged -FullPath $fullPath -Bytes $bytes)
 }
 
-function Get-StableEffectParameterId {
+# @brief ID suffix of a segment effect parameter: EE (effect number) + PP (parameter index), 4 digits.
+#        Full ID UP-21%CC%EEPP; it depends only on (effect, index), so no other effect or parameter moves it.
+function Get-EffectParameterIdSuffix {
   param(
-    [int]$StartId,
     [int]$EffectId,
     [int]$ParameterIndex
   )
 
-  $stride = [int]$script:Config.EffectParameterIdStride
-  if ($EffectId -lt 1) {
-    throw "Effect ID $EffectId cannot own generated parameters (minimum is 1)."
+  if ($EffectId -lt 1 -or $EffectId -gt $script:Config.EffectMaxNumber) {
+    throw "Effect ID $EffectId cannot own generated parameters (allowed 1..$($script:Config.EffectMaxNumber))."
   }
-  if ($ParameterIndex -lt 0 -or $ParameterIndex -ge $stride) {
-    throw "Effect ID $EffectId parameter index $ParameterIndex exceeds the fixed ID stride of $stride."
+  if ($ParameterIndex -lt 0 -or $ParameterIndex -gt $script:Config.EffectParameterMaxIndex) {
+    throw "Effect ID $EffectId parameter index $ParameterIndex is outside 0..$($script:Config.EffectParameterMaxIndex)."
   }
+  return ("{0:D2}{1:D2}" -f $EffectId, $ParameterIndex)
+}
 
-  $id = $StartId + (($EffectId - 1) * $stride) + $ParameterIndex
-  if ($id -gt 999) {
-    throw "Stable effect parameter ID $id exceeds the three-digit OpenKNX ID range."
-  }
+# @brief Offset K of a typed cue parameter within its cue: EE * 10 + P (10..999).
+#        Full ID UP-22%CC%%CUE_TPP+K% with %CUE_TPP% = cue index * 1000, 4 digits (NeoPixel.EM.templ.xml).
+#        A string parameter with index >= 10 aborts (P has one digit); numeric ones beyond the 10 slots are left out.
+function Get-CueTypedParamIdOffset {
+  param(
+    [int]$EffectId,
+    [int]$ParameterIndex
+  )
 
-  return $id
+  if ($EffectId -lt 1 -or $EffectId -gt $script:Config.EffectMaxNumber) {
+    throw "Effect ID $EffectId cannot own typed cue parameters (allowed 1..$($script:Config.EffectMaxNumber))."
+  }
+  if ($ParameterIndex -lt 0 -or $ParameterIndex -gt $script:Config.CueTypedParamMaxIndex) {
+    throw "Effect ID $EffectId typed cue parameter index $ParameterIndex is outside 0..$($script:Config.CueTypedParamMaxIndex)."
+  }
+  return ($EffectId * 10 + $ParameterIndex)
+}
+
+# @brief Aborts unless %CUE_TPP% in NeoPixel.EM.templ.xml is value 0, increment 1000, digits 4 and the
+#        Cue part has at most 10 instances: the typed cue IDs need cue index * 1000 + K in 4 digits.
+function Assert-CueTypedParamIdBase {
+  $path = Resolve-RepoPath "src/NeoPixel.EM.templ.xml"
+  if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Cue ID base: $path not found." }
+  $text = [System.IO.File]::ReadAllText($path)
+  $part = [regex]::Match($text, '<op:part\s+href="NeoPixel\.Cue\.part\.xml"[^>]*\binstances="(\d+)"')
+  if (-not $part.Success -or [int]$part.Groups[1].Value -gt 10) {
+    throw "Cue ID base: NeoPixel.EM.templ.xml must declare the Cue part with instances <= 10."
+  }
+  $tpp = [regex]::Match($text, '<op:param\s+name="%CUE_TPP%"\s+value="(\d+)"\s+increment="(\d+)"\s+digits="(\d+)"\s*/>')
+  if (-not $tpp.Success -or $tpp.Groups[1].Value -ne '0' -or $tpp.Groups[2].Value -ne '1000' -or $tpp.Groups[3].Value -ne '4') {
+    throw "Cue ID base: NeoPixel.EM.templ.xml must declare <op:param name=""%CUE_TPP%"" value=""0"" increment=""1000"" digits=""4"" />."
+  }
+}
+
+# @brief Aborts when a generated effect ID prefix (UP-21%CC% / UP-22%CC%) appears in a source XML outside
+#        the file the generator writes it to, or when one generated ID is declared twice; ExpectedCount -1 = no count check.
+function Assert-EffectIdNamespace {
+  param(
+    [string]$Prefix,
+    [string]$OwnerFile,
+    [int]$ExpectedCount = -1
+  )
+
+  $pattern = '<Parameter\s+Id="%AID%_UP-' + $Prefix + '%CC%([^"]*)"'
+  $owner = [System.IO.Path]::GetFullPath((Resolve-RepoPath $OwnerFile))
+  $ownerCount = 0
+  foreach ($file in (Get-ChildItem -Path (Resolve-RepoPath $script:Config.SrcDir) -Filter *.xml -File)) {
+    if ($file.Name -like '*.debug.xml') { continue }
+    $hits = @([regex]::Matches([System.IO.File]::ReadAllText($file.FullName), $pattern) | ForEach-Object { $_.Groups[1].Value })
+    if ($hits.Count -eq 0) { continue }
+    if (-not [string]::Equals($file.FullName, $owner, [System.StringComparison]::OrdinalIgnoreCase)) {
+      throw "ID prefix UP-$Prefix%CC% is reserved for generated effect parameters, found in $($file.Name)."
+    }
+    $dups = @($hits | Group-Object | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+    if ($dups.Count -gt 0) { throw "Duplicate effect parameter ID UP-$Prefix%CC%: $($dups -join ', ') in $($file.Name)." }
+    $ownerCount = $hits.Count
+  }
+  if ($ExpectedCount -ge 0 -and $ownerCount -ne $ExpectedCount) {
+    throw "$(Split-Path -Leaf $owner): $ownerCount parameters with UP-$Prefix%CC%, expected $ExpectedCount."
+  }
+}
+
+# @brief Read-only ID checks of a skipped run and of -Check (no parsed effects: no count check); prints and exits 1 on a failure
+function Invoke-EffectIdChecks {
+  try {
+    Assert-CueTypedParamIdBase
+    Assert-EffectIdNamespace -Prefix $script:Config.EffectParameterIdPrefix -OwnerFile $script:Config.SegmentTemplate
+    Assert-EffectIdNamespace -Prefix $script:Config.CueTypedParamIdPrefix -OwnerFile $script:Config.CuePartXml
+  }
+  catch {
+    Microsoft.PowerShell.Utility\Write-Host "Effekte: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+  }
 }
 
 # PS 5.1 compatible clear screen
@@ -711,6 +782,7 @@ function Get-AllEffectHeaders {
 
 if ($Check) {
   Assert-EffectsDirPresent
+  Invoke-EffectIdChecks
   $ae = [char]0x00E4
   if (Test-EffectFingerprintCurrent -Hash (Get-EffectInputFingerprint)) {
     Microsoft.PowerShell.Utility\Write-Host "Effekte: aktuell" -ForegroundColor Green
@@ -963,7 +1035,7 @@ if ($Clean) {
     # Empty Union Parameters block - keep important comments
     $pattern1 = "(?s)($([regex]::Escape($script:Config.Markers.UnionStart))\r?\n)(.*?)($([regex]::Escape($script:Config.Markers.UnionEnd)))"
     $replacement1 = '$1                <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->' + [Environment]::NewLine +
-    "                <!-- Start ID: $($script:Config.EffectParameterStartId), Start Offset: $($script:Config.EffectParameterStartOffset) (FIXED - do not change!) -->" + [Environment]::NewLine +
+    "                <!-- IDs: UP-21%CC%EEPP (EE = effect number, PP = parameter index), Start Offset: $($script:Config.EffectParameterStartOffset) (FIXED - do not change!) -->" + [Environment]::NewLine +
     '        $3'
     $content = $content -replace $pattern1, $replacement1
 
@@ -2562,11 +2634,10 @@ function Test-OpenKNXproducer {
 function Generate-UnionParameters {
   param(
     [array]$Effects,
-    [int]$StartId = $script:Config.EffectParameterStartId,
     [int]$StartOffset = $script:Config.EffectParameterStartOffset
   )
 
-  Write-Host "    ▸ Generating Union Parameters (Start ID=$StartId, Offset=$StartOffset)..." -ForegroundColor DarkGray
+  Write-Host "    > Generating Union Parameters (IDs UP-21%CC%EEPP, Offset=$StartOffset)..." -ForegroundColor DarkGray
   Write-ScriptVerbose "Generating union parameters for $($Effects.Count) effects"
 
   # Generate Parameter definitions for Union block (Static section)
@@ -2580,16 +2651,14 @@ function Generate-UnionParameters {
     Write-ScriptVerbose "No effect parameters to generate"
     return @{
       Xml        = ($xml -join "`n")
-      NextId     = $StartId
       NextOffset = $StartOffset
     }
   }
 
   $currentOffset = $StartOffset
   $generatedCount = 0
-  $highestId = $StartId - 1
 
-  Write-ScriptVerbose "Starting ID: $StartId, Starting offset: $currentOffset"
+  Write-ScriptVerbose "Starting offset: $currentOffset"
 
   foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
     $xml += "                <!-- $($effect.NameDE) Effect (ID $($effect.EffectID)) Parameters -->"
@@ -2601,11 +2670,9 @@ function Generate-UnionParameters {
       $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.AlphanumericOnly, ''
       $ptId = "%AID%_PT-$($effectNameClean)$($paramNameClean)"
 
-      # IDs are based on effect ID + parameter index. Never allocate them
-      # sequentially: adding (for example) Wipe Loop must not renumber Rainbow.
-      $paramIdValue = Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
-      $paramIdNum = "{0:D3}" -f $paramIdValue
-      $paramId = "%AID%_UP-%TT%%CC%$paramIdNum"
+      # ID from effect number + parameter index only, never allocated sequentially
+      $paramIdNum = Get-EffectParameterIdSuffix -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $paramId = "%AID%_UP-$($script:Config.EffectParameterIdPrefix)%CC%$paramIdNum"
 
       # Name attribute: Unique per channel and effect
       $paramName = "NEO%C%$($effectNameClean)$($paramNameClean)"
@@ -2632,11 +2699,10 @@ function Generate-UnionParameters {
 
       # Generate Parameter element
       $xml += "                <Parameter Id=`"$paramId`" Offset=`"$currentOffset`" BitOffset=`"$bitOffset`" Name=`"$paramName`" ParameterType=`"$ptId`" Text=`"$($param.Name) ($($effect.NameDE))`" Value=`"$paramValue`"/>"
-      Write-ScriptVerbose "    Param ID ${paramIdValue} @ offset ${currentOffset}: $($param.Name)" "DarkGray"
+      Write-ScriptVerbose "    Param ID ${paramIdNum} @ offset ${currentOffset}: $($param.Name)" "DarkGray"
       Write-Host "      + Param ${paramIdNum}: $($param.Name) @ Offset $currentOffset ($paramByteSize byte)" -ForegroundColor DarkGray
 
       $generatedCount++
-      if ($paramIdValue -gt $highestId) { $highestId = $paramIdValue }
       $currentOffset += $paramByteSize
     }
     $xml += ''
@@ -2646,18 +2712,16 @@ function Generate-UnionParameters {
 
   return @{
     Xml        = ($xml -join "`n")
-    NextId     = $highestId + 1
     NextOffset = $currentOffset
   }
 }
 
 function Generate-ParameterRefs {
   param(
-    [array]$Effects,
-    [int]$StartId
+    [array]$Effects
   )
 
-  Write-Host "    ▸ Generating ParameterRefs (Start ID=$StartId)..." -ForegroundColor DarkGray
+  Write-Host "    > Generating ParameterRefs (IDs UP-21%CC%EEPP)..." -ForegroundColor DarkGray
 
   # Generate ParameterRef definitions (Static section)
   # ALL parameters must have refs - UI visibility controlled in Dynamic section
@@ -2674,13 +2738,13 @@ function Generate-ParameterRefs {
     $xml += "              <!-- $($effect.NameDE) Effect ParameterRefs -->"
 
     foreach ($param in $effect.Parameters) {
-      $paramIdValue = Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
-      $paramIdNum = "{0:D3}" -f $paramIdValue
+      $paramIdNum = Get-EffectParameterIdSuffix -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $pfx = $script:Config.EffectParameterIdPrefix
       # Default-Override am Ref noetig: die Effekt-Params liegen in einer Union, das
       # Union-Byte kann nur EINEN Default tragen -> ohne Value= zeigt ETS 0/min.
       # (gleiches Muster wie Szene/Cue, siehe Generate-SceneEffectParameterRefs)
       $defaultValue = if ($param.Type -eq 'PARAM_STRING') { '' } else { $param.Default }
-      $xml += "              <ParameterRef Id=`"%AID%_UP-%TT%%CC%${paramIdNum}_R-%TT%%CC%${paramIdNum}01`" RefId=`"%AID%_UP-%TT%%CC%$paramIdNum`" Value=`"$defaultValue`" />"
+      $xml += "              <ParameterRef Id=`"%AID%_UP-${pfx}%CC%${paramIdNum}_R-${pfx}%CC%${paramIdNum}01`" RefId=`"%AID%_UP-${pfx}%CC%$paramIdNum`" Value=`"$defaultValue`" />"
     }
   }
 
@@ -2692,11 +2756,10 @@ function Generate-ParameterRefs {
 
 function Generate-DynamicChoose {
   param(
-    [array]$Effects,
-    [int]$StartId
+    [array]$Effects
   )
 
-  Write-Host "    ▸ Generating Dynamic UI (Start ID=$StartId)..." -ForegroundColor DarkGray
+  Write-Host "    > Generating Dynamic UI (IDs UP-21%CC%EEPP)..." -ForegroundColor DarkGray
 
   # Generate choose/when blocks for Dynamic section (UI visibility)
   # Controls which parameters are shown based on selected effect type
@@ -2718,9 +2781,9 @@ function Generate-DynamicChoose {
     $xml += '                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
 
     foreach ($param in $effect.Parameters) {
-      $paramIdValue = Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
-      $paramIdNum = "{0:D3}" -f $paramIdValue
-      $xml += "                        <ParameterRefRef RefId=`"%AID%_UP-%TT%%CC%${paramIdNum}_R-%TT%%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"%DOC%`"/>"
+      $paramIdNum = Get-EffectParameterIdSuffix -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $pfx = $script:Config.EffectParameterIdPrefix
+      $xml += "                        <ParameterRefRef RefId=`"%AID%_UP-${pfx}%CC%${paramIdNum}_R-${pfx}%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"%DOC%`"/>"
     }
 
     $xml += '                      </when>'
@@ -3204,37 +3267,6 @@ function Generate-SceneHelpFiles {
   return @{ Count = $createdFiles.Count }
 }
 
-function Read-StartingIdsFromMarkers {
-  param([string]$TemplatePath)
-
-  Write-Host "   Reading starting IDs from template markers..." -ForegroundColor Gray
-
-  if (-not (Test-Path $TemplatePath)) {
-    throw "Template file not found: $TemplatePath"
-  }
-
-  $templateContent = Get-Content -Path $TemplatePath -Raw -Encoding UTF8
-
-  # Extract starting ID and Offset from Union marker comments
-  # Expected format: <!-- Start ID: 073, Start Offset: 30 -->
-  $unionMarker = $script:Config.Markers.UnionStart
-
-  if ($templateContent -match "(?s)$([regex]::Escape($unionMarker)).*?Start ID:\s*(\d+).*?Start Offset:\s*(\d+)") {
-    $startId = [int]$Matches[1]
-    $startOffset = [int]$Matches[2]
-
-    Write-Host "    OK Union: Start ID=$startId, Start Offset=$startOffset" -ForegroundColor DarkGray
-
-    return @{
-      StartId     = $startId
-      StartOffset = $startOffset
-    }
-  }
-  else {
-    throw "Could not extract starting ID/Offset from Union marker! Please ensure marker contains '<!-- Start ID: XXX, Start Offset: YYY -->'"
-  }
-}
-
 function Backup-Template {
   param([string]$TemplatePath)
 
@@ -3271,7 +3303,6 @@ function Validate-GeneratedXml {
   param(
     [string]$TemplatePath,
     [array]$Effects,
-    [int]$StartId,
     [int]$StartOffset
   )
 
@@ -3298,10 +3329,9 @@ function Validate-GeneratedXml {
   }
 
   # 2. Check for ID collisions IN PARAMETER DEFINITIONS ONLY (not refs)
-  # Extract only Parameter definitions (not ParameterRef, not ParameterRefRef)
-  # Pattern: <Parameter Id="%AID%_UP-%TT%%CC%(\d+)"
-  $paramPattern = '<Parameter\s+Id="%AID%_UP-%TT%%CC%(\d+)"'
-  $paramIds = [regex]::Matches($templateContent, $paramPattern) | ForEach-Object { [int]$_.Groups[1].Value }
+  # Fixed parameters %TT%%CC%nnn, generated effect parameters 21%CC%EEPP
+  $paramPattern = '<Parameter\s+Id="%AID%_UP-(%TT%%CC%\d+|' + $script:Config.EffectParameterIdPrefix + '%CC%\d+)"'
+  $paramIds = [regex]::Matches($templateContent, $paramPattern) | ForEach-Object { $_.Groups[1].Value }
   $duplicateParamIds = $paramIds | Group-Object | Where-Object { $_.Count -gt 1 }
 
   if ($duplicateParamIds) {
@@ -3332,8 +3362,8 @@ function Validate-GeneratedXml {
   }
 
   # 4. Check that all Parameters have corresponding ParameterRefs
-  $paramIdPattern = '<Parameter\s+Id="%AID%_UP-%TT%%CC%(\d+)"'
-  $refIdPattern = '<ParameterRef\s+Id="%AID%_UP-%TT%%CC%(\d+)_R'
+  $paramIdPattern = $paramPattern
+  $refIdPattern = '<ParameterRef\s+Id="%AID%_UP-(%TT%%CC%\d+|' + $script:Config.EffectParameterIdPrefix + '%CC%\d+)_R'
 
   $paramIds = [regex]::Matches($templateContent, $paramIdPattern) | ForEach-Object { $_.Groups[1].Value }
   $refIds = [regex]::Matches($templateContent, $refIdPattern) | ForEach-Object { $_.Groups[1].Value }
@@ -3344,28 +3374,30 @@ function Validate-GeneratedXml {
     }
   }
 
-  # 5. Check the stable effect/parameter ID mapping. Gaps between the fixed
-  # per-effect ranges are intentional and keep later effects migration-safe.
+  # 5. Check the generated effect IDs: exactly one UP-21%CC%EEPP per (effect, parameter index)
   $generatedParamCount = ($Effects | ForEach-Object { $_.Parameters.Count } | Measure-Object -Sum).Sum
   $expectedGeneratedIds = @()
   foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 }) {
     foreach ($param in $effect.Parameters) {
-      $expectedGeneratedIds += Get-StableEffectParameterId -StartId $StartId -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
+      $expectedGeneratedIds += Get-EffectParameterIdSuffix -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
     }
   }
   $expectedGeneratedIds = @($expectedGeneratedIds | Sort-Object -Unique)
-  $expectedMaxId = ($expectedGeneratedIds | Measure-Object -Maximum).Maximum
-  $generatedIds = @($paramIds | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $StartId -and $_ -le $expectedMaxId } | Sort-Object -Unique)
+  if ($expectedGeneratedIds.Count -ne $generatedParamCount) {
+    $errors += "Two effect parameters share one (effect, index) ID: $generatedParamCount parameters, $($expectedGeneratedIds.Count) IDs"
+  }
+  $genPattern = '<Parameter\s+Id="%AID%_UP-' + $script:Config.EffectParameterIdPrefix + '%CC%(\d+)"'
+  $generatedIds = @([regex]::Matches($templateContent, $genPattern) | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
 
   foreach ($expectedId in $expectedGeneratedIds) {
     if ($generatedIds -notcontains $expectedId) {
-      $errors += "Missing stable effect Parameter ID: $expectedId"
+      $errors += "Missing effect Parameter ID: 21%CC%$expectedId"
     }
   }
 
   foreach ($generatedId in $generatedIds) {
     if ($expectedGeneratedIds -notcontains $generatedId) {
-      $errors += "Unexpected generated effect Parameter ID: $generatedId"
+      $errors += "Unexpected generated effect Parameter ID: 21%CC%$generatedId"
     }
   }
 
@@ -3397,7 +3429,7 @@ function Validate-GeneratedXml {
     $uniqueRefs = ($refIds | Select-Object -Unique).Count
 
     Write-Host "    OK All validations passed!" -ForegroundColor Green
-    Write-Host "       - $generatedParamCount parameters generated (stable IDs through $expectedMaxId)" -ForegroundColor DarkGray
+    Write-Host "       - $generatedParamCount parameters generated (IDs UP-21%CC%EEPP)" -ForegroundColor DarkGray
     Write-Host "       - $uniqueParams unique parameter definitions" -ForegroundColor DarkGray
     Write-Host "       - $uniqueRefs unique parameter refs" -ForegroundColor DarkGray
     Write-Host "       - $($offsets.Count) offset locations used" -ForegroundColor DarkGray
@@ -3428,7 +3460,7 @@ function Update-TemplateWithMarkers {
     [string]$ParameterRefsContent,
     [string]$DynamicContent,
     [array]$Effects,
-    [int]$NextId,
+    [int]$StartOffset,
     [int]$NextOffset
   )
 
@@ -3453,8 +3485,8 @@ function Update-TemplateWithMarkers {
       $replacement = @"
 $beginMarker
                 <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-                <!-- Start ID: $StartId, Start Offset: $StartOffset (FIXED - do not change!) -->
-                <!-- Generated: ID $StartId-$($NextId - 1), Offset $StartOffset-$($NextOffset - 1) -->
+                <!-- IDs: UP-21%CC%EEPP (EE = effect number, PP = parameter index), Start Offset: $StartOffset (FIXED - do not change!) -->
+                <!-- Generated: Offset $StartOffset-$($NextOffset - 1) -->
 $UnionContent                $endMarker
 "@
       $templateContent = $templateContent -replace "(?s)$([regex]::Escape($beginMarker)).*?$([regex]::Escape($endMarker))", $replacement
@@ -3473,7 +3505,7 @@ $UnionContent                $endMarker
       $replacement = @"
 $beginMarker
               <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
-              <!-- Generated effect-specific parameter refs (ID $StartId-$($NextId - 1)) -->
+              <!-- Generated effect-specific parameter refs (IDs UP-21%CC%EEPP) -->
 $ParameterRefsContent
               $endMarker
 "@
@@ -3510,7 +3542,7 @@ $DynamicContent                    $endMarker
       Write-Host "    OK Template saved successfully" -ForegroundColor Green
 
       # Validate the result
-      $validationResult = Validate-GeneratedXml -TemplatePath $TemplatePath -Effects $Effects -StartId $StartId -StartOffset $StartOffset
+      $validationResult = Validate-GeneratedXml -TemplatePath $TemplatePath -Effects $Effects -StartOffset $StartOffset
 
       if ($validationResult) {
         # Remove backup after successful validation
@@ -3851,21 +3883,19 @@ function Generate-SceneEffectPCRParameters {
 }
 
 function Get-CueTypedParamPlan {
-  # Builds an ordered list of typed-param descriptors with a stable running
-  # index K (drives %CUE_TPP+K%). Shared by all three Cue generators so the
-  # Parameter, ParameterRef and ParameterRefRef stay perfectly in sync.
+  # Builds an ordered list of typed-param descriptors with K = effect number * 10
+  # + parameter index (drives %CUE_TPP+K%, Get-CueTypedParamIdOffset). Shared by
+  # all three Cue generators so Parameter, ParameterRef and ParameterRefRef match.
   #
-  # Typed cue params use an 8-digit ID scheme that bypasses the 3-digit nnn
-  # limit while still satisfying the producer ParameterRef regex
-  # ([1-3]?\d\d{6})_R-\1\d\d$ : literal prefix "20" + %CC%(2) + %CUE_TPP+K%(4)
-  # => 8 digits, first digit "2" (in [1-3]). Each typed param OVERLAYS the
+  # Typed cue params use an 8-digit ID scheme that satisfies the producer
+  # ParameterRef regex ([1-3]?\d\d{6})_R-\1\d\d$ : literal prefix "22" + %CC%(2)
+  # + %CUE_TPP+K%(4, cue index * 1000 + K; the producer takes offsets of up to 3
+  # digits) => 8 digits, first digit "2" (in [1-3]). Each typed param OVERLAYS the
   # generic cue slot it represents (same flash Offset), so runtime byte layout
   # and Save/Restore stay unchanged - it is purely an ETS UI view.
   param([array]$Effects)
 
   $plan = @()
-  $k = 0
-  $baseId = $script:Config.CueGenericSlotBaseId  # 1
   $effectsWithParams = $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }
 
   foreach ($effect in $effectsWithParams) {
@@ -3916,7 +3946,7 @@ function Get-CueTypedParamPlan {
       }
 
       $plan += [pscustomobject]@{
-        K            = $k
+        K            = (Get-CueTypedParamIdOffset -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index))
         EffectID     = $effect.EffectID
         EffectNameDE = $effect.NameDE
         OffsetMacro  = $offsetMacro
@@ -3928,16 +3958,17 @@ function Get-CueTypedParamPlan {
         Default      = $default
         HelpContext  = $helpContext
       }
-      $k++
     }
   }
 
+  $dups = @($plan | Group-Object K | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+  if ($dups.Count -gt 0) { throw "Typed cue parameter ID offset used twice: $($dups -join ', ')" }
   return , $plan
 }
 
 function Generate-CueEffectTypedParams {
   # Emits one typed <Parameter> per (effect,param) overlaying the matching cue
-  # slot byte. Uses the 8-digit "20" + CC + CUE_TPP scheme and op:nowarn (the
+  # slot byte. Uses the 8-digit "22" + CC + CUE_TPP scheme and op:nowarn (the
   # overlay with the generic slot at the same offset is intentional).
   param([array]$Effects)
 
@@ -3955,7 +3986,7 @@ function Generate-CueEffectTypedParams {
       $xml += "              <!-- $($d.EffectNameDE) (ID $($d.EffectID)) -->"
       $lastEffect = $d.EffectID
     }
-    $id = "%AID%_UP-20%CC%%CUE_TPP+$($d.K)%"
+    $id = "%AID%_UP-$($script:Config.CueTypedParamIdPrefix)%CC%%CUE_TPP+$($d.K)%"
     $name = "NEOEM%C%Cue%CUE_NR%$($d.NameClean)"
     $xml += "              <Parameter Id=`"$id`" Offset=`"$($d.OffsetMacro)`" BitOffset=`"$($d.BitOffset)`" Name=`"$name`" ParameterType=`"$($d.PtId)`" Text=`"$($d.Text)`" Value=`"$($d.Value)`" op:nowarn=`"true`"/>"
   }
@@ -3992,8 +4023,8 @@ function Generate-CueEffectParameterRefs {
         $xml += "              <!-- $($d.EffectNameDE) (ID $($d.EffectID)) -->"
         $lastEffect = $d.EffectID
       }
-      $base = "%AID%_UP-20%CC%%CUE_TPP+$($d.K)%"
-      $refId = "${base}_R-20%CC%%CUE_TPP+$($d.K)%01"
+      $base = "%AID%_UP-$($script:Config.CueTypedParamIdPrefix)%CC%%CUE_TPP+$($d.K)%"
+      $refId = "${base}_R-$($script:Config.CueTypedParamIdPrefix)%CC%%CUE_TPP+$($d.K)%01"
       $xml += "              <ParameterRef Id=`"$refId`" RefId=`"$base`" Value=`"$($d.Default)`" />"
     }
   }
@@ -4033,7 +4064,8 @@ function Generate-CueEffectDynamicChoose {
       $lastEffect = $d.EffectID
       $effectCount++
     }
-    $refId = "%AID%_UP-20%CC%%CUE_TPP+$($d.K)%_R-20%CC%%CUE_TPP+$($d.K)%01"
+    $pfx = $script:Config.CueTypedParamIdPrefix
+    $refId = "%AID%_UP-$pfx%CC%%CUE_TPP+$($d.K)%_R-$pfx%CC%%CUE_TPP+$($d.K)%01"
     $xml += "                        <ParameterRefRef RefId=`"$refId`" IndentLevel=`"2`" HelpContext=`"$($d.HelpContext)`"/>"
   }
   if ($null -ne $lastEffect) { $xml += '                      </when>' }
@@ -4384,6 +4416,7 @@ Show-OpenKNXLogo -SubTitle "Build Effect Parameters" -Version $SCRIPT_VERSION
 
 # Committed outputs: nothing to do while inputs and outputs match the fingerprint (-Force generates anyway)
 Assert-EffectsDirPresent
+Invoke-EffectIdChecks
 if (-not $Force -and -not $WebCatalogOnly -and (Test-EffectFingerprintCurrent -Hash (Get-EffectInputFingerprint))) {
   $ae = [char]0x00E4
   Microsoft.PowerShell.Utility\Write-Host "Effekte: unver${ae}ndert (Eingaben gleich)" -ForegroundColor Green
@@ -4569,27 +4602,9 @@ Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "C++ effect type mapping header" -ForegroundColor White
 Write-Host "       $cppMappingHeaderPath" -ForegroundColor DarkGray
 
-# Read starting IDs from template markers
-Write-Host ""
-Write-Host "  Reading template configuration..." -ForegroundColor Cyan
 $templatePath = Resolve-RepoPath $script:Config.SegmentTemplate
-
-try {
-  $markerConfig = Read-StartingIdsFromMarkers -TemplatePath $templatePath
-  $startId = $markerConfig.StartId
-  $startOffset = $markerConfig.StartOffset
-
-  Write-Host "  [OK] Start ID: " -NoNewline -ForegroundColor Green
-  Write-Host "$startId" -ForegroundColor White
-  Write-Host "  [OK] Start Offset: " -NoNewline -ForegroundColor Green
-  Write-Host "$startOffset" -ForegroundColor White
-}
-catch {
-  Write-Host "  [ERROR] Failed to read starting IDs from template: $_" -ForegroundColor Red
-  Write-Host ""
-  Write-Host "Please ensure template has correct markers with ID/Offset information!" -ForegroundColor Yellow
-  exit 1
-}
+$startOffset = [int]$script:Config.EffectParameterStartOffset
+Assert-CueTypedParamIdBase
 
 Write-Host ""
 Write-Host "Generating XML content..." -ForegroundColor Cyan
@@ -4601,23 +4616,22 @@ Update-EffectParameterTypesInShareXml -ShareXmlPath $shareXmlPath -Content $para
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Effect ParameterTypes injected into NeoPixel.share.xml" -ForegroundColor White
 
-# 2. Union Parameters (returns next ID/Offset)
-$unionResult = Generate-UnionParameters -Effects $effects -StartId $startId -StartOffset $startOffset
+# 2. Union Parameters (returns next Offset)
+$unionResult = Generate-UnionParameters -Effects $effects -StartOffset $startOffset
 $unionParamsXml = $unionResult.Xml
-$nextId = $unionResult.NextId
 $nextOffset = $unionResult.NextOffset
 
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Union Parameters XML" -ForegroundColor White
-Write-Host "       Next ID: $nextId, Offset: $nextOffset" -ForegroundColor DarkGray
+Write-Host "       Next Offset: $nextOffset" -ForegroundColor DarkGray
 
-# 3. ParameterRefs (uses same Start ID)
-$paramRefsXml = Generate-ParameterRefs -Effects $effects -StartId $startId
+# 3. ParameterRefs
+$paramRefsXml = Generate-ParameterRefs -Effects $effects
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "ParameterRefs XML" -ForegroundColor White
 
-# 4. Dynamic choose/when blocks (uses same Start ID)
-$dynamicChooseXml = Generate-DynamicChoose -Effects $effects -StartId $startId
+# 4. Dynamic choose/when blocks
+$dynamicChooseXml = Generate-DynamicChoose -Effects $effects
 Write-Host "  [OK] " -NoNewline -ForegroundColor Green
 Write-Host "Dynamic choose/when blocks" -ForegroundColor White
 
@@ -4789,16 +4803,18 @@ try {
     -ParameterRefsContent $paramRefsXml `
     -DynamicContent $dynamicChooseXml `
     -Effects $effects `
-    -NextId $nextId `
+    -StartOffset $startOffset `
     -NextOffset $nextOffset
 
   if ($success) {
     Write-Host ""
     Write-Host "[OK] Template updated and validated" -ForegroundColor Green
-    Write-Host "     Next available ID: " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$nextId" -ForegroundColor White
     Write-Host "     Next available Offset: " -NoNewline -ForegroundColor DarkGray
     Write-Host "$nextOffset" -ForegroundColor White
+
+    # Generated effect IDs: each prefix only in its own file, no ID twice
+    Assert-EffectIdNamespace -Prefix $script:Config.EffectParameterIdPrefix -OwnerFile $script:Config.SegmentTemplate -ExpectedCount $totalParams
+    Assert-EffectIdNamespace -Prefix $script:Config.CueTypedParamIdPrefix -OwnerFile $script:Config.CuePartXml -ExpectedCount (Get-CueTypedParamPlan -Effects $effects).Count
 
     # ── Update PT-CueEffect enum in NeoPixel.EM.share.xml ──────────────
     # PT-CueEffect is now an Enum (same entries as PT-NEOEffectType).
