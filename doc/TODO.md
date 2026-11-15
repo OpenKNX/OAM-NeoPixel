@@ -3,7 +3,7 @@
 **Die eine Liste.** Alles Offene steht hier; wo ein Punkt eine lange Herleitung hat, verweist er auf das
 Dokument, das sie trägt. Erledigtes wird gelöscht, nicht abgehakt — was hier steht, steht noch aus.
 
-Stand: **2026-11-15** (Dev 2.4 / Release 1.0) · **31 offene Punkte**. Nummeriert nach Priorität, Prio 0
+Stand: **2026-11-15** (Dev 2.5 / Release 1.0) · **32 offene Punkte**. Nummeriert nach Priorität, Prio 0
 zuerst; kommt ein Punkt dazu oder fällt einer weg, wird neu nummeriert.
 
 Regeln: ETS-/Generator-Änderungen gehen in `scripts/Build-*.ps1` bzw. `HardwareProfile.xml` und `src/hw/` (Hardware-Generator in
@@ -17,7 +17,7 @@ Prio 0 = kritisch, sofort angehen, blockiert den Public Release, 1 = vor dem Pub
 | Nr | Thema | Prio | Risiko | Aufwand | Stand |
 |---|---|---|---|---|---|
 | 1 | **KRITISCH** — ESP32 ohne PSRAM (Gledopto, QuinLED): Absturz nach dem ETS-Download | **0** | **KRITISCH** | M | **@Franz**, Log fehlt |
-| 2 | Dev 2.4 in der echten ETS testen (Aktualisieren, Verfügbarkeitsmeldung, Hardwarewechsel, Release 0.x → 1.0) | 1 | hoch | M |  |
+| 2 | Dev 2.5 in der echten ETS testen (Aktualisieren, Verfügbarkeitsmeldung, Hardwarewechsel, Release 0.x → 1.0) | 1 | hoch | M |  |
 | 3 | Release 1.0: neue Parameter-IDs ohne Versions-Bump | 1 | hoch | S | entscheiden |
 | 4 | knxOTA auf den 4-MB-ESP32-Zielen | 1 | hoch | M | Release-Entscheidung (USB-Flash) |
 | 5 | ESP32: zu wenige RMT-Sendekanäle für die Ports — C3/C5/C6 2, S3 4, ESP32 8 (nicht gemessen) | 1 | hoch | M-L | Treiber in OFM-NeoPixel |
@@ -47,6 +47,7 @@ Prio 0 = kritisch, sofort angehen, blockiert den Public Release, 1 = vor dem Pub
 | 29 | Tests und Skripte im Repo, die nicht PowerShell sind | 3 | niedrig | M |  |
 | 30 | Konsole: Effekt-Name eines nicht gebauten Effekts meldet „not found" | 3 | niedrig | S | OFM-NeoPixel |
 | 31 | Effekt-Generator: ID-Prüfung nur für literale IDs, Cue-Parameter über 10 Slots still weggelassen | 3 | niedrig | S |  |
+| 32 | Device-Registry: Board-Header als einzige Quelle oder JSON von Hand | 3 | niedrig | M | entscheiden, mit Dom abstimmen |
 
 ---
 
@@ -102,11 +103,11 @@ dein Log):
 
 ## Prio 1 — vor dem Public Release
 
-### 2 — Dev 2.4 in der echten ETS testen
+### 2 — Dev 2.5 in der echten ETS testen
 
 Bisher nur im OpenKNX-Viewer und mit dem Producer geprüft. In ETS 6 nachstellen:
 
-- **Aktualisieren von Dev 2.2 auf 2.4:** die Effekt-Parameter (IDs `21CC…`/`22CC…` seit Dev 2.3, `faccd02`) stehen
+- **Aktualisieren von Dev 2.2 auf 2.5:** die Effekt-Parameter (IDs `21CC…`/`22CC…` seit Dev 2.3, `faccd02`) stehen
   danach einmalig auf dem Standardwert; Effektauswahl, Szenen und alle übrigen Parameter behalten ihre Werte. Prüfen,
   dass genau das passiert und kein alter Wert in einem anderen Parameter landet.
 - **Verfügbarkeitsmeldung:** „Effekt nicht verfügbar" (Fehler) bzw. „Hinweis" am Segment, an jeder Szene und an jeder
@@ -217,7 +218,7 @@ Danach:
 Die Prüfung ist eine erzeugte ParameterCalculation (`PC-%TT%00900`, `NEOHW_conflictCheck`, `HardwareProfile.xml <Conflicts>`)
 mit 836 Eingängen (797 Port-Parameter je Board und Signal, 39 weitere) und 20 Flags ohne Gerätespeicher. Getestet nur im
 OpenKNX-Viewer und mit Node.js (ein Lauf rund 18 µs), nicht unter Windows-JScript. In ETS 6 nachstellen: Gerät einfügen,
-„Aktualisieren" auf 2.4 (ETS rechnet je übernommenem Wert neu), Konflikt erzeugen und auflösen (Streifen-
+„Aktualisieren" auf 2.5 (ETS rechnet je übernommenem Wert neu), Konflikt erzeugen und auflösen (Streifen-
 und Relais-Seite), Download, Zeit je Änderung und für das Aktualisieren messen.
 
 ### 8 — 2D-Effekt auf einem 1D-Segment bleibt dunkel
@@ -294,7 +295,7 @@ Reihenfolge:
 7. **Automatische Prüfung:** die erzeugten Strings im Viewer (uct) importieren, damit kein Beispiel veraltet.
 
 `doc/examples/README-Beispielkonfigurationen.md` und die fünf Beispiele (garage, kuechenzeile, matrix-panel, terrasse,
-wintergarten) sind gegen Dev 2.4 nicht neu geprüft. `**/*.html` steht in `.gitignore`: eine neue HTML-Datei braucht
+wintergarten) sind gegen Dev 2.4/2.5 nicht neu geprüft. `**/*.html` steht in `.gitignore`: eine neue HTML-Datei braucht
 `git add -f`.
 
 ---
@@ -456,3 +457,11 @@ interne Werkzeuge kennzeichnen.
   EM-Template; IDs aus Makros (`%CUE_PPP+k%`, `%FXA%`, …) und die Part-/Share-Dateien prüft es nicht.
 - `Get-CueTypedParamPlan` lässt Zahl-/Enum-/Bool-Parameter ab Index 10 (mehr als die 10 Cue-Slots) ohne Meldung weg
   (`continue`); ein Effekt mit mehr als 10 solchen Parametern hat sie in der Cue nicht. Meldung oder Abbruch ergänzen.
+
+### 32 — Device-Registry: Board-Header als einzige Quelle oder JSON von Hand
+
+Die Device-Registry (OGM-HardwareConfig, Branch `origin/v1-registry`, `devices/*.json` mit `schema.json`) beschreibt die
+OpenKNX-Geräte (REG1, UP1, PiPico BCU Connector) ein zweites Mal neben den Board-Headern. Entscheiden, ob die Board-Header
+die einzige Quelle werden und das JSON daraus erzeugt wird (Tendenz des Eigentümers) oder ob das JSON von Hand gepflegt
+bleibt. Falls erzeugt: ein eigenes Define für die lange Katalogbeschreibung (höchstens 400 Zeichen / 4 Zeilen) neben dem
+kurzen Kartentext `HW_INFO_TEXT` (höchstens 255 Zeichen). Mit Dom abstimmen.
