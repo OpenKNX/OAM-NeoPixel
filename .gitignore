@@ -15,7 +15,6 @@ include/buildtime.h
 /.vscode/settings.json
 **/*.html
 include/webassets.h
-include/webassets.h
 # outputs of the hardware generator (HardwareProfile.xml), written by Build-Release / Build-HardwareProfile.ps1
 src/NeoPixel.hw.conf.xml
 src/NeoPixel.hw.*.gen.xml
@@ -28,3 +27,5 @@ src/NeoPixel-Release.h
 src/Baggages/NEOHWInfo/
 # page icon of the hardware page, copied by the generator from OGM-HardwareConfig/generator/assets/icons
 src/Baggages/Icons/memory.png
+# OpenKNXproducer output, compiled into the firmware
+include/knxprod.h
