@@ -977,277 +977,445 @@
                     <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->
                     <!-- Effect-specific conditional UI will be generated here -->
 
-                    <choose ParamRefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701">
-                      <when test="1">
-                        <!-- Wipe Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="%DOC%"/>
+                    <choose ParamRefId="%NEOHW_SelectRef%">
+                      <!-- hardware built with NEOPIXEL_DISABLE_2D (token from OGM-HardwareConfig/generator): its selector is the reduced list -->
+                      <when test="%NEOHW_CAP_No2D%">
+                        <choose ParamRefId="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801">
+                          <when test="1">
+                            <!-- Wipe Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="2">
+                            <!-- Rainbow Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="3">
+                            <!-- Pride2015 Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="4">
+                            <!-- Juggle Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="5">
+                            <!-- BPM Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="6">
+                            <!-- Cylon Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="7">
+                            <!-- Test Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="8">
+                            <!-- Fire Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="9">
+                            <!-- Theater Chase Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="10">
+                            <!-- Sparkle Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="11">
+                            <!-- Breathing Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="12">
+                            <!-- Strobe Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="13">
+                            <!-- Comet Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="14">
+                            <!-- Noise Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="15">
+                            <!-- Palette Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="16">
+                            <!-- Blitz Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="17">
+                            <!-- Gradient Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="18">
+                            <!-- Kerze Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="19">
+                            <!-- Laufschrift Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                        </choose>
                       </when>
-                      <when test="2">
-                        <!-- Rainbow Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="3">
-                        <!-- Pride2015 Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="4">
-                        <!-- Juggle Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="5">
-                        <!-- BPM Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="6">
-                        <!-- Cylon Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="7">
-                        <!-- Test Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="8">
-                        <!-- Fire Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="9">
-                        <!-- Theater Chase Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="10">
-                        <!-- Sparkle Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="11">
-                        <!-- Breathing Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="12">
-                        <!-- Strobe Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="13">
-                        <!-- Comet Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="14">
-                        <!-- Noise Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="15">
-                        <!-- Palette Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="16">
-                        <!-- Blitz Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="17">
-                        <!-- Gradient Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="18">
-                        <!-- Kerze Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="19">
-                        <!-- Laufschrift Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="20">
-                        <!-- Uhr 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2000_R-21%CC%200001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2001_R-21%CC%200101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2002_R-21%CC%200201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2003_R-21%CC%200301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2004_R-21%CC%200401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2005_R-21%CC%200501" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2006_R-21%CC%200601" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2007_R-21%CC%200701" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2008_R-21%CC%200801" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2009_R-21%CC%200901" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="21">
-                        <!-- Snake 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2100_R-21%CC%210001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2101_R-21%CC%210101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2102_R-21%CC%210201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2103_R-21%CC%210301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="22">
-                        <!-- Matrix 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2200_R-21%CC%220001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2201_R-21%CC%220101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2202_R-21%CC%220201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2203_R-21%CC%220301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="23">
-                        <!-- Tetris 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2300_R-21%CC%230001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2301_R-21%CC%230101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2302_R-21%CC%230201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2303_R-21%CC%230301" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2304_R-21%CC%230401" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2305_R-21%CC%230501" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="24">
-                        <!-- TRON Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2400_R-21%CC%240001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2401_R-21%CC%240101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2402_R-21%CC%240201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2403_R-21%CC%240301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="25">
-                        <!-- Starfield Warp Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2500_R-21%CC%250001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2501_R-21%CC%250101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2502_R-21%CC%250201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2503_R-21%CC%250301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="26">
-                        <!-- Plasma Nebula Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2600_R-21%CC%260001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2601_R-21%CC%260101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2602_R-21%CC%260201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2603_R-21%CC%260301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="27">
-                        <!-- UFO Swarm Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2700_R-21%CC%270001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2701_R-21%CC%270101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2702_R-21%CC%270201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2703_R-21%CC%270301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="28">
-                        <!-- Game of Life 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2800_R-21%CC%280001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2801_R-21%CC%280101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2802_R-21%CC%280201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2803_R-21%CC%280301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="29">
-                        <!-- DNA 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2900_R-21%CC%290001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2901_R-21%CC%290101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2902_R-21%CC%290201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%2903_R-21%CC%290301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="30">
-                        <!-- Aurora 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3000_R-21%CC%300001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3001_R-21%CC%300101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3002_R-21%CC%300201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3003_R-21%CC%300301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="31">
-                        <!-- Lissajous 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3100_R-21%CC%310001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3101_R-21%CC%310101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3102_R-21%CC%310201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3103_R-21%CC%310301" IndentLevel="2" HelpContext="%DOC%"/>
-                      </when>
-                      <when test="32">
-                        <!-- Metaballs 2D Effect Parameters -->
-                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3200_R-21%CC%320001" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3201_R-21%CC%320101" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3202_R-21%CC%320201" IndentLevel="2" HelpContext="%DOC%"/>
-                        <ParameterRefRef RefId="%AID%_UP-21%CC%3203_R-21%CC%320301" IndentLevel="2" HelpContext="%DOC%"/>
+                      <when default="true">
+                        <choose ParamRefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701">
+                          <when test="1">
+                            <!-- Wipe Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="2">
+                            <!-- Rainbow Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="3">
+                            <!-- Pride2015 Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="4">
+                            <!-- Juggle Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="5">
+                            <!-- BPM Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="6">
+                            <!-- Cylon Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="7">
+                            <!-- Test Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="8">
+                            <!-- Fire Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="9">
+                            <!-- Theater Chase Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="10">
+                            <!-- Sparkle Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="11">
+                            <!-- Breathing Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="12">
+                            <!-- Strobe Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="13">
+                            <!-- Comet Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="14">
+                            <!-- Noise Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="15">
+                            <!-- Palette Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="16">
+                            <!-- Blitz Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="17">
+                            <!-- Gradient Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="18">
+                            <!-- Kerze Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="19">
+                            <!-- Laufschrift Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="20">
+                            <!-- Uhr 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2000_R-21%CC%200001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2001_R-21%CC%200101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2002_R-21%CC%200201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2003_R-21%CC%200301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2004_R-21%CC%200401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2005_R-21%CC%200501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2006_R-21%CC%200601" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2007_R-21%CC%200701" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2008_R-21%CC%200801" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2009_R-21%CC%200901" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="21">
+                            <!-- Snake 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2100_R-21%CC%210001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2101_R-21%CC%210101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2102_R-21%CC%210201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2103_R-21%CC%210301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="22">
+                            <!-- Matrix 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2200_R-21%CC%220001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2201_R-21%CC%220101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2202_R-21%CC%220201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2203_R-21%CC%220301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="23">
+                            <!-- Tetris 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2300_R-21%CC%230001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2301_R-21%CC%230101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2302_R-21%CC%230201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2303_R-21%CC%230301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2304_R-21%CC%230401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2305_R-21%CC%230501" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="24">
+                            <!-- TRON Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2400_R-21%CC%240001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2401_R-21%CC%240101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2402_R-21%CC%240201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2403_R-21%CC%240301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="25">
+                            <!-- Starfield Warp Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2500_R-21%CC%250001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2501_R-21%CC%250101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2502_R-21%CC%250201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2503_R-21%CC%250301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="26">
+                            <!-- Plasma Nebula Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2600_R-21%CC%260001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2601_R-21%CC%260101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2602_R-21%CC%260201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2603_R-21%CC%260301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="27">
+                            <!-- UFO Swarm Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2700_R-21%CC%270001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2701_R-21%CC%270101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2702_R-21%CC%270201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2703_R-21%CC%270301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="28">
+                            <!-- Game of Life 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2800_R-21%CC%280001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2801_R-21%CC%280101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2802_R-21%CC%280201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2803_R-21%CC%280301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="29">
+                            <!-- DNA 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2900_R-21%CC%290001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2901_R-21%CC%290101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2902_R-21%CC%290201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2903_R-21%CC%290301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="30">
+                            <!-- Aurora 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3000_R-21%CC%300001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3001_R-21%CC%300101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3002_R-21%CC%300201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3003_R-21%CC%300301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="31">
+                            <!-- Lissajous 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3100_R-21%CC%310001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3101_R-21%CC%310101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3102_R-21%CC%310201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3103_R-21%CC%310301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                          <when test="32">
+                            <!-- Metaballs 2D Effect Parameters -->
+                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3200_R-21%CC%320001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3201_R-21%CC%320101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3202_R-21%CC%320201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3203_R-21%CC%320301" IndentLevel="2" HelpContext="%DOC%"/>
+                          </when>
+                        </choose>
                       </when>
                     </choose>
                     <!-- END AUTO-GENERATED: Effect Dynamic UI -->

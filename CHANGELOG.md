@@ -10,6 +10,7 @@
 * The detection button of an older application (function property 158/10) gets „not supported" from this firmware; the button of the page OpenKNX → „Gerät" uses 158/4
 
 **Product**
+* Fix (Dev 2.10): on hardware without the 2D effects the effect settings of a segment, a scene and an effect-manager cue follow the effect list shown there (the reduced one); before, they followed the hidden full list and showed the settings of another effect or none; a scene sets the defaults of its new effect there too (second calculation on the reduced list)
 * Change (Dev 2.9): on hardware with WiFi, Netzwerk → „WiFi-Schnittstelle" is „Ja" and read-only (HardwareProfile.xml <Fixes>); Dev 2.7 only preset it, Dev 2.8 showed the read-only row with its own value
 * Change (Dev 2.7): on hardware with WiFi, Netzwerk → „WiFi-Schnittstelle" is set to „Ja" (the WiFi page is there); the device query messages say „Gerät"; the developer view lists module, boards and the bit order of the device query while no device type is selected
 * Change (Dev 2.6): the hardware page is now „Gerät" (OGM-HardwareConfig device page): headline „Gerät auswählen", selection „Gerätetyp", button „Vom Gerät lesen" with a help box and a steps picture for a greyed-out button; the tree shows „Gerät (nicht gewählt)" until a device type is selected

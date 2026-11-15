@@ -2826,6 +2826,52 @@ function Generate-ParameterRefs {
   return ($xml -join "`n")
 }
 
+# @brief choose for the effect-specific settings of one effect selector: hardware built with NEOPIXEL_DISABLE_2D shows its
+#        reduced list (a second selector on the same byte), so there the settings follow that selector; any other selection
+#        the full one. Blocks: @{ EffectID; Is2D; Lines } with Lines relative to the <when>; a 2D effect has no when in the
+#        reduced branch (it is not in that list).
+function New-EffectSettingsChooseXml {
+  param(
+    [string]$Indent,
+    [string]$FullRef,
+    [string]$No2DRef,
+    [array]$Blocks
+  )
+
+  $inner = {
+    param([string]$In, [string]$Ref, [array]$List)
+    $out = @("$In<choose ParamRefId=`"$Ref`">")
+    foreach ($b in $List) {
+      $out += "$In  <when test=`"$($b.EffectID)`">"
+      foreach ($l in $b.Lines) { $out += "$In    $l" }
+      $out += "$In  </when>"
+    }
+    $out += "$In</choose>"
+    return , $out
+  }
+
+  $xml = @()
+  $xml += "$Indent<choose ParamRefId=`"%NEOHW_SelectRef%`">"
+  $xml += "$Indent  <!-- hardware built with NEOPIXEL_DISABLE_2D (token from OGM-HardwareConfig/generator): its selector is the reduced list -->"
+  $xml += "$Indent  <when test=`"%NEOHW_CAP_No2D%`">"
+  $reduced = @($Blocks | Where-Object { -not $_.Is2D })
+  if ($reduced.Count -gt 0) { $xml += & $inner "$Indent    " $No2DRef $reduced }
+  $xml += "$Indent  </when>"
+  $xml += "$Indent  <when default=`"true`">"
+  $xml += & $inner "$Indent    " $FullRef @($Blocks)
+  $xml += "$Indent  </when>"
+  $xml += "$Indent</choose>"
+  return , $xml
+}
+
+# @brief true when the effect with this number is a 2D effect (left out of the reduced No2D selector lists)
+function Test-Is2DEffectId {
+  param([array]$Effects, [int]$EffectId)
+  $e = @($Effects | Where-Object { [int]$_.EffectID -eq $EffectId })[0]
+  if ($null -eq $e) { throw "Effect number $EffectId not found" }
+  return [bool](Test-Is2DEffect -ClassName $e.ClassName -NameDE $e.NameDE -NameEN $e.NameEN)
+}
+
 function Generate-DynamicChoose {
   param(
     [array]$Effects
@@ -2845,23 +2891,22 @@ function Generate-DynamicChoose {
   }
 
   # Headline NUR innerhalb der <when> (= nur Effekte mit Params), sonst bleibt sie bei Solid & Co. leer stehen
-  $xml += '                    <choose ParamRefId="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701">'
-
+  $blocks = @()
   foreach ($effect in $Effects | Where-Object { $_.Parameters.Count -gt 0 } | Sort-Object { [int]$_.EffectID }) {
-    $xml += "                      <when test=`"$($effect.EffectID)`">"
-    $xml += "                        <!-- $($effect.NameDE) Effect Parameters -->"
-    $xml += '                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
+    $lines = @()
+    $lines += "<!-- $($effect.NameDE) Effect Parameters -->"
+    $lines += '<ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
 
     foreach ($param in $effect.Parameters) {
       $paramIdNum = Get-EffectParameterIdSuffix -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
       $pfx = $script:Config.EffectParameterIdPrefix
-      $xml += "                        <ParameterRefRef RefId=`"%AID%_UP-${pfx}%CC%${paramIdNum}_R-${pfx}%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"%DOC%`"/>"
+      $lines += "<ParameterRefRef RefId=`"%AID%_UP-${pfx}%CC%${paramIdNum}_R-${pfx}%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"%DOC%`"/>"
     }
 
-    $xml += '                      </when>'
+    $blocks += @{ EffectID = $effect.EffectID; Is2D = (Test-Is2DEffectId -Effects $Effects -EffectId ([int]$effect.EffectID)); Lines = $lines }
   }
 
-  $xml += '                    </choose>'
+  $xml += New-EffectSettingsChooseXml -Indent '                    ' -FullRef '%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701' -No2DRef '%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801' -Blocks $blocks
   $xml += ''
 
   $effectsWithParamsCount = ($Effects | Where-Object { $_.Parameters.Count -gt 0 }).Count
@@ -4184,12 +4229,11 @@ function Generate-SceneEffectDynamicChoose {
 
   $baseId = $script:Config.SceneBaseParamId  # 8
 
-  # choose on the scene's EffectType (%PPP+0% = scene effect type param)
-  $xml += '                                <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">'
-
+  # choose on the scene's EffectType (%PPP+0% = scene effect type param, %PPP+19% = its reduced No2D list)
+  $blocks = @()
   foreach ($effect in $effectsWithParams) {
-    $xml += "                                  <when test=`"$($effect.EffectID)`">"
-    $xml += "                                    <!-- $($effect.NameDE) Effect -->"
+    $lines = @()
+    $lines += "<!-- $($effect.NameDE) Effect -->"
     $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
 
     for ($i = 0; $i -lt $effect.Parameters.Count; $i++) {
@@ -4205,13 +4249,13 @@ function Generate-SceneEffectDynamicChoose {
       # Per-effect HelpContext matching baggage file NEO-{ParamName}-{EffectName}.md
       $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
       $helpContext = "NEO-$paramNameClean-$effectNameClean"
-      $xml += "                                    <ParameterRefRef RefId=`"$aliasId`" IndentLevel=`"3`" HelpContext=`"$helpContext`"/>"
+      $lines += "<ParameterRefRef RefId=`"$aliasId`" IndentLevel=`"3`" HelpContext=`"$helpContext`"/>"
     }
 
-    $xml += '                                  </when>'
+    $blocks += @{ EffectID = $effect.EffectID; Is2D = (Test-Is2DEffectId -Effects $Effects -EffectId ([int]$effect.EffectID)); Lines = $lines }
   }
 
-  $xml += '                                </choose>'
+  $xml += New-EffectSettingsChooseXml -Indent '                                ' -FullRef '%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01' -No2DRef '%AID%_UP-%TT%%CC%%PPP+19%_R-%TT%%CC%%PPP+19%01' -Blocks $blocks
   $xml += ''
 
   Write-Host "    OK Generated scene dynamic UI for $($effectsWithParams.Count) effect(s)" -ForegroundColor Green
@@ -4428,28 +4472,24 @@ function Generate-CueEffectDynamicChoose {
     return ($xml -join "`n")
   }
 
-  $xml += '                    <choose ParamRefId="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01">'
-
-  # Plan is ordered by EffectID (numeric) then param order: break <when> blocks
-  # on EffectID change to preserve correct effect grouping.
-  $lastEffect = $null
-  $effectCount = 0
+  # Plan is ordered by EffectID (numeric) then param order: a new block on each EffectID change keeps the effect grouping.
+  $blocks = @()
+  $current = $null
   foreach ($d in $plan) {
-    if ($d.EffectID -ne $lastEffect) {
-      if ($null -ne $lastEffect) { $xml += '                      </when>' }
-      $xml += "                      <when test=`"$($d.EffectID)`">"
-      $xml += "                        <!-- $($d.EffectNameDE) Effect -->"
-      $xml += '                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
-      $lastEffect = $d.EffectID
-      $effectCount++
+    if ($null -eq $current -or $d.EffectID -ne $current.EffectID) {
+      $current = @{ EffectID = $d.EffectID; Is2D = (Test-Is2DEffectId -Effects $Effects -EffectId ([int]$d.EffectID)); Lines = @() }
+      $current.Lines += "<!-- $($d.EffectNameDE) Effect -->"
+      $current.Lines += '<ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
+      $blocks += $current
     }
     $pfx = $script:Config.CueTypedParamIdPrefix
     $refId = "%AID%_UP-$pfx%CC%%CUE_TPP+$($d.K)%_R-$pfx%CC%%CUE_TPP+$($d.K)%01"
-    $xml += "                        <ParameterRefRef RefId=`"$refId`" IndentLevel=`"2`" HelpContext=`"$($d.HelpContext)`"/>"
+    $current.Lines += "<ParameterRefRef RefId=`"$refId`" IndentLevel=`"2`" HelpContext=`"$($d.HelpContext)`"/>"
   }
-  if ($null -ne $lastEffect) { $xml += '                      </when>' }
+  $effectCount = $blocks.Count
 
-  $xml += '                    </choose>'
+  # the cue's effect selector (%CUE_PPP+0%) and its reduced No2D list (%CUE_NO2D%)
+  $xml += New-EffectSettingsChooseXml -Indent '                    ' -FullRef '%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01' -No2DRef '%AID%_UP-%TT%%CC%%CUE_NO2D%_R-%TT%%CC%%CUE_NO2D%01' -Blocks $blocks
   $xml += ''
 
   Write-Host "    OK Generated cue dynamic UI for $effectCount effect(s)" -ForegroundColor Green

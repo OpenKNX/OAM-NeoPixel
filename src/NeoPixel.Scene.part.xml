@@ -457,6 +457,202 @@
                                     <!-- END AUTO-GENERATED: Scene Effect PC RParameters -->
                                 </RParameters>
                             </ParameterCalculation>
+                            <!-- the same defaults for the reduced list of hardware without the 2D effects (%PPP+19%, shown instead of %PPP+0%) -->
+                            <ParameterCalculation Id="%AID%_PC-%TT%%CC%%PPP+19%01" Language="JavaScript" Name="Scene%SN%_SetEffectDefaultsNo2D" LRTransformationFunc="NEO_SetSceneEffectDefaults" RLTransformationFunc="NEO_Empty">
+                                <LParameters>
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+19%_R-%TT%%CC%%PPP+19%01" AliasName="EffectType" />
+                                </LParameters>
+                                <RParameters>
+                                    <!-- BEGIN AUTO-GENERATED: Scene Effect PC RParameters -->
+                                    <!-- Wipe (ID 1) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%03" AliasName="E1S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%03" AliasName="E1S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%03" AliasName="E1S2" />
+                                    <!-- Rainbow (ID 2) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%04" AliasName="E2S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%04" AliasName="E2S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%04" AliasName="E2S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%04" AliasName="E2S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%04" AliasName="E2S4" />
+                                    <!-- Pride2015 (ID 3) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%05" AliasName="E3S0" />
+                                    <!-- Juggle (ID 4) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%06" AliasName="E4S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%06" AliasName="E4S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%06" AliasName="E4S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%06" AliasName="E4S3" />
+                                    <!-- BPM (ID 5) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%07" AliasName="E5S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%07" AliasName="E5S1" />
+                                    <!-- Cylon (ID 6) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%08" AliasName="E6S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%08" AliasName="E6S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%08" AliasName="E6S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%08" AliasName="E6S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%08" AliasName="E6S4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%08" AliasName="E6S5" />
+                                    <!-- Test (ID 7) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" AliasName="E7S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" AliasName="E7S1" />
+                                    <!-- Fire (ID 8) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" AliasName="E8S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" AliasName="E8S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" AliasName="E8S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" AliasName="E8S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%10" AliasName="E8S4" />
+                                    <!-- Theater Chase (ID 9) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%11" AliasName="E9S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%11" AliasName="E9S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%11" AliasName="E9S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%11" AliasName="E9S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%11" AliasName="E9S4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%11" AliasName="E9S5" />
+                                    <!-- Sparkle (ID 10) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%12" AliasName="E10S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%12" AliasName="E10S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%12" AliasName="E10S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%12" AliasName="E10S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%12" AliasName="E10S4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%12" AliasName="E10S5" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%12" AliasName="E10S6" />
+                                    <!-- Breathing (ID 11) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%13" AliasName="E11S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%13" AliasName="E11S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%13" AliasName="E11S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%13" AliasName="E11S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%13" AliasName="E11S4" />
+                                    <!-- Strobe (ID 12) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%14" AliasName="E12S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%14" AliasName="E12S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%14" AliasName="E12S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%14" AliasName="E12S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%14" AliasName="E12S4" />
+                                    <!-- Comet (ID 13) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%15" AliasName="E13S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%15" AliasName="E13S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%15" AliasName="E13S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%15" AliasName="E13S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%15" AliasName="E13S4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%15" AliasName="E13S5" />
+                                    <!-- Noise (ID 14) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%16" AliasName="E14S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%16" AliasName="E14S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%16" AliasName="E14S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%16" AliasName="E14S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%16" AliasName="E14S4" />
+                                    <!-- Palette (ID 15) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%17" AliasName="E15S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%17" AliasName="E15S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%17" AliasName="E15S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%17" AliasName="E15S3" />
+                                    <!-- Blitz (ID 16) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%18" AliasName="E16S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%18" AliasName="E16S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%18" AliasName="E16S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%18" AliasName="E16S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%18" AliasName="E16S4" />
+                                    <!-- Gradient (ID 17) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%19" AliasName="E17S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%19" AliasName="E17S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%19" AliasName="E17S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%19" AliasName="E17S3" />
+                                    <!-- Kerze (ID 18) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%20" AliasName="E18S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" AliasName="E18S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" AliasName="E18S2" />
+                                    <!-- Laufschrift (ID 19) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" AliasName="E19S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" AliasName="E19S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" AliasName="E19S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%21" AliasName="E19S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" AliasName="E19S4" />
+                                    <!-- Uhr 2D (ID 20) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%22" AliasName="E20S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%22" AliasName="E20S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%22" AliasName="E20S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%22" AliasName="E20S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%22" AliasName="E20S4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%22" AliasName="E20S5" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%22" AliasName="E20S6" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+15%_R-%TT%%CC%%PPP+15%22" AliasName="E20S7" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+16%_R-%TT%%CC%%PPP+16%22" AliasName="E20S8" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+17%_R-%TT%%CC%%PPP+17%22" AliasName="E20S9" />
+                                    <!-- Snake 2D (ID 21) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%23" AliasName="E21S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%23" AliasName="E21S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%23" AliasName="E21S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%23" AliasName="E21S3" />
+                                    <!-- Matrix 2D (ID 22) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%24" AliasName="E22S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%24" AliasName="E22S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%24" AliasName="E22S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%24" AliasName="E22S3" />
+                                    <!-- Tetris 2D (ID 23) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%25" AliasName="E23S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%25" AliasName="E23S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%25" AliasName="E23S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%25" AliasName="E23S3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%25" AliasName="E23S4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%25" AliasName="E23S5" />
+                                    <!-- TRON (ID 24) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%26" AliasName="E24S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%26" AliasName="E24S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%26" AliasName="E24S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%26" AliasName="E24S3" />
+                                    <!-- Starfield Warp (ID 25) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%27" AliasName="E25S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%27" AliasName="E25S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%27" AliasName="E25S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%27" AliasName="E25S3" />
+                                    <!-- Plasma Nebula (ID 26) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%28" AliasName="E26S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%28" AliasName="E26S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%28" AliasName="E26S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%28" AliasName="E26S3" />
+                                    <!-- UFO Swarm (ID 27) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%29" AliasName="E27S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%29" AliasName="E27S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%29" AliasName="E27S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%29" AliasName="E27S3" />
+                                    <!-- Game of Life 2D (ID 28) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%30" AliasName="E28S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%30" AliasName="E28S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%30" AliasName="E28S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%30" AliasName="E28S3" />
+                                    <!-- DNA 2D (ID 29) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%31" AliasName="E29S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%31" AliasName="E29S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%31" AliasName="E29S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%31" AliasName="E29S3" />
+                                    <!-- Aurora 2D (ID 30) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%32" AliasName="E30S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%32" AliasName="E30S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%32" AliasName="E30S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%32" AliasName="E30S3" />
+                                    <!-- Lissajous 2D (ID 31) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%33" AliasName="E31S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%33" AliasName="E31S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%33" AliasName="E31S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%33" AliasName="E31S3" />
+                                    <!-- Metaballs 2D (ID 32) -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%34" AliasName="E32S0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%34" AliasName="E32S1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%34" AliasName="E32S2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%34" AliasName="E32S3" />
+                                    <!-- Generic Slot refs -->
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%01" AliasName="Slot0" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%01" AliasName="Slot1" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%01" AliasName="Slot2" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%01" AliasName="Slot3" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%01" AliasName="Slot4" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%01" AliasName="Slot5" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%01" AliasName="Slot6" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+15%_R-%TT%%CC%%PPP+15%01" AliasName="Slot7" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+16%_R-%TT%%CC%%PPP+16%01" AliasName="Slot8" />
+                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+17%_R-%TT%%CC%%PPP+17%01" AliasName="Slot9" />
+                                    <!-- END AUTO-GENERATED: Scene Effect PC RParameters -->
+                                </RParameters>
+                            </ParameterCalculation>
                         </ParameterCalculations>
                     </Static>
                     <Dynamic>
@@ -514,245 +710,394 @@
                                 <!-- Effect-specific parameters via choose/when on aliased ParameterRefs -->
                                 <!-- BEGIN AUTO-GENERATED: Scene Effect Dynamic UI -->
 
-                                <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">
-                                  <when test="1">
-                                    <!-- Wipe Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%03" IndentLevel="3" HelpContext="NEO-Speed-Wipe"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%03" IndentLevel="3" HelpContext="NEO-Direction-Wipe"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%03" IndentLevel="3" HelpContext="NEO-Loop-Wipe"/>
+                                <choose ParamRefId="%NEOHW_SelectRef%">
+                                  <!-- hardware built with NEOPIXEL_DISABLE_2D (token from OGM-HardwareConfig/generator): its selector is the reduced list -->
+                                  <when test="%NEOHW_CAP_No2D%">
+                                    <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+19%_R-%TT%%CC%%PPP+19%01">
+                                      <when test="1">
+                                        <!-- Wipe Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%03" IndentLevel="3" HelpContext="NEO-Speed-Wipe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%03" IndentLevel="3" HelpContext="NEO-Direction-Wipe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%03" IndentLevel="3" HelpContext="NEO-Loop-Wipe"/>
+                                      </when>
+                                      <when test="2">
+                                        <!-- Rainbow Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%04" IndentLevel="3" HelpContext="NEO-Speed-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%04" IndentLevel="3" HelpContext="NEO-Delta-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%04" IndentLevel="3" HelpContext="NEO-Saturation-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%04" IndentLevel="3" HelpContext="NEO-Density-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%04" IndentLevel="3" HelpContext="NEO-Mode-Rainbow"/>
+                                      </when>
+                                      <when test="3">
+                                        <!-- Pride2015 Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%05" IndentLevel="3" HelpContext="NEO-Speed-Pride2015"/>
+                                      </when>
+                                      <when test="4">
+                                        <!-- Juggle Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%06" IndentLevel="3" HelpContext="NEO-Speed-Juggle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%06" IndentLevel="3" HelpContext="NEO-NumDots-Juggle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%06" IndentLevel="3" HelpContext="NEO-FadeSpeed-Juggle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%06" IndentLevel="3" HelpContext="NEO-HueOffset-Juggle"/>
+                                      </when>
+                                      <when test="5">
+                                        <!-- BPM Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%07" IndentLevel="3" HelpContext="NEO-BPM-BPM"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%07" IndentLevel="3" HelpContext="NEO-Hue-BPM"/>
+                                      </when>
+                                      <when test="6">
+                                        <!-- Cylon Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%08" IndentLevel="3" HelpContext="NEO-Speed-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%08" IndentLevel="3" HelpContext="NEO-Hue-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%08" IndentLevel="3" HelpContext="NEO-EyeSize-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%08" IndentLevel="3" HelpContext="NEO-FadeAmount-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%08" IndentLevel="3" HelpContext="NEO-Direction-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%08" IndentLevel="3" HelpContext="NEO-Mode-Cylon"/>
+                                      </when>
+                                      <when test="7">
+                                        <!-- Test Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" IndentLevel="3" HelpContext="NEO-PhaseDuration-Test"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" IndentLevel="3" HelpContext="NEO-Mode-Test"/>
+                                      </when>
+                                      <when test="8">
+                                        <!-- Fire Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" IndentLevel="3" HelpContext="NEO-Speed-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" IndentLevel="3" HelpContext="NEO-Cooling-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" IndentLevel="3" HelpContext="NEO-Sparking-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" IndentLevel="3" HelpContext="NEO-ReverseDirection-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%10" IndentLevel="3" HelpContext="NEO-BlueFireMode-Fire"/>
+                                      </when>
+                                      <when test="9">
+                                        <!-- Theater Chase Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%11" IndentLevel="3" HelpContext="NEO-Speed-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%11" IndentLevel="3" HelpContext="NEO-Spacing-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%11" IndentLevel="3" HelpContext="NEO-DotSize-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%11" IndentLevel="3" HelpContext="NEO-ColorMode-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%11" IndentLevel="3" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%11" IndentLevel="3" HelpContext="NEO-Bounce-Theater-Chase"/>
+                                      </when>
+                                      <when test="10">
+                                        <!-- Sparkle Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%12" IndentLevel="3" HelpContext="NEO-Speed-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%12" IndentLevel="3" HelpContext="NEO-FadeRate-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%12" IndentLevel="3" HelpContext="NEO-SparkleCount-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%12" IndentLevel="3" HelpContext="NEO-Probability-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%12" IndentLevel="3" HelpContext="NEO-WhiteOnly-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%12" IndentLevel="3" HelpContext="NEO-BurstMode-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%12" IndentLevel="3" HelpContext="NEO-Mode-Sparkle"/>
+                                      </when>
+                                      <when test="11">
+                                        <!-- Breathing Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%13" IndentLevel="3" HelpContext="NEO-Speed-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%13" IndentLevel="3" HelpContext="NEO-MinBrightness-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%13" IndentLevel="3" HelpContext="NEO-Curve-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%13" IndentLevel="3" HelpContext="NEO-RainbowMode-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%13" IndentLevel="3" HelpContext="NEO-Waveform-Breathing"/>
+                                      </when>
+                                      <when test="12">
+                                        <!-- Strobe Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%14" IndentLevel="3" HelpContext="NEO-Speed-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%14" IndentLevel="3" HelpContext="NEO-OnRatio-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%14" IndentLevel="3" HelpContext="NEO-MinBrightness-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%14" IndentLevel="3" HelpContext="NEO-RandomTiming-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%14" IndentLevel="3" HelpContext="NEO-RainbowStrobe-Strobe"/>
+                                      </when>
+                                      <when test="13">
+                                        <!-- Comet Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%15" IndentLevel="3" HelpContext="NEO-Speed-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%15" IndentLevel="3" HelpContext="NEO-FadeRate-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%15" IndentLevel="3" HelpContext="NEO-TailLength-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%15" IndentLevel="3" HelpContext="NEO-BounceMode-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%15" IndentLevel="3" HelpContext="NEO-RainbowMode-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%15" IndentLevel="3" HelpContext="NEO-Mode-Comet"/>
+                                      </when>
+                                      <when test="14">
+                                        <!-- Noise Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%16" IndentLevel="3" HelpContext="NEO-Speed-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%16" IndentLevel="3" HelpContext="NEO-Scale-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%16" IndentLevel="3" HelpContext="NEO-Saturation-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%16" IndentLevel="3" HelpContext="NEO-HueOffset-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%16" IndentLevel="3" HelpContext="NEO-Palette-Noise"/>
+                                      </when>
+                                      <when test="15">
+                                        <!-- Palette Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%17" IndentLevel="3" HelpContext="NEO-Speed-Palette"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%17" IndentLevel="3" HelpContext="NEO-Palette-Palette"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%17" IndentLevel="3" HelpContext="NEO-Blend-Palette"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%17" IndentLevel="3" HelpContext="NEO-Spacing-Palette"/>
+                                      </when>
+                                      <when test="16">
+                                        <!-- Blitz Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%18" IndentLevel="3" HelpContext="NEO-Speed-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%18" IndentLevel="3" HelpContext="NEO-Width-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%18" IndentLevel="3" HelpContext="NEO-Decay-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%18" IndentLevel="3" HelpContext="NEO-Hue-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%18" IndentLevel="3" HelpContext="NEO-Intensity-Blitz"/>
+                                      </when>
+                                      <when test="17">
+                                        <!-- Gradient Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%19" IndentLevel="3" HelpContext="NEO-Speed-Gradient"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%19" IndentLevel="3" HelpContext="NEO-StartHue-Gradient"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%19" IndentLevel="3" HelpContext="NEO-EndHue-Gradient"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%19" IndentLevel="3" HelpContext="NEO-Saturation-Gradient"/>
+                                      </when>
+                                      <when test="18">
+                                        <!-- Kerze Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%20" IndentLevel="3" HelpContext="NEO-Speed-Kerze"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" IndentLevel="3" HelpContext="NEO-Intensity-Kerze"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" IndentLevel="3" HelpContext="NEO-Zones-Kerze"/>
+                                      </when>
+                                      <when test="19">
+                                        <!-- Laufschrift Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" IndentLevel="3" HelpContext="NEO-Speed-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" IndentLevel="3" HelpContext="NEO-Gap-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" IndentLevel="3" HelpContext="NEO-Loop-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%21" IndentLevel="3" HelpContext="NEO-Text-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" IndentLevel="3" HelpContext="NEO-Font-Laufschrift"/>
+                                      </when>
+                                    </choose>
                                   </when>
-                                  <when test="2">
-                                    <!-- Rainbow Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%04" IndentLevel="3" HelpContext="NEO-Speed-Rainbow"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%04" IndentLevel="3" HelpContext="NEO-Delta-Rainbow"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%04" IndentLevel="3" HelpContext="NEO-Saturation-Rainbow"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%04" IndentLevel="3" HelpContext="NEO-Density-Rainbow"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%04" IndentLevel="3" HelpContext="NEO-Mode-Rainbow"/>
-                                  </when>
-                                  <when test="3">
-                                    <!-- Pride2015 Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%05" IndentLevel="3" HelpContext="NEO-Speed-Pride2015"/>
-                                  </when>
-                                  <when test="4">
-                                    <!-- Juggle Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%06" IndentLevel="3" HelpContext="NEO-Speed-Juggle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%06" IndentLevel="3" HelpContext="NEO-NumDots-Juggle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%06" IndentLevel="3" HelpContext="NEO-FadeSpeed-Juggle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%06" IndentLevel="3" HelpContext="NEO-HueOffset-Juggle"/>
-                                  </when>
-                                  <when test="5">
-                                    <!-- BPM Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%07" IndentLevel="3" HelpContext="NEO-BPM-BPM"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%07" IndentLevel="3" HelpContext="NEO-Hue-BPM"/>
-                                  </when>
-                                  <when test="6">
-                                    <!-- Cylon Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%08" IndentLevel="3" HelpContext="NEO-Speed-Cylon"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%08" IndentLevel="3" HelpContext="NEO-Hue-Cylon"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%08" IndentLevel="3" HelpContext="NEO-EyeSize-Cylon"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%08" IndentLevel="3" HelpContext="NEO-FadeAmount-Cylon"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%08" IndentLevel="3" HelpContext="NEO-Direction-Cylon"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%08" IndentLevel="3" HelpContext="NEO-Mode-Cylon"/>
-                                  </when>
-                                  <when test="7">
-                                    <!-- Test Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" IndentLevel="3" HelpContext="NEO-PhaseDuration-Test"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" IndentLevel="3" HelpContext="NEO-Mode-Test"/>
-                                  </when>
-                                  <when test="8">
-                                    <!-- Fire Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" IndentLevel="3" HelpContext="NEO-Speed-Fire"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" IndentLevel="3" HelpContext="NEO-Cooling-Fire"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" IndentLevel="3" HelpContext="NEO-Sparking-Fire"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" IndentLevel="3" HelpContext="NEO-ReverseDirection-Fire"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%10" IndentLevel="3" HelpContext="NEO-BlueFireMode-Fire"/>
-                                  </when>
-                                  <when test="9">
-                                    <!-- Theater Chase Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%11" IndentLevel="3" HelpContext="NEO-Speed-Theater-Chase"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%11" IndentLevel="3" HelpContext="NEO-Spacing-Theater-Chase"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%11" IndentLevel="3" HelpContext="NEO-DotSize-Theater-Chase"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%11" IndentLevel="3" HelpContext="NEO-ColorMode-Theater-Chase"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%11" IndentLevel="3" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%11" IndentLevel="3" HelpContext="NEO-Bounce-Theater-Chase"/>
-                                  </when>
-                                  <when test="10">
-                                    <!-- Sparkle Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%12" IndentLevel="3" HelpContext="NEO-Speed-Sparkle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%12" IndentLevel="3" HelpContext="NEO-FadeRate-Sparkle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%12" IndentLevel="3" HelpContext="NEO-SparkleCount-Sparkle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%12" IndentLevel="3" HelpContext="NEO-Probability-Sparkle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%12" IndentLevel="3" HelpContext="NEO-WhiteOnly-Sparkle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%12" IndentLevel="3" HelpContext="NEO-BurstMode-Sparkle"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%12" IndentLevel="3" HelpContext="NEO-Mode-Sparkle"/>
-                                  </when>
-                                  <when test="11">
-                                    <!-- Breathing Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%13" IndentLevel="3" HelpContext="NEO-Speed-Breathing"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%13" IndentLevel="3" HelpContext="NEO-MinBrightness-Breathing"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%13" IndentLevel="3" HelpContext="NEO-Curve-Breathing"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%13" IndentLevel="3" HelpContext="NEO-RainbowMode-Breathing"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%13" IndentLevel="3" HelpContext="NEO-Waveform-Breathing"/>
-                                  </when>
-                                  <when test="12">
-                                    <!-- Strobe Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%14" IndentLevel="3" HelpContext="NEO-Speed-Strobe"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%14" IndentLevel="3" HelpContext="NEO-OnRatio-Strobe"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%14" IndentLevel="3" HelpContext="NEO-MinBrightness-Strobe"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%14" IndentLevel="3" HelpContext="NEO-RandomTiming-Strobe"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%14" IndentLevel="3" HelpContext="NEO-RainbowStrobe-Strobe"/>
-                                  </when>
-                                  <when test="13">
-                                    <!-- Comet Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%15" IndentLevel="3" HelpContext="NEO-Speed-Comet"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%15" IndentLevel="3" HelpContext="NEO-FadeRate-Comet"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%15" IndentLevel="3" HelpContext="NEO-TailLength-Comet"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%15" IndentLevel="3" HelpContext="NEO-BounceMode-Comet"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%15" IndentLevel="3" HelpContext="NEO-RainbowMode-Comet"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%15" IndentLevel="3" HelpContext="NEO-Mode-Comet"/>
-                                  </when>
-                                  <when test="14">
-                                    <!-- Noise Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%16" IndentLevel="3" HelpContext="NEO-Speed-Noise"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%16" IndentLevel="3" HelpContext="NEO-Scale-Noise"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%16" IndentLevel="3" HelpContext="NEO-Saturation-Noise"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%16" IndentLevel="3" HelpContext="NEO-HueOffset-Noise"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%16" IndentLevel="3" HelpContext="NEO-Palette-Noise"/>
-                                  </when>
-                                  <when test="15">
-                                    <!-- Palette Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%17" IndentLevel="3" HelpContext="NEO-Speed-Palette"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%17" IndentLevel="3" HelpContext="NEO-Palette-Palette"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%17" IndentLevel="3" HelpContext="NEO-Blend-Palette"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%17" IndentLevel="3" HelpContext="NEO-Spacing-Palette"/>
-                                  </when>
-                                  <when test="16">
-                                    <!-- Blitz Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%18" IndentLevel="3" HelpContext="NEO-Speed-Blitz"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%18" IndentLevel="3" HelpContext="NEO-Width-Blitz"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%18" IndentLevel="3" HelpContext="NEO-Decay-Blitz"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%18" IndentLevel="3" HelpContext="NEO-Hue-Blitz"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%18" IndentLevel="3" HelpContext="NEO-Intensity-Blitz"/>
-                                  </when>
-                                  <when test="17">
-                                    <!-- Gradient Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%19" IndentLevel="3" HelpContext="NEO-Speed-Gradient"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%19" IndentLevel="3" HelpContext="NEO-StartHue-Gradient"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%19" IndentLevel="3" HelpContext="NEO-EndHue-Gradient"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%19" IndentLevel="3" HelpContext="NEO-Saturation-Gradient"/>
-                                  </when>
-                                  <when test="18">
-                                    <!-- Kerze Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%20" IndentLevel="3" HelpContext="NEO-Speed-Kerze"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" IndentLevel="3" HelpContext="NEO-Intensity-Kerze"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" IndentLevel="3" HelpContext="NEO-Zones-Kerze"/>
-                                  </when>
-                                  <when test="19">
-                                    <!-- Laufschrift Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" IndentLevel="3" HelpContext="NEO-Speed-Laufschrift"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" IndentLevel="3" HelpContext="NEO-Gap-Laufschrift"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" IndentLevel="3" HelpContext="NEO-Loop-Laufschrift"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%21" IndentLevel="3" HelpContext="NEO-Text-Laufschrift"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" IndentLevel="3" HelpContext="NEO-Font-Laufschrift"/>
-                                  </when>
-                                  <when test="20">
-                                    <!-- Uhr 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%22" IndentLevel="3" HelpContext="NEO-ViewMode-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%22" IndentLevel="3" HelpContext="NEO-ShowSeconds-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%22" IndentLevel="3" HelpContext="NEO-BlinkColon-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%22" IndentLevel="3" HelpContext="NEO-ColourHue-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%22" IndentLevel="3" HelpContext="NEO-DateMode-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%22" IndentLevel="3" HelpContext="NEO-DateFormat-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%22" IndentLevel="3" HelpContext="NEO-DateHue-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+15%_R-%TT%%CC%%PPP+15%22" IndentLevel="3" HelpContext="NEO-SwitchSec-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+16%_R-%TT%%CC%%PPP+16%22" IndentLevel="3" HelpContext="NEO-ScrollSpeed-Uhr-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+17%_R-%TT%%CC%%PPP+17%22" IndentLevel="3" HelpContext="NEO-Font-Uhr-2D"/>
-                                  </when>
-                                  <when test="21">
-                                    <!-- Snake 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%23" IndentLevel="3" HelpContext="NEO-Speed-Snake-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%23" IndentLevel="3" HelpContext="NEO-HeadHue-Snake-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%23" IndentLevel="3" HelpContext="NEO-BodyMode-Snake-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%23" IndentLevel="3" HelpContext="NEO-BodyHue-Snake-2D"/>
-                                  </when>
-                                  <when test="22">
-                                    <!-- Matrix 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%24" IndentLevel="3" HelpContext="NEO-Speed-Matrix-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%24" IndentLevel="3" HelpContext="NEO-Density-Matrix-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%24" IndentLevel="3" HelpContext="NEO-Palette-Matrix-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%24" IndentLevel="3" HelpContext="NEO-Glitch-Matrix-2D"/>
-                                  </when>
-                                  <when test="23">
-                                    <!-- Tetris 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%25" IndentLevel="3" HelpContext="NEO-Speed-Tetris-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%25" IndentLevel="3" HelpContext="NEO-BgBrightness-Tetris-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%25" IndentLevel="3" HelpContext="NEO-GhostPiece-Tetris-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%25" IndentLevel="3" HelpContext="NEO-ColorMode-Tetris-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%25" IndentLevel="3" HelpContext="NEO-FlashLines-Tetris-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%25" IndentLevel="3" HelpContext="NEO-AutoPlay-Tetris-2D"/>
-                                  </when>
-                                  <when test="24">
-                                    <!-- TRON Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%26" IndentLevel="3" HelpContext="NEO-Speed-TRON"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%26" IndentLevel="3" HelpContext="NEO-Hue-TRON"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%26" IndentLevel="3" HelpContext="NEO-GridSpacing-TRON"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%26" IndentLevel="3" HelpContext="NEO-Glow-TRON"/>
-                                  </when>
-                                  <when test="25">
-                                    <!-- Starfield Warp Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%27" IndentLevel="3" HelpContext="NEO-Speed-Starfield-Warp"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%27" IndentLevel="3" HelpContext="NEO-Density-Starfield-Warp"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%27" IndentLevel="3" HelpContext="NEO-ColorMode-Starfield-Warp"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%27" IndentLevel="3" HelpContext="NEO-WarpPulse-Starfield-Warp"/>
-                                  </when>
-                                  <when test="26">
-                                    <!-- Plasma Nebula Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%28" IndentLevel="3" HelpContext="NEO-Speed-Plasma-Nebula"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%28" IndentLevel="3" HelpContext="NEO-Saturation-Plasma-Nebula"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%28" IndentLevel="3" HelpContext="NEO-Contrast-Plasma-Nebula"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%28" IndentLevel="3" HelpContext="NEO-PaletteShift-Plasma-Nebula"/>
-                                  </when>
-                                  <when test="27">
-                                    <!-- UFO Swarm Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%29" IndentLevel="3" HelpContext="NEO-Speed-UFO-Swarm"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%29" IndentLevel="3" HelpContext="NEO-Count-UFO-Swarm"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%29" IndentLevel="3" HelpContext="NEO-Hue-UFO-Swarm"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%29" IndentLevel="3" HelpContext="NEO-Beam-UFO-Swarm"/>
-                                  </when>
-                                  <when test="28">
-                                    <!-- Game of Life 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%30" IndentLevel="3" HelpContext="NEO-Speed-Game-of-Life-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%30" IndentLevel="3" HelpContext="NEO-Hue-Game-of-Life-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%30" IndentLevel="3" HelpContext="NEO-ColorMode-Game-of-Life-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%30" IndentLevel="3" HelpContext="NEO-SpawnDensity-Game-of-Life-2D"/>
-                                  </when>
-                                  <when test="29">
-                                    <!-- DNA 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%31" IndentLevel="3" HelpContext="NEO-Speed-DNA-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%31" IndentLevel="3" HelpContext="NEO-Hue-DNA-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%31" IndentLevel="3" HelpContext="NEO-Twist-DNA-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%31" IndentLevel="3" HelpContext="NEO-RungSpacing-DNA-2D"/>
-                                  </when>
-                                  <when test="30">
-                                    <!-- Aurora 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%32" IndentLevel="3" HelpContext="NEO-Speed-Aurora-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%32" IndentLevel="3" HelpContext="NEO-Hue-Aurora-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%32" IndentLevel="3" HelpContext="NEO-Scale-Aurora-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%32" IndentLevel="3" HelpContext="NEO-Intensity-Aurora-2D"/>
-                                  </when>
-                                  <when test="31">
-                                    <!-- Lissajous 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%33" IndentLevel="3" HelpContext="NEO-Speed-Lissajous-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%33" IndentLevel="3" HelpContext="NEO-Hue-Lissajous-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%33" IndentLevel="3" HelpContext="NEO-FreqA-Lissajous-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%33" IndentLevel="3" HelpContext="NEO-FreqB-Lissajous-2D"/>
-                                  </when>
-                                  <when test="32">
-                                    <!-- Metaballs 2D Effect -->
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%34" IndentLevel="3" HelpContext="NEO-Speed-Metaballs-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%34" IndentLevel="3" HelpContext="NEO-Hue-Metaballs-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%34" IndentLevel="3" HelpContext="NEO-BlobCount-Metaballs-2D"/>
-                                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%34" IndentLevel="3" HelpContext="NEO-Contrast-Metaballs-2D"/>
+                                  <when default="true">
+                                    <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">
+                                      <when test="1">
+                                        <!-- Wipe Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%03" IndentLevel="3" HelpContext="NEO-Speed-Wipe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%03" IndentLevel="3" HelpContext="NEO-Direction-Wipe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%03" IndentLevel="3" HelpContext="NEO-Loop-Wipe"/>
+                                      </when>
+                                      <when test="2">
+                                        <!-- Rainbow Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%04" IndentLevel="3" HelpContext="NEO-Speed-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%04" IndentLevel="3" HelpContext="NEO-Delta-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%04" IndentLevel="3" HelpContext="NEO-Saturation-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%04" IndentLevel="3" HelpContext="NEO-Density-Rainbow"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%04" IndentLevel="3" HelpContext="NEO-Mode-Rainbow"/>
+                                      </when>
+                                      <when test="3">
+                                        <!-- Pride2015 Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%05" IndentLevel="3" HelpContext="NEO-Speed-Pride2015"/>
+                                      </when>
+                                      <when test="4">
+                                        <!-- Juggle Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%06" IndentLevel="3" HelpContext="NEO-Speed-Juggle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%06" IndentLevel="3" HelpContext="NEO-NumDots-Juggle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%06" IndentLevel="3" HelpContext="NEO-FadeSpeed-Juggle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%06" IndentLevel="3" HelpContext="NEO-HueOffset-Juggle"/>
+                                      </when>
+                                      <when test="5">
+                                        <!-- BPM Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%07" IndentLevel="3" HelpContext="NEO-BPM-BPM"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%07" IndentLevel="3" HelpContext="NEO-Hue-BPM"/>
+                                      </when>
+                                      <when test="6">
+                                        <!-- Cylon Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%08" IndentLevel="3" HelpContext="NEO-Speed-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%08" IndentLevel="3" HelpContext="NEO-Hue-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%08" IndentLevel="3" HelpContext="NEO-EyeSize-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%08" IndentLevel="3" HelpContext="NEO-FadeAmount-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%08" IndentLevel="3" HelpContext="NEO-Direction-Cylon"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%08" IndentLevel="3" HelpContext="NEO-Mode-Cylon"/>
+                                      </when>
+                                      <when test="7">
+                                        <!-- Test Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" IndentLevel="3" HelpContext="NEO-PhaseDuration-Test"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" IndentLevel="3" HelpContext="NEO-Mode-Test"/>
+                                      </when>
+                                      <when test="8">
+                                        <!-- Fire Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" IndentLevel="3" HelpContext="NEO-Speed-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" IndentLevel="3" HelpContext="NEO-Cooling-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" IndentLevel="3" HelpContext="NEO-Sparking-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" IndentLevel="3" HelpContext="NEO-ReverseDirection-Fire"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%10" IndentLevel="3" HelpContext="NEO-BlueFireMode-Fire"/>
+                                      </when>
+                                      <when test="9">
+                                        <!-- Theater Chase Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%11" IndentLevel="3" HelpContext="NEO-Speed-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%11" IndentLevel="3" HelpContext="NEO-Spacing-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%11" IndentLevel="3" HelpContext="NEO-DotSize-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%11" IndentLevel="3" HelpContext="NEO-ColorMode-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%11" IndentLevel="3" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%11" IndentLevel="3" HelpContext="NEO-Bounce-Theater-Chase"/>
+                                      </when>
+                                      <when test="10">
+                                        <!-- Sparkle Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%12" IndentLevel="3" HelpContext="NEO-Speed-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%12" IndentLevel="3" HelpContext="NEO-FadeRate-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%12" IndentLevel="3" HelpContext="NEO-SparkleCount-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%12" IndentLevel="3" HelpContext="NEO-Probability-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%12" IndentLevel="3" HelpContext="NEO-WhiteOnly-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%12" IndentLevel="3" HelpContext="NEO-BurstMode-Sparkle"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%12" IndentLevel="3" HelpContext="NEO-Mode-Sparkle"/>
+                                      </when>
+                                      <when test="11">
+                                        <!-- Breathing Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%13" IndentLevel="3" HelpContext="NEO-Speed-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%13" IndentLevel="3" HelpContext="NEO-MinBrightness-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%13" IndentLevel="3" HelpContext="NEO-Curve-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%13" IndentLevel="3" HelpContext="NEO-RainbowMode-Breathing"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%13" IndentLevel="3" HelpContext="NEO-Waveform-Breathing"/>
+                                      </when>
+                                      <when test="12">
+                                        <!-- Strobe Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%14" IndentLevel="3" HelpContext="NEO-Speed-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%14" IndentLevel="3" HelpContext="NEO-OnRatio-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%14" IndentLevel="3" HelpContext="NEO-MinBrightness-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%14" IndentLevel="3" HelpContext="NEO-RandomTiming-Strobe"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%14" IndentLevel="3" HelpContext="NEO-RainbowStrobe-Strobe"/>
+                                      </when>
+                                      <when test="13">
+                                        <!-- Comet Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%15" IndentLevel="3" HelpContext="NEO-Speed-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%15" IndentLevel="3" HelpContext="NEO-FadeRate-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%15" IndentLevel="3" HelpContext="NEO-TailLength-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%15" IndentLevel="3" HelpContext="NEO-BounceMode-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%15" IndentLevel="3" HelpContext="NEO-RainbowMode-Comet"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%15" IndentLevel="3" HelpContext="NEO-Mode-Comet"/>
+                                      </when>
+                                      <when test="14">
+                                        <!-- Noise Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%16" IndentLevel="3" HelpContext="NEO-Speed-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%16" IndentLevel="3" HelpContext="NEO-Scale-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%16" IndentLevel="3" HelpContext="NEO-Saturation-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%16" IndentLevel="3" HelpContext="NEO-HueOffset-Noise"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%16" IndentLevel="3" HelpContext="NEO-Palette-Noise"/>
+                                      </when>
+                                      <when test="15">
+                                        <!-- Palette Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%17" IndentLevel="3" HelpContext="NEO-Speed-Palette"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%17" IndentLevel="3" HelpContext="NEO-Palette-Palette"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%17" IndentLevel="3" HelpContext="NEO-Blend-Palette"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%17" IndentLevel="3" HelpContext="NEO-Spacing-Palette"/>
+                                      </when>
+                                      <when test="16">
+                                        <!-- Blitz Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%18" IndentLevel="3" HelpContext="NEO-Speed-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%18" IndentLevel="3" HelpContext="NEO-Width-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%18" IndentLevel="3" HelpContext="NEO-Decay-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%18" IndentLevel="3" HelpContext="NEO-Hue-Blitz"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%18" IndentLevel="3" HelpContext="NEO-Intensity-Blitz"/>
+                                      </when>
+                                      <when test="17">
+                                        <!-- Gradient Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%19" IndentLevel="3" HelpContext="NEO-Speed-Gradient"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%19" IndentLevel="3" HelpContext="NEO-StartHue-Gradient"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%19" IndentLevel="3" HelpContext="NEO-EndHue-Gradient"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%19" IndentLevel="3" HelpContext="NEO-Saturation-Gradient"/>
+                                      </when>
+                                      <when test="18">
+                                        <!-- Kerze Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%20" IndentLevel="3" HelpContext="NEO-Speed-Kerze"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" IndentLevel="3" HelpContext="NEO-Intensity-Kerze"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" IndentLevel="3" HelpContext="NEO-Zones-Kerze"/>
+                                      </when>
+                                      <when test="19">
+                                        <!-- Laufschrift Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" IndentLevel="3" HelpContext="NEO-Speed-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" IndentLevel="3" HelpContext="NEO-Gap-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" IndentLevel="3" HelpContext="NEO-Loop-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%21" IndentLevel="3" HelpContext="NEO-Text-Laufschrift"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" IndentLevel="3" HelpContext="NEO-Font-Laufschrift"/>
+                                      </when>
+                                      <when test="20">
+                                        <!-- Uhr 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%22" IndentLevel="3" HelpContext="NEO-ViewMode-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%22" IndentLevel="3" HelpContext="NEO-ShowSeconds-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%22" IndentLevel="3" HelpContext="NEO-BlinkColon-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%22" IndentLevel="3" HelpContext="NEO-ColourHue-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%22" IndentLevel="3" HelpContext="NEO-DateMode-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%22" IndentLevel="3" HelpContext="NEO-DateFormat-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%22" IndentLevel="3" HelpContext="NEO-DateHue-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+15%_R-%TT%%CC%%PPP+15%22" IndentLevel="3" HelpContext="NEO-SwitchSec-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+16%_R-%TT%%CC%%PPP+16%22" IndentLevel="3" HelpContext="NEO-ScrollSpeed-Uhr-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+17%_R-%TT%%CC%%PPP+17%22" IndentLevel="3" HelpContext="NEO-Font-Uhr-2D"/>
+                                      </when>
+                                      <when test="21">
+                                        <!-- Snake 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%23" IndentLevel="3" HelpContext="NEO-Speed-Snake-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%23" IndentLevel="3" HelpContext="NEO-HeadHue-Snake-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%23" IndentLevel="3" HelpContext="NEO-BodyMode-Snake-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%23" IndentLevel="3" HelpContext="NEO-BodyHue-Snake-2D"/>
+                                      </when>
+                                      <when test="22">
+                                        <!-- Matrix 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%24" IndentLevel="3" HelpContext="NEO-Speed-Matrix-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%24" IndentLevel="3" HelpContext="NEO-Density-Matrix-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%24" IndentLevel="3" HelpContext="NEO-Palette-Matrix-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%24" IndentLevel="3" HelpContext="NEO-Glitch-Matrix-2D"/>
+                                      </when>
+                                      <when test="23">
+                                        <!-- Tetris 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%25" IndentLevel="3" HelpContext="NEO-Speed-Tetris-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%25" IndentLevel="3" HelpContext="NEO-BgBrightness-Tetris-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%25" IndentLevel="3" HelpContext="NEO-GhostPiece-Tetris-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%25" IndentLevel="3" HelpContext="NEO-ColorMode-Tetris-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%25" IndentLevel="3" HelpContext="NEO-FlashLines-Tetris-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%25" IndentLevel="3" HelpContext="NEO-AutoPlay-Tetris-2D"/>
+                                      </when>
+                                      <when test="24">
+                                        <!-- TRON Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%26" IndentLevel="3" HelpContext="NEO-Speed-TRON"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%26" IndentLevel="3" HelpContext="NEO-Hue-TRON"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%26" IndentLevel="3" HelpContext="NEO-GridSpacing-TRON"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%26" IndentLevel="3" HelpContext="NEO-Glow-TRON"/>
+                                      </when>
+                                      <when test="25">
+                                        <!-- Starfield Warp Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%27" IndentLevel="3" HelpContext="NEO-Speed-Starfield-Warp"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%27" IndentLevel="3" HelpContext="NEO-Density-Starfield-Warp"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%27" IndentLevel="3" HelpContext="NEO-ColorMode-Starfield-Warp"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%27" IndentLevel="3" HelpContext="NEO-WarpPulse-Starfield-Warp"/>
+                                      </when>
+                                      <when test="26">
+                                        <!-- Plasma Nebula Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%28" IndentLevel="3" HelpContext="NEO-Speed-Plasma-Nebula"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%28" IndentLevel="3" HelpContext="NEO-Saturation-Plasma-Nebula"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%28" IndentLevel="3" HelpContext="NEO-Contrast-Plasma-Nebula"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%28" IndentLevel="3" HelpContext="NEO-PaletteShift-Plasma-Nebula"/>
+                                      </when>
+                                      <when test="27">
+                                        <!-- UFO Swarm Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%29" IndentLevel="3" HelpContext="NEO-Speed-UFO-Swarm"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%29" IndentLevel="3" HelpContext="NEO-Count-UFO-Swarm"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%29" IndentLevel="3" HelpContext="NEO-Hue-UFO-Swarm"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%29" IndentLevel="3" HelpContext="NEO-Beam-UFO-Swarm"/>
+                                      </when>
+                                      <when test="28">
+                                        <!-- Game of Life 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%30" IndentLevel="3" HelpContext="NEO-Speed-Game-of-Life-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%30" IndentLevel="3" HelpContext="NEO-Hue-Game-of-Life-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%30" IndentLevel="3" HelpContext="NEO-ColorMode-Game-of-Life-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%30" IndentLevel="3" HelpContext="NEO-SpawnDensity-Game-of-Life-2D"/>
+                                      </when>
+                                      <when test="29">
+                                        <!-- DNA 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%31" IndentLevel="3" HelpContext="NEO-Speed-DNA-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%31" IndentLevel="3" HelpContext="NEO-Hue-DNA-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%31" IndentLevel="3" HelpContext="NEO-Twist-DNA-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%31" IndentLevel="3" HelpContext="NEO-RungSpacing-DNA-2D"/>
+                                      </when>
+                                      <when test="30">
+                                        <!-- Aurora 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%32" IndentLevel="3" HelpContext="NEO-Speed-Aurora-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%32" IndentLevel="3" HelpContext="NEO-Hue-Aurora-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%32" IndentLevel="3" HelpContext="NEO-Scale-Aurora-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%32" IndentLevel="3" HelpContext="NEO-Intensity-Aurora-2D"/>
+                                      </when>
+                                      <when test="31">
+                                        <!-- Lissajous 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%33" IndentLevel="3" HelpContext="NEO-Speed-Lissajous-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%33" IndentLevel="3" HelpContext="NEO-Hue-Lissajous-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%33" IndentLevel="3" HelpContext="NEO-FreqA-Lissajous-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%33" IndentLevel="3" HelpContext="NEO-FreqB-Lissajous-2D"/>
+                                      </when>
+                                      <when test="32">
+                                        <!-- Metaballs 2D Effect -->
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%34" IndentLevel="3" HelpContext="NEO-Speed-Metaballs-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%34" IndentLevel="3" HelpContext="NEO-Hue-Metaballs-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%34" IndentLevel="3" HelpContext="NEO-BlobCount-Metaballs-2D"/>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%34" IndentLevel="3" HelpContext="NEO-Contrast-Metaballs-2D"/>
+                                      </when>
+                                    </choose>
                                   </when>
                                 </choose>
 
