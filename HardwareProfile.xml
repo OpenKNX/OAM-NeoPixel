@@ -8,7 +8,7 @@
 -->
 <!-- portManualValue / portNoneValue: values of the data, clock and relay port parameters (0..9 = port 1..10, 10 = manual GPIO,
      15 = not selected), read by the GPIO conflict check (<Conflicts>) and the firmware (HardwareProfile::signalGpio) -->
-<HardwareProfile prefix="NEOHW" moduleType="45" text="Hardware" unselected="hide" order="hwid" ids="slot" portManualValue="10" portNoneValue="15">
+<HardwareProfile prefix="NEOHW" moduleType="45" text="Gerät" unselected="hide" order="hwid" ids="slot" portManualValue="10" portNoneValue="15">
 
   <!-- op:config feature flags, e.g. %NEOHW_CAP_No2D% / %NEOHW_SelectRef% (referenced by NeoPixel-Dev.xml / NeoPixel-Release.xml);
        share + script: the hardware module (op:define prefix NEOHW, ModuleType 45): selection, device query, capability page -->

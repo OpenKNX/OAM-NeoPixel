@@ -640,7 +640,7 @@ var NeoGen = (function () {
     if (!e || hw === 0) fail('Hardware: bitte eine Hardware auswählen.');
     return e[1];
   }
-  /* Hardware selection: module NEOHW (channel "Hardware"), imported before the NeoPixel base settings */
+  /* Hardware selection: module NEOHW (channel "Gerät"), imported before the NeoPixel base settings */
   function hwStr(hw) { return Str('NEOHW', 0, 'Hardware: ' + hwText(hw), [['HardwareSelect', hw]]); }
   function needPorts(hw, n, what) {
     var pc = CAT.portCount[String(hw)];

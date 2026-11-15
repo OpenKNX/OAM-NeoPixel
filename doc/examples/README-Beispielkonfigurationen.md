@@ -45,7 +45,7 @@ Ein Transfer-String enthält die Parameter genau eines Moduls und Kanals, zum Be
 6. Schritte 3–5 für jeden weiteren String in der angegebenen Reihenfolge wiederholen.
 7. Die Punkte unter „Nach dem Import prüfen“ erledigen (vor allem Ports), dann die Applikation herunterladen.
 
-**Reihenfolge:** Hardware (Kanal „Hardware“, Modul `NEOHW`) → Basiseinstellungen (Anzahl Streifen und Segmente, Effektmanager) → LED-Streifen → Segmente → Effektmanager → Begleitmodule (Lichtmanager, Funktionsblöcke, Logik). Der Import schreibt Parameter auch dann, wenn sie gerade ausgeblendet sind; die Reihenfolge sorgt dafür, dass die Seiten nach jedem Schritt sichtbar sind und das Ergebnis direkt geprüft werden kann. Ports erst nach dem Import auswählen: ein Import der Basiseinstellungen oder eines LED-Streifens setzt die Port-Auswahl dieses Kanals zurück. Ein Wechsel des LED-Typs setzt außerdem die Takt-Ports aller acht Streifen zurück (nur für SPI-LEDs relevant).
+**Reihenfolge:** Gerät (Kanal „Gerät“, Modul `NEOHW`) → Basiseinstellungen (Anzahl Streifen und Segmente, Effektmanager) → LED-Streifen → Segmente → Effektmanager → Begleitmodule (Lichtmanager, Funktionsblöcke, Logik). Der Import schreibt Parameter auch dann, wenn sie gerade ausgeblendet sind; die Reihenfolge sorgt dafür, dass die Seiten nach jedem Schritt sichtbar sind und das Ergebnis direkt geprüft werden kann. Ports erst nach dem Import auswählen: ein Import der Basiseinstellungen oder eines LED-Streifens setzt die Port-Auswahl dieses Kanals zurück. Ein Wechsel des LED-Typs setzt außerdem die Takt-Ports aller acht Streifen zurück (nur für SPI-LEDs relevant).
 
 ## LED-Typen: RGB und RGBW
 

@@ -97,7 +97,7 @@ Warum man die ID *braucht*, obwohl die GPIO-Infos vorliegen:
  │ 3) PRODUCER — erzeugt .knxprod + include/knxprod.h                         │
  │    knxprod.h liefert je Signal einen Träger auf dem gemeinsamen Byte:      │
  │    #define ParamNEOSTRIP_NEODataPort …  (alle Boards teilen das Byte)      │
- │    #define ParamNEOHW_HardwareSelect …  (Modul „Hardware", die HW-ID)      │
+ │    #define ParamNEOHW_HardwareSelect …  (Modul „Gerät", die HW-ID)         │
  └─────────────────────────────────┬──────────────────────────────────────────┘
                                    │  #include
                                    ▼
