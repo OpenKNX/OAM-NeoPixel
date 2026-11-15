@@ -114,8 +114,8 @@ Reihenfolge in `scripts/Build-Release.ps1`: `Build-EffectParameters.ps1` (füllt
 
 ## 4. Auswahl der aktiven Hardware
 
-Die Hardware wählt der Anwender auf der Seite OpenKNX → „Hardware" (Modul `NEOHW`, vom Generator erzeugt, ModuleType 45); gespeichert
-wird die `DEVICE_HW_ID`, 0 = nicht gewählt. Der Button „Hardware vom Gerät abfragen" liest sie per Function Property
+Die Hardware wählt der Anwender auf der Seite OpenKNX → „Gerät" (Modul `NEOHW`, vom Generator erzeugt, ModuleType 45); gespeichert
+wird die `DEVICE_HW_ID`, 0 = nicht gewählt. Der Button „Vom Gerät lesen" liest sie per Function Property
 158/4 vom Gerät (Antwort aus `include/HardwareProfileData.h`: HW-ID und Fähigkeiten; die Relais-Anzahl ist nur ETS)
 und meldet Fähigkeiten, die vom erwarteten Profil abweichen.
 
@@ -151,7 +151,7 @@ Firmware keine Board-Nummer und keinen `switch` über alle Boards. Den Portwert 
    `HW_PORT_1_GPIO OKNXHW_OPENKNXIAO_D1` … `HW_PORT_8_GPIO OKNXHW_OPENKNXIAO_D10`.
 2. Der Generator liest das Env `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1`; `HardwareProfile.slots` gibt der
    HW-ID 0x1310 die Board-Nummer 4 (Parameter `…HW4`, nur ETS).
-3. ETS: Anwender wählt auf der Seite OpenKNX → „Hardware" „OpenKNXiao V1 KNeoPix RP2350" (oder fragt das Gerät ab) →
+3. ETS: Anwender wählt auf der Seite OpenKNX → „Gerät" „OpenKNXiao V1 KNeoPix RP2350" (oder fragt das Gerät ab) →
    `NEOHW_HardwareSelect = 4880`; Port „D3" im Parameter `…HW4` → Wert 2 (Portnummer − 1) im Byte des Streifens.
 4. Firmware: Auswahl 4880 == `DEVICE_HW_ID` → Träger `ParamNEOSTRIP_NEODataPort` = 2 → `hwPortGpio(2)` = `HW_PORT_3_GPIO`.
 
@@ -300,7 +300,7 @@ Drei konkrete Verbesserungen — jeweils mit Problem, Lösung und Nutzen begrün
   ist garantiert reproduzierbar.
 
 ### 12.3 Auto-Detection statt Dropdown  (siehe Abschnitt 4) — umgesetzt
-- Der Button „Hardware vom Gerät abfragen" auf der Seite OpenKNX → „Hardware" liest `DEVICE_HW_ID` und die Fähigkeiten per
+- Der Button „Vom Gerät lesen" auf der Seite OpenKNX → „Gerät" liest `DEVICE_HW_ID` und die Fähigkeiten per
   Function Property 158/4 und setzt die Auswahl; Abweichungen vom erwarteten Profil meldet er.
 
 > **Entscheidung 2026-06-13 (überholt, siehe Status am Anfang von Abschnitt 12):** 12.2 (CI) **verworfen**. 12.1 (Allocator) und 12.3 (Auto-Fill)

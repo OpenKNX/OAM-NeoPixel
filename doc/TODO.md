@@ -329,7 +329,7 @@ Firmware nutzt bei 0 aber das Chip-Profil — Text anpassen. **Nicht ändern: di
 
 Solange die Hardware-Auswahl des Moduls „Hardware" (`NEOHW_HardwareSelect`, `%NEOHW_SelectRef%`) = 0 („Nicht gewählt") ist,
 zeigen Relais, Physikalisch inkl. Strombegrenzung, Virtuell und Effektmanager heute je einen Hinweis „Keine Hardware ausgewählt".
-Besser: die Knoten in `<choose %NEOHW_SelectRef%><when test="!=0">` wrappen, Hinweis auf die Seite OpenKNX → „Hardware", die
+Besser: die Knoten in `<choose %NEOHW_SelectRef%><when test="!=0">` wrappen, Hinweis auf die Seite OpenKNX → „Gerät", die
 Einzelmeldungen entfernen. Kein Speicherlayout-Change. **Offen:** was passiert mit verknüpften GAs an KOs
 ausgeblendeter Knoten?
 
@@ -422,7 +422,7 @@ DMA-Channel-Ownership getrennt. Erst angehen, wenn größere Matrizen oder höhe
 
 ### 27 — Hardware-Seite: ETS5-Screenshot
 
-Die Seite OpenKNX → Hardware (Gerätekarte aus ETS-Elementen, Generator in OGM-HardwareConfig) ist umgesetzt. Offen:
+Die Seite OpenKNX → Gerät (Gerätekarte aus ETS-Elementen, Generator in OGM-HardwareConfig) ist umgesetzt. Offen:
 ETS5-Screenshot der fertigen knxprod ansehen (Raster 71/29 mit 150-px-QR-Bild, bisher nur 75/25 mit 130 px gemessen).
 
 ### 28 — LPD6803 / P9813 vervollständigen (ESP32, Farbreihenfolge, Latch)

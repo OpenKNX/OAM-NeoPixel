@@ -42,8 +42,8 @@ These indicate critical configuration or hardware failures that prevent normal o
 
 | Code | Blinks | Condition | Description | Resolution |
 |------|--------|-----------|-------------|------------|
-| `NEO_ERROR_HW_MISMATCH` | 1× | **Hardware Mismatch** | Firmware compiled for different hardware than ETS configuration. GPIO port mappings from ETS are ignored to prevent damage. | Flash correct firmware, or update the hardware selection in the ETS page OpenKNX → "Hardware" (button "Hardware vom Gerät abfragen"). |
-| `NEO_ERROR_NO_HW_CONFIGURED` | 2× | **No Hardware Configured** | The hardware selection of the ETS page OpenKNX → "Hardware" is "Nicht gewählt" (0) — no board selected yet; no strip and no relay is driven. | Select the hardware in the ETS page OpenKNX → "Hardware" or use "Hardware vom Gerät abfragen". |
+| `NEO_ERROR_HW_MISMATCH` | 1× | **Hardware Mismatch** | Firmware compiled for different hardware than ETS configuration. GPIO port mappings from ETS are ignored to prevent damage. | Flash correct firmware, or update the hardware selection in the ETS page OpenKNX → "Gerät" (button "Vom Gerät lesen"). |
+| `NEO_ERROR_NO_HW_CONFIGURED` | 2× | **No Hardware Configured** | The hardware selection of the ETS page OpenKNX → "Gerät" is "Nicht gewählt" (0) — no board selected yet; no strip and no relay is driven. | Select the hardware in the ETS page OpenKNX → "Gerät" or use "Vom Gerät lesen". |
 | `NEO_ERROR_GPIO_CONFLICT` | 3× | **GPIO Pin Conflict** | Multiple strips or relays share the same GPIO pin. Conflicting strips are skipped. | Check ETS strip and relay configuration for duplicate GPIO assignments. |
 | `NEO_ERROR_STRIP_FAILED` | 4× | **Strip Creation Failed** | Physical LED strip could not be created (nullptr). Memory exhaustion or driver failure. | Reduce strip/LED count. Check SPI configuration. |
 | `NEO_ERROR_VSTRIP_FAILED` | 5× | **Virtual Strip Failed** | Virtual strip could not be created — no LED output possible. | Ensure at least one physical strip was created. Check serial log. |
