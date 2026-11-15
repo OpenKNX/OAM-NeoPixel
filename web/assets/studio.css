@@ -75,6 +75,7 @@
 #neopixel-studio .studio-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--np-line); min-height: 42px }
 #neopixel-studio .studio-row label { width: 110px; flex-shrink: 0; color: var(--np-mute); font-size: 13px }
 #neopixel-studio .studio-row select { flex: 1; width: 100% }
+#neopixel-studio .studio-row-note { margin: 4px 0 0 120px }
 
 /* Colour pickers. */
 #neopixel-studio #studio-colours { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 10px; align-items: start }
@@ -170,6 +171,7 @@
     #neopixel-studio .st-cfoot .np-btn { margin-left: auto }
     #neopixel-studio .studio-row { gap: 8px }
     #neopixel-studio .studio-row label { width: 85px }
+    #neopixel-studio .studio-row-note { margin-left: 93px }
     #neopixel-studio .studio-colour-select { display: flex; margin-top: 10px }
     #neopixel-studio .studio-colour-select button { flex: 1; font-size: 12px }
     #neopixel-studio #studio-colours { display: block; margin-top: 8px }

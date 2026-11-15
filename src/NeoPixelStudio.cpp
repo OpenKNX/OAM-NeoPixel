@@ -471,6 +471,7 @@ uint8_t NeoPixelStudio::currentEffectType(size_t index) const
 {
     if (index >= _module._segments.size()) return 0;
     const auto& cfg = _module._segments[index];
+    uint8_t effectType = cfg.segment ? cfg.segment->getConfig().effectType : 0;
     if (cfg.emController.isRunning() && _module._emData)
     {
         const uint8_t emId = cfg.emController.activeEmId();
@@ -479,10 +480,11 @@ uint8_t NeoPixelStudio::currentEffectType(size_t index) const
         {
             const auto& em = _module._emData[emId - 1];
             if (cueNumber > 0 && cueNumber <= em.header.cueCount && cueNumber <= EM_CUE_COUNT)
-                return em.cues[cueNumber - 1].effectId;
+                effectType = em.cues[cueNumber - 1].effectId;
         }
     }
-    return cfg.segment ? cfg.segment->getConfig().effectType : 0;
+    // an effect this firmware lacks runs as Solid (EffectTypeMapping, getEffectOrSolid): report what runs
+    return NeoPixelEffectCatalog::isAvailable(effectType) ? effectType : 0;
 }
 
 void NeoPixelStudio::snapshot(std::string& output)
@@ -500,7 +502,8 @@ void NeoPixelStudio::snapshot(std::string& output)
         if (!segment) continue;
         const auto& c = segment->getConfig();
         Effect* effect = segment->getEffect();
-        json.beginObject().field("id", uint32_t(i + 1)).field("locked", cfg.locked);
+        // is2D: matrix geometry as the effects see it (LedGeometry::is2D); the effect list offers 2D-only effects only there
+        json.beginObject().field("id", uint32_t(i + 1)).field("locked", cfg.locked).field("is2D", segment->is2D());
         const bool details = selected == i + 1;
         json.field("detailsLoaded", details).field("testing", _testSegment == int(i));
         if (_testSegment == int(i)) json.field("testPattern", _testPattern);

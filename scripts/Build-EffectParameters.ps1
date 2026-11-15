@@ -4998,13 +4998,17 @@ function Write-WebEffectCatalog {
     $effect = $_
     [ordered]@{
       id = [int]$effect.EffectID
+      # name = getName("en"), the key of the web pages; text and group = entry and sort group of the ETS effect list
       name = $effect.NameEN
+      text = Get-EffectDropdownText -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN -EffectId ([int]$effect.EffectID)
+      group = [int](Get-EffectSortGroup -ClassName $effect.ClassName)
       dimensions = if (Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN) { 2 } else { 1 }
       parameters = @($effect.Parameters | ForEach-Object {
         $parameter = $_
         [ordered]@{
           id = [int]$parameter.Index
           name = $parameter.Name
+          label = [string]$parameter.Label
           type = switch ($parameter.Type) {
             'PARAM_STRING' { 'text' }
             'PARAM_BOOL' { 'bool' }

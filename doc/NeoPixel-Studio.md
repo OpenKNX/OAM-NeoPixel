@@ -13,8 +13,11 @@ until Studio is ready.
 
 ## Controls and draft workflow
 
-- Choose any compiled-in effect and edit its numeric, enum, boolean or text parameters.
-  Numeric parameters have both a slider and a numeric input.
+- Choose a compiled-in effect and edit its numeric, enum, boolean or text parameters.
+  Numeric parameters have both a slider and a numeric input. Effects and parameters carry
+  the names of the ETS application, in its order (1D, then „1D/2D · …“, then „2D · …“).
+  2D-only effects are offered on a 2D segment only (note „2D-Effekte nur bei 2D-Segmenten“),
+  as on /neo; the effect the segment runs stays in the list.
 - Pick primary and secondary colours using saturation/value, hue, hex, native colour
   input or numeric R/G/B fields. Arrow keys control the saturation/value area.
 - RGB, White and Mix modes select RGB only, white only or combined RGB/white output.
@@ -209,8 +212,11 @@ reimport the ETS product for these fields and the online buttons.
 
 ## API and threading
 
-- `GET /neopixel/api/effects`: compiled-in effects with parameter metadata/defaults.
-- `GET /neopixel/api/state`: cached live segments, colours, parameters, scenes and last result.
+- `GET /neopixel/api/effects`: compiled-in effects with parameter metadata/defaults (generated catalog:
+  `name` = English effect name, `text`/`group` = entry and sort group of the ETS effect list,
+  `dimensions` 2 = matrix only, `label` = ETS label of a parameter).
+- `GET /neopixel/api/state`: cached live segments (with `is2D`, the matrix geometry as the effects see it),
+  colours, parameters, scenes and last result.
 - `POST /neopixel/api/control`: JSON command, maximum 4096 bytes. HTTP 202 acknowledges
   queueing; poll state for `completedId` and `error` to confirm execution.
 

@@ -20,6 +20,9 @@
     const commissioningDrafts = new Map(), commissioningDirty = new Set(), commissioningCorrections = new Map();
     let commissioningSignature = '', commissioningTimer;
     const current = () => state?.segments.find(segment => segment.id === selected);
+    // Catalog: text = entry of the ETS effect list, label = ETS label of a parameter; id and name stay the keys.
+    const fxText = id => { const effect = effects.find(e => e.id === id); return effect ? effect.text || effect.name : undefined; };
+    const paramLabel = (effectId, p) => { const q = effects.find(e => e.id === effectId)?.parameters.find(x => x.id === p.id); return q && q.name === p.name && q.label || p.name; };
 
     // Helpers.
     function levelPercent(value) {
@@ -344,7 +347,7 @@
         el('state').className = 'np-pill ' + cls; el('state').lastElementChild.textContent = text; el('state').title = tip;
         el('b-num').className = 'np-badge t' + (selected % 8); // same tone as the segment on /neo
         el('b-num').textContent = selected;
-        el('b-effect').textContent = effects.find(e => e.id === live.effect)?.name ?? live.effect;
+        el('b-effect').textContent = fxText(live.effect) ?? live.effect;
         el('b-bri').textContent = levelPercent(live.brightness);
         el('b-scene').textContent = live.activeScene || '–';
         el('b-em').hidden = !live.em;
@@ -370,8 +373,8 @@
                     p.options.forEach((name, index) => option(input, index, name));
                     input.value = p.value;
                     input.addEventListener('change', () => send(Number(input.value)));
-                    row(el('parameters'), p.name, input);
-                } else control(el('parameters'), p.name, 'param-' + p.id, p.type === 'bool' ? 'checkbox' : p.type === 'text' ? 'text' : 'range', p.value, send, p.min, p.max);
+                    row(el('parameters'), paramLabel(segment.effect, p), input);
+                } else control(el('parameters'), paramLabel(segment.effect, p), 'param-' + p.id, p.type === 'bool' ? 'checkbox' : p.type === 'text' ? 'text' : 'range', p.value, send, p.min, p.max);
             }
         }
         const set = (id, value, checked = false) => {
@@ -384,6 +387,7 @@
             const output = input.parentElement.querySelector('output');
             if (output) output.textContent = value;
         };
+        effectOptions(segment);
         set('effect', segment.effect);
         set('brightness', segment.brightness);
         set('power', segment.ownPower ?? segment.power, true);
@@ -396,6 +400,24 @@
         renderDraft(segment, live);
         disabled();
         band();
+    }
+    // Effect list of the segment: 2D-only effects only on a 2D segment (is2D of the state), the set effect always.
+    function effectOptions(segment) {
+        const select = el('effect'), fit = effects.filter(e => segment.is2D || e.dimensions !== 2 || e.id === segment.effect);
+        let note = select._note;
+        if (!note) {
+            note = select._note = document.createElement('p');
+            note.className = 'meta studio-row-note';
+            note.textContent = '2D-Effekte nur bei 2D-Segmenten';
+            select.parentElement.after(note);
+        }
+        note.hidden = !!segment.is2D || !effects.some(e => e.dimensions === 2);
+        const key = fit.map(e => e.id).join();
+        if (select._key === key) return;
+        select._key = key;
+        select.replaceChildren();
+        fit.forEach(e => option(select, e.id, e.text || e.name));
+        select.value = segment.effect;
     }
     // State pill of a segment as the device runs it: [class, text, tooltip]. Details (parameters, scenes) only matter for the selected one.
     function segState(s, list = false) {
@@ -414,7 +436,7 @@
             item.type = 'button'; item.className = 'st-sp-it'; item.setAttribute('role', 'option'); item.setAttribute('aria-selected', String(s.id === selected)); item.dataset.seg = s.id;
             plate.className = 'np-badge t' + (s.id % 8); plate.textContent = s.id;
             name.textContent = 'Segment ' + s.id;
-            fx.textContent = effects.find(e => e.id === s.effect)?.name ?? '';
+            fx.textContent = fxText(s.effect) ?? '';
             pill.className = 'np-pill ' + cls; pill.innerHTML = cls === 'idle' ? '' : '<i class="np-dot"></i>'; pill.append(text);
             item.append(plate, name, fx, pill);
             return item;
@@ -428,7 +450,7 @@
     }
     // Draft card: device value -> draft value for every changed field, plus the pending scene action.
     function renderDraft(segment, live) {
-        const rows = [], name = id => effects.find(e => e.id === id)?.name ?? id;
+        const rows = [], name = id => fxText(id) ?? id;
         const colour = c => c ? c.rgb + (c.ww || c.cw ? ' · Weiß ' + c.ww + ' · Kaltweiß ' + c.cw : '') : '–';
         const onOff = s => (s.ownPower ?? s.power) ? 'Ein' : 'Aus';
         const add = (label, from, to) => { if (String(from) !== String(to)) rows.push([label, from, to]); };
@@ -441,7 +463,7 @@
             if (live.effect === segment.effect) for (const p of segment.parameters) {
                 const fmt = v => p.type === 'enum' ? p.options[v] : p.type === 'bool' ? v ? 'Ein' : 'Aus' : v;
                 const old = live.parameters?.find(q => q.id === p.id);
-                add(p.name, old ? fmt(old.value) : '–', fmt(p.value));
+                add(paramLabel(segment.effect, p), old ? fmt(old.value) : '–', fmt(p.value));
             }
         }
         const scene = sceneActions.get(selected);
@@ -519,7 +541,7 @@
         for (const scene of scenes) {
             const entry = document.createElement('div'); entry.className = 'studio-scene';
             const title = document.createElement('strong');
-            title.textContent = 'Szene ' + scene.id + ' · ' + (effects.find(e => e.id === scene.effect)?.name || (scene.effect >= 200 ? 'Effektmanager ' + (scene.effect - 199) : 'Effekt ' + scene.effect)) + (segment.activeScene === scene.id ? ' · aktiv' : '');
+            title.textContent = 'Szene ' + scene.id + ' · ' + (fxText(scene.effect) || (scene.effect >= 200 ? 'Effektmanager ' + (scene.effect - 199) : 'Effekt ' + scene.effect)) + (segment.activeScene === scene.id ? ' · aktiv' : '');
             entry.append(title);
             for (const [label, action] of [['Abrufen','sceneRecall'],['Entwurf hier speichern','sceneStore'],['Löschen','sceneDelete']]) {
                 const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
@@ -605,9 +627,8 @@
             if (!effects.length) {
                 const catalog = await request('effects');
                 const available = await request('effect-availability');
-                effects = catalog.filter(effect => available[effect.id] === '1');
-                el('effect').replaceChildren();
-                effects.forEach(effect => option(el('effect'), effect.id, effect.name));
+                // ETS order: 1D, 1D/2D, 2D, each by number
+                effects = catalog.filter(effect => available[effect.id] === '1').sort((a, b) => (a.group || 0) - (b.group || 0) || a.id - b.id);
             }
             accept(await request('state?segment=' + Math.max(selected, 1)));
             failed = false;

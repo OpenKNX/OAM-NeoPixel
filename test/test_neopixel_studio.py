@@ -8,6 +8,11 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 STUBS = r'''
 #include <cassert>
+#ifndef assert // a foreign assert.h ahead of the SDK one (e.g. /usr/local/include) hides the macro
+#include <cstdio>
+#include <cstdlib>
+#define assert(e) ((e) ? (void)0 : (std::fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e), std::abort()))
+#endif
 #include <array>
 #include <cmath>
 #include <cctype>
@@ -16,13 +21,17 @@ STUBS = r'''
 #include <cstring>
 #include <string>
 #include <vector>
+#include <atomic>
 #include "OpenKNX/Format/JSON/Reader.h"
+#include "OpenKNX/Format/JSON/Writer.h"
 #define OPENKNX_CHARSET
 #include "OpenKNX/Charset.hpp"
 using OpenKNX::Format::JSON::Reader;
+using OpenKNX::Format::JSON::Writer;
 enum class ParameterType { PARAM_UINT8, PARAM_BOOL, PARAM_ENUM, PARAM_STRING };
 struct Config {
     char effectText[241] = {};
+    uint8_t effectType = 1; // Segment::effect starts at effects[1]
     uint8_t colours[10] = {10,20,30,40,50,60,70,80,90,100};
     uint8_t r() const { return colours[0]; } uint8_t g() const { return colours[1]; }
     uint8_t b() const { return colours[2]; } uint8_t ww() const { return colours[3]; }
@@ -43,7 +52,11 @@ struct Effect {
 Effect effects[2] = {{0}, {1}};
 Effect* getEffectFromType(uint8_t id) { return &effects[id == 1 ? 1 : 0]; }
 uint8_t getTypeFromEffect(Effect* e) { return e ? e->id : 0; }
+namespace NeoPixelEffectCatalog { inline bool isAvailable(uint8_t id) { return id < 2; } }
+/*LED_GEOMETRY*/
 struct Segment {
+    LedGeometry _geo;
+/*SEGMENT_IS2D*/
     Config config;
     Effect* effect = &effects[1];
     uint8_t brightness = 100, master = 100;
@@ -65,9 +78,13 @@ void Effect::setParameter(Segment* s, uint8_t p, uint32_t value) {
     // dereferencing that truncated pointer; text validation is still production code.
     if (p < 3) s->params[p] = value;
 }
+#define EM_COUNT 16
+#define EM_CUE_COUNT 10
 struct Em {
     bool running = false;
     int reapplied = 0;
+    uint8_t activeEmId() const { return running?1:0; }
+    uint8_t activeCueNum() const { return running?1:0; }
     bool isRunning() const { return running; }
     void reapplyMasterBrightness(Segment*) { ++reapplied; }
 };
@@ -95,16 +112,23 @@ struct NeoPixelBusModule {
         std::vector<uint8_t> exportScenes(size_t) { return bytes; }
         bool importScenes(size_t,const uint8_t* data,size_t length) { bytes.assign(data,data+length); return true; }
         void restoreEtsScenes(size_t) { bytes={1,42}; }
+        std::array<uint8_t,36> sceneData(size_t,uint8_t) { return {}; }
         bool addScene(size_t,Segment*) { return true; } bool deleteScene(size_t,uint8_t) { return true; }
         bool storeScene(size_t,uint8_t,Segment*) { return true; } bool recallScene(size_t,uint8_t,Segment*) { return true; }
     } scenes;
     SceneDouble* _sceneManager=&scenes;
-    void interruptEmIfRunning(size_t i) { ++interrupts; _segments[i].emController.running=false; }
-    void applyEffectToSegment(Segment* s,uint8_t id) { s->effect=getEffectFromType(id); }
+    struct EmData { struct { uint8_t cueCount=0; } header; struct { uint8_t effectId=0; } cues[EM_CUE_COUNT]; };
+    EmData* _emData=nullptr;
+    void interruptEmIfRunning(size_t i) {
+        ++interrupts; auto& c=_segments[i];
+        if (c.emController.running && c.segment) c.segment->config.effectType=getTypeFromEffect(c.segment->effect); // the cue effect stays
+        c.emController.running=false;
+    }
+    void applyEffectToSegment(Segment* s,uint8_t id) { s->effect=getEffectFromType(id); s->config.effectType=id; }
     void applySegmentDefaultState(size_t i) {
         ++restores;
         auto& c=_segments[i]; c.segment->setPrimaryColor(255,0,0,0,0);
-        c.segment->setSecondaryColor(0,0,255,0,0); c.segment->effect=&effects[0];
+        c.segment->setSecondaryColor(0,0,255,0,0); c.segment->effect=&effects[0]; c.segment->config.effectType=0;
         c.savedBrightness=180; c.segment->params[0]=42;
     }
     void reEnterEffect(size_t) {}
@@ -123,8 +147,21 @@ struct NeoPixelStudio {
     std::string saveSegment(size_t) { ++saves; return {}; }
     std::string apply(const std::string&);
     std::string applyDoc(const Reader&,bool=false,uint8_t=255);
+    uint8_t currentEffectType(size_t) const;
+    std::atomic<uint32_t> _requestedSegment{0};
+    uint32_t _completedId=0;
+    std::string _error, _testPattern, _snapshotText;
+    bool commissioningMatches(size_t,bool,bool) const { return true; }
+    void writeCommissioning(Writer& json,size_t) const { json.beginObject().endObject(); }
+    void snapshot(std::string&);
 };
 '''
+# LedGeometry and Segment::is2D() from the shared Segment.h (also used by test_neopixel_studio_persistence.py)
+SEGMENT_H = (ROOT / 'lib/OFM-NeoPixel/src/Segment.h').read_text()
+IS2D_LINE = '    bool is2D() const { return _geo.is2D(); }\n'
+assert IS2D_LINE in SEGMENT_H, 'Segment::is2D() changed'
+STUBS = STUBS.replace('/*LED_GEOMETRY*/', SEGMENT_H[SEGMENT_H.index('enum class LedTopology'):SEGMENT_H.index('\n};\n', SEGMENT_H.index('struct LedGeometry')) + 4])
+STUBS = STUBS.replace('/*SEGMENT_IS2D*/', IS2D_LINE)
 TESTS = r'''
 int main() {
     NeoPixelBusModule module;
@@ -220,21 +257,94 @@ int main() {
     assert(module.scenes.bytes==std::vector<uint8_t>({1,42}));
     assert(studio.saves==0 && module._channelIndex==7);
 
+    // Running EM cue: parameter commands address the cue's effect, not the stored segment effect.
+    NeoPixelBusModule::EmData ems[EM_COUNT] = {};
+    ems[0].header.cueCount=1; ems[0].cues[0].effectId=0;
+    module._emData=ems;
+    segment.effect=&effects[0]; segment.config.effectType=1; // cue 1 runs effect 0, the segment stored 1
+    cfg.emController.running=true;
+    assert(studio.currentEffectType(0)==0);
+    bad(R"({"segment":1,"action":"parameter","effect":1,"parameter":0,"value":7})");
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":1,"parameter":0,"value":7})")=="Effekt wurde geändert; Seite neu laden");
+    assert(cfg.emController.running && segment.params[0]!=7);
+    assert(studio.apply(R"({"segment":1,"action":"batch","value":[{"segment":1,"action":"parameter","effect":0,"parameter":0,"value":8},{"segment":1,"action":"parameter","effect":0,"parameter":1,"value":1}]})").empty());
+    assert(segment.params[0]==8 && segment.params[1]==1 && !cfg.emController.running && segment.config.effectType==0);
+    ems[0].cues[0].effectId=1; segment.effect=&effects[1]; segment.config.effectType=0; cfg.emController.running=true;
+    assert(studio.currentEffectType(0)==1);
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":0,"parameter":0,"value":9})")=="Effekt wurde geändert; Seite neu laden");
+    assert(cfg.emController.running && segment.params[0]==8);
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":1,"parameter":0,"value":9})").empty());
+    assert(segment.params[0]==9 && !cfg.emController.running && segment.config.effectType==1);
+    // A cue number beyond the EM's cue count falls back to the stored segment effect.
+    ems[0].header.cueCount=0; ems[0].cues[0].effectId=0; segment.config.effectType=1; segment.effect=&effects[1]; cfg.emController.running=true;
+    assert(studio.currentEffectType(0)==1);
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":1,"parameter":0,"value":10})").empty());
+    assert(segment.params[0]==10);
+    // An effect number this firmware lacks runs as Solid: Studio reports and validates effect 0 (stored or cue effect).
+    auto snapshotEffect=[&]() { std::string out; studio.snapshot(out); Reader doc(out.c_str(), out.size()); return doc.get("segments").get(size_t(0)).get("effect").toUInt(99); };
+    ems[0].header.cueCount=1; ems[0].cues[0].effectId=5; segment.effect=&effects[0]; segment.config.effectType=1; cfg.emController.running=true;
+    assert(studio.currentEffectType(0)==0 && snapshotEffect()==0);
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":5,"parameter":0,"value":11})")=="Effekt wurde geändert; Seite neu laden");
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":1,"parameter":0,"value":11})")=="Effekt wurde geändert; Seite neu laden");
+    assert(cfg.emController.running && segment.params[0]==10);
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":0,"parameter":0,"value":11})").empty());
+    assert(segment.params[0]==11 && !cfg.emController.running);
+    module._emData=nullptr;
+    segment.config.effectType=5; segment.effect=&effects[0];
+    assert(studio.currentEffectType(0)==0 && snapshotEffect()==0);
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":5,"parameter":0,"value":12})")=="Effekt wurde geändert; Seite neu laden");
+    assert(studio.apply(R"({"segment":1,"action":"parameter","effect":0,"parameter":0,"value":12})").empty());
+    assert(segment.params[0]==12);
+    segment.config.effectType=1; segment.effect=&effects[1];
+    assert(studio.currentEffectType(0)==1 && snapshotEffect()==1);
+
+    // Snapshot "is2D" per segment follows LedGeometry::is2D (1D strip, 2D matrix, tiled 2D, 3D cube, one row)
+    {
+        NeoPixelBusModule geoModule;
+        Segment geo[5];
+        geo[1]._geo.width=8; geo[1]._geo.height=8; geo[1]._geo.topology=LedTopology::ROWS_SERPENTINE;
+        geo[2]._geo.width=16; geo[2]._geo.height=8; geo[2]._geo.depth=2; geo[2]._geo.topology=LedTopology::COLS_SERP_TILED;
+        geo[3]._geo.width=4; geo[3]._geo.height=4; geo[3]._geo.depth=4; geo[3]._geo.topology=LedTopology::ROWS_SERPENTINE_3D;
+        geo[4]._geo.width=8; geo[4]._geo.height=1; geo[4]._geo.topology=LedTopology::ROWS_LINEAR;
+        geoModule._segments.resize(5);
+        for (int i=0;i<5;++i) geoModule._segments[i].segment=&geo[i];
+        NeoPixelStudio geoStudio{geoModule};
+        std::string out;
+        geoStudio.snapshot(out);
+        Reader doc(out.c_str(), out.size());
+        const bool expected[5]={false,true,true,false,false};
+        for (size_t i=0;i<5;++i) {
+            const Reader entry=doc.get("segments").get(i);
+            assert(entry.get("id").toUInt()==i+1);
+            assert(entry.get("is2D").isBool());
+            assert(entry.get("is2D").toBool(!expected[i])==expected[i]);
+        }
+    }
 }
 '''
 
 
 def main():
     source = (ROOT / 'src/NeoPixelStudio.cpp').read_text()
-    handler = source[source.index('std::string NeoPixelStudio::apply('):source.index('std::string NeoPixelStudio::snapshot(')]
-    numeric = source[source.index('    bool integer('):source.index('    std::string utf8(')]
+    handler = source[source.index('std::string NeoPixelStudio::apply('):source.index('void NeoPixelStudio::snapshot(')]
+    numeric = source[source.index('    bool integer('):source.index('    void utf8(')]
+    helpers = source[source.index('    void utf8('):source.index('} // namespace')]
+    snapshot = source[source.index('void NeoPixelStudio::snapshot('):source.index('\n}\n#endif', source.index('void NeoPixelStudio::snapshot(')) + 3]
+    # snapshot() needs these; the harnesses that import STUBS add their own
+    stubs = STUBS.replace('    void setParameter(Segment*, uint8_t, uint32_t);',
+                          '    uint32_t getParameter(const Segment*,uint8_t) const { return 0; }\n'
+                          '    const char* getParameterName(uint8_t) const { return "p"; }\n'
+                          '    const char* getEnumValueName(uint8_t,uint8_t) const { return "e"; }\n'
+                          '    void setParameter(Segment*, uint8_t, uint32_t);')
+    stubs = stubs.replace('    int interrupts=0', '    static bool isSegmentVisible(const SegmentConfig& c) { return c.savedPower != 0; }\n    int interrupts=0')
     with tempfile.TemporaryDirectory(prefix='neopixel-studio-test-') as directory:
         path = Path(directory)
-        (path / 'test.cpp').write_text(STUBS + '\nstruct SceneManager { static constexpr uint8_t MAX_SCENES=10; };\n' + numeric + handler + TESTS)
+        (path / 'test.cpp').write_text(stubs + '\nstruct SceneManager { static constexpr uint8_t MAX_SCENES=10; };\n' + numeric + helpers + handler + snapshot + TESTS)
         subprocess.run([shutil.which('clang++') or 'c++', '-std=c++17', '-fsanitize=address,undefined',
                         '-fno-omit-frame-pointer', '-I' + str(ROOT / 'lib/OFM-Network/src'),
                         '-I' + str(ROOT / 'lib/OGM-Common/src'), str(path / 'test.cpp'),
                         str(ROOT / 'lib/OFM-Network/src/OpenKNX/Format/JSON/Reader.cpp'),
+                        str(ROOT / 'lib/OFM-Network/src/OpenKNX/Format/JSON/Writer.cpp'),
                         '-o', str(path / 'test')], check=True)
         subprocess.run([str(path / 'test')], check=True)
     print('Studio command validation and runtime control regressions passed')
