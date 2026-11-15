@@ -211,5 +211,23 @@
        and include block Fix_HasWifi in its place -->
   <Fixes output="src/NeoPixel.hw.fixes.gen.xml">
     <Fix name="HasWifi" capability="Wifi" ref="%AID%_P-1401001_R-140100100" value="1" show="readonly" indent="1" help="NETW-WiFi" />
+    <!-- Info LED function (OGM-Common Info1LedFunc..Info3LedFunc, BASE = ModuleType 10): on boards whose header defines
+         OPENKNX_INFOLED<n>_DEFAULT (the function the firmware uses with "Geräteabhängige Vorbelegung") ETS sets this function when
+         the board is selected; show="assign": the row stays on the page "Info LEDs" and can be changed. Blocks Fix_InfoLed<n> are
+         included in the hardware page of NeoPixel-Dev.xml / NeoPixel-Release.xml (an Assign must sit in a ParameterBlock);
+         no board of this product defines the macro yet (empty blocks) -->
+    <Fix name="InfoLed1" ref="%AID%_UP-1000020_R-100002001" valueMacro="OPENKNX_INFOLED1_DEFAULT" show="assign" />
+    <Fix name="InfoLed2" ref="%AID%_UP-1000021_R-100002101" valueMacro="OPENKNX_INFOLED2_DEFAULT" show="assign" />
+    <Fix name="InfoLed3" ref="%AID%_UP-1000022_R-100002201" valueMacro="OPENKNX_INFOLED3_DEFAULT" show="assign" />
   </Fixes>
+
+  <!-- page "Info LEDs" of OGM-Common per device (OGM-HardwareConfig <PartRows>): copy of InfoLed.part.xml in which row "Info <n>"
+       appears only on boards whose header defines the LED (INFO<n>_LED_PIN; INFO_LED_PIN is the old name of INFO1, OGM-Common
+       defines.h), with the board label INFO<n>_LED_LABEL in the row text ("Info 1 (grün)"); not selected: all three rows.
+       NeoPixel-Dev.xml / NeoPixel-Release.xml point %BASE_InfoLedPart% to the output -->
+  <PartRows source="lib/OGM-Common/src/InfoLed.part.xml" output="src/NeoPixel.hw.infoled.gen.xml">
+    <Row ref="%AID%_UP-%TT%00020_R-%TT%0002001" expr="defined(INFO1_LED_PIN) || defined(INFO_LED_PIN)" label="INFO1_LED_LABEL" />
+    <Row ref="%AID%_UP-%TT%00021_R-%TT%0002101" expr="defined(INFO2_LED_PIN)" label="INFO2_LED_LABEL" />
+    <Row ref="%AID%_UP-%TT%00022_R-%TT%0002201" expr="defined(INFO3_LED_PIN)" label="INFO3_LED_LABEL" />
+  </PartRows>
 </HardwareProfile>

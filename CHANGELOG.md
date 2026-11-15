@@ -14,6 +14,7 @@
 * The detection button of an older application (function property 158/10) gets „not supported" from this firmware; the button of the page OpenKNX → „Gerät" uses 158/4
 
 **Product**
+* Change (Dev 3.0): page OpenKNX → „Info LEDs" shows the rows „Info 1"–„Info 3" only for the LEDs the selected device has, named from the board header (OpenKNXiao RP2040: „Info 1 (grün)", „Info 2 (blau)"); with no device selected all three rows as before (OGM-HardwareConfig `<PartRows>` on the OGM-Common page, product token `%BASE_InfoLedPart%`)
 * Fix (Dev 3.0): Fire ignored „Geschwindigkeit" (one simulation step per frame) and „Richtung umkehren" (the effect read another field)
 * Change (Dev 3.0): /neo and Studio list the effects with the German names in the order of the ETS effect list (1D, then „1D/2D ·", then „2D ·") and show the effect parameters with their ETS labels; Studio offers 2D-only effects on 2D segments only (the state API reports `is2D` per segment), both pages keep the running effect selectable, and Studio reports a stored effect this firmware lacks as Solid, as the device runs it
 * Fix (Dev 2.12): on hardware without the 2D effects the effect settings of a segment, a scene and an effect-manager cue follow the effect list shown there (the reduced one); before, they followed the hidden full list and showed the settings of another effect or none; a scene sets the defaults of its new effect there too (second calculation on the reduced list)
