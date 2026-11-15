@@ -133,6 +133,12 @@
                     <op:include href="../lib/OFM-Network/src/NetworkWifi.share.xml" xpath="//Dynamic/Channel/ParameterBlock[@Name='NetworkInject']/*" IsInner="true" prefix="NETW" />
                   </when>
                 </choose>
+                <!-- hardware with WiFi: "WiFi-Schnittstelle" (NETW_HasWifi, no memory, shows the WiFi page) fixed to Ja -->
+                <choose ParamRefId="%NEOHW_SelectRef%">
+                  <when test="%NEOHW_CAP_Wifi%">
+                    <Assign TargetParamRefRef="%AID%_P-1401001_R-140100100" Value="1" />
+                  </when>
+                </choose>
               </ParameterBlock>
               <op:include href="../lib/OFM-Network/src/Network.share.xml" xpath="//Dynamic/Channel/*[not(self::ParameterBlock[@Name='Basic'])]" prefix="NET" />
               <choose ParamRefId="%NEOHW_SelectRef%">
