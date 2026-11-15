@@ -130,13 +130,10 @@
                      hardware is selected (state after the app update), so a download does not reset them -->
                 <choose ParamRefId="%NEOHW_SelectRef%">
                   <when test="%NEOHW_CAP_Wifi_OR_NONE%">
-                    <op:include href="../lib/OFM-Network/src/NetworkWifi.share.xml" xpath="//Dynamic/Channel/ParameterBlock[@Name='NetworkInject']/*" IsInner="true" prefix="NETW" />
-                  </when>
-                </choose>
-                <!-- hardware with WiFi: "WiFi-Schnittstelle" (NETW_HasWifi, no memory, shows the WiFi page) fixed to Ja -->
-                <choose ParamRefId="%NEOHW_SelectRef%">
-                  <when test="%NEOHW_CAP_Wifi%">
-                    <Assign TargetParamRefRef="%AID%_P-1401001_R-140100100" Value="1" />
+                    <!-- NetworkInject without its row "WiFi-Schnittstelle" (HasWifi, ref ..01001_R-..): block Fix_HasWifi below sets it to Ja
+                         and shows it read-only on hardware with WiFi (HardwareProfile.xml <Fixes>), the normal row while none is selected -->
+                    <op:include href="../lib/OFM-Network/src/NetworkWifi.share.xml" xpath="//Dynamic/Channel/ParameterBlock[@Name='NetworkInject']/*[not(contains(@RefId, '%TT%01001_R-'))]" IsInner="true" prefix="NETW" />
+                    <op:include href="NeoPixel.hw.fixes.gen.xml" xpath="//Block[@name='Fix_HasWifi']/*" />
                   </when>
                 </choose>
               </ParameterBlock>

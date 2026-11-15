@@ -1722,6 +1722,8 @@
               <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayParameterRefs']/*" />
               <!-- GPIO conflict flags (generated) -->
               <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='ParameterRefs']/*" />
+              <!-- read-only rows of settings fixed per capability (generated, HardwareProfile.xml <Fixes>) -->
+              <op:include href="NeoPixel.hw.fixes.gen.xml" xpath="//Block[@name='ParameterRefs']/*" />
               <!-- External Relay Delay Parameters -->
               <ParameterRef Id="%AID%_UP-%TT%00139_R-%TT%0013901" RefId="%AID%_UP-%TT%00139" />
               <ParameterRef Id="%AID%_UP-%TT%00140_R-%TT%0014001" RefId="%AID%_UP-%TT%00140" />

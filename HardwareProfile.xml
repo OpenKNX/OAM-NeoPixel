@@ -206,4 +206,10 @@
     <ChannelBlock name="StripData" text="Streifen %C% Daten" uses="Strip1Data Strip2Data Strip3Data Strip4Data Strip5Data Strip6Data Strip7Data Strip8Data" />
     <ChannelBlock name="StripClock" text="Streifen %C% Takt" uses="Strip1Clock Strip2Clock Strip3Clock Strip4Clock Strip5Clock Strip6Clock Strip7Clock Strip8Clock" />
   </Conflicts>
+  <!-- Settings of other modules fixed per capability (OGM-HardwareConfig <Fixes>): on hardware with WiFi "WiFi-Schnittstelle"
+       (NETW_HasWifi, no memory, shows the WiFi page) is Ja and read-only; the product XMLs take the row out of the NETW include
+       and include block Fix_HasWifi in its place -->
+  <Fixes output="src/NeoPixel.hw.fixes.gen.xml">
+    <Fix name="HasWifi" capability="Wifi" ref="%AID%_P-1401001_R-140100100" value="1" show="readonly" indent="1" help="NETW-WiFi" />
+  </Fixes>
 </HardwareProfile>
