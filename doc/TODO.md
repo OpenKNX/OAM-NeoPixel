@@ -3,7 +3,7 @@
 **Die eine Liste.** Alles Offene steht hier; wo ein Punkt eine lange Herleitung hat, verweist er auf das
 Dokument, das sie trägt. Erledigtes wird gelöscht, nicht abgehakt — was hier steht, steht noch aus.
 
-Stand: **2026-11-15** (Dev 2.5 / Release 1.0) · **32 offene Punkte**. Nummeriert nach Priorität, Prio 0
+Stand: **2026-11-16** (Dev 2.7 / Release 1.0) · **31 offene Punkte**. Nummeriert nach Priorität, Prio 0
 zuerst; kommt ein Punkt dazu oder fällt einer weg, wird neu nummeriert.
 
 Regeln: ETS-/Generator-Änderungen gehen in `scripts/Build-*.ps1` bzw. `HardwareProfile.xml` und `src/hw/` (Hardware-Generator in
@@ -18,36 +18,35 @@ Prio 0 = kritisch, sofort angehen, blockiert den Public Release, 1 = vor dem Pub
 |---|---|---|---|---|---|
 | 1 | **KRITISCH** — ESP32 ohne PSRAM (Gledopto, QuinLED): Absturz nach dem ETS-Download | **0** | **KRITISCH** | M | **@Franz**, Log fehlt |
 | 2 | Dev 2.5 in der echten ETS testen (Aktualisieren, Verfügbarkeitsmeldung, Hardwarewechsel, Release 0.x → 1.0) | 1 | hoch | M |  |
-| 3 | Release 1.0: neue Parameter-IDs ohne Versions-Bump | 1 | hoch | S | entscheiden |
-| 4 | knxOTA auf den 4-MB-ESP32-Zielen | 1 | hoch | M | Release-Entscheidung (USB-Flash) |
-| 5 | ESP32: zu wenige RMT-Sendekanäle für die Ports — C3/C5/C6 2, S3 4, ESP32 8 (nicht gemessen) | 1 | hoch | M-L | Treiber in OFM-NeoPixel |
-| 6 | Strommessung: Offset-Überlauf ab ~13 107 LEDs, dazu Restpunkte | 1 | mittel | S (Überlauf) / M | OFM-Lib, besprechen |
-| 7 | GPIO-Konfliktprüfung (836 Eingänge) in der echten ETS testen | 2 | mittel | S |  |
-| 8 | 2D-Effekt auf 1D-Segment bleibt dunkel → Fallback Solid | 2 | mittel | S | entschieden |
-| 9 | GPIO-Regressionswächter im Generator | 2 | mittel | M |  |
-| 10 | TP + WiFi: Gruppenmonitor, IP-LED, Setup-AP, Hardware-Test | 2 | mittel | M | Monitor bis zur Lib-Absicherung aus |
-| 11 | Welche Effektgruppen das Produkt ausliefert | 2 | niedrig | S | entscheiden |
-| 12 | Beide Generatoren unter Windows PowerShell 5.1 laufen lassen | 2 | mittel | S |  |
-| 13 | `dependencies.txt` und Lib-Branches vor dem Release | 2 | mittel | S |  |
-| 14 | Konfigurator ausbauen | 2 | niedrig | L | Katalog zuerst |
-| 15 | /neo: Steuerung ohne Schutz | 3 | mittel | S | wartet auf Anmeldung in OFM-Network |
-| 16 | Timing-Dropdown auf das Chip-Profil reduzieren | 3 | mittel | S |  |
-| 17 | Effektkette: Konzeptlücken | 3 | mittel | L |  |
-| 18 | Hardware-Gating der ETS-Knoten | 3 | niedrig | S | GA-Frage offen |
-| 19 | Dimmzeit als ETS-Parameter | 3 | niedrig | S | Versions-Bump |
-| 20 | Lücken aus den Beispielen und dem Anwendungsfall-Katalog | 3 | niedrig | M |  |
-| 21 | Kanal-Tabellen nach dem Muster „Kanalauswahl" | 3 | niedrig | L | Konzept zuerst |
-| 22 | Effektmanager/Cue: Hue-Konvention, Phasen-Drift der Kette | 3 | niedrig | S |  |
-| 23 | Überlappende Segmente dokumentieren | 3 | niedrig | S |  |
-| 24 | Effektzustand je Segment: Restpunkte | 3 | niedrig | S |  |
-| 25 | OFM-relevante Teile nach OFM-NeoPixel umziehen | 3 | schlafend | L |  |
-| 26 | Dual-Core: Rendering auf Core1 | 3 | schlafend | L |  |
-| 27 | Hardware-Seite: ETS5-Screenshot | 3 | niedrig | S |  |
-| 28 | LPD6803 / P9813 vervollständigen (ESP32, Farbreihenfolge, Latch) | 3 | niedrig | M |  |
-| 29 | Tests und Skripte im Repo, die nicht PowerShell sind | 3 | niedrig | M |  |
-| 30 | Konsole: Effekt-Name eines nicht gebauten Effekts meldet „not found" | 3 | niedrig | S | OFM-NeoPixel |
-| 31 | Effekt-Generator: ID-Prüfung nur für literale IDs, Cue-Parameter über 10 Slots still weggelassen | 3 | niedrig | S |  |
-| 32 | Device-Registry: Board-Header als einzige Quelle oder JSON von Hand | 3 | niedrig | M | entscheiden, mit Dom abstimmen |
+| 3 | knxOTA auf den 4-MB-ESP32-Zielen | 1 | hoch | M | Release-Entscheidung (USB-Flash) |
+| 4 | ESP32: zu wenige RMT-Sendekanäle für die Ports — C3/C5/C6 2, S3 4, ESP32 8 (nicht gemessen) | 1 | hoch | M-L | Treiber in OFM-NeoPixel |
+| 5 | Strommessung: Offset-Überlauf ab ~13 107 LEDs, dazu Restpunkte | 1 | mittel | S (Überlauf) / M | OFM-Lib, besprechen |
+| 6 | GPIO-Konfliktprüfung (836 Eingänge) in der echten ETS testen | 2 | mittel | S |  |
+| 7 | 2D-Effekt auf 1D-Segment bleibt dunkel → Fallback Solid | 2 | mittel | S | entschieden |
+| 8 | GPIO-Regressionswächter im Generator | 2 | mittel | M |  |
+| 9 | TP + WiFi: Gruppenmonitor, IP-LED, Setup-AP, Hardware-Test | 2 | mittel | M | Monitor bis zur Lib-Absicherung aus |
+| 10 | Welche Effektgruppen das Produkt ausliefert | 2 | niedrig | S | entscheiden |
+| 11 | Beide Generatoren unter Windows PowerShell 5.1 laufen lassen | 2 | mittel | S |  |
+| 12 | `dependencies.txt` und Lib-Branches vor dem Release | 2 | mittel | S |  |
+| 13 | Konfigurator ausbauen | 2 | niedrig | L | Katalog zuerst |
+| 14 | /neo: Steuerung ohne Schutz | 3 | mittel | S | wartet auf Anmeldung in OFM-Network |
+| 15 | Timing-Dropdown auf das Chip-Profil reduzieren | 3 | mittel | S |  |
+| 16 | Effektkette: Konzeptlücken | 3 | mittel | L |  |
+| 17 | Hardware-Gating der ETS-Knoten | 3 | niedrig | S | GA-Frage offen |
+| 18 | Dimmzeit als ETS-Parameter | 3 | niedrig | S | Versions-Bump |
+| 19 | Lücken aus den Beispielen und dem Anwendungsfall-Katalog | 3 | niedrig | M |  |
+| 20 | Kanal-Tabellen nach dem Muster „Kanalauswahl" | 3 | niedrig | L | Konzept zuerst |
+| 21 | Effektmanager/Cue: Hue-Konvention, Phasen-Drift der Kette | 3 | niedrig | S |  |
+| 22 | Überlappende Segmente dokumentieren | 3 | niedrig | S |  |
+| 23 | Effektzustand je Segment: Restpunkte | 3 | niedrig | S |  |
+| 24 | OFM-relevante Teile nach OFM-NeoPixel umziehen | 3 | schlafend | L |  |
+| 25 | Dual-Core: Rendering auf Core1 | 3 | schlafend | L |  |
+| 26 | Hardware-Seite: ETS5-Screenshot | 3 | niedrig | S |  |
+| 27 | LPD6803 / P9813 vervollständigen (ESP32, Farbreihenfolge, Latch) | 3 | niedrig | M |  |
+| 28 | Tests und Skripte im Repo, die nicht PowerShell sind | 3 | niedrig | M |  |
+| 29 | Konsole: Effekt-Name eines nicht gebauten Effekts meldet „not found" | 3 | niedrig | S | OFM-NeoPixel |
+| 30 | Effekt-Generator: ID-Prüfung nur für literale IDs, Cue-Parameter über 10 Slots still weggelassen | 3 | niedrig | S |  |
+| 31 | Device-Registry: Board-Header als einzige Quelle oder JSON von Hand | 3 | niedrig | M | entscheiden, mit Dom abstimmen |
 
 ---
 
@@ -81,6 +80,15 @@ dein Log):
 - **Weitere `new` ohne Prüfung in OFM-NeoPixel:** `VirtualStrip.cpp:50`, `NeoPixelManager.cpp:126` und `:1910`
   (die Null-Prüfungen danach sind toter Code), `PhysicalStrip.cpp:616` (`vector::assign`), dazu alle Getter im
   `EffectPool`.
+
+**Zweite Spur, ungeprüft (2026-11-16, aus Framework und Board-Headern gelesen, nicht gemessen):**
+- Arduino-ESP32 3.3.7 setzt `CONFIG_SPIRAM 1` in allen vorkompilierten sdkconfigs (`framework-arduinoespressif32-libs`, esp32,
+  esp32s3, esp32c5). Deshalb läuft `psramInit()` bei jedem Build, auch ohne `BOARD_HAS_PSRAM` (`esp32-hal-misc.c:296-298`);
+  `esp32-hal-psram.h` löscht `CONFIG_SPIRAM` nur im Lib-Builder.
+- Der klassische ESP32 sucht das PSRAM an GPIO 16 (CS) und 17 (CLK) (`CONFIG_D0WD_PSRAM_CS_IO 16`, `CLK_IO 17`).
+- Gledopto und QuinLED nutzen GPIO 16 als LED-Daten 1 (`Gledopto.h:43/104/178`, `QuinLed.h:121/265/365`), GPIO 17 als Taster
+  oder Ethernet-Takt (`Gledopto.h:103`, `QuinLed.h:429`). Der Streifen auf GPIO 16 startet erst nach dem ersten Download.
+- Im Log prüfen: Meldung der PSRAM-Suche beim Booten; ob der Absturz mit dem Start des Streifens auf GPIO 16 zusammenfällt.
 
 **So beweist du es:**
 - Seriellen Log ziehen, der Exception-Decoder ist bei allen ESP32-Envs schon an (OGM-Common
@@ -120,13 +128,7 @@ Bisher nur im OpenKNX-Viewer und mit dem Producer geprüft. In ETS 6 nachstellen
   alten Schema auf den Standardwert. Nachstellen, dass das bei einem alten Release-Gerät (0.8 gibt es in drei
   ID-Schemata) so ist und die übrigen Werte stimmen.
 
-### 3 — Release 1.0: neue Parameter-IDs ohne Versions-Bump
-
-Release 1.0 hat die neuen Effekt-Parameter-IDs und laut Review vom 2026-11-15 336 Parameter dazubekommen (Zahl nicht
-nachgezählt), ohne dass die Version gestiegen ist. Entweder die Release-Version anheben oder bestätigen, dass 1.0
-nie ausgeliefert wurde (dann ist eine gleiche Version mit anderem Inhalt kein Problem).
-
-### 4 — knxOTA auf den 4-MB-ESP32-Zielen
+### 3 — knxOTA auf den 4-MB-ESP32-Zielen
 
 Die 4-MB-Partitionstabelle `esp32_4mb.csv` (OGM-Common `data/partitions/`) hat nur `app0` (0x280000). Ohne zweite
 App-Partition liefert `esp_ota_get_next_update_partition()` nichts, `FileTransferModule::otaSlotAvailable()` gibt
@@ -159,7 +161,7 @@ mit Reserve in Prozent unter der Slotgröße, `otaSlotAvailable()` = `true`, `Ch
 Für die Release-Entscheidung: Umpartitionieren löscht das Dateisystem, bestehende Geräte brauchen einmal USB-Flash;
 danach sprengt jedes Wachstum über die Slotgröße den Bau; Voll-Abbild-Updates bleiben auf 4 MB unmöglich.
 
-### 5 — ESP32: zu wenige RMT-Sendekanäle für die Ports
+### 4 — ESP32: zu wenige RMT-Sendekanäle für die Ports
 
 OFM-NeoPixel belegt je seriellem Streifen einen RMT-Sendekanal (`rmt/rmt_neopixel_serial.cpp`, `rmt_new_tx_channel`)
 und begrenzt die Streifenzahl nirgends auf die Kanäle des Chips. Ein Streifen, der keinen Kanal mehr bekommt,
@@ -180,7 +182,7 @@ Erst messen, dann entscheiden.
 
 Der RMT-Treiber liegt in `OFM-NeoPixel` (Shared-Lib).
 
-### 6 — Strommessung / Strombegrenzung: Restpunkte aus den Reviews
+### 5 — Strommessung / Strombegrenzung: Restpunkte aus den Reviews
 
 **Zuerst dran — Offset-Überlauf:** `PowerManager::calculateTotalCurrent` rechnet `uint16_t offset = i * bytesPerPixel`
 (OFM `PowerManager.h` ~584, ebenso ~606 und ~740). Ab ~13 107 LEDs bei 5 Byte/Pixel läuft der Offset über; die ETS
@@ -213,7 +215,7 @@ Danach:
 
 ## Prio 2 — vor dem Public Release, wenn klein
 
-### 7 — GPIO-Konfliktprüfung in der echten ETS testen
+### 6 — GPIO-Konfliktprüfung in der echten ETS testen
 
 Die Prüfung ist eine erzeugte ParameterCalculation (`PC-%TT%00900`, `NEOHW_conflictCheck`, `HardwareProfile.xml <Conflicts>`)
 mit 836 Eingängen (797 Port-Parameter je Board und Signal, 39 weitere) und 20 Flags ohne Gerätespeicher. Getestet nur im
@@ -221,7 +223,7 @@ OpenKNX-Viewer und mit Node.js (ein Lauf rund 18 µs), nicht unter Windows-JScri
 „Aktualisieren" auf 2.5 (ETS rechnet je übernommenem Wert neu), Konflikt erzeugen und auflösen (Streifen-
 und Relais-Seite), Download, Zeit je Änderung und für das Aktualisieren messen.
 
-### 8 — 2D-Effekt auf einem 1D-Segment bleibt dunkel
+### 7 — 2D-Effekt auf einem 1D-Segment bleibt dunkel
 
 Auf einem 1D-Segment ruft der Dispatch in `Segment.cpp` `update()` auf, und das ist bei den 2D-Effekten leer
 (z.B. `Aurora2DEffect.h`) → das Segment bleibt dunkel, ohne Hinweis. **Entschieden:** Fallback auf „Solid"
@@ -229,7 +231,7 @@ Auf einem 1D-Segment ruft der Dispatch in `Segment.cpp` `update()` auf, und das 
 Ort: der Dispatch in `Segment.cpp` (`update3D`/`update2D`/`update`) oder pro 2D-Effekt. Der umgekehrte Fall
 (1D-Effekt auf 2D-Matrix) funktioniert.
 
-### 9 — GPIO-Regressionswächter im Generator
+### 8 — GPIO-Regressionswächter im Generator
 
 Der gespeicherte Port-Wert ist die **Hardware-Portnummer − 1** (`HW_PORT_<n>` des Board-Headers,
 OGM-HardwareConfig `generator/templates/PortListTypes.xml`); das Label steckt nur in `Text=`. Label umbenennen ist
@@ -243,7 +245,7 @@ HW-ID → bestehende Installationen zeigen still auf einen anderen Pin. Regel bi
 
 Reine Generator-Logik, kein Versions-Bump.
 
-### 10 — TP + WiFi (`..._ESP32S3_V1_TPWIFI`, `..._ESP32S3_V15_TPWIFI`)
+### 9 — TP + WiFi (`..._ESP32S3_V1_TPWIFI`, `..._ESP32S3_V15_TPWIFI`)
 
 - **Hardware-Test:** die TPWIFI-Envs sind nur gebaut, auf keinem Gerät gelaufen.
 - **Web-Gruppenmonitor:** der Busmonitor-Schalter (OFM-Network `Webserver/GroupMonitor.cpp`) setzt den TP-UART ohne
@@ -254,21 +256,21 @@ Reine Generator-Logik, kein Versions-Bump.
   (OFM-Network `WifiSetup.cpp`).
 - **Weitere Boards:** TP + WiFi gibt es nur für KNeoPiX V1/V1.5 (ESP32-S3); C3/C5/C6 und XIAO-ESP32S3-Mini erst mit Testhardware.
 
-### 11 — Welche Effektgruppen das Produkt ausliefert
+### 10 — Welche Effektgruppen das Produkt ausliefert
 
 `src/NeoPixel.EffectGroups.xml` ist leer; die Envs lassen heute nur über `NEOPIXEL_DISABLE_2D` (No2D) und einzelne
-`NEOPIXEL_DISABLE_<X>` Effekte weg. Entscheiden, welche Gruppen es gibt (z. B. für die knappen 4-MB-Ziele aus Punkt 4)
+`NEOPIXEL_DISABLE_<X>` Effekte weg. Entscheiden, welche Gruppen es gibt (z. B. für die knappen 4-MB-Ziele aus Punkt 3)
 und welches Env welche Gruppe abschaltet. Die ETS meldet die Folgen über die Verfügbarkeitsprüfung
 (`doc/Effect-Flags.md`).
 
-### 12 — Beide Generatoren unter Windows PowerShell 5.1 laufen lassen
+### 11 — Beide Generatoren unter Windows PowerShell 5.1 laufen lassen
 
 `scripts/Build-EffectParameters.ps1` und OGM-HardwareConfig `generator/Build-HardwareProfile.ps1` sind nur unter
 PowerShell 7 (macOS) gelaufen und für 5.1 statisch geprüft. Es gibt einen CI-Job für PowerShell 5.1; ein grüner Lauf
 ist nicht belegt. Einmal unter Windows PowerShell 5.1 laufen lassen (beide Generatoren, `-Check` und ein voller Lauf)
 oder den grünen CI-Lauf verlinken.
 
-### 13 — `dependencies.txt` und Lib-Branches vor dem Release
+### 12 — `dependencies.txt` und Lib-Branches vor dem Release
 
 Die committete `dependencies.txt` nennt ältere Stände als die Libs im Arbeitsbaum (z. B. TPUart `5edaf0e` gegen
 `1c8ffc0`, knx `c19d925` gegen `a09d18d`, OGM-HardwareConfig `5704eae` gegen `eae7f09`); der Build schreibt die Datei
@@ -277,7 +279,7 @@ neu. Die Lib-Branches liegen nur lokal oder vor ihrem Upstream (Stand 2026-11-15
 OFM-LightManager `v1dev` +1, OGM-Common `ec/feat-flash-size` und OGM-HardwareConfig `ec/feat-hw-profile` ohne Upstream).
 Vor dem Release: Lib-Branches pushen, `dependencies.txt` aus dem Release-Build committen.
 
-### 14 — Konfigurator ausbauen
+### 13 — Konfigurator ausbauen
 
 Der Konfigurator (`doc/examples/index.html`) erzeugt die Konfigurationstransfer-Strings der Beispiele. Ausbau in dieser
 Reihenfolge:
@@ -302,12 +304,12 @@ wintergarten) sind gegen Dev 2.4/2.5 nicht neu geprüft. `**/*.html` steht in `.
 
 ## Prio 3 — nach dem Public Release
 
-### 15 — /neo: Steuerung ohne Schutz
+### 14 — /neo: Steuerung ohne Schutz
 
 Die Steuerung auf `/neo` schreibt intern ins KO (kein Bus-Telegramm) und ist offen, weil OFM-Network keine Anmeldung
 hat. Sobald es eine gibt, die Steuerung daran koppeln. Später: Editor für Effektmanager/Cues, bis dahin nur Anzeige.
 
-### 16 — Timing-Dropdown auf das Chip-Profil reduzieren
+### 15 — Timing-Dropdown auf das Chip-Profil reduzieren
 
 Der 16-stufige Bitraten-Regler stammt aus der Zeit ohne Chip-Profile; WLED und ESPHome lösen es über den Chiptyp.
 Ein Override skaliert das Profil und schiebt T1H aus dem Chipfenster (SK6812 bei ETS 750: 853 ns gegen 750 ns
@@ -315,7 +317,7 @@ Maximum). **Vorschlag:** in der ETS nur „Chip-Profil", die übrigen Stufen üb
 Der Text für Wert 0 lautet noch „800 kHz (Standard)" (`src/NeoPixel.share.xml`), die
 Firmware nutzt bei 0 aber das Chip-Profil — Text anpassen. **Nicht ändern: die Latch-Zeit** — sie bindet erst ab ~484 FPS.
 
-### 17 — Effektkette: Konzeptlücken (Terrasse)
+### 16 — Effektkette: Konzeptlücken (Terrasse)
 
 - **EM ohne gemeinsame Fläche:** der EM-Start pausiert das virtuelle Band (OFM `EffektManager.cpp`) → jedes Gerät
   rendert sein eigenes Panel (Terrasse 3 × 60×8 statt 180×8). Der Master sendet im EM seinen Vor-EM-Zustand
@@ -325,22 +327,22 @@ Firmware nutzt bei 0 aber das Chip-Profil — Text anpassen. **Nicht ändern: di
 - **Slave-Neustart allein:** bekommt den EM-Start des Masters erst beim nächsten Schaltpunkt.
 - **Mehrere Ketten-Segmente auf einem Gerät:** keine gemeinsame Simulation; nach getrenntem Neustart ist eine Naht möglich.
 
-### 18 — Hardware-Gating: Knoten ausblenden, bis eine Hardware gewählt ist
+### 17 — Hardware-Gating: Knoten ausblenden, bis eine Hardware gewählt ist
 
-Solange die Hardware-Auswahl des Moduls „Hardware" (`NEOHW_HardwareSelect`, `%NEOHW_SelectRef%`) = 0 („Nicht gewählt") ist,
+Solange die Hardware-Auswahl des Moduls „Gerät" (`NEOHW_HardwareSelect`, `%NEOHW_SelectRef%`) = 0 („Nicht gewählt") ist,
 zeigen Relais, Physikalisch inkl. Strombegrenzung, Virtuell und Effektmanager heute je einen Hinweis „Keine Hardware ausgewählt".
 Besser: die Knoten in `<choose %NEOHW_SelectRef%><when test="!=0">` wrappen, Hinweis auf die Seite OpenKNX → „Gerät", die
 Einzelmeldungen entfernen. Kein Speicherlayout-Change. **Offen:** was passiert mit verknüpften GAs an KOs
 ausgeblendeter Knoten?
 
-### 19 — Dimmzeit als ETS-Parameter
+### 18 — Dimmzeit als ETS-Parameter
 
 Beim relativen Dimmen (DPT 3.007) bestimmt der Dimmer die Dimmzeit. Heute fest: `DIM_RAMP_FULL_MS = 3000`
 (`src/SegmentController.cpp`, mit TODO-Kommentar). Parameter „Dimmzeit 0→100 %" pro Segment (1–10 s, Default 3 s)
 → Layout-Änderung, Versions-Bump, Voll-Download. Optional: zyklische Sender (wiederholte kleine Steps) diskret
 ehren statt fester Rate.
 
-### 20 — Lücken aus den Beispielen und dem Anwendungsfall-Katalog
+### 19 — Lücken aus den Beispielen und dem Anwendungsfall-Katalog
 
 Aus dem Durchspielen der Beispiele:
 
@@ -362,7 +364,7 @@ Aus dem Durchspielen der Beispiele:
 Aus `doc/Anwendungsfaelle-KNX.md` (offene Lücken; Entscheidung je Punkt offen):
 
 - **Show nur per Wert:** ein Schalt-Taster (1 Bit) kann keinen EM starten; Vorschlag: KO „letzter EM ein/aus".
-- **Kein Effekt-Layering je Segment:** Vorschlag: bewusst so lassen und über mehrere Segmente lösen (siehe Punkt 23).
+- **Kein Effekt-Layering je Segment:** Vorschlag: bewusst so lassen und über mehrere Segmente lösen (siehe Punkt 22).
 - **Kein eigenes Weiß-Bedienobjekt** (SK6812): Weiß ein/aus/dimmen nur über W/WRel und Helligkeit.
 - **Effekt-Parameter nicht live per KO** (Geschwindigkeit, Farbe des laufenden Effekts).
 - **Kein Wert → Balken/VU** (KNX-Wert als Füllstand).
@@ -371,7 +373,7 @@ Aus `doc/Anwendungsfaelle-KNX.md` (offene Lücken; Entscheidung je Punkt offen):
   Zustand zurück; ein vorher laufender EM läuft nicht weiter (`stopEffektManager` → `EM_STOP_LAST`).
 - **Keine Zwangsführung (DPT 2)** je Segment.
 
-### 21 — Kanal-Tabellen nach dem Muster „Kanalauswahl" (Logikmodul)
+### 20 — Kanal-Tabellen nach dem Muster „Kanalauswahl" (Logikmodul)
 
 Tabellen wie Logiken → Kanalauswahl: **alle Kanäle sichtbar**, je Zeile Aktivierung (Deaktiviert / Aktiv …) plus
 Beschreibung, statt „Anzahl …"-Zähler. Erst ein eigenes Konzept (welche Tabellen: Segmente, LED-Streifen,
@@ -379,7 +381,7 @@ Effektmanager, Relais, Szenen; Auswirkung auf Parameter-/KO-Layout, Migration de
 Versionssprung), dann umsetzen. Bezug: EM Aktiv/Inaktiv-Dreizustand, Rename-Muster für inaktive Knoten; Entwurf für die
 Effektmanager-Tabellen in `doc/EM-Tabellen-UI-Konzept.md`.
 
-### 22 — Effektmanager / Cue: Kleinkram
+### 21 — Effektmanager / Cue: Kleinkram
 
 - **Hue-Konvention:** ein Hue-Byte kann nicht „Segmentfarbe" und Hue 0 (= Rot) zugleich kodieren. Clock2D: 0 =
   Segmentfarbe, >0 = fixer Hue (Rot nur über 255). Eine Konvention für alle Hue-Effekte festlegen.
@@ -387,18 +389,18 @@ Effektmanager-Tabellen in `doc/EM-Tabellen-UI-Konzept.md`.
   Blink/Strobe/Theater Chase). Der Heartbeat (3 s) wiederholt nur den Zustand; ein Tick-/Phasen-Zähler im
   Sync-Telegramm (5 Byte im 14-Byte-KO frei) fehlt. Erst auf Hardware bewerten.
 
-### 23 — Überlappende Segmente: Verhalten dokumentieren
+### 22 — Überlappende Segmente: Verhalten dokumentieren
 
 „Last writer wins" (das höher nummerierte Segment gewinnt, kein Blend) ist so gewollt, aber nirgends beschrieben.
 Optional ein kurzer ETS-Hinweis bei den Segmenten.
 
-### 24 — Effektzustand je Segment: Restpunkte
+### 23 — Effektzustand je Segment: Restpunkte
 
 - Die Fire-Instanz trägt immer den 4-KB-2D-Puffer, auch auf 1D.
 - Heap-Churn bei EM-Cues Fire ↔ Rainbow (4,6 KB alloc/free je Wechsel).
 - `freeMemory()` ist der gesamte freie Heap, nicht der größte Block → Fragmentierung kann trotz Reserve scheitern.
 
-### 25 — OFM-relevante Teile nach OFM-NeoPixel umziehen
+### 24 — OFM-relevante Teile nach OFM-NeoPixel umziehen
 
 Alle OFM-/Engine-relevanten Teile für den Producer nach `OFM-NeoPixel` verlagern (OAM bleibt OAM, OFM bleibt OFM).
 Die Engine-Doku liegt schon in `OFM-NeoPixel/doc/EM-Cue-Effektkette.md`. Stand und offene Entscheidungen:
@@ -412,7 +414,7 @@ Die Engine-Doku liegt schon in `OFM-NeoPixel/doc/EM-Cue-Effektkette.md`. Stand u
 - Help_de aufteilen (OFM-Effekthilfe / OAM-Produkthilfe).
 - Die Offset-Anforderungen der OFM-Teile dokumentieren.
 
-### 26 — Dual-Core: Rendering auf Core1
+### 25 — Dual-Core: Rendering auf Core1
 
 Alles läuft auf Core0 (KNX und alle Modul-`loop()` inkl. Rendering), Core1 ist ungenutzt. Gemessen: 862 LEDs +
 Tetris-2D-KI + Cylon ≈ 28 ms/Frame, **56 % CPU bei 20 Hz** auf einem Kern. Knackpunkt sind die geteilten Daten
@@ -420,12 +422,12 @@ Tetris-2D-KI + Cylon ≈ 28 ms/Frame, **56 % CPU bei 20 Hz** auf einem Kern. Kna
 sequenziell läuft; auf zwei Kernen braucht es Double-Buffering oder Locks, dazu Flash-Save (Core-Lockout) und
 DMA-Channel-Ownership getrennt. Erst angehen, wenn größere Matrizen oder höhere FPS gefragt sind.
 
-### 27 — Hardware-Seite: ETS5-Screenshot
+### 26 — Hardware-Seite: ETS5-Screenshot
 
 Die Seite OpenKNX → Gerät (Gerätekarte aus ETS-Elementen, Generator in OGM-HardwareConfig) ist umgesetzt. Offen:
 ETS5-Screenshot der fertigen knxprod ansehen (Raster 71/29 mit 150-px-QR-Bild, bisher nur 75/25 mit 130 px gemessen).
 
-### 28 — LPD6803 / P9813 vervollständigen (ESP32, Farbreihenfolge, Latch)
+### 27 — LPD6803 / P9813 vervollständigen (ESP32, Farbreihenfolge, Latch)
 
 Beide laufen seit Dev 2.2 als SPI-Typen (MOSI + Clock); auf RP2040/RP2350 treibt sie `pio_neopixel_spi.cpp`. Offen, alles
 ohne Hardware-Test bisher:
@@ -439,26 +441,26 @@ ohne Hardware-Test bisher:
   latchen die hinteren LEDs evtl. nicht. Datenblatt / Oszi.
 - Konsole der Lib (`NeoPixelConsole.cpp`): eigene SPI-Liste ohne APA102-Clone, LPD6803, P9813; Namen fehlen.
 
-### 29 — Tests und Skripte im Repo, die nicht PowerShell sind
+### 28 — Tests und Skripte im Repo, die nicht PowerShell sind
 
 Repo-Skripte sollen PowerShell sein (5.1-kompatibel). Heute nicht: `test/*.py` (z. B. `test/test_build_release_clean.py`),
 die `.cjs`/`.js`-Tests, `doc/svg-src/gen_*.py` und `regen.sh`. Je Datei entscheiden: nach PowerShell portieren oder als
 interne Werkzeuge kennzeichnen.
 
-### 30 — Konsole: Effekt-Name eines nicht gebauten Effekts meldet „not found"
+### 29 — Konsole: Effekt-Name eines nicht gebauten Effekts meldet „not found"
 
 `neo effect set <Segment> <Nummer>` nimmt für eine nicht gebaute Nummer „Solid" und meldet das; die Suche über den Namen
 überspringt nicht gebaute Effekte (`getEffectByIndex` = `nullptr`) und meldet „not found"
 (OFM `NeoPixelConsole.cpp` ~4056-4079). Gleiches Verhalten wie die Nummer oder eine eigene Meldung „nicht gebaut".
 
-### 31 — Effekt-Generator: ID-Prüfung nur für literale IDs, Cue-Parameter über 10 Slots still weggelassen
+### 30 — Effekt-Generator: ID-Prüfung nur für literale IDs, Cue-Parameter über 10 Slots still weggelassen
 
 - `Assert-ChannelIdNumbers` (`scripts/Build-EffectParameters.ps1`) prüft nur literale dreistellige IDs im Segment- und
   EM-Template; IDs aus Makros (`%CUE_PPP+k%`, `%FXA%`, …) und die Part-/Share-Dateien prüft es nicht.
 - `Get-CueTypedParamPlan` lässt Zahl-/Enum-/Bool-Parameter ab Index 10 (mehr als die 10 Cue-Slots) ohne Meldung weg
   (`continue`); ein Effekt mit mehr als 10 solchen Parametern hat sie in der Cue nicht. Meldung oder Abbruch ergänzen.
 
-### 32 — Device-Registry: Board-Header als einzige Quelle oder JSON von Hand
+### 31 — Device-Registry: Board-Header als einzige Quelle oder JSON von Hand
 
 Die Device-Registry (OGM-HardwareConfig, Branch `origin/v1-registry`, `devices/*.json` mit `schema.json`) beschreibt die
 OpenKNX-Geräte (REG1, UP1, PiPico BCU Connector) ein zweites Mal neben den Board-Headern. Entscheiden, ob die Board-Header
