@@ -291,6 +291,10 @@ function Add-Effect([string]$Dir, [string]$Base, [string]$DisplayName, [int]$Par
   $text = [System.IO.File]::ReadAllText((Fx $Dir 'BPMEffect.h')).Replace('BPMEffect', "${Base}Effect")
   $text = $text.Replace('const char* getName(const char* lang = nullptr) override { return "BPM"; }', "const char* getName(const char* lang = nullptr) override { return `"$DisplayName`"; }")
   $text = $text.Replace('uint8_t getParameterCount() const override { return 2; }', "uint8_t getParameterCount() const override { return $ParamCount; }")
+  # a 2D effect is one whose getCapabilities() has no DIM_1D (Build-EffectParameters.ps1 Get-EffectDimension)
+  if ($TwoD) {
+    $text = $text.Replace("uint8_t getParameterCount() const override { return $ParamCount; }", "uint8_t getParameterCount() const override { return $ParamCount; }`n    uint8_t getCapabilities() const override { return DIM_2D; }")
+  }
   [System.IO.File]::WriteAllText((Fx $Dir "${Base}Effect.h"), $text, $utf8)
   $flag = "NEOPIXEL_DISABLE_" + $Base.ToUpperInvariant()
   Edit-File (Fx $Dir 'EffectPool.cpp') "    s_effectNumbers = n;" "#ifndef $flag`n    if (index == n) return get${Base}();`n#endif`n    n++;`n`n    s_effectNumbers = n;"

@@ -45,7 +45,7 @@ Jedes Segment hat 53 KOs (K0–K52).
 Geräteweit: Alle LEDs (1.1) und Helligkeit (5.1) mit Status, Stromverbrauch/Auslastung/Leistung Gesamt, HCL Global
 Zustand, Relais 1–4 (1.1) mit Status.
 
-**Effekte und Hardware:** Effektnummern 0–32 (0 = Solid, 20–32 = 2D-Effekte). Die Firmware einer Hardware kann
+**Effekte und Hardware:** Effektnummern 0–32 (0 = Solid; 2D-Effekte: Laufschrift 19 und 20–32, in der Auswahl „2D ·“). Die Firmware einer Hardware kann
 Effekte weglassen (z. B. alle 2D-Effekte auf Hardware mit `NEOPIXEL_DISABLE_2D`). Die ETS meldet am Segment, an jeder
 Szene und an jeder Cue „Effekt nicht verfügbar", wenn die Firmware der gewählten Hardware den Effekt nicht enthält, und
 einen Hinweis, wenn nur ein Teil der Firmware-Varianten ihn weglässt. Kommt über KO, Szene oder Cue eine Nummer an, die

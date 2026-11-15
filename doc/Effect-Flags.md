@@ -12,13 +12,13 @@ Solid ist der Rueckfall fuer eine unbekannte Auswahl und laesst sich nicht absch
 ## Sammelschalter
 
 ```
-  -D NEOPIXEL_DISABLE_2D          alle 13 2D-Effekte
+  -D NEOPIXEL_DISABLE_2D          alle 14 2D-Effekte
   -D NEOPIXEL_MINIMAL_EFFECTS     die 11 erweiterten Effekte
 ```
 
 ## Einzeln
 
-### Immer verfuegbar (8)
+### Immer verfuegbar (7)
 
 ```
   -D NEOPIXEL_DISABLE_WIPE            Wipe
@@ -28,7 +28,6 @@ Solid ist der Rueckfall fuer eine unbekannte Auswahl und laesst sich nicht absch
   -D NEOPIXEL_DISABLE_BPM             BPM
   -D NEOPIXEL_DISABLE_CYLON           Cylon
   -D NEOPIXEL_DISABLE_RGBWTEST        Test
-  -D NEOPIXEL_DISABLE_SCROLLTEXT      Laufschrift
 ```
 
 ### Erweitert (11) - alle von NEOPIXEL_MINIMAL_EFFECTS abgedeckt
@@ -47,9 +46,10 @@ Solid ist der Rueckfall fuer eine unbekannte Auswahl und laesst sich nicht absch
   -D NEOPIXEL_DISABLE_CANDLE          Kerze
 ```
 
-### 2D (13) - alle von NEOPIXEL_DISABLE_2D abgedeckt
+### 2D (14) - alle von NEOPIXEL_DISABLE_2D abgedeckt
 
 ```
+  -D NEOPIXEL_DISABLE_SCROLLTEXT      Laufschrift
   -D NEOPIXEL_DISABLE_CLOCK2D         Uhr 2D
   -D NEOPIXEL_DISABLE_SNAKE2D         Snake 2D
   -D NEOPIXEL_DISABLE_MATRIX2D        Matrix 2D

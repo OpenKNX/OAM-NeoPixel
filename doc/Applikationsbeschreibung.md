@@ -17,7 +17,7 @@ Je nach eingesetzter Hardware stehen zusätzlich Netzwerkfunktionen, OTA-Update,
 * Steuerung von bis zu 8 physischen LED-Streifen
 * Bildung eines virtuellen LED-Streifens zur freien Anordnung der physischen Streifen
 * Bis zu 16 unabhängige Segmente
-* 33 Effekte (Nummern 0–32) für statische und dynamische Lichtbilder, davon 13 **2D-Matrix-Effekte** (Nummern 20–32, z. B. Uhr 2D, Matrix 2D, Tetris 2D, Plasma Nebula, Starfield Warp); welche davon eine Firmware enthält, hängt von der Hardware ab (siehe „Effekte je Hardware“)
+* 33 Effekte (Nummern 0–32) für statische und dynamische Lichtbilder, davon 14 reine **2D-Matrix-Effekte** (Laufschrift 19 und 20–32, z. B. Uhr, Matrix, Tetris, Plasma Nebula, Starfield Warp; in der Auswahl „2D ·“) und 3, die auf Streifen und Matrix laufen (Cylon, Fire, Noise; „1D/2D ·“); welche davon eine Firmware enthält, hängt von der Hardware ab (siehe „Effekte je Hardware“)
 * Konfiguration von Segmenten als 2D-Matrix (Breite × Höhe, Topologie) für matrixfähige Effekte
 * **Effektmanager**: Cue-basierte Lichtsequenzen mit Überblendung, Loop und Verkettung mehrerer Effektmanager
 * **Effektkette**: ein Effekt nahtlos über mehrere KNX-Geräte (ein Master, mehrere Slaves)

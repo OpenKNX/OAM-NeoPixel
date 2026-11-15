@@ -18,7 +18,6 @@ ID | Name                  | Beschreibung
  5 | BPM                   | Pulsierende Farbwellen im eingestellten Takt (BPM)
  6 | Cylon                 | Klassischer KITT/Cylon-Effekt mit hin- und herspringendem Lichtauge und verblassendem Schweif. Unterstützt 1D-Streifen und 2D-Matrizen. Mode 1 erzeugt zwei gespiegelte Augen aus der Mitte (Tor)
  7 | Test                  | Kanaltest: RGBW (4 Kanäle) oder RGB+CCT (5 Kanäle)
-19 | Laufschrift           | Horizontale Laufschrift auf LED-Matrix (Font 5×7/4×6/3×5, Umlaute & Ç)
 ```
 
 ### Erweiterte Effekte (deaktivierbar mit `NEOPIXEL_MINIMAL_EFFECTS`)
@@ -44,6 +43,7 @@ ID | Name                  | Beschreibung
 ```
 ID | Name                  | Beschreibung
 ---+-----------------------+--------------------------------------------------------
+19 | Laufschrift           | Horizontale Laufschrift auf LED-Matrix (Font 5×7/4×6/3×5, Umlaute & Ç)
 20 | Uhr 2D                | Uhr auf einer LED-Matrix: digital (HH:MM/HH:MM:SS), binär (BCD-Spalten oder Binärzeilen) oder im Wechsel. Optional mit Datumsanzeige (Wechsel oder dauerhaft, mit Wochentag). Zu breite Anzeigen scrollen automatisch bis zum Ende und zurück. Nutzt die KNX-Uhrzeit, ohne gültige Zeit läuft die Betriebszeit (Uptime)
 21 | Snake 2D              | Klassisches Snake auf einer 2D LED-Matrix. Die Schlange frisst zufälliges Futter und wächst
 22 | Matrix 2D             | Digitaler Matrix-Regen in 2D. Varianten: Grün, Gold oder Gemischt mit optionalen Glitch-Blitzen

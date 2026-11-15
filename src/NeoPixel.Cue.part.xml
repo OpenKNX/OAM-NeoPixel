@@ -616,15 +616,6 @@
                             <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+181%_R-22%CC%%CUE_TPP+181%01" IndentLevel="2" HelpContext="NEO-Intensity-Kerze"/>
                             <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+182%_R-22%CC%%CUE_TPP+182%01" IndentLevel="2" HelpContext="NEO-Zones-Kerze"/>
                           </when>
-                          <when test="19">
-                            <!-- Laufschrift Effect -->
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+190%_R-22%CC%%CUE_TPP+190%01" IndentLevel="2" HelpContext="NEO-Speed-Laufschrift"/>
-                            <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+191%_R-22%CC%%CUE_TPP+191%01" IndentLevel="2" HelpContext="NEO-Gap-Laufschrift"/>
-                            <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+192%_R-22%CC%%CUE_TPP+192%01" IndentLevel="2" HelpContext="NEO-Loop-Laufschrift"/>
-                            <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+193%_R-22%CC%%CUE_TPP+193%01" IndentLevel="2" HelpContext="NEO-Text-Laufschrift"/>
-                            <ParameterRefRef RefId="%AID%_UP-22%CC%%CUE_TPP+194%_R-22%CC%%CUE_TPP+194%01" IndentLevel="2" HelpContext="NEO-Font-Laufschrift"/>
-                          </when>
                         </choose>
                       </when>
                       <when default="true">

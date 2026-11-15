@@ -150,33 +150,33 @@
                 <Enumeration Text="Pride2015" Value="3" Id="%ENID%" op:headerName="Pride"/>
                 <Enumeration Text="Juggle" Value="4" Id="%ENID%" op:headerName="Juggle"/>
                 <Enumeration Text="BPM" Value="5" Id="%ENID%" op:headerName="BPM"/>
-                <Enumeration Text="Cylon" Value="6" Id="%ENID%" op:headerName="Cylon"/>
                 <Enumeration Text="Test" Value="7" Id="%ENID%" op:headerName="RGBWTest"/>
-                <Enumeration Text="Fire" Value="8" Id="%ENID%" op:headerName="Fire"/>
                 <Enumeration Text="Theater Chase" Value="9" Id="%ENID%" op:headerName="TheaterChase"/>
                 <Enumeration Text="Sparkle" Value="10" Id="%ENID%" op:headerName="Sparkle"/>
                 <Enumeration Text="Breathing" Value="11" Id="%ENID%" op:headerName="Breathing"/>
                 <Enumeration Text="Strobe" Value="12" Id="%ENID%" op:headerName="Strobe"/>
                 <Enumeration Text="Comet" Value="13" Id="%ENID%" op:headerName="Comet"/>
-                <Enumeration Text="Noise" Value="14" Id="%ENID%" op:headerName="Noise"/>
                 <Enumeration Text="Palette" Value="15" Id="%ENID%" op:headerName="Palette"/>
                 <Enumeration Text="Blitz" Value="16" Id="%ENID%" op:headerName="Lightning"/> <!-- EN: Lightning -->
                 <Enumeration Text="Gradient" Value="17" Id="%ENID%" op:headerName="Gradient"/>
                 <Enumeration Text="Kerze" Value="18" Id="%ENID%" op:headerName="Candle"/> <!-- EN: Candle -->
-                <Enumeration Text="Laufschrift" Value="19" Id="%ENID%" op:headerName="ScrollText"/> <!-- EN: Scroll Text -->
-                <Enumeration Text="Uhr 2D" Value="20" Id="%ENID%" op:headerName="Clock2D"/> <!-- EN: Clock 2D -->
-                <Enumeration Text="Snake 2D" Value="21" Id="%ENID%" op:headerName="Snake2D"/>
-                <Enumeration Text="Matrix 2D" Value="22" Id="%ENID%" op:headerName="Matrix2D"/>
-                <Enumeration Text="Tetris 2D" Value="23" Id="%ENID%" op:headerName="Tetris2D"/>
-                <Enumeration Text="TRON" Value="24" Id="%ENID%" op:headerName="Tron2D"/>
-                <Enumeration Text="Starfield Warp" Value="25" Id="%ENID%" op:headerName="StarfieldWarp2D"/>
-                <Enumeration Text="Plasma Nebula" Value="26" Id="%ENID%" op:headerName="PlasmaNebula2D"/>
-                <Enumeration Text="UFO Swarm" Value="27" Id="%ENID%" op:headerName="UfoSwarm2D"/>
-                <Enumeration Text="Game of Life 2D" Value="28" Id="%ENID%" op:headerName="GameOfLife2D"/>
-                <Enumeration Text="DNA 2D" Value="29" Id="%ENID%" op:headerName="DNA2D"/>
-                <Enumeration Text="Aurora 2D" Value="30" Id="%ENID%" op:headerName="Aurora2D"/>
-                <Enumeration Text="Lissajous 2D" Value="31" Id="%ENID%" op:headerName="Lissajous2D"/>
-                <Enumeration Text="Metaballs 2D" Value="32" Id="%ENID%" op:headerName="Metaballs2D"/>
+                <Enumeration Text="1D/2D · Cylon" Value="6" Id="%ENID%" op:headerName="Cylon"/>
+                <Enumeration Text="1D/2D · Fire" Value="8" Id="%ENID%" op:headerName="Fire"/>
+                <Enumeration Text="1D/2D · Noise" Value="14" Id="%ENID%" op:headerName="Noise"/>
+                <Enumeration Text="2D · Laufschrift" Value="19" Id="%ENID%" op:headerName="ScrollText"/> <!-- EN: Scroll Text -->
+                <Enumeration Text="2D · Uhr" Value="20" Id="%ENID%" op:headerName="Clock2D"/> <!-- EN: Clock 2D -->
+                <Enumeration Text="2D · Snake" Value="21" Id="%ENID%" op:headerName="Snake2D"/>
+                <Enumeration Text="2D · Matrix" Value="22" Id="%ENID%" op:headerName="Matrix2D"/>
+                <Enumeration Text="2D · Tetris" Value="23" Id="%ENID%" op:headerName="Tetris2D"/>
+                <Enumeration Text="2D · TRON" Value="24" Id="%ENID%" op:headerName="Tron2D"/>
+                <Enumeration Text="2D · Starfield Warp" Value="25" Id="%ENID%" op:headerName="StarfieldWarp2D"/>
+                <Enumeration Text="2D · Plasma Nebula" Value="26" Id="%ENID%" op:headerName="PlasmaNebula2D"/>
+                <Enumeration Text="2D · UFO Swarm" Value="27" Id="%ENID%" op:headerName="UfoSwarm2D"/>
+                <Enumeration Text="2D · Game of Life" Value="28" Id="%ENID%" op:headerName="GameOfLife2D"/>
+                <Enumeration Text="2D · DNA" Value="29" Id="%ENID%" op:headerName="DNA2D"/>
+                <Enumeration Text="2D · Aurora" Value="30" Id="%ENID%" op:headerName="Aurora2D"/>
+                <Enumeration Text="2D · Lissajous" Value="31" Id="%ENID%" op:headerName="Lissajous2D"/>
+                <Enumeration Text="2D · Metaballs" Value="32" Id="%ENID%" op:headerName="Metaballs2D"/>
                 <!-- GENERATED_EFFECT_ENUMERATIONS_END -->
               </TypeRestriction>
               </ParameterType>
@@ -194,20 +194,19 @@
                 <Enumeration Text="Pride2015" Value="3" Id="%ENID%"/>
                 <Enumeration Text="Juggle" Value="4" Id="%ENID%"/>
                 <Enumeration Text="BPM" Value="5" Id="%ENID%"/>
-                <Enumeration Text="Cylon" Value="6" Id="%ENID%"/>
                 <Enumeration Text="Test" Value="7" Id="%ENID%"/>
-                <Enumeration Text="Fire" Value="8" Id="%ENID%"/>
                 <Enumeration Text="Theater Chase" Value="9" Id="%ENID%"/>
                 <Enumeration Text="Sparkle" Value="10" Id="%ENID%"/>
                 <Enumeration Text="Breathing" Value="11" Id="%ENID%"/>
                 <Enumeration Text="Strobe" Value="12" Id="%ENID%"/>
                 <Enumeration Text="Comet" Value="13" Id="%ENID%"/>
-                <Enumeration Text="Noise" Value="14" Id="%ENID%"/>
                 <Enumeration Text="Palette" Value="15" Id="%ENID%"/>
                 <Enumeration Text="Blitz" Value="16" Id="%ENID%"/> <!-- EN: Lightning -->
                 <Enumeration Text="Gradient" Value="17" Id="%ENID%"/>
                 <Enumeration Text="Kerze" Value="18" Id="%ENID%"/> <!-- EN: Candle -->
-                <Enumeration Text="Laufschrift" Value="19" Id="%ENID%"/> <!-- EN: Scroll Text -->
+                <Enumeration Text="1D/2D · Cylon" Value="6" Id="%ENID%"/>
+                <Enumeration Text="1D/2D · Fire" Value="8" Id="%ENID%"/>
+                <Enumeration Text="1D/2D · Noise" Value="14" Id="%ENID%"/>
                 <!-- GENERATED_EFFECT_ENUMERATIONS_NO2D_END -->
               </TypeRestriction>
               </ParameterType>
@@ -223,33 +222,33 @@
                 <Enumeration Text="Pride2015" Value="3" Id="%AID%_PT-NEOSceneEffectType_EN-03"/>
                 <Enumeration Text="Juggle" Value="4" Id="%AID%_PT-NEOSceneEffectType_EN-04"/>
                 <Enumeration Text="BPM" Value="5" Id="%AID%_PT-NEOSceneEffectType_EN-05"/>
-                <Enumeration Text="Cylon" Value="6" Id="%AID%_PT-NEOSceneEffectType_EN-06"/>
                 <Enumeration Text="Test" Value="7" Id="%AID%_PT-NEOSceneEffectType_EN-07"/>
-                <Enumeration Text="Fire" Value="8" Id="%AID%_PT-NEOSceneEffectType_EN-08"/>
                 <Enumeration Text="Theater Chase" Value="9" Id="%AID%_PT-NEOSceneEffectType_EN-09"/>
                 <Enumeration Text="Sparkle" Value="10" Id="%AID%_PT-NEOSceneEffectType_EN-10"/>
                 <Enumeration Text="Breathing" Value="11" Id="%AID%_PT-NEOSceneEffectType_EN-11"/>
                 <Enumeration Text="Strobe" Value="12" Id="%AID%_PT-NEOSceneEffectType_EN-12"/>
                 <Enumeration Text="Comet" Value="13" Id="%AID%_PT-NEOSceneEffectType_EN-13"/>
-                <Enumeration Text="Noise" Value="14" Id="%AID%_PT-NEOSceneEffectType_EN-14"/>
                 <Enumeration Text="Palette" Value="15" Id="%AID%_PT-NEOSceneEffectType_EN-15"/>
                 <Enumeration Text="Blitz" Value="16" Id="%AID%_PT-NEOSceneEffectType_EN-16"/>
                 <Enumeration Text="Gradient" Value="17" Id="%AID%_PT-NEOSceneEffectType_EN-17"/>
                 <Enumeration Text="Kerze" Value="18" Id="%AID%_PT-NEOSceneEffectType_EN-18"/>
-                <Enumeration Text="Laufschrift" Value="19" Id="%AID%_PT-NEOSceneEffectType_EN-19"/>
-                <Enumeration Text="Uhr 2D" Value="20" Id="%AID%_PT-NEOSceneEffectType_EN-20"/>
-                <Enumeration Text="Snake 2D" Value="21" Id="%AID%_PT-NEOSceneEffectType_EN-21"/>
-                <Enumeration Text="Matrix 2D" Value="22" Id="%AID%_PT-NEOSceneEffectType_EN-22"/>
-                <Enumeration Text="Tetris 2D" Value="23" Id="%AID%_PT-NEOSceneEffectType_EN-23"/>
-                <Enumeration Text="TRON" Value="24" Id="%AID%_PT-NEOSceneEffectType_EN-24"/>
-                <Enumeration Text="Starfield Warp" Value="25" Id="%AID%_PT-NEOSceneEffectType_EN-25"/>
-                <Enumeration Text="Plasma Nebula" Value="26" Id="%AID%_PT-NEOSceneEffectType_EN-26"/>
-                <Enumeration Text="UFO Swarm" Value="27" Id="%AID%_PT-NEOSceneEffectType_EN-27"/>
-                <Enumeration Text="Game of Life 2D" Value="28" Id="%AID%_PT-NEOSceneEffectType_EN-28"/>
-                <Enumeration Text="DNA 2D" Value="29" Id="%AID%_PT-NEOSceneEffectType_EN-29"/>
-                <Enumeration Text="Aurora 2D" Value="30" Id="%AID%_PT-NEOSceneEffectType_EN-30"/>
-                <Enumeration Text="Lissajous 2D" Value="31" Id="%AID%_PT-NEOSceneEffectType_EN-31"/>
-                <Enumeration Text="Metaballs 2D" Value="32" Id="%AID%_PT-NEOSceneEffectType_EN-32"/>
+                <Enumeration Text="1D/2D · Cylon" Value="6" Id="%AID%_PT-NEOSceneEffectType_EN-06"/>
+                <Enumeration Text="1D/2D · Fire" Value="8" Id="%AID%_PT-NEOSceneEffectType_EN-08"/>
+                <Enumeration Text="1D/2D · Noise" Value="14" Id="%AID%_PT-NEOSceneEffectType_EN-14"/>
+                <Enumeration Text="2D · Laufschrift" Value="19" Id="%AID%_PT-NEOSceneEffectType_EN-19"/>
+                <Enumeration Text="2D · Uhr" Value="20" Id="%AID%_PT-NEOSceneEffectType_EN-20"/>
+                <Enumeration Text="2D · Snake" Value="21" Id="%AID%_PT-NEOSceneEffectType_EN-21"/>
+                <Enumeration Text="2D · Matrix" Value="22" Id="%AID%_PT-NEOSceneEffectType_EN-22"/>
+                <Enumeration Text="2D · Tetris" Value="23" Id="%AID%_PT-NEOSceneEffectType_EN-23"/>
+                <Enumeration Text="2D · TRON" Value="24" Id="%AID%_PT-NEOSceneEffectType_EN-24"/>
+                <Enumeration Text="2D · Starfield Warp" Value="25" Id="%AID%_PT-NEOSceneEffectType_EN-25"/>
+                <Enumeration Text="2D · Plasma Nebula" Value="26" Id="%AID%_PT-NEOSceneEffectType_EN-26"/>
+                <Enumeration Text="2D · UFO Swarm" Value="27" Id="%AID%_PT-NEOSceneEffectType_EN-27"/>
+                <Enumeration Text="2D · Game of Life" Value="28" Id="%AID%_PT-NEOSceneEffectType_EN-28"/>
+                <Enumeration Text="2D · DNA" Value="29" Id="%AID%_PT-NEOSceneEffectType_EN-29"/>
+                <Enumeration Text="2D · Aurora" Value="30" Id="%AID%_PT-NEOSceneEffectType_EN-30"/>
+                <Enumeration Text="2D · Lissajous" Value="31" Id="%AID%_PT-NEOSceneEffectType_EN-31"/>
+                <Enumeration Text="2D · Metaballs" Value="32" Id="%AID%_PT-NEOSceneEffectType_EN-32"/>
                 <!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_END -->
                 <Enumeration Text="Effektmanager 1 starten" Value="200" Id="%AID%_PT-NEOSceneEffectType_EN-200"/>
                 <Enumeration Text="Effektmanager 2 starten" Value="201" Id="%AID%_PT-NEOSceneEffectType_EN-201"/>
@@ -281,20 +280,19 @@
                 <Enumeration Text="Pride2015" Value="3" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-03"/>
                 <Enumeration Text="Juggle" Value="4" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-04"/>
                 <Enumeration Text="BPM" Value="5" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-05"/>
-                <Enumeration Text="Cylon" Value="6" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-06"/>
                 <Enumeration Text="Test" Value="7" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-07"/>
-                <Enumeration Text="Fire" Value="8" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-08"/>
                 <Enumeration Text="Theater Chase" Value="9" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-09"/>
                 <Enumeration Text="Sparkle" Value="10" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-10"/>
                 <Enumeration Text="Breathing" Value="11" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-11"/>
                 <Enumeration Text="Strobe" Value="12" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-12"/>
                 <Enumeration Text="Comet" Value="13" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-13"/>
-                <Enumeration Text="Noise" Value="14" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-14"/>
                 <Enumeration Text="Palette" Value="15" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-15"/>
                 <Enumeration Text="Blitz" Value="16" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-16"/>
                 <Enumeration Text="Gradient" Value="17" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-17"/>
                 <Enumeration Text="Kerze" Value="18" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-18"/>
-                <Enumeration Text="Laufschrift" Value="19" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-19"/>
+                <Enumeration Text="1D/2D · Cylon" Value="6" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-06"/>
+                <Enumeration Text="1D/2D · Fire" Value="8" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-08"/>
+                <Enumeration Text="1D/2D · Noise" Value="14" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-14"/>
                 <!-- GENERATED_SCENE_EFFECT_ENUMERATIONS_NO2D_END -->
                 <Enumeration Text="Effektmanager 1 starten" Value="200" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-200"/>
                 <Enumeration Text="Effektmanager 2 starten" Value="201" Id="%AID%_PT-NEOSceneEffectTypeNo2D_EN-201"/>

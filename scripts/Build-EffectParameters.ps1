@@ -1661,10 +1661,48 @@ function Get-EffectDropdownText {
   )
 
   $baseName = if ($NameDE) { $NameDE } elseif ($NameEN) { $NameEN } else { $ClassName }
-
-  return $baseName
+  # the prefix carries the dimension, so a "2D" in the name itself goes (Snake 2D -> 2D · Snake)
+  $baseName = ($baseName -replace '(?<![A-Za-z0-9])2D(?![A-Za-z0-9])', '' -replace '\s{2,}', ' ').Trim()
+  $dot = [string][char]0x00B7
+  switch (Get-EffectDimension -ClassName $ClassName) {
+    '1D2D' { return "1D/2D $dot $baseName" }
+    '2D' { return "2D $dot $baseName" }
+    default { return $baseName }
+  }
 }
 
+# @brief Dimensions an effect renders, from getCapabilities() of its header (DIM_1D / DIM_2D / DIM_3D; no override = DIM_1D):
+#        '1D' (strip only), '1D2D' (strip and matrix), '2D' (matrix only). DIM_3D is not used by any effect and stops the run.
+function Get-EffectDimension {
+  param([Parameter(Mandatory)][string]$ClassName)
+
+  if (-not $script:EffectDimensionByClass) { $script:EffectDimensionByClass = @{} }
+  if ($script:EffectDimensionByClass.ContainsKey($ClassName)) { return $script:EffectDimensionByClass[$ClassName] }
+  if (-not $script:EffectHeaderByClass) { [void](Get-EffectDescriptionDE -ClassName $ClassName) }
+  if (-not $script:EffectHeaderByClass.ContainsKey($ClassName)) { throw "Effect header of class $ClassName not found (getCapabilities)" }
+  $content = Get-Content $script:EffectHeaderByClass[$ClassName] -Raw -Encoding UTF8
+  $dim = '1D'
+  $m = [regex]::Match($content, '(?s)getCapabilities\s*\(\s*\)\s*const[^{;]*\{\s*return\s+([^;]+);')
+  if ($m.Success) {
+    $expr = $m.Groups[1].Value
+    if ($expr -match 'DIM_3D') { throw "Effect $ClassName advertises DIM_3D: the ETS lists know 1D and 2D only" }
+    $has1D = $expr -match 'DIM_1D'
+    $has2D = $expr -match 'DIM_2D'
+    if (-not $has1D -and -not $has2D) { throw "Effect ${ClassName}: getCapabilities() returns '$expr', expected DIM_1D and/or DIM_2D" }
+    if ($has1D -and $has2D) { $dim = '1D2D' } elseif ($has2D) { $dim = '2D' }
+  }
+  $script:EffectDimensionByClass[$ClassName] = $dim
+  return $dim
+}
+
+# @brief Display group of an effect in the ETS lists: 0 = 1D, 1 = 1D/2D, 2 = 2D
+function Get-EffectSortGroup {
+  param([Parameter(Mandatory)][string]$ClassName)
+  switch (Get-EffectDimension -ClassName $ClassName) { '1D2D' { return 1 } '2D' { return 2 } default { return 0 } }
+}
+
+# @brief true for an effect that only renders on a matrix (getCapabilities() without DIM_1D): left out of the No2D lists of
+#        ETS and a member of NEOPIXEL_DISABLE_2D (EffectPool.h)
 function Test-Is2DEffect {
   param(
     [Parameter(Mandatory)][string]$ClassName,
@@ -1672,12 +1710,7 @@ function Test-Is2DEffect {
     [string]$NameEN
   )
 
-  $baseName = if ($NameDE) { $NameDE } elseif ($NameEN) { $NameEN } else { $ClassName }
-  # A class name ending in 2D is the reliable marker: the display name may not carry it at all
-  # (TRON, Starfield Warp, Plasma Nebula, UFO Swarm), and the token check below would miss those.
-  return ($baseName -match '(?<![A-Za-z0-9])2D(?![A-Za-z0-9])' -or
-    $ClassName -match '2D(Effect)?$' -or
-    $ClassName -match '(?<![A-Za-z0-9])2D(?![A-Za-z0-9])')
+  return ((Get-EffectDimension -ClassName $ClassName) -eq '2D')
 }
 
 # ====================================================================
@@ -2019,7 +2052,7 @@ function Generate-EffectTypeEnumeration {
   }
 
   # Build runtime ID map first (registration order defines IDs),
-  # then sort for display: 1D first, 2D last.
+  # then sort for display: 1D, 1D/2D, 2D (Get-EffectSortGroup), each by number.
   $effectsWithRuntimeId = @()
   $runtimeId = 0
   foreach ($effect in $sorted) {
@@ -2033,7 +2066,7 @@ function Generate-EffectTypeEnumeration {
     $runtimeId++
   }
 
-  $displaySorted = $effectsWithRuntimeId | Sort-Object @{ Expression = { if ($_.Is2D) { 1 } else { 0 } } }, @{ Expression = { $_.RuntimeId } }
+  $displaySorted = $effectsWithRuntimeId | Sort-Object @{ Expression = { Get-EffectSortGroup -ClassName $_.ClassName } }, @{ Expression = { $_.RuntimeId } }
 
   # Generate XML enumeration entries - use German as default, add op:headerName for C++ enum export
   Write-ScriptVerbose "Generating XML enumeration entries"
@@ -2300,8 +2333,16 @@ function Update-EffectTypeEnumerationInShareXml {
   $null = Write-FileIfChanged -Path $ShareXmlPath -Value $newXmlContent -NoNewline
 
   # Second variant without the 2D effects, for hardware built with NEOPIXEL_DISABLE_2D.
-  # The list is already sorted with the 2D effects last, so dropping them keeps the order.
-  $no2dLines = @($enumXml -split "`n" | Where-Object { $_ -notmatch 'op:headerName="[A-Za-z]*2D"' })
+  # The list is already sorted with the 2D effects last, so dropping them keeps the order. A 2D effect is one whose
+  # getCapabilities() has no DIM_1D (Get-EffectDimension, filled while the list above was built); its line carries the
+  # C++ enum name of its class in op:headerName.
+  $twoDNames = @($script:EffectDimensionByClass.Keys | Where-Object { $script:EffectDimensionByClass[$_] -eq '2D' } |
+      ForEach-Object { $n = $_ -replace 'Effect$', '' -replace '^Effect', ''; if ($n) { $n } else { $_ } })
+  $allLines = @($enumXml -split "`n")
+  $no2dLines = @($allLines | Where-Object { -not ($_ -match 'op:headerName="([^"]*)"' -and $twoDNames -contains $Matches[1]) })
+  if ($allLines.Count - $no2dLines.Count -ne $twoDNames.Count) {
+    throw "NEOEffectTypeNo2D: $($allLines.Count - $no2dLines.Count) lines left out, but $($twoDNames.Count) effects are 2D ($($twoDNames -join ', '))"
+  }
   $no2dXml = ($no2dLines -join "`n") -replace ' op:headerName="[^"]*"', ''
 
   $startNo2D = $script:Config.Markers.EnumNo2DStart
@@ -3370,7 +3411,7 @@ function Get-EffectPoolMembership {
     $ownFlag = if ($own.Count) { $own[0] } else { $null }
     $twoD = ($null -ne $ownFlag -and $twoDFlags -contains $ownFlag)
     $is2D = [bool](Test-Is2DEffect -ClassName $effect.ClassName -NameDE $effect.NameDE -NameEN $effect.NameEN)
-    if ($twoD -ne $is2D) { throw "Effect $($e.Number) ($($effect.ClassName)): member of NEOPIXEL_DISABLE_2D = $twoD, but the 2D name check says $is2D (No2D lists of ETS)" }
+    if ($twoD -ne $is2D) { throw "Effect $($e.Number) ($($effect.ClassName)): member of NEOPIXEL_DISABLE_2D = $twoD, but getCapabilities() says 2D = $is2D (No2D lists of ETS)" }
     $out += [pscustomobject]@{ Number = $e.Number; ClassName = $effect.ClassName; Getter = $e.Getter; OwnFlag = $ownFlag
       Extended = ($e.Flags -contains 'NEOPIXEL_MINIMAL_EFFECTS'); TwoD = $twoD }
   }
@@ -5250,7 +5291,7 @@ try {
     if (Test-Path $emSharePath) {
       $emContent = Get-Content $emSharePath -Raw -Encoding UTF8
       $enumLines = @()
-      $cueEffects = $effects | Sort-Object @{ Expression = { if (Test-Is2DEffect -ClassName $_.ClassName -NameDE $_.NameDE -NameEN $_.NameEN) { 1 } else { 0 } } }, @{ Expression = { [int]$_.EffectID } }
+      $cueEffects = $effects | Sort-Object @{ Expression = { Get-EffectSortGroup -ClassName $_.ClassName } }, @{ Expression = { [int]$_.EffectID } }
       foreach ($effect in $cueEffects) {
         $effectValue = [int]$effect.EffectID
         $idxStr = $effectValue.ToString("00")
@@ -5285,7 +5326,7 @@ try {
     if (Test-Path $sharePath) {
       $shareContent = Get-Content $sharePath -Raw -Encoding UTF8
       $sceneEnumLines = @()
-      $sceneEffects = $effects | Sort-Object @{ Expression = { if (Test-Is2DEffect -ClassName $_.ClassName -NameDE $_.NameDE -NameEN $_.NameEN) { 1 } else { 0 } } }, @{ Expression = { [int]$_.EffectID } }
+      $sceneEffects = $effects | Sort-Object @{ Expression = { Get-EffectSortGroup -ClassName $_.ClassName } }, @{ Expression = { [int]$_.EffectID } }
       foreach ($effect in $sceneEffects) {
         $effectValue = [int]$effect.EffectID
         $idxStr = $effectValue.ToString("00")

@@ -1131,15 +1131,6 @@
                             <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
                             <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
                           </when>
-                          <when test="19">
-                            <!-- Laufschrift Effect Parameters -->
-                            <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="%DOC%"/>
-                          </when>
                         </choose>
                       </when>
                       <when default="true">

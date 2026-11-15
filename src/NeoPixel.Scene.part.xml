@@ -846,14 +846,6 @@
                                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" IndentLevel="3" HelpContext="NEO-Intensity-Kerze"/>
                                         <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" IndentLevel="3" HelpContext="NEO-Zones-Kerze"/>
                                       </when>
-                                      <when test="19">
-                                        <!-- Laufschrift Effect -->
-                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" IndentLevel="3" HelpContext="NEO-Speed-Laufschrift"/>
-                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" IndentLevel="3" HelpContext="NEO-Gap-Laufschrift"/>
-                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" IndentLevel="3" HelpContext="NEO-Loop-Laufschrift"/>
-                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%21" IndentLevel="3" HelpContext="NEO-Text-Laufschrift"/>
-                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" IndentLevel="3" HelpContext="NEO-Font-Laufschrift"/>
-                                      </when>
                                     </choose>
                                   </when>
                                   <when default="true">

@@ -101,7 +101,7 @@
 #else
     #define NEO_FXOFF_18 0
 #endif
-#if defined(NEOPIXEL_DISABLE_SCROLLTEXT)
+#if defined(NEOPIXEL_DISABLE_SCROLLTEXT) || defined(NEOPIXEL_DISABLE_2D)
     #define NEO_FXOFF_19 1
 #else
     #define NEO_FXOFF_19 0

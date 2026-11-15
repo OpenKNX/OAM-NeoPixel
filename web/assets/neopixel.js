@@ -813,7 +813,7 @@
   // The device writes the value into the segment's input KO like a received telegram (processInputKo):
   // no bus telegram (valueNoSend + processInputKo in the loop task), lock / startup delay / Effektkette rules apply,
   // status KOs send as usual. Offered by the configured parameters, not by group address.
-  // Effect names as in src/EffectIds.lock (IDs 0-19 1D, 20-32 2D)
+  // Effect names as in src/EffectIds.lock; "dimensions" in the effect list from getCapabilities: 1 = runs on a strip (1D or 1D/2D), 2 = matrix only
   var FX = [];
   Promise.all([
     fetch('/neopixel/api/effects', { cache: 'no-store' }).then(function (response) { if (!response.ok) throw new Error('effects'); return response.json(); }),
