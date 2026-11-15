@@ -100,211 +100,211 @@
                 <!-- Generated: Offset 30-549 -->
 
                 <!-- Wipe Effect (ID 1) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0100" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Speed (Wipe)" Value="25"/>
-                <Parameter Id="%AID%_UP-21%CC%0101" Offset="31" BitOffset="0" Name="NEO%C%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Direction (Wipe)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%0102" Offset="32" BitOffset="7" Name="NEO%C%WipeLoop" ParameterType="%AID%_PT-WipeLoop" Text="Loop (Wipe)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0100" Offset="30" BitOffset="0" Name="NEO%C%WipeSpeed" ParameterType="%AID%_PT-WipeSpeed" Text="Geschwindigkeit (Wipe)" Value="25"/>
+                <Parameter Id="%AID%_UP-21%CC%0101" Offset="31" BitOffset="0" Name="NEO%C%WipeDirection" ParameterType="%AID%_PT-WipeDirection" Text="Richtung (Wipe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0102" Offset="32" BitOffset="7" Name="NEO%C%WipeLoop" ParameterType="%AID%_PT-WipeLoop" Text="Wiederholen (Wipe)" Value="1"/>
 
                 <!-- Rainbow Effect (ID 2) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0200" Offset="33" BitOffset="0" Name="NEO%C%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Speed (Rainbow)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%0201" Offset="34" BitOffset="0" Name="NEO%C%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Delta (Rainbow)" Value="7"/>
-                <Parameter Id="%AID%_UP-21%CC%0202" Offset="35" BitOffset="0" Name="NEO%C%RainbowSaturation" ParameterType="%AID%_PT-RainbowSaturation" Text="Saturation (Rainbow)" Value="255"/>
-                <Parameter Id="%AID%_UP-21%CC%0203" Offset="36" BitOffset="0" Name="NEO%C%RainbowDensity" ParameterType="%AID%_PT-RainbowDensity" Text="Density (Rainbow)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%0204" Offset="37" BitOffset="0" Name="NEO%C%RainbowMode" ParameterType="%AID%_PT-RainbowMode" Text="Mode (Rainbow)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0200" Offset="33" BitOffset="0" Name="NEO%C%RainbowSpeed" ParameterType="%AID%_PT-RainbowSpeed" Text="Geschwindigkeit (Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0201" Offset="34" BitOffset="0" Name="NEO%C%RainbowDelta" ParameterType="%AID%_PT-RainbowDelta" Text="Farbabstand (Rainbow)" Value="7"/>
+                <Parameter Id="%AID%_UP-21%CC%0202" Offset="35" BitOffset="0" Name="NEO%C%RainbowSaturation" ParameterType="%AID%_PT-RainbowSaturation" Text="Sättigung (Rainbow)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%0203" Offset="36" BitOffset="0" Name="NEO%C%RainbowDensity" ParameterType="%AID%_PT-RainbowDensity" Text="Dichte (Rainbow)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0204" Offset="37" BitOffset="0" Name="NEO%C%RainbowMode" ParameterType="%AID%_PT-RainbowMode" Text="Modus (Rainbow)" Value="0"/>
 
                 <!-- Pride2015 Effect (ID 3) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0300" Offset="38" BitOffset="0" Name="NEO%C%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Speed (Pride2015)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0300" Offset="38" BitOffset="0" Name="NEO%C%Pride2015Speed" ParameterType="%AID%_PT-Pride2015Speed" Text="Geschwindigkeit (Pride2015)" Value="128"/>
 
                 <!-- Juggle Effect (ID 4) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0400" Offset="39" BitOffset="0" Name="NEO%C%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Speed (Juggle)" Value="80"/>
-                <Parameter Id="%AID%_UP-21%CC%0401" Offset="40" BitOffset="0" Name="NEO%C%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="NumDots (Juggle)" Value="8"/>
-                <Parameter Id="%AID%_UP-21%CC%0402" Offset="41" BitOffset="0" Name="NEO%C%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="FadeSpeed (Juggle)" Value="20"/>
-                <Parameter Id="%AID%_UP-21%CC%0403" Offset="42" BitOffset="0" Name="NEO%C%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="HueOffset (Juggle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0400" Offset="39" BitOffset="0" Name="NEO%C%JuggleSpeed" ParameterType="%AID%_PT-JuggleSpeed" Text="Geschwindigkeit (Juggle)" Value="80"/>
+                <Parameter Id="%AID%_UP-21%CC%0401" Offset="40" BitOffset="0" Name="NEO%C%JuggleNumDots" ParameterType="%AID%_PT-JuggleNumDots" Text="Anzahl Punkte (Juggle)" Value="8"/>
+                <Parameter Id="%AID%_UP-21%CC%0402" Offset="41" BitOffset="0" Name="NEO%C%JuggleFadeSpeed" ParameterType="%AID%_PT-JuggleFadeSpeed" Text="Ausblendrate (Juggle)" Value="20"/>
+                <Parameter Id="%AID%_UP-21%CC%0403" Offset="42" BitOffset="0" Name="NEO%C%JuggleHueOffset" ParameterType="%AID%_PT-JuggleHueOffset" Text="Farbton-Versatz (Juggle)" Value="0"/>
 
                 <!-- BPM Effect (ID 5) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0500" Offset="43" BitOffset="0" Name="NEO%C%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="BPM (BPM)" Value="62"/>
-                <Parameter Id="%AID%_UP-21%CC%0501" Offset="44" BitOffset="0" Name="NEO%C%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Hue (BPM)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0500" Offset="43" BitOffset="0" Name="NEO%C%BPMBPM" ParameterType="%AID%_PT-BPMBPM" Text="Schläge pro Minute (BPM)" Value="62"/>
+                <Parameter Id="%AID%_UP-21%CC%0501" Offset="44" BitOffset="0" Name="NEO%C%BPMHue" ParameterType="%AID%_PT-BPMHue" Text="Farbton (BPM)" Value="0"/>
 
                 <!-- Cylon Effect (ID 6) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0600" Offset="45" BitOffset="0" Name="NEO%C%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Speed (Cylon)" Value="20"/>
-                <Parameter Id="%AID%_UP-21%CC%0601" Offset="46" BitOffset="0" Name="NEO%C%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Hue (Cylon)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%0602" Offset="47" BitOffset="0" Name="NEO%C%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="EyeSize (Cylon)" Value="5"/>
-                <Parameter Id="%AID%_UP-21%CC%0603" Offset="48" BitOffset="0" Name="NEO%C%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="FadeAmount (Cylon)" Value="50"/>
-                <Parameter Id="%AID%_UP-21%CC%0604" Offset="49" BitOffset="0" Name="NEO%C%CylonDirection" ParameterType="%AID%_PT-CylonDirection" Text="Direction (Cylon)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%0605" Offset="50" BitOffset="0" Name="NEO%C%CylonMode" ParameterType="%AID%_PT-CylonMode" Text="Mode (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0600" Offset="45" BitOffset="0" Name="NEO%C%CylonSpeed" ParameterType="%AID%_PT-CylonSpeed" Text="Geschwindigkeit (Cylon)" Value="20"/>
+                <Parameter Id="%AID%_UP-21%CC%0601" Offset="46" BitOffset="0" Name="NEO%C%CylonHue" ParameterType="%AID%_PT-CylonHue" Text="Farbton (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0602" Offset="47" BitOffset="0" Name="NEO%C%CylonEyeSize" ParameterType="%AID%_PT-CylonEyeSize" Text="Augengröße (Cylon)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%0603" Offset="48" BitOffset="0" Name="NEO%C%CylonFadeAmount" ParameterType="%AID%_PT-CylonFadeAmount" Text="Schweif-Abklingen (Cylon)" Value="50"/>
+                <Parameter Id="%AID%_UP-21%CC%0604" Offset="49" BitOffset="0" Name="NEO%C%CylonDirection" ParameterType="%AID%_PT-CylonDirection" Text="Richtung (nur 2D) (Cylon)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0605" Offset="50" BitOffset="0" Name="NEO%C%CylonMode" ParameterType="%AID%_PT-CylonMode" Text="Modus (Cylon)" Value="0"/>
 
                 <!-- Test Effect (ID 7) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0700" Offset="51" BitOffset="0" Name="NEO%C%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="PhaseDuration (Test)" Value="5"/>
-                <Parameter Id="%AID%_UP-21%CC%0701" Offset="52" BitOffset="0" Name="NEO%C%TestMode" ParameterType="%AID%_PT-TestMode" Text="Mode (Test)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0700" Offset="51" BitOffset="0" Name="NEO%C%TestPhaseDuration" ParameterType="%AID%_PT-TestPhaseDuration" Text="Phasendauer (s) (Test)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%0701" Offset="52" BitOffset="0" Name="NEO%C%TestMode" ParameterType="%AID%_PT-TestMode" Text="Modus (Test)" Value="0"/>
 
                 <!-- Fire Effect (ID 8) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0800" Offset="53" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Speed (Fire)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%0801" Offset="54" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Cooling (Fire)" Value="90"/>
-                <Parameter Id="%AID%_UP-21%CC%0802" Offset="55" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Sparking (Fire)" Value="120"/>
-                <Parameter Id="%AID%_UP-21%CC%0803" Offset="56" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="ReverseDirection (Fire)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%0804" Offset="57" BitOffset="7" Name="NEO%C%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="BlueFireMode (Fire)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0800" Offset="53" BitOffset="0" Name="NEO%C%FireSpeed" ParameterType="%AID%_PT-FireSpeed" Text="Geschwindigkeit (ungenutzt) (Fire)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0801" Offset="54" BitOffset="0" Name="NEO%C%FireCooling" ParameterType="%AID%_PT-FireCooling" Text="Abkühlung (Fire)" Value="90"/>
+                <Parameter Id="%AID%_UP-21%CC%0802" Offset="55" BitOffset="0" Name="NEO%C%FireSparking" ParameterType="%AID%_PT-FireSparking" Text="Funkenrate (Fire)" Value="120"/>
+                <Parameter Id="%AID%_UP-21%CC%0803" Offset="56" BitOffset="7" Name="NEO%C%FireReverseDirection" ParameterType="%AID%_PT-FireReverseDirection" Text="Richtung umkehren (Fire)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0804" Offset="57" BitOffset="7" Name="NEO%C%FireBlueFireMode" ParameterType="%AID%_PT-FireBlueFireMode" Text="Blaues Feuer (Fire)" Value="0"/>
 
                 <!-- Theater Chase Effect (ID 9) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%0900" Offset="58" BitOffset="0" Name="NEO%C%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Speed (Theater Chase)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%0901" Offset="59" BitOffset="0" Name="NEO%C%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Spacing (Theater Chase)" Value="3"/>
-                <Parameter Id="%AID%_UP-21%CC%0902" Offset="60" BitOffset="0" Name="NEO%C%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="DotSize (Theater Chase)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%0903" Offset="61" BitOffset="0" Name="NEO%C%TheaterChaseColorMode" ParameterType="%AID%_PT-TheaterChaseColorMode" Text="ColorMode (Theater Chase)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%0904" Offset="62" BitOffset="0" Name="NEO%C%TheaterChaseColorSpeed" ParameterType="%AID%_PT-TheaterChaseColorSpeed" Text="ColorSpeed (Theater Chase)" Value="5"/>
-                <Parameter Id="%AID%_UP-21%CC%0905" Offset="63" BitOffset="0" Name="NEO%C%TheaterChaseBounce" ParameterType="%AID%_PT-TheaterChaseBounce" Text="Bounce (Theater Chase)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0900" Offset="58" BitOffset="0" Name="NEO%C%TheaterChaseSpeed" ParameterType="%AID%_PT-TheaterChaseSpeed" Text="Geschwindigkeit (Theater Chase)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%0901" Offset="59" BitOffset="0" Name="NEO%C%TheaterChaseSpacing" ParameterType="%AID%_PT-TheaterChaseSpacing" Text="Abstand (Theater Chase)" Value="3"/>
+                <Parameter Id="%AID%_UP-21%CC%0902" Offset="60" BitOffset="0" Name="NEO%C%TheaterChaseDotSize" ParameterType="%AID%_PT-TheaterChaseDotSize" Text="Punktgröße (Theater Chase)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%0903" Offset="61" BitOffset="0" Name="NEO%C%TheaterChaseColorMode" ParameterType="%AID%_PT-TheaterChaseColorMode" Text="Farbmodus (Theater Chase)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%0904" Offset="62" BitOffset="0" Name="NEO%C%TheaterChaseColorSpeed" ParameterType="%AID%_PT-TheaterChaseColorSpeed" Text="Farbwechsel-Geschwindigkeit (Theater Chase)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%0905" Offset="63" BitOffset="0" Name="NEO%C%TheaterChaseBounce" ParameterType="%AID%_PT-TheaterChaseBounce" Text="Hin und her (Theater Chase)" Value="0"/>
 
                 <!-- Sparkle Effect (ID 10) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1000" Offset="64" BitOffset="0" Name="NEO%C%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Speed (Sparkle)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%1001" Offset="65" BitOffset="0" Name="NEO%C%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="FadeRate (Sparkle)" Value="120"/>
-                <Parameter Id="%AID%_UP-21%CC%1002" Offset="66" BitOffset="0" Name="NEO%C%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="SparkleCount (Sparkle)" Value="64"/>
-                <Parameter Id="%AID%_UP-21%CC%1003" Offset="67" BitOffset="0" Name="NEO%C%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Probability (Sparkle)" Value="100"/>
-                <Parameter Id="%AID%_UP-21%CC%1004" Offset="68" BitOffset="7" Name="NEO%C%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="WhiteOnly (Sparkle)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1005" Offset="69" BitOffset="7" Name="NEO%C%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="BurstMode (Sparkle)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1006" Offset="70" BitOffset="0" Name="NEO%C%SparkleMode" ParameterType="%AID%_PT-SparkleMode" Text="Mode (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1000" Offset="64" BitOffset="0" Name="NEO%C%SparkleSpeed" ParameterType="%AID%_PT-SparkleSpeed" Text="Geschwindigkeit (Sparkle)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1001" Offset="65" BitOffset="0" Name="NEO%C%SparkleFadeRate" ParameterType="%AID%_PT-SparkleFadeRate" Text="Ausblendrate / Sättigung (Sparkle)" Value="120"/>
+                <Parameter Id="%AID%_UP-21%CC%1002" Offset="66" BitOffset="0" Name="NEO%C%SparkleSparkleCount" ParameterType="%AID%_PT-SparkleSparkleCount" Text="Anzahl / Dichte (Sparkle)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%1003" Offset="67" BitOffset="0" Name="NEO%C%SparkleProbability" ParameterType="%AID%_PT-SparkleProbability" Text="Wahrscheinlichkeit (Sparkle)" Value="100"/>
+                <Parameter Id="%AID%_UP-21%CC%1004" Offset="68" BitOffset="7" Name="NEO%C%SparkleWhiteOnly" ParameterType="%AID%_PT-SparkleWhiteOnly" Text="Nur Weiß / Regenbogen (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1005" Offset="69" BitOffset="7" Name="NEO%C%SparkleBurstMode" ParameterType="%AID%_PT-SparkleBurstMode" Text="Burst / variable Helligkeit (Sparkle)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1006" Offset="70" BitOffset="0" Name="NEO%C%SparkleMode" ParameterType="%AID%_PT-SparkleMode" Text="Modus (Sparkle)" Value="0"/>
 
                 <!-- Breathing Effect (ID 11) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1100" Offset="71" BitOffset="0" Name="NEO%C%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Speed (Breathing)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%1101" Offset="72" BitOffset="0" Name="NEO%C%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="MinBrightness (Breathing)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1102" Offset="73" BitOffset="0" Name="NEO%C%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Curve (Breathing)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1103" Offset="74" BitOffset="7" Name="NEO%C%BreathingRainbowMode" ParameterType="%AID%_PT-BreathingRainbowMode" Text="RainbowMode (Breathing)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1104" Offset="75" BitOffset="0" Name="NEO%C%BreathingWaveform" ParameterType="%AID%_PT-BreathingWaveform" Text="Waveform (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1100" Offset="71" BitOffset="0" Name="NEO%C%BreathingSpeed" ParameterType="%AID%_PT-BreathingSpeed" Text="Geschwindigkeit (Breathing)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1101" Offset="72" BitOffset="0" Name="NEO%C%BreathingMinBrightness" ParameterType="%AID%_PT-BreathingMinBrightness" Text="Min. Helligkeit / Pulsbreite (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1102" Offset="73" BitOffset="0" Name="NEO%C%BreathingCurve" ParameterType="%AID%_PT-BreathingCurve" Text="Kurve / Gamma (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1103" Offset="74" BitOffset="7" Name="NEO%C%BreathingRainbowMode" ParameterType="%AID%_PT-BreathingRainbowMode" Text="Regenbogen (Breathing)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1104" Offset="75" BitOffset="0" Name="NEO%C%BreathingWaveform" ParameterType="%AID%_PT-BreathingWaveform" Text="Wellenform (Breathing)" Value="0"/>
 
                 <!-- Strobe Effect (ID 12) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1200" Offset="76" BitOffset="0" Name="NEO%C%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Speed (Strobe)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%1201" Offset="77" BitOffset="0" Name="NEO%C%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="OnRatio (Strobe)" Value="100"/>
-                <Parameter Id="%AID%_UP-21%CC%1202" Offset="78" BitOffset="0" Name="NEO%C%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="MinBrightness (Strobe)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1203" Offset="79" BitOffset="7" Name="NEO%C%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="RandomTiming (Strobe)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1204" Offset="80" BitOffset="7" Name="NEO%C%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="RainbowStrobe (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1200" Offset="76" BitOffset="0" Name="NEO%C%StrobeSpeed" ParameterType="%AID%_PT-StrobeSpeed" Text="Geschwindigkeit (Strobe)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1201" Offset="77" BitOffset="0" Name="NEO%C%StrobeOnRatio" ParameterType="%AID%_PT-StrobeOnRatio" Text="Einschaltanteil (%) (Strobe)" Value="100"/>
+                <Parameter Id="%AID%_UP-21%CC%1202" Offset="78" BitOffset="0" Name="NEO%C%StrobeMinBrightness" ParameterType="%AID%_PT-StrobeMinBrightness" Text="Min. Helligkeit (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1203" Offset="79" BitOffset="7" Name="NEO%C%StrobeRandomTiming" ParameterType="%AID%_PT-StrobeRandomTiming" Text="Zufälliges Timing (Strobe)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1204" Offset="80" BitOffset="7" Name="NEO%C%StrobeRainbowStrobe" ParameterType="%AID%_PT-StrobeRainbowStrobe" Text="Regenbogen (Strobe)" Value="0"/>
 
                 <!-- Comet Effect (ID 13) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1300" Offset="81" BitOffset="0" Name="NEO%C%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Speed (Comet)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%1301" Offset="82" BitOffset="0" Name="NEO%C%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="FadeRate (Comet)" Value="150"/>
-                <Parameter Id="%AID%_UP-21%CC%1302" Offset="83" BitOffset="0" Name="NEO%C%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="TailLength (Comet)" Value="10"/>
-                <Parameter Id="%AID%_UP-21%CC%1303" Offset="84" BitOffset="7" Name="NEO%C%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="BounceMode (Comet)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1304" Offset="85" BitOffset="7" Name="NEO%C%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="RainbowMode (Comet)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1305" Offset="86" BitOffset="0" Name="NEO%C%CometMode" ParameterType="%AID%_PT-CometMode" Text="Mode (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1300" Offset="81" BitOffset="0" Name="NEO%C%CometSpeed" ParameterType="%AID%_PT-CometSpeed" Text="Geschwindigkeit (Comet)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%1301" Offset="82" BitOffset="0" Name="NEO%C%CometFadeRate" ParameterType="%AID%_PT-CometFadeRate" Text="Ausblendrate / Meteorgröße (Comet)" Value="150"/>
+                <Parameter Id="%AID%_UP-21%CC%1302" Offset="83" BitOffset="0" Name="NEO%C%CometTailLength" ParameterType="%AID%_PT-CometTailLength" Text="Schweiflänge / Punktgröße / Häufigkeit (Comet)" Value="10"/>
+                <Parameter Id="%AID%_UP-21%CC%1303" Offset="84" BitOffset="7" Name="NEO%C%CometBounceMode" ParameterType="%AID%_PT-CometBounceMode" Text="Sprungmodus / Zufallsfarben / Regenbogen (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1304" Offset="85" BitOffset="7" Name="NEO%C%CometRainbowMode" ParameterType="%AID%_PT-CometRainbowMode" Text="Regenbogen / Multi-Meteor / Sprungmodus (Comet)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1305" Offset="86" BitOffset="0" Name="NEO%C%CometMode" ParameterType="%AID%_PT-CometMode" Text="Modus (Comet)" Value="0"/>
 
                 <!-- Noise Effect (ID 14) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1400" Offset="87" BitOffset="0" Name="NEO%C%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Speed (Noise)" Value="32"/>
-                <Parameter Id="%AID%_UP-21%CC%1401" Offset="88" BitOffset="0" Name="NEO%C%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Scale (Noise)" Value="48"/>
-                <Parameter Id="%AID%_UP-21%CC%1402" Offset="89" BitOffset="0" Name="NEO%C%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Saturation (Noise)" Value="255"/>
-                <Parameter Id="%AID%_UP-21%CC%1403" Offset="90" BitOffset="0" Name="NEO%C%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="HueOffset (Noise)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1404" Offset="91" BitOffset="0" Name="NEO%C%NoisePalette" ParameterType="%AID%_PT-NoisePalette" Text="Palette (Noise)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1400" Offset="87" BitOffset="0" Name="NEO%C%NoiseSpeed" ParameterType="%AID%_PT-NoiseSpeed" Text="Geschwindigkeit (Noise)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1401" Offset="88" BitOffset="0" Name="NEO%C%NoiseScale" ParameterType="%AID%_PT-NoiseScale" Text="Maßstab (Noise)" Value="48"/>
+                <Parameter Id="%AID%_UP-21%CC%1402" Offset="89" BitOffset="0" Name="NEO%C%NoiseSaturation" ParameterType="%AID%_PT-NoiseSaturation" Text="Sättigung (Noise)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%1403" Offset="90" BitOffset="0" Name="NEO%C%NoiseHueOffset" ParameterType="%AID%_PT-NoiseHueOffset" Text="Farbton-Versatz (Noise)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1404" Offset="91" BitOffset="0" Name="NEO%C%NoisePalette" ParameterType="%AID%_PT-NoisePalette" Text="Farbmodus (Noise)" Value="0"/>
 
                 <!-- Palette Effect (ID 15) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1500" Offset="92" BitOffset="0" Name="NEO%C%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Speed (Palette)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1500" Offset="92" BitOffset="0" Name="NEO%C%PaletteSpeed" ParameterType="%AID%_PT-PaletteSpeed" Text="Geschwindigkeit (Palette)" Value="32"/>
                 <Parameter Id="%AID%_UP-21%CC%1501" Offset="93" BitOffset="0" Name="NEO%C%PalettePalette" ParameterType="%AID%_PT-PalettePalette" Text="Palette (Palette)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1502" Offset="94" BitOffset="7" Name="NEO%C%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Blend (Palette)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%1503" Offset="95" BitOffset="0" Name="NEO%C%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Spacing (Palette)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1502" Offset="94" BitOffset="7" Name="NEO%C%PaletteBlend" ParameterType="%AID%_PT-PaletteBlend" Text="Überblendung (Palette)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1503" Offset="95" BitOffset="0" Name="NEO%C%PaletteSpacing" ParameterType="%AID%_PT-PaletteSpacing" Text="Abstand (Palette)" Value="0"/>
 
                 <!-- Blitz Effect (ID 16) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1600" Offset="96" BitOffset="0" Name="NEO%C%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Speed (Blitz)" Value="32"/>
-                <Parameter Id="%AID%_UP-21%CC%1601" Offset="97" BitOffset="0" Name="NEO%C%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Width (Blitz)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1602" Offset="98" BitOffset="0" Name="NEO%C%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Decay (Blitz)" Value="40"/>
-                <Parameter Id="%AID%_UP-21%CC%1603" Offset="99" BitOffset="0" Name="NEO%C%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Hue (Blitz)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1604" Offset="100" BitOffset="0" Name="NEO%C%BlitzIntensity" ParameterType="%AID%_PT-BlitzIntensity" Text="Intensity (Blitz)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%1600" Offset="96" BitOffset="0" Name="NEO%C%BlitzSpeed" ParameterType="%AID%_PT-BlitzSpeed" Text="Häufigkeit (Blitz)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1601" Offset="97" BitOffset="0" Name="NEO%C%BlitzWidth" ParameterType="%AID%_PT-BlitzWidth" Text="Breite (Blitz)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1602" Offset="98" BitOffset="0" Name="NEO%C%BlitzDecay" ParameterType="%AID%_PT-BlitzDecay" Text="Abklingzeit (Blitz)" Value="40"/>
+                <Parameter Id="%AID%_UP-21%CC%1603" Offset="99" BitOffset="0" Name="NEO%C%BlitzHue" ParameterType="%AID%_PT-BlitzHue" Text="Farbton (Blitz)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1604" Offset="100" BitOffset="0" Name="NEO%C%BlitzIntensity" ParameterType="%AID%_PT-BlitzIntensity" Text="Intensität (Blitz)" Value="255"/>
 
                 <!-- Gradient Effect (ID 17) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1700" Offset="101" BitOffset="0" Name="NEO%C%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Speed (Gradient)" Value="32"/>
-                <Parameter Id="%AID%_UP-21%CC%1701" Offset="102" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="StartHue (Gradient)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%1702" Offset="103" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="EndHue (Gradient)" Value="160"/>
-                <Parameter Id="%AID%_UP-21%CC%1703" Offset="104" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Saturation (Gradient)" Value="255"/>
+                <Parameter Id="%AID%_UP-21%CC%1700" Offset="101" BitOffset="0" Name="NEO%C%GradientSpeed" ParameterType="%AID%_PT-GradientSpeed" Text="Geschwindigkeit (Gradient)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1701" Offset="102" BitOffset="0" Name="NEO%C%GradientStartHue" ParameterType="%AID%_PT-GradientStartHue" Text="Start-Farbton (Gradient)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1702" Offset="103" BitOffset="0" Name="NEO%C%GradientEndHue" ParameterType="%AID%_PT-GradientEndHue" Text="End-Farbton (Gradient)" Value="160"/>
+                <Parameter Id="%AID%_UP-21%CC%1703" Offset="104" BitOffset="0" Name="NEO%C%GradientSaturation" ParameterType="%AID%_PT-GradientSaturation" Text="Sättigung (Gradient)" Value="255"/>
 
                 <!-- Kerze Effect (ID 18) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1800" Offset="105" BitOffset="0" Name="NEO%C%KerzeSpeed" ParameterType="%AID%_PT-KerzeSpeed" Text="Speed (Kerze)" Value="96"/>
-                <Parameter Id="%AID%_UP-21%CC%1801" Offset="106" BitOffset="0" Name="NEO%C%KerzeIntensity" ParameterType="%AID%_PT-KerzeIntensity" Text="Intensity (Kerze)" Value="224"/>
-                <Parameter Id="%AID%_UP-21%CC%1802" Offset="107" BitOffset="0" Name="NEO%C%KerzeZones" ParameterType="%AID%_PT-KerzeZones" Text="Zones (Kerze)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1800" Offset="105" BitOffset="0" Name="NEO%C%KerzeSpeed" ParameterType="%AID%_PT-KerzeSpeed" Text="Flackergeschwindigkeit (Kerze)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%1801" Offset="106" BitOffset="0" Name="NEO%C%KerzeIntensity" ParameterType="%AID%_PT-KerzeIntensity" Text="Flackerstärke (Kerze)" Value="224"/>
+                <Parameter Id="%AID%_UP-21%CC%1802" Offset="107" BitOffset="0" Name="NEO%C%KerzeZones" ParameterType="%AID%_PT-KerzeZones" Text="Zonen (Kerze)" Value="1"/>
 
                 <!-- Laufschrift Effect (ID 19) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%1900" Offset="108" BitOffset="0" Name="NEO%C%LaufschriftSpeed" ParameterType="%AID%_PT-LaufschriftSpeed" Text="Speed (Laufschrift)" Value="32"/>
-                <Parameter Id="%AID%_UP-21%CC%1901" Offset="109" BitOffset="0" Name="NEO%C%LaufschriftGap" ParameterType="%AID%_PT-LaufschriftGap" Text="Gap (Laufschrift)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%1902" Offset="110" BitOffset="7" Name="NEO%C%LaufschriftLoop" ParameterType="%AID%_PT-LaufschriftLoop" Text="Loop (Laufschrift)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1900" Offset="108" BitOffset="0" Name="NEO%C%LaufschriftSpeed" ParameterType="%AID%_PT-LaufschriftSpeed" Text="Geschwindigkeit (Laufschrift)" Value="32"/>
+                <Parameter Id="%AID%_UP-21%CC%1901" Offset="109" BitOffset="0" Name="NEO%C%LaufschriftGap" ParameterType="%AID%_PT-LaufschriftGap" Text="Zeichenabstand (Laufschrift)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%1902" Offset="110" BitOffset="7" Name="NEO%C%LaufschriftLoop" ParameterType="%AID%_PT-LaufschriftLoop" Text="Wiederholen (Laufschrift)" Value="1"/>
                 <Parameter Id="%AID%_UP-21%CC%1903" Offset="111" BitOffset="0" Name="NEO%C%LaufschriftText" ParameterType="%AID%_PT-LaufschriftText" Text="Text (Laufschrift)" Value=""/>
-                <Parameter Id="%AID%_UP-21%CC%1904" Offset="125" BitOffset="0" Name="NEO%C%LaufschriftFont" ParameterType="%AID%_PT-LaufschriftFont" Text="Font (Laufschrift)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%1904" Offset="125" BitOffset="0" Name="NEO%C%LaufschriftFont" ParameterType="%AID%_PT-LaufschriftFont" Text="Schrift (Laufschrift)" Value="0"/>
 
                 <!-- Uhr 2D Effect (ID 20) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2000" Offset="126" BitOffset="0" Name="NEO%C%Uhr2DViewMode" ParameterType="%AID%_PT-Uhr2DViewMode" Text="ViewMode (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2001" Offset="127" BitOffset="7" Name="NEO%C%Uhr2DShowSeconds" ParameterType="%AID%_PT-Uhr2DShowSeconds" Text="ShowSeconds (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2002" Offset="128" BitOffset="7" Name="NEO%C%Uhr2DBlinkColon" ParameterType="%AID%_PT-Uhr2DBlinkColon" Text="BlinkColon (Uhr 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%2003" Offset="129" BitOffset="0" Name="NEO%C%Uhr2DColourHue" ParameterType="%AID%_PT-Uhr2DColourHue" Text="ColourHue (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2004" Offset="130" BitOffset="0" Name="NEO%C%Uhr2DDateMode" ParameterType="%AID%_PT-Uhr2DDateMode" Text="DateMode (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2005" Offset="131" BitOffset="0" Name="NEO%C%Uhr2DDateFormat" ParameterType="%AID%_PT-Uhr2DDateFormat" Text="DateFormat (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2006" Offset="132" BitOffset="0" Name="NEO%C%Uhr2DDateHue" ParameterType="%AID%_PT-Uhr2DDateHue" Text="DateHue (Uhr 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2007" Offset="133" BitOffset="0" Name="NEO%C%Uhr2DSwitchSec" ParameterType="%AID%_PT-Uhr2DSwitchSec" Text="SwitchSec (Uhr 2D)" Value="5"/>
-                <Parameter Id="%AID%_UP-21%CC%2008" Offset="134" BitOffset="0" Name="NEO%C%Uhr2DScrollSpeed" ParameterType="%AID%_PT-Uhr2DScrollSpeed" Text="ScrollSpeed (Uhr 2D)" Value="60"/>
-                <Parameter Id="%AID%_UP-21%CC%2009" Offset="135" BitOffset="0" Name="NEO%C%Uhr2DFont" ParameterType="%AID%_PT-Uhr2DFont" Text="Font (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2000" Offset="126" BitOffset="0" Name="NEO%C%Uhr2DViewMode" ParameterType="%AID%_PT-Uhr2DViewMode" Text="Anzeigemodus (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2001" Offset="127" BitOffset="7" Name="NEO%C%Uhr2DShowSeconds" ParameterType="%AID%_PT-Uhr2DShowSeconds" Text="Sekunden anzeigen (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2002" Offset="128" BitOffset="7" Name="NEO%C%Uhr2DBlinkColon" ParameterType="%AID%_PT-Uhr2DBlinkColon" Text="Doppelpunkt blinkt (Uhr 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2003" Offset="129" BitOffset="0" Name="NEO%C%Uhr2DColourHue" ParameterType="%AID%_PT-Uhr2DColourHue" Text="Farbton Uhrzeit (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2004" Offset="130" BitOffset="0" Name="NEO%C%Uhr2DDateMode" ParameterType="%AID%_PT-Uhr2DDateMode" Text="Datumsanzeige (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2005" Offset="131" BitOffset="0" Name="NEO%C%Uhr2DDateFormat" ParameterType="%AID%_PT-Uhr2DDateFormat" Text="Datumsformat (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2006" Offset="132" BitOffset="0" Name="NEO%C%Uhr2DDateHue" ParameterType="%AID%_PT-Uhr2DDateHue" Text="Farbton Datum (Uhr 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2007" Offset="133" BitOffset="0" Name="NEO%C%Uhr2DSwitchSec" ParameterType="%AID%_PT-Uhr2DSwitchSec" Text="Wechselintervall (s) (Uhr 2D)" Value="5"/>
+                <Parameter Id="%AID%_UP-21%CC%2008" Offset="134" BitOffset="0" Name="NEO%C%Uhr2DScrollSpeed" ParameterType="%AID%_PT-Uhr2DScrollSpeed" Text="Scrollgeschwindigkeit (Uhr 2D)" Value="60"/>
+                <Parameter Id="%AID%_UP-21%CC%2009" Offset="135" BitOffset="0" Name="NEO%C%Uhr2DFont" ParameterType="%AID%_PT-Uhr2DFont" Text="Schrift (Uhr 2D)" Value="0"/>
 
                 <!-- Snake 2D Effect (ID 21) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2100" Offset="136" BitOffset="0" Name="NEO%C%Snake2DSpeed" ParameterType="%AID%_PT-Snake2DSpeed" Text="Speed (Snake 2D)" Value="64"/>
-                <Parameter Id="%AID%_UP-21%CC%2101" Offset="137" BitOffset="0" Name="NEO%C%Snake2DHeadHue" ParameterType="%AID%_PT-Snake2DHeadHue" Text="HeadHue (Snake 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2102" Offset="138" BitOffset="0" Name="NEO%C%Snake2DBodyMode" ParameterType="%AID%_PT-Snake2DBodyMode" Text="BodyMode (Snake 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2103" Offset="139" BitOffset="0" Name="NEO%C%Snake2DBodyHue" ParameterType="%AID%_PT-Snake2DBodyHue" Text="BodyHue (Snake 2D)" Value="85"/>
+                <Parameter Id="%AID%_UP-21%CC%2100" Offset="136" BitOffset="0" Name="NEO%C%Snake2DSpeed" ParameterType="%AID%_PT-Snake2DSpeed" Text="Geschwindigkeit (Snake 2D)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2101" Offset="137" BitOffset="0" Name="NEO%C%Snake2DHeadHue" ParameterType="%AID%_PT-Snake2DHeadHue" Text="Farbton Kopf (Snake 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2102" Offset="138" BitOffset="0" Name="NEO%C%Snake2DBodyMode" ParameterType="%AID%_PT-Snake2DBodyMode" Text="Körpermodus (Snake 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2103" Offset="139" BitOffset="0" Name="NEO%C%Snake2DBodyHue" ParameterType="%AID%_PT-Snake2DBodyHue" Text="Farbton Körper (Snake 2D)" Value="85"/>
 
                 <!-- Matrix 2D Effect (ID 22) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2200" Offset="140" BitOffset="0" Name="NEO%C%Matrix2DSpeed" ParameterType="%AID%_PT-Matrix2DSpeed" Text="Speed (Matrix 2D)" Value="80"/>
-                <Parameter Id="%AID%_UP-21%CC%2201" Offset="141" BitOffset="0" Name="NEO%C%Matrix2DDensity" ParameterType="%AID%_PT-Matrix2DDensity" Text="Density (Matrix 2D)" Value="35"/>
+                <Parameter Id="%AID%_UP-21%CC%2200" Offset="140" BitOffset="0" Name="NEO%C%Matrix2DSpeed" ParameterType="%AID%_PT-Matrix2DSpeed" Text="Geschwindigkeit (Matrix 2D)" Value="80"/>
+                <Parameter Id="%AID%_UP-21%CC%2201" Offset="141" BitOffset="0" Name="NEO%C%Matrix2DDensity" ParameterType="%AID%_PT-Matrix2DDensity" Text="Dichte (%) (Matrix 2D)" Value="35"/>
                 <Parameter Id="%AID%_UP-21%CC%2202" Offset="142" BitOffset="0" Name="NEO%C%Matrix2DPalette" ParameterType="%AID%_PT-Matrix2DPalette" Text="Palette (Matrix 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2203" Offset="143" BitOffset="7" Name="NEO%C%Matrix2DGlitch" ParameterType="%AID%_PT-Matrix2DGlitch" Text="Glitch (Matrix 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2203" Offset="143" BitOffset="7" Name="NEO%C%Matrix2DGlitch" ParameterType="%AID%_PT-Matrix2DGlitch" Text="Glitch-Blitze (Matrix 2D)" Value="1"/>
 
                 <!-- Tetris 2D Effect (ID 23) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2300" Offset="144" BitOffset="0" Name="NEO%C%Tetris2DSpeed" ParameterType="%AID%_PT-Tetris2DSpeed" Text="Speed (Tetris 2D)" Value="128"/>
-                <Parameter Id="%AID%_UP-21%CC%2301" Offset="145" BitOffset="0" Name="NEO%C%Tetris2DBgBrightness" ParameterType="%AID%_PT-Tetris2DBgBrightness" Text="BgBrightness (Tetris 2D)" Value="8"/>
-                <Parameter Id="%AID%_UP-21%CC%2302" Offset="146" BitOffset="7" Name="NEO%C%Tetris2DGhostPiece" ParameterType="%AID%_PT-Tetris2DGhostPiece" Text="GhostPiece (Tetris 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%2303" Offset="147" BitOffset="0" Name="NEO%C%Tetris2DColorMode" ParameterType="%AID%_PT-Tetris2DColorMode" Text="ColorMode (Tetris 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2304" Offset="148" BitOffset="7" Name="NEO%C%Tetris2DFlashLines" ParameterType="%AID%_PT-Tetris2DFlashLines" Text="FlashLines (Tetris 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%2305" Offset="149" BitOffset="0" Name="NEO%C%Tetris2DAutoPlay" ParameterType="%AID%_PT-Tetris2DAutoPlay" Text="AutoPlay (Tetris 2D)" Value="3"/>
+                <Parameter Id="%AID%_UP-21%CC%2300" Offset="144" BitOffset="0" Name="NEO%C%Tetris2DSpeed" ParameterType="%AID%_PT-Tetris2DSpeed" Text="Fallgeschwindigkeit (Tetris 2D)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%2301" Offset="145" BitOffset="0" Name="NEO%C%Tetris2DBgBrightness" ParameterType="%AID%_PT-Tetris2DBgBrightness" Text="Helligkeit Hintergrundgitter (Tetris 2D)" Value="8"/>
+                <Parameter Id="%AID%_UP-21%CC%2302" Offset="146" BitOffset="7" Name="NEO%C%Tetris2DGhostPiece" ParameterType="%AID%_PT-Tetris2DGhostPiece" Text="Geist-Stein (Tetris 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2303" Offset="147" BitOffset="0" Name="NEO%C%Tetris2DColorMode" ParameterType="%AID%_PT-Tetris2DColorMode" Text="Farbmodus (Tetris 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2304" Offset="148" BitOffset="7" Name="NEO%C%Tetris2DFlashLines" ParameterType="%AID%_PT-Tetris2DFlashLines" Text="Volle Reihen blitzen (Tetris 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2305" Offset="149" BitOffset="0" Name="NEO%C%Tetris2DAutoPlay" ParameterType="%AID%_PT-Tetris2DAutoPlay" Text="Selbstspielende KI (Tetris 2D)" Value="3"/>
 
                 <!-- TRON Effect (ID 24) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2400" Offset="150" BitOffset="0" Name="NEO%C%TRONSpeed" ParameterType="%AID%_PT-TRONSpeed" Text="Speed (TRON)" Value="90"/>
-                <Parameter Id="%AID%_UP-21%CC%2401" Offset="151" BitOffset="0" Name="NEO%C%TRONHue" ParameterType="%AID%_PT-TRONHue" Text="Hue (TRON)" Value="150"/>
-                <Parameter Id="%AID%_UP-21%CC%2402" Offset="152" BitOffset="0" Name="NEO%C%TRONGridSpacing" ParameterType="%AID%_PT-TRONGridSpacing" Text="GridSpacing (TRON)" Value="4"/>
-                <Parameter Id="%AID%_UP-21%CC%2403" Offset="153" BitOffset="0" Name="NEO%C%TRONGlow" ParameterType="%AID%_PT-TRONGlow" Text="Glow (TRON)" Value="170"/>
+                <Parameter Id="%AID%_UP-21%CC%2400" Offset="150" BitOffset="0" Name="NEO%C%TRONSpeed" ParameterType="%AID%_PT-TRONSpeed" Text="Geschwindigkeit (TRON)" Value="90"/>
+                <Parameter Id="%AID%_UP-21%CC%2401" Offset="151" BitOffset="0" Name="NEO%C%TRONHue" ParameterType="%AID%_PT-TRONHue" Text="Farbton (TRON)" Value="150"/>
+                <Parameter Id="%AID%_UP-21%CC%2402" Offset="152" BitOffset="0" Name="NEO%C%TRONGridSpacing" ParameterType="%AID%_PT-TRONGridSpacing" Text="Gitterabstand (TRON)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%2403" Offset="153" BitOffset="0" Name="NEO%C%TRONGlow" ParameterType="%AID%_PT-TRONGlow" Text="Leuchten (TRON)" Value="170"/>
 
                 <!-- Starfield Warp Effect (ID 25) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2500" Offset="154" BitOffset="0" Name="NEO%C%StarfieldWarpSpeed" ParameterType="%AID%_PT-StarfieldWarpSpeed" Text="Speed (Starfield Warp)" Value="96"/>
-                <Parameter Id="%AID%_UP-21%CC%2501" Offset="155" BitOffset="0" Name="NEO%C%StarfieldWarpDensity" ParameterType="%AID%_PT-StarfieldWarpDensity" Text="Density (Starfield Warp)" Value="70"/>
-                <Parameter Id="%AID%_UP-21%CC%2502" Offset="156" BitOffset="0" Name="NEO%C%StarfieldWarpColorMode" ParameterType="%AID%_PT-StarfieldWarpColorMode" Text="ColorMode (Starfield Warp)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2503" Offset="157" BitOffset="7" Name="NEO%C%StarfieldWarpWarpPulse" ParameterType="%AID%_PT-StarfieldWarpWarpPulse" Text="WarpPulse (Starfield Warp)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2500" Offset="154" BitOffset="0" Name="NEO%C%StarfieldWarpSpeed" ParameterType="%AID%_PT-StarfieldWarpSpeed" Text="Geschwindigkeit (Starfield Warp)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%2501" Offset="155" BitOffset="0" Name="NEO%C%StarfieldWarpDensity" ParameterType="%AID%_PT-StarfieldWarpDensity" Text="Dichte (%) (Starfield Warp)" Value="70"/>
+                <Parameter Id="%AID%_UP-21%CC%2502" Offset="156" BitOffset="0" Name="NEO%C%StarfieldWarpColorMode" ParameterType="%AID%_PT-StarfieldWarpColorMode" Text="Farbmodus (Starfield Warp)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2503" Offset="157" BitOffset="7" Name="NEO%C%StarfieldWarpWarpPulse" ParameterType="%AID%_PT-StarfieldWarpWarpPulse" Text="Warp-Puls (Starfield Warp)" Value="1"/>
 
                 <!-- Plasma Nebula Effect (ID 26) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2600" Offset="158" BitOffset="0" Name="NEO%C%PlasmaNebulaSpeed" ParameterType="%AID%_PT-PlasmaNebulaSpeed" Text="Speed (Plasma Nebula)" Value="64"/>
-                <Parameter Id="%AID%_UP-21%CC%2601" Offset="523" BitOffset="0" Name="NEO%C%PlasmaNebulaSaturation" ParameterType="%AID%_PT-PlasmaNebulaSaturation" Text="Saturation (Plasma Nebula)" Value="220"/>
-                <Parameter Id="%AID%_UP-21%CC%2602" Offset="524" BitOffset="0" Name="NEO%C%PlasmaNebulaContrast" ParameterType="%AID%_PT-PlasmaNebulaContrast" Text="Contrast (Plasma Nebula)" Value="170"/>
-                <Parameter Id="%AID%_UP-21%CC%2603" Offset="525" BitOffset="0" Name="NEO%C%PlasmaNebulaPaletteShift" ParameterType="%AID%_PT-PlasmaNebulaPaletteShift" Text="PaletteShift (Plasma Nebula)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2600" Offset="158" BitOffset="0" Name="NEO%C%PlasmaNebulaSpeed" ParameterType="%AID%_PT-PlasmaNebulaSpeed" Text="Geschwindigkeit (Plasma Nebula)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2601" Offset="523" BitOffset="0" Name="NEO%C%PlasmaNebulaSaturation" ParameterType="%AID%_PT-PlasmaNebulaSaturation" Text="Sättigung (Plasma Nebula)" Value="220"/>
+                <Parameter Id="%AID%_UP-21%CC%2602" Offset="524" BitOffset="0" Name="NEO%C%PlasmaNebulaContrast" ParameterType="%AID%_PT-PlasmaNebulaContrast" Text="Kontrast (Plasma Nebula)" Value="170"/>
+                <Parameter Id="%AID%_UP-21%CC%2603" Offset="525" BitOffset="0" Name="NEO%C%PlasmaNebulaPaletteShift" ParameterType="%AID%_PT-PlasmaNebulaPaletteShift" Text="Palettenverschiebung (Plasma Nebula)" Value="0"/>
 
                 <!-- UFO Swarm Effect (ID 27) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2700" Offset="526" BitOffset="0" Name="NEO%C%UFOSwarmSpeed" ParameterType="%AID%_PT-UFOSwarmSpeed" Text="Speed (UFO Swarm)" Value="90"/>
-                <Parameter Id="%AID%_UP-21%CC%2701" Offset="527" BitOffset="0" Name="NEO%C%UFOSwarmCount" ParameterType="%AID%_PT-UFOSwarmCount" Text="Count (UFO Swarm)" Value="4"/>
-                <Parameter Id="%AID%_UP-21%CC%2702" Offset="528" BitOffset="0" Name="NEO%C%UFOSwarmHue" ParameterType="%AID%_PT-UFOSwarmHue" Text="Hue (UFO Swarm)" Value="150"/>
-                <Parameter Id="%AID%_UP-21%CC%2703" Offset="529" BitOffset="7" Name="NEO%C%UFOSwarmBeam" ParameterType="%AID%_PT-UFOSwarmBeam" Text="Beam (UFO Swarm)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2700" Offset="526" BitOffset="0" Name="NEO%C%UFOSwarmSpeed" ParameterType="%AID%_PT-UFOSwarmSpeed" Text="Geschwindigkeit (UFO Swarm)" Value="90"/>
+                <Parameter Id="%AID%_UP-21%CC%2701" Offset="527" BitOffset="0" Name="NEO%C%UFOSwarmCount" ParameterType="%AID%_PT-UFOSwarmCount" Text="Anzahl UFOs (UFO Swarm)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%2702" Offset="528" BitOffset="0" Name="NEO%C%UFOSwarmHue" ParameterType="%AID%_PT-UFOSwarmHue" Text="Farbton (UFO Swarm)" Value="150"/>
+                <Parameter Id="%AID%_UP-21%CC%2703" Offset="529" BitOffset="7" Name="NEO%C%UFOSwarmBeam" ParameterType="%AID%_PT-UFOSwarmBeam" Text="Traktorstrahl (UFO Swarm)" Value="1"/>
 
                 <!-- Game of Life 2D Effect (ID 28) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2800" Offset="530" BitOffset="0" Name="NEO%C%GameofLife2DSpeed" ParameterType="%AID%_PT-GameofLife2DSpeed" Text="Speed (Game of Life 2D)" Value="64"/>
-                <Parameter Id="%AID%_UP-21%CC%2801" Offset="531" BitOffset="0" Name="NEO%C%GameofLife2DHue" ParameterType="%AID%_PT-GameofLife2DHue" Text="Hue (Game of Life 2D)" Value="96"/>
-                <Parameter Id="%AID%_UP-21%CC%2802" Offset="532" BitOffset="0" Name="NEO%C%GameofLife2DColorMode" ParameterType="%AID%_PT-GameofLife2DColorMode" Text="ColorMode (Game of Life 2D)" Value="1"/>
-                <Parameter Id="%AID%_UP-21%CC%2803" Offset="533" BitOffset="0" Name="NEO%C%GameofLife2DSpawnDensity" ParameterType="%AID%_PT-GameofLife2DSpawnDensity" Text="SpawnDensity (Game of Life 2D)" Value="30"/>
+                <Parameter Id="%AID%_UP-21%CC%2800" Offset="530" BitOffset="0" Name="NEO%C%GameofLife2DSpeed" ParameterType="%AID%_PT-GameofLife2DSpeed" Text="Geschwindigkeit (Game of Life 2D)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2801" Offset="531" BitOffset="0" Name="NEO%C%GameofLife2DHue" ParameterType="%AID%_PT-GameofLife2DHue" Text="Farbton (Game of Life 2D)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%2802" Offset="532" BitOffset="0" Name="NEO%C%GameofLife2DColorMode" ParameterType="%AID%_PT-GameofLife2DColorMode" Text="Farbmodus (Game of Life 2D)" Value="1"/>
+                <Parameter Id="%AID%_UP-21%CC%2803" Offset="533" BitOffset="0" Name="NEO%C%GameofLife2DSpawnDensity" ParameterType="%AID%_PT-GameofLife2DSpawnDensity" Text="Startdichte (%) (Game of Life 2D)" Value="30"/>
 
                 <!-- DNA 2D Effect (ID 29) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%2900" Offset="534" BitOffset="0" Name="NEO%C%DNA2DSpeed" ParameterType="%AID%_PT-DNA2DSpeed" Text="Speed (DNA 2D)" Value="64"/>
-                <Parameter Id="%AID%_UP-21%CC%2901" Offset="535" BitOffset="0" Name="NEO%C%DNA2DHue" ParameterType="%AID%_PT-DNA2DHue" Text="Hue (DNA 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%2902" Offset="536" BitOffset="0" Name="NEO%C%DNA2DTwist" ParameterType="%AID%_PT-DNA2DTwist" Text="Twist (DNA 2D)" Value="8"/>
-                <Parameter Id="%AID%_UP-21%CC%2903" Offset="537" BitOffset="0" Name="NEO%C%DNA2DRungSpacing" ParameterType="%AID%_PT-DNA2DRungSpacing" Text="RungSpacing (DNA 2D)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%2900" Offset="534" BitOffset="0" Name="NEO%C%DNA2DSpeed" ParameterType="%AID%_PT-DNA2DSpeed" Text="Rotationsgeschwindigkeit (DNA 2D)" Value="64"/>
+                <Parameter Id="%AID%_UP-21%CC%2901" Offset="535" BitOffset="0" Name="NEO%C%DNA2DHue" ParameterType="%AID%_PT-DNA2DHue" Text="Farbton (DNA 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%2902" Offset="536" BitOffset="0" Name="NEO%C%DNA2DTwist" ParameterType="%AID%_PT-DNA2DTwist" Text="Windungen (DNA 2D)" Value="8"/>
+                <Parameter Id="%AID%_UP-21%CC%2903" Offset="537" BitOffset="0" Name="NEO%C%DNA2DRungSpacing" ParameterType="%AID%_PT-DNA2DRungSpacing" Text="Sprossenabstand (DNA 2D)" Value="4"/>
 
                 <!-- Aurora 2D Effect (ID 30) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%3000" Offset="538" BitOffset="0" Name="NEO%C%Aurora2DSpeed" ParameterType="%AID%_PT-Aurora2DSpeed" Text="Speed (Aurora 2D)" Value="48"/>
-                <Parameter Id="%AID%_UP-21%CC%3001" Offset="539" BitOffset="0" Name="NEO%C%Aurora2DHue" ParameterType="%AID%_PT-Aurora2DHue" Text="Hue (Aurora 2D)" Value="96"/>
-                <Parameter Id="%AID%_UP-21%CC%3002" Offset="540" BitOffset="0" Name="NEO%C%Aurora2DScale" ParameterType="%AID%_PT-Aurora2DScale" Text="Scale (Aurora 2D)" Value="18"/>
-                <Parameter Id="%AID%_UP-21%CC%3003" Offset="541" BitOffset="0" Name="NEO%C%Aurora2DIntensity" ParameterType="%AID%_PT-Aurora2DIntensity" Text="Intensity (Aurora 2D)" Value="220"/>
+                <Parameter Id="%AID%_UP-21%CC%3000" Offset="538" BitOffset="0" Name="NEO%C%Aurora2DSpeed" ParameterType="%AID%_PT-Aurora2DSpeed" Text="Geschwindigkeit (Aurora 2D)" Value="48"/>
+                <Parameter Id="%AID%_UP-21%CC%3001" Offset="539" BitOffset="0" Name="NEO%C%Aurora2DHue" ParameterType="%AID%_PT-Aurora2DHue" Text="Farbton (Aurora 2D)" Value="96"/>
+                <Parameter Id="%AID%_UP-21%CC%3002" Offset="540" BitOffset="0" Name="NEO%C%Aurora2DScale" ParameterType="%AID%_PT-Aurora2DScale" Text="Detailtiefe (Aurora 2D)" Value="18"/>
+                <Parameter Id="%AID%_UP-21%CC%3003" Offset="541" BitOffset="0" Name="NEO%C%Aurora2DIntensity" ParameterType="%AID%_PT-Aurora2DIntensity" Text="Helligkeit (Aurora 2D)" Value="220"/>
 
                 <!-- Lissajous 2D Effect (ID 31) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%3100" Offset="542" BitOffset="0" Name="NEO%C%Lissajous2DSpeed" ParameterType="%AID%_PT-Lissajous2DSpeed" Text="Speed (Lissajous 2D)" Value="56"/>
-                <Parameter Id="%AID%_UP-21%CC%3101" Offset="543" BitOffset="0" Name="NEO%C%Lissajous2DHue" ParameterType="%AID%_PT-Lissajous2DHue" Text="Hue (Lissajous 2D)" Value="160"/>
-                <Parameter Id="%AID%_UP-21%CC%3102" Offset="544" BitOffset="0" Name="NEO%C%Lissajous2DFreqA" ParameterType="%AID%_PT-Lissajous2DFreqA" Text="FreqA (Lissajous 2D)" Value="3"/>
-                <Parameter Id="%AID%_UP-21%CC%3103" Offset="545" BitOffset="0" Name="NEO%C%Lissajous2DFreqB" ParameterType="%AID%_PT-Lissajous2DFreqB" Text="FreqB (Lissajous 2D)" Value="2"/>
+                <Parameter Id="%AID%_UP-21%CC%3100" Offset="542" BitOffset="0" Name="NEO%C%Lissajous2DSpeed" ParameterType="%AID%_PT-Lissajous2DSpeed" Text="Geschwindigkeit (Lissajous 2D)" Value="56"/>
+                <Parameter Id="%AID%_UP-21%CC%3101" Offset="543" BitOffset="0" Name="NEO%C%Lissajous2DHue" ParameterType="%AID%_PT-Lissajous2DHue" Text="Farbton (Lissajous 2D)" Value="160"/>
+                <Parameter Id="%AID%_UP-21%CC%3102" Offset="544" BitOffset="0" Name="NEO%C%Lissajous2DFreqA" ParameterType="%AID%_PT-Lissajous2DFreqA" Text="Frequenz horizontal (Lissajous 2D)" Value="3"/>
+                <Parameter Id="%AID%_UP-21%CC%3103" Offset="545" BitOffset="0" Name="NEO%C%Lissajous2DFreqB" ParameterType="%AID%_PT-Lissajous2DFreqB" Text="Frequenz vertikal (Lissajous 2D)" Value="2"/>
 
                 <!-- Metaballs 2D Effect (ID 32) Parameters -->
-                <Parameter Id="%AID%_UP-21%CC%3200" Offset="546" BitOffset="0" Name="NEO%C%Metaballs2DSpeed" ParameterType="%AID%_PT-Metaballs2DSpeed" Text="Speed (Metaballs 2D)" Value="50"/>
-                <Parameter Id="%AID%_UP-21%CC%3201" Offset="547" BitOffset="0" Name="NEO%C%Metaballs2DHue" ParameterType="%AID%_PT-Metaballs2DHue" Text="Hue (Metaballs 2D)" Value="0"/>
-                <Parameter Id="%AID%_UP-21%CC%3202" Offset="548" BitOffset="0" Name="NEO%C%Metaballs2DBlobCount" ParameterType="%AID%_PT-Metaballs2DBlobCount" Text="BlobCount (Metaballs 2D)" Value="4"/>
-                <Parameter Id="%AID%_UP-21%CC%3203" Offset="549" BitOffset="0" Name="NEO%C%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Contrast (Metaballs 2D)" Value="128"/>
+                <Parameter Id="%AID%_UP-21%CC%3200" Offset="546" BitOffset="0" Name="NEO%C%Metaballs2DSpeed" ParameterType="%AID%_PT-Metaballs2DSpeed" Text="Geschwindigkeit (Metaballs 2D)" Value="50"/>
+                <Parameter Id="%AID%_UP-21%CC%3201" Offset="547" BitOffset="0" Name="NEO%C%Metaballs2DHue" ParameterType="%AID%_PT-Metaballs2DHue" Text="Farbton (Metaballs 2D)" Value="0"/>
+                <Parameter Id="%AID%_UP-21%CC%3202" Offset="548" BitOffset="0" Name="NEO%C%Metaballs2DBlobCount" ParameterType="%AID%_PT-Metaballs2DBlobCount" Text="Anzahl Blobs (Metaballs 2D)" Value="4"/>
+                <Parameter Id="%AID%_UP-21%CC%3203" Offset="549" BitOffset="0" Name="NEO%C%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Kontrast (Metaballs 2D)" Value="128"/>
                 <!-- END AUTO-GENERATED: Effect Parameters Union -->
 
                  <!-- ═══════════════════════════════════════════════════════════════════════════════════
@@ -984,152 +984,152 @@
                           <when test="1">
                             <!-- Wipe Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="NEO-Speed-Wipe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="NEO-Direction-Wipe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="NEO-Loop-Wipe"/>
                           </when>
                           <when test="2">
                             <!-- Rainbow Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="NEO-Speed-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="NEO-Delta-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="NEO-Saturation-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="NEO-Density-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="NEO-Mode-Rainbow"/>
                           </when>
                           <when test="3">
                             <!-- Pride2015 Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="NEO-Speed-Pride2015"/>
                           </when>
                           <when test="4">
                             <!-- Juggle Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="NEO-Speed-Juggle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="NEO-NumDots-Juggle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="NEO-FadeSpeed-Juggle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="NEO-HueOffset-Juggle"/>
                           </when>
                           <when test="5">
                             <!-- BPM Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="NEO-BPM-BPM"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="NEO-Hue-BPM"/>
                           </when>
                           <when test="6">
                             <!-- Cylon Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="NEO-Speed-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="NEO-Hue-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="NEO-EyeSize-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="NEO-FadeAmount-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="NEO-Direction-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="NEO-Mode-Cylon"/>
                           </when>
                           <when test="7">
                             <!-- Test Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="NEO-PhaseDuration-Test"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="NEO-Mode-Test"/>
                           </when>
                           <when test="8">
                             <!-- Fire Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="NEO-Speed-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="NEO-Cooling-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="NEO-Sparking-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="NEO-ReverseDirection-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="NEO-BlueFireMode-Fire"/>
                           </when>
                           <when test="9">
                             <!-- Theater Chase Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="NEO-Speed-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="NEO-Spacing-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="NEO-DotSize-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="NEO-ColorMode-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="NEO-Bounce-Theater-Chase"/>
                           </when>
                           <when test="10">
                             <!-- Sparkle Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="NEO-Speed-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="NEO-FadeRate-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="NEO-SparkleCount-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="NEO-Probability-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="NEO-WhiteOnly-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="NEO-BurstMode-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="NEO-Mode-Sparkle"/>
                           </when>
                           <when test="11">
                             <!-- Breathing Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="NEO-Speed-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="NEO-MinBrightness-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="NEO-Curve-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="NEO-RainbowMode-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="NEO-Waveform-Breathing"/>
                           </when>
                           <when test="12">
                             <!-- Strobe Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="NEO-Speed-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="NEO-OnRatio-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="NEO-MinBrightness-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="NEO-RandomTiming-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="NEO-RainbowStrobe-Strobe"/>
                           </when>
                           <when test="13">
                             <!-- Comet Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="NEO-Speed-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="NEO-FadeRate-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="NEO-TailLength-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="NEO-BounceMode-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="NEO-RainbowMode-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="NEO-Mode-Comet"/>
                           </when>
                           <when test="14">
                             <!-- Noise Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="NEO-Speed-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="NEO-Scale-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="NEO-Saturation-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="NEO-HueOffset-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="NEO-Palette-Noise"/>
                           </when>
                           <when test="15">
                             <!-- Palette Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="NEO-Speed-Palette"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="NEO-Palette-Palette"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="NEO-Blend-Palette"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="NEO-Spacing-Palette"/>
                           </when>
                           <when test="16">
                             <!-- Blitz Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="NEO-Speed-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="NEO-Width-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="NEO-Decay-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="NEO-Hue-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="NEO-Intensity-Blitz"/>
                           </when>
                           <when test="17">
                             <!-- Gradient Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="NEO-Speed-Gradient"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="NEO-StartHue-Gradient"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="NEO-EndHue-Gradient"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="NEO-Saturation-Gradient"/>
                           </when>
                           <when test="18">
                             <!-- Kerze Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="NEO-Speed-Kerze"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="NEO-Intensity-Kerze"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="NEO-Zones-Kerze"/>
                           </when>
                         </choose>
                       </when>
@@ -1138,273 +1138,273 @@
                           <when test="1">
                             <!-- Wipe Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0100_R-21%CC%010001" IndentLevel="2" HelpContext="NEO-Speed-Wipe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0101_R-21%CC%010101" IndentLevel="2" HelpContext="NEO-Direction-Wipe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0102_R-21%CC%010201" IndentLevel="2" HelpContext="NEO-Loop-Wipe"/>
                           </when>
                           <when test="2">
                             <!-- Rainbow Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0200_R-21%CC%020001" IndentLevel="2" HelpContext="NEO-Speed-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0201_R-21%CC%020101" IndentLevel="2" HelpContext="NEO-Delta-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0202_R-21%CC%020201" IndentLevel="2" HelpContext="NEO-Saturation-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0203_R-21%CC%020301" IndentLevel="2" HelpContext="NEO-Density-Rainbow"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0204_R-21%CC%020401" IndentLevel="2" HelpContext="NEO-Mode-Rainbow"/>
                           </when>
                           <when test="3">
                             <!-- Pride2015 Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0300_R-21%CC%030001" IndentLevel="2" HelpContext="NEO-Speed-Pride2015"/>
                           </when>
                           <when test="4">
                             <!-- Juggle Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0400_R-21%CC%040001" IndentLevel="2" HelpContext="NEO-Speed-Juggle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0401_R-21%CC%040101" IndentLevel="2" HelpContext="NEO-NumDots-Juggle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0402_R-21%CC%040201" IndentLevel="2" HelpContext="NEO-FadeSpeed-Juggle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0403_R-21%CC%040301" IndentLevel="2" HelpContext="NEO-HueOffset-Juggle"/>
                           </when>
                           <when test="5">
                             <!-- BPM Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0500_R-21%CC%050001" IndentLevel="2" HelpContext="NEO-BPM-BPM"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0501_R-21%CC%050101" IndentLevel="2" HelpContext="NEO-Hue-BPM"/>
                           </when>
                           <when test="6">
                             <!-- Cylon Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0600_R-21%CC%060001" IndentLevel="2" HelpContext="NEO-Speed-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0601_R-21%CC%060101" IndentLevel="2" HelpContext="NEO-Hue-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0602_R-21%CC%060201" IndentLevel="2" HelpContext="NEO-EyeSize-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0603_R-21%CC%060301" IndentLevel="2" HelpContext="NEO-FadeAmount-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0604_R-21%CC%060401" IndentLevel="2" HelpContext="NEO-Direction-Cylon"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0605_R-21%CC%060501" IndentLevel="2" HelpContext="NEO-Mode-Cylon"/>
                           </when>
                           <when test="7">
                             <!-- Test Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0700_R-21%CC%070001" IndentLevel="2" HelpContext="NEO-PhaseDuration-Test"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0701_R-21%CC%070101" IndentLevel="2" HelpContext="NEO-Mode-Test"/>
                           </when>
                           <when test="8">
                             <!-- Fire Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0800_R-21%CC%080001" IndentLevel="2" HelpContext="NEO-Speed-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0801_R-21%CC%080101" IndentLevel="2" HelpContext="NEO-Cooling-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0802_R-21%CC%080201" IndentLevel="2" HelpContext="NEO-Sparking-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0803_R-21%CC%080301" IndentLevel="2" HelpContext="NEO-ReverseDirection-Fire"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0804_R-21%CC%080401" IndentLevel="2" HelpContext="NEO-BlueFireMode-Fire"/>
                           </when>
                           <when test="9">
                             <!-- Theater Chase Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0900_R-21%CC%090001" IndentLevel="2" HelpContext="NEO-Speed-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0901_R-21%CC%090101" IndentLevel="2" HelpContext="NEO-Spacing-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0902_R-21%CC%090201" IndentLevel="2" HelpContext="NEO-DotSize-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0903_R-21%CC%090301" IndentLevel="2" HelpContext="NEO-ColorMode-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0904_R-21%CC%090401" IndentLevel="2" HelpContext="NEO-ColorSpeed-Theater-Chase"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%0905_R-21%CC%090501" IndentLevel="2" HelpContext="NEO-Bounce-Theater-Chase"/>
                           </when>
                           <when test="10">
                             <!-- Sparkle Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1000_R-21%CC%100001" IndentLevel="2" HelpContext="NEO-Speed-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1001_R-21%CC%100101" IndentLevel="2" HelpContext="NEO-FadeRate-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1002_R-21%CC%100201" IndentLevel="2" HelpContext="NEO-SparkleCount-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1003_R-21%CC%100301" IndentLevel="2" HelpContext="NEO-Probability-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1004_R-21%CC%100401" IndentLevel="2" HelpContext="NEO-WhiteOnly-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1005_R-21%CC%100501" IndentLevel="2" HelpContext="NEO-BurstMode-Sparkle"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1006_R-21%CC%100601" IndentLevel="2" HelpContext="NEO-Mode-Sparkle"/>
                           </when>
                           <when test="11">
                             <!-- Breathing Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1100_R-21%CC%110001" IndentLevel="2" HelpContext="NEO-Speed-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1101_R-21%CC%110101" IndentLevel="2" HelpContext="NEO-MinBrightness-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1102_R-21%CC%110201" IndentLevel="2" HelpContext="NEO-Curve-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1103_R-21%CC%110301" IndentLevel="2" HelpContext="NEO-RainbowMode-Breathing"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1104_R-21%CC%110401" IndentLevel="2" HelpContext="NEO-Waveform-Breathing"/>
                           </when>
                           <when test="12">
                             <!-- Strobe Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1200_R-21%CC%120001" IndentLevel="2" HelpContext="NEO-Speed-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1201_R-21%CC%120101" IndentLevel="2" HelpContext="NEO-OnRatio-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1202_R-21%CC%120201" IndentLevel="2" HelpContext="NEO-MinBrightness-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1203_R-21%CC%120301" IndentLevel="2" HelpContext="NEO-RandomTiming-Strobe"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1204_R-21%CC%120401" IndentLevel="2" HelpContext="NEO-RainbowStrobe-Strobe"/>
                           </when>
                           <when test="13">
                             <!-- Comet Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1300_R-21%CC%130001" IndentLevel="2" HelpContext="NEO-Speed-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1301_R-21%CC%130101" IndentLevel="2" HelpContext="NEO-FadeRate-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1302_R-21%CC%130201" IndentLevel="2" HelpContext="NEO-TailLength-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1303_R-21%CC%130301" IndentLevel="2" HelpContext="NEO-BounceMode-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1304_R-21%CC%130401" IndentLevel="2" HelpContext="NEO-RainbowMode-Comet"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1305_R-21%CC%130501" IndentLevel="2" HelpContext="NEO-Mode-Comet"/>
                           </when>
                           <when test="14">
                             <!-- Noise Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1400_R-21%CC%140001" IndentLevel="2" HelpContext="NEO-Speed-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1401_R-21%CC%140101" IndentLevel="2" HelpContext="NEO-Scale-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1402_R-21%CC%140201" IndentLevel="2" HelpContext="NEO-Saturation-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1403_R-21%CC%140301" IndentLevel="2" HelpContext="NEO-HueOffset-Noise"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1404_R-21%CC%140401" IndentLevel="2" HelpContext="NEO-Palette-Noise"/>
                           </when>
                           <when test="15">
                             <!-- Palette Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1500_R-21%CC%150001" IndentLevel="2" HelpContext="NEO-Speed-Palette"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1501_R-21%CC%150101" IndentLevel="2" HelpContext="NEO-Palette-Palette"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1502_R-21%CC%150201" IndentLevel="2" HelpContext="NEO-Blend-Palette"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1503_R-21%CC%150301" IndentLevel="2" HelpContext="NEO-Spacing-Palette"/>
                           </when>
                           <when test="16">
                             <!-- Blitz Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1600_R-21%CC%160001" IndentLevel="2" HelpContext="NEO-Speed-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1601_R-21%CC%160101" IndentLevel="2" HelpContext="NEO-Width-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1602_R-21%CC%160201" IndentLevel="2" HelpContext="NEO-Decay-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1603_R-21%CC%160301" IndentLevel="2" HelpContext="NEO-Hue-Blitz"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1604_R-21%CC%160401" IndentLevel="2" HelpContext="NEO-Intensity-Blitz"/>
                           </when>
                           <when test="17">
                             <!-- Gradient Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1700_R-21%CC%170001" IndentLevel="2" HelpContext="NEO-Speed-Gradient"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1701_R-21%CC%170101" IndentLevel="2" HelpContext="NEO-StartHue-Gradient"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1702_R-21%CC%170201" IndentLevel="2" HelpContext="NEO-EndHue-Gradient"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1703_R-21%CC%170301" IndentLevel="2" HelpContext="NEO-Saturation-Gradient"/>
                           </when>
                           <when test="18">
                             <!-- Kerze Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1800_R-21%CC%180001" IndentLevel="2" HelpContext="NEO-Speed-Kerze"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1801_R-21%CC%180101" IndentLevel="2" HelpContext="NEO-Intensity-Kerze"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1802_R-21%CC%180201" IndentLevel="2" HelpContext="NEO-Zones-Kerze"/>
                           </when>
                           <when test="19">
                             <!-- Laufschrift Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1900_R-21%CC%190001" IndentLevel="2" HelpContext="NEO-Speed-Laufschrift"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1901_R-21%CC%190101" IndentLevel="2" HelpContext="NEO-Gap-Laufschrift"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1902_R-21%CC%190201" IndentLevel="2" HelpContext="NEO-Loop-Laufschrift"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1903_R-21%CC%190301" IndentLevel="2" HelpContext="NEO-Text-Laufschrift"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%1904_R-21%CC%190401" IndentLevel="2" HelpContext="NEO-Font-Laufschrift"/>
                           </when>
                           <when test="20">
                             <!-- Uhr 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2000_R-21%CC%200001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2001_R-21%CC%200101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2002_R-21%CC%200201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2003_R-21%CC%200301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2004_R-21%CC%200401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2005_R-21%CC%200501" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2006_R-21%CC%200601" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2007_R-21%CC%200701" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2008_R-21%CC%200801" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2009_R-21%CC%200901" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2000_R-21%CC%200001" IndentLevel="2" HelpContext="NEO-ViewMode-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2001_R-21%CC%200101" IndentLevel="2" HelpContext="NEO-ShowSeconds-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2002_R-21%CC%200201" IndentLevel="2" HelpContext="NEO-BlinkColon-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2003_R-21%CC%200301" IndentLevel="2" HelpContext="NEO-ColourHue-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2004_R-21%CC%200401" IndentLevel="2" HelpContext="NEO-DateMode-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2005_R-21%CC%200501" IndentLevel="2" HelpContext="NEO-DateFormat-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2006_R-21%CC%200601" IndentLevel="2" HelpContext="NEO-DateHue-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2007_R-21%CC%200701" IndentLevel="2" HelpContext="NEO-SwitchSec-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2008_R-21%CC%200801" IndentLevel="2" HelpContext="NEO-ScrollSpeed-Uhr-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2009_R-21%CC%200901" IndentLevel="2" HelpContext="NEO-Font-Uhr-2D"/>
                           </when>
                           <when test="21">
                             <!-- Snake 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2100_R-21%CC%210001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2101_R-21%CC%210101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2102_R-21%CC%210201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2103_R-21%CC%210301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2100_R-21%CC%210001" IndentLevel="2" HelpContext="NEO-Speed-Snake-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2101_R-21%CC%210101" IndentLevel="2" HelpContext="NEO-HeadHue-Snake-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2102_R-21%CC%210201" IndentLevel="2" HelpContext="NEO-BodyMode-Snake-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2103_R-21%CC%210301" IndentLevel="2" HelpContext="NEO-BodyHue-Snake-2D"/>
                           </when>
                           <when test="22">
                             <!-- Matrix 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2200_R-21%CC%220001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2201_R-21%CC%220101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2202_R-21%CC%220201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2203_R-21%CC%220301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2200_R-21%CC%220001" IndentLevel="2" HelpContext="NEO-Speed-Matrix-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2201_R-21%CC%220101" IndentLevel="2" HelpContext="NEO-Density-Matrix-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2202_R-21%CC%220201" IndentLevel="2" HelpContext="NEO-Palette-Matrix-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2203_R-21%CC%220301" IndentLevel="2" HelpContext="NEO-Glitch-Matrix-2D"/>
                           </when>
                           <when test="23">
                             <!-- Tetris 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2300_R-21%CC%230001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2301_R-21%CC%230101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2302_R-21%CC%230201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2303_R-21%CC%230301" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2304_R-21%CC%230401" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2305_R-21%CC%230501" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2300_R-21%CC%230001" IndentLevel="2" HelpContext="NEO-Speed-Tetris-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2301_R-21%CC%230101" IndentLevel="2" HelpContext="NEO-BgBrightness-Tetris-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2302_R-21%CC%230201" IndentLevel="2" HelpContext="NEO-GhostPiece-Tetris-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2303_R-21%CC%230301" IndentLevel="2" HelpContext="NEO-ColorMode-Tetris-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2304_R-21%CC%230401" IndentLevel="2" HelpContext="NEO-FlashLines-Tetris-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2305_R-21%CC%230501" IndentLevel="2" HelpContext="NEO-AutoPlay-Tetris-2D"/>
                           </when>
                           <when test="24">
                             <!-- TRON Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2400_R-21%CC%240001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2401_R-21%CC%240101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2402_R-21%CC%240201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2403_R-21%CC%240301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2400_R-21%CC%240001" IndentLevel="2" HelpContext="NEO-Speed-TRON"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2401_R-21%CC%240101" IndentLevel="2" HelpContext="NEO-Hue-TRON"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2402_R-21%CC%240201" IndentLevel="2" HelpContext="NEO-GridSpacing-TRON"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2403_R-21%CC%240301" IndentLevel="2" HelpContext="NEO-Glow-TRON"/>
                           </when>
                           <when test="25">
                             <!-- Starfield Warp Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2500_R-21%CC%250001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2501_R-21%CC%250101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2502_R-21%CC%250201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2503_R-21%CC%250301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2500_R-21%CC%250001" IndentLevel="2" HelpContext="NEO-Speed-Starfield-Warp"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2501_R-21%CC%250101" IndentLevel="2" HelpContext="NEO-Density-Starfield-Warp"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2502_R-21%CC%250201" IndentLevel="2" HelpContext="NEO-ColorMode-Starfield-Warp"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2503_R-21%CC%250301" IndentLevel="2" HelpContext="NEO-WarpPulse-Starfield-Warp"/>
                           </when>
                           <when test="26">
                             <!-- Plasma Nebula Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2600_R-21%CC%260001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2601_R-21%CC%260101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2602_R-21%CC%260201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2603_R-21%CC%260301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2600_R-21%CC%260001" IndentLevel="2" HelpContext="NEO-Speed-Plasma-Nebula"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2601_R-21%CC%260101" IndentLevel="2" HelpContext="NEO-Saturation-Plasma-Nebula"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2602_R-21%CC%260201" IndentLevel="2" HelpContext="NEO-Contrast-Plasma-Nebula"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2603_R-21%CC%260301" IndentLevel="2" HelpContext="NEO-PaletteShift-Plasma-Nebula"/>
                           </when>
                           <when test="27">
                             <!-- UFO Swarm Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2700_R-21%CC%270001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2701_R-21%CC%270101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2702_R-21%CC%270201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2703_R-21%CC%270301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2700_R-21%CC%270001" IndentLevel="2" HelpContext="NEO-Speed-UFO-Swarm"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2701_R-21%CC%270101" IndentLevel="2" HelpContext="NEO-Count-UFO-Swarm"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2702_R-21%CC%270201" IndentLevel="2" HelpContext="NEO-Hue-UFO-Swarm"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2703_R-21%CC%270301" IndentLevel="2" HelpContext="NEO-Beam-UFO-Swarm"/>
                           </when>
                           <when test="28">
                             <!-- Game of Life 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2800_R-21%CC%280001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2801_R-21%CC%280101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2802_R-21%CC%280201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2803_R-21%CC%280301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2800_R-21%CC%280001" IndentLevel="2" HelpContext="NEO-Speed-Game-of-Life-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2801_R-21%CC%280101" IndentLevel="2" HelpContext="NEO-Hue-Game-of-Life-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2802_R-21%CC%280201" IndentLevel="2" HelpContext="NEO-ColorMode-Game-of-Life-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2803_R-21%CC%280301" IndentLevel="2" HelpContext="NEO-SpawnDensity-Game-of-Life-2D"/>
                           </when>
                           <when test="29">
                             <!-- DNA 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2900_R-21%CC%290001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2901_R-21%CC%290101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2902_R-21%CC%290201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%2903_R-21%CC%290301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2900_R-21%CC%290001" IndentLevel="2" HelpContext="NEO-Speed-DNA-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2901_R-21%CC%290101" IndentLevel="2" HelpContext="NEO-Hue-DNA-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2902_R-21%CC%290201" IndentLevel="2" HelpContext="NEO-Twist-DNA-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%2903_R-21%CC%290301" IndentLevel="2" HelpContext="NEO-RungSpacing-DNA-2D"/>
                           </when>
                           <when test="30">
                             <!-- Aurora 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3000_R-21%CC%300001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3001_R-21%CC%300101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3002_R-21%CC%300201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3003_R-21%CC%300301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3000_R-21%CC%300001" IndentLevel="2" HelpContext="NEO-Speed-Aurora-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3001_R-21%CC%300101" IndentLevel="2" HelpContext="NEO-Hue-Aurora-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3002_R-21%CC%300201" IndentLevel="2" HelpContext="NEO-Scale-Aurora-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3003_R-21%CC%300301" IndentLevel="2" HelpContext="NEO-Intensity-Aurora-2D"/>
                           </when>
                           <when test="31">
                             <!-- Lissajous 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3100_R-21%CC%310001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3101_R-21%CC%310101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3102_R-21%CC%310201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3103_R-21%CC%310301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3100_R-21%CC%310001" IndentLevel="2" HelpContext="NEO-Speed-Lissajous-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3101_R-21%CC%310101" IndentLevel="2" HelpContext="NEO-Hue-Lissajous-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3102_R-21%CC%310201" IndentLevel="2" HelpContext="NEO-FreqA-Lissajous-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3103_R-21%CC%310301" IndentLevel="2" HelpContext="NEO-FreqB-Lissajous-2D"/>
                           </when>
                           <when test="32">
                             <!-- Metaballs 2D Effect Parameters -->
                             <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3200_R-21%CC%320001" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3201_R-21%CC%320101" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3202_R-21%CC%320201" IndentLevel="2" HelpContext="%DOC%"/>
-                            <ParameterRefRef RefId="%AID%_UP-21%CC%3203_R-21%CC%320301" IndentLevel="2" HelpContext="%DOC%"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3200_R-21%CC%320001" IndentLevel="2" HelpContext="NEO-Speed-Metaballs-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3201_R-21%CC%320101" IndentLevel="2" HelpContext="NEO-Hue-Metaballs-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3202_R-21%CC%320201" IndentLevel="2" HelpContext="NEO-BlobCount-Metaballs-2D"/>
+                            <ParameterRefRef RefId="%AID%_UP-21%CC%3203_R-21%CC%320301" IndentLevel="2" HelpContext="NEO-Contrast-Metaballs-2D"/>
                           </when>
                         </choose>
                       </when>

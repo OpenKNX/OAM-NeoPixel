@@ -1433,8 +1433,19 @@ function Extract-SwitchCaseMultiLang {
     [string]$Lang
   )
 
-  # Pattern 1: PARAM_DESC_DE_EN("de text", "en text") macro
-  $pattern1 = "(?s)get$FunctionName\s*\([^)]*\)[^{]*\{.*?case\s+$CaseIndex\s*:\s*return\s+PARAM_DESC_DE_EN\s*\(\s*[`"']([^`"']+)[`"']\s*,\s*[`"']([^`"']+)[`"']\s*\)"
+  # Search only the body of get<FunctionName>(): a case missing there must not be taken from the next function
+  # (a getParameterLabel() without case 2 would otherwise return case 2 of getParameterDescription()).
+  $head = [regex]::Match($Content, "get$FunctionName\s*\([^)]*\)[^{]*\{")
+  if (-not $head.Success) { return $null }
+  $depth = 1; $pos = $head.Index + $head.Length
+  while ($pos -lt $Content.Length -and $depth -gt 0) {
+    if ($Content[$pos] -eq '{') { $depth++ } elseif ($Content[$pos] -eq '}') { $depth-- }
+    $pos++
+  }
+  $Content = $head.Value + $Content.Substring($head.Index + $head.Length, $pos - ($head.Index + $head.Length))
+
+  # Pattern 1: PARAM_DESC_DE_EN / PARAM_LABEL_DE_EN("de text", "en text") macro
+  $pattern1 = "(?s)get$FunctionName\s*\([^)]*\)[^{]*\{.*?case\s+$CaseIndex\s*:\s*return\s+PARAM_(?:DESC|LABEL)_DE_EN\s*\(\s*[`"']([^`"']+)[`"']\s*,\s*[`"']([^`"']+)[`"']\s*\)"
 
   if ($Content -match $pattern1) {
     $deText = $Matches[1]
@@ -2449,6 +2460,14 @@ function Parse-EffectHeader {
     Write-ScriptVerbose "  Parsing parameter $i" "DarkGray"
     $paramName = Extract-SwitchCase -Content $content -FunctionName "ParameterName" -CaseIndex $i
     $paramDesc = Extract-SwitchCaseMultiLang -Content $content -FunctionName "ParameterDescription" -CaseIndex $i -Lang $Lang
+    # short label of the ETS row: getParameterLabel() with PARAM_LABEL_DE_EN in the effect header (lib/OFM-NeoPixel, Effect.h)
+    $paramLabel = $null
+    if ($content -match 'getParameterLabel\s*\(') {
+      $paramLabel = Extract-SwitchCaseMultiLang -Content $content -FunctionName "ParameterLabel" -CaseIndex $i -Lang $Lang
+    }
+    if ($paramName -and -not $paramLabel) {
+      throw "Effect ${effectName}: parameter $i ($paramName) has no label - add getParameterLabel() with PARAM_LABEL_DE_EN to the effect header (lib/OFM-NeoPixel/src/effects/Effect.h)"
+    }
     $paramType = Extract-ParameterType -Content $content -CaseIndex $i
     $paramDefault = Extract-IntValue -Content $content -FunctionName "ParameterDefault" -CaseIndex $i
     $paramMin = Extract-IntValue -Content $content -FunctionName "ParameterMin" -CaseIndex $i
@@ -2489,6 +2508,7 @@ function Parse-EffectHeader {
         Index       = $i
         Name        = $paramName
         Description = $paramDesc
+        Label       = $paramLabel
         Type        = $paramType
         Default     = $paramDefault
         DefaultText = if ($paramType -eq 'PARAM_STRING') { Get-EffectDefaultText $content $i } else { '' }
@@ -2811,7 +2831,7 @@ function Generate-UnionParameters {
       $paramValue = if ($param.Type -eq 'PARAM_STRING') { '' } else { $param.Default }
 
       # Generate Parameter element
-      $xml += "                <Parameter Id=`"$paramId`" Offset=`"$currentOffset`" BitOffset=`"$bitOffset`" Name=`"$paramName`" ParameterType=`"$ptId`" Text=`"$($param.Name) ($($effect.NameDE))`" Value=`"$paramValue`"/>"
+      $xml += "                <Parameter Id=`"$paramId`" Offset=`"$currentOffset`" BitOffset=`"$bitOffset`" Name=`"$paramName`" ParameterType=`"$ptId`" Text=`"$($param.Label) ($($effect.NameDE))`" Value=`"$paramValue`"/>"
       Write-ScriptVerbose "    Param ID ${paramIdNum} @ offset ${currentOffset}: $($param.Name)" "DarkGray"
       Write-Host "      + Param ${paramIdNum}: $($param.Name) @ Offset $currentOffset ($paramByteSize byte)" -ForegroundColor DarkGray
 
@@ -2938,10 +2958,13 @@ function Generate-DynamicChoose {
     $lines += "<!-- $($effect.NameDE) Effect Parameters -->"
     $lines += '<ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-spezifische Parameter" UIHint="Headline"/>'
 
+    # HelpContext of the help file NEO-{ParamName}-{EffectName}.md, as for scenes and cues (%DOC% would follow the German text)
+    $effectNameClean = $effect.NameDE -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
     foreach ($param in $effect.Parameters) {
       $paramIdNum = Get-EffectParameterIdSuffix -EffectId ([int]$effect.EffectID) -ParameterIndex ([int]$param.Index)
       $pfx = $script:Config.EffectParameterIdPrefix
-      $lines += "<ParameterRefRef RefId=`"%AID%_UP-${pfx}%CC%${paramIdNum}_R-${pfx}%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"%DOC%`"/>"
+      $paramNameClean = $param.Name -replace $script:Config.CleanPatterns.SpaceToHyphen, '-'
+      $lines += "<ParameterRefRef RefId=`"%AID%_UP-${pfx}%CC%${paramIdNum}_R-${pfx}%CC%${paramIdNum}01`" IndentLevel=`"2`" HelpContext=`"NEO-$paramNameClean-$effectNameClean`"/>"
     }
 
     $blocks += @{ EffectID = $effect.EffectID; Is2D = (Test-Is2DEffectId -Effects $Effects -EffectId ([int]$effect.EffectID)); Lines = $lines }
@@ -4235,7 +4258,7 @@ function Generate-SceneEffectParameterRefs {
         # Format: tcccnnn_R-tcccnnnrr where rr = effectID+2 (avoids 01=default ref)
         $aliasSuffix = "{0:D2}" -f ($effect.EffectID + 2)
         $aliasId = "%AID%_UP-%TT%%CC%%PPP+${slotId}%_R-%TT%%CC%%PPP+${slotId}%${aliasSuffix}"
-        $text = "$($param.Name)"
+        $text = "$($param.Label)"
         $defaultValue = if ($param.Type -eq 'PARAM_STRING') { '' } else { $param.Default }
         $xml += "                            <ParameterRef Id=`"$aliasId`" RefId=`"%AID%_UP-%TT%%CC%%PPP+$slotId%`" Text=`"$text`" Value=`"$defaultValue`" />"
       }
@@ -4404,7 +4427,7 @@ function Get-CueTypedParamPlan {
       # bekommt diesen Default als Value=-Override -> greift, sobald der Effekt gewaehlt
       # ist (gleiches Muster wie Szene/Segment).
       $default = if ($param.Type -eq 'PARAM_STRING') { '' } else { $param.Default }
-      $text = "$($param.Name)"
+      $text = "$($param.Label)"
       if ($param.Type -eq 'PARAM_STRING' -and $param.Name -eq 'Text') {
         $text = 'Laufschrift-Text'
       }

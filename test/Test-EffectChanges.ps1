@@ -283,6 +283,15 @@ function Set-WipeNames([string]$Dir, [string[]]$Names) {
   $new = ''
   for ($i = 0; $i -lt $Names.Count; $i++) { $new += "            case ${i}: return `"$($Names[$i])`";`n" }
   Edit-File $path $old $new
+  # every parameter needs its ETS label (getParameterLabel, PARAM_LABEL_DE_EN): the labels of the header for its names, the name otherwise
+  $oldLabels = "            case 0: return PARAM_LABEL_DE_EN(`"Geschwindigkeit`", `"Speed`");`n            case 1: return PARAM_LABEL_DE_EN(`"Richtung`", `"Direction`");`n            case 2: return PARAM_LABEL_DE_EN(`"Wiederholen`", `"Repeat`");`n"
+  $known = @{ Speed = @('Geschwindigkeit', 'Speed'); Direction = @('Richtung', 'Direction'); Loop = @('Wiederholen', 'Repeat') }
+  $newLabels = ''
+  for ($i = 0; $i -lt $Names.Count; $i++) {
+    $pair = if ($known.ContainsKey($Names[$i])) { $known[$Names[$i]] } else { @($Names[$i], $Names[$i]) }
+    $newLabels += "            case ${i}: return PARAM_LABEL_DE_EN(`"$($pair[0])`", `"$($pair[1])`");`n"
+  }
+  Edit-File $path $oldLabels $newLabels
   Edit-File $path 'uint8_t getParameterCount() const override { return 3; }' "uint8_t getParameterCount() const override { return $($Names.Count); }"
 }
 
@@ -364,6 +373,11 @@ Test-Allowed 'ParamAppend' {
 
 # 4 parameter inserted in the middle / reordered
 Test-Stop 'ParamInsert' { param($d) Set-WipeNames $d @('Speed', 'Fade', 'Direction', 'Loop') } -Message "moved from index"
+
+# 4b a parameter without its ETS label (getParameterLabel / PARAM_LABEL_DE_EN in the effect header)
+Test-Stop 'ParamLabelMissing' {
+  param($d) Edit-File (Fx $d 'EffectWipe.h') "            case 2: return PARAM_LABEL_DE_EN(`"Wiederholen`", `"Repeat`");`n" ''
+} -Message "parameter 2 \(Loop\) has no label"
 Test-Stop 'ParamReorder' { param($d) Set-WipeNames $d @('Speed', 'Loop', 'Direction') } -Message "moved from index"
 
 # 5 parameter removed: the last one (allowed) / one in the middle (stops)

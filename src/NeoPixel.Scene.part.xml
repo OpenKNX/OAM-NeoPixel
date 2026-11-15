@@ -85,180 +85,180 @@
 
                             <!-- Aliased ParameterRefs: per-effect labels pointing to generic slots -->
                             <!-- Wipe (ID 1) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%03" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="25" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%03" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Direction" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%03" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Loop" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%03" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="25" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%03" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Richtung" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%03" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Wiederholen" Value="1" />
                             <!-- Rainbow (ID 2) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%04" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%04" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Delta" Value="7" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%04" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Saturation" Value="255" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%04" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Density" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%04" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Mode" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%04" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%04" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbabstand" Value="7" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%04" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Sättigung" Value="255" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%04" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Dichte" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%04" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Modus" Value="0" />
                             <!-- Pride2015 (ID 3) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%05" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%05" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
                             <!-- Juggle (ID 4) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%06" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="80" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%06" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="NumDots" Value="8" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%06" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="FadeSpeed" Value="20" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%06" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="HueOffset" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%06" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="80" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%06" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Anzahl Punkte" Value="8" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%06" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Ausblendrate" Value="20" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%06" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbton-Versatz" Value="0" />
                             <!-- BPM (ID 5) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%07" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="BPM" Value="62" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%07" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%07" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Schläge pro Minute" Value="62" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%07" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="0" />
                             <!-- Cylon (ID 6) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%08" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="20" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%08" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%08" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="EyeSize" Value="5" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%08" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="FadeAmount" Value="50" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%08" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Direction" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%08" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Mode" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%08" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="20" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%08" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%08" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Augengröße" Value="5" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%08" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Schweif-Abklingen" Value="50" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%08" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Richtung (nur 2D)" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%08" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Modus" Value="0" />
                             <!-- Test (ID 7) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="PhaseDuration" Value="5" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Mode" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%09" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Phasendauer (s)" Value="5" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%09" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Modus" Value="0" />
                             <!-- Fire (ID 8) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Cooling" Value="90" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Sparking" Value="120" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="ReverseDirection" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%10" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="BlueFireMode" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%10" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit (ungenutzt)" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%10" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Abkühlung" Value="90" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%10" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Funkenrate" Value="120" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%10" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Richtung umkehren" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%10" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Blaues Feuer" Value="0" />
                             <!-- Theater Chase (ID 9) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%11" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%11" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Spacing" Value="3" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%11" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="DotSize" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%11" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="ColorMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%11" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="ColorSpeed" Value="5" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%11" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Bounce" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%11" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%11" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Abstand" Value="3" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%11" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Punktgröße" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%11" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbmodus" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%11" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Farbwechsel-Geschwindigkeit" Value="5" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%11" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Hin und her" Value="0" />
                             <!-- Sparkle (ID 10) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%12" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%12" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="FadeRate" Value="120" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%12" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="SparkleCount" Value="64" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%12" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Probability" Value="100" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%12" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="WhiteOnly" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%12" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="BurstMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%12" RefId="%AID%_UP-%TT%%CC%%PPP+14%" Text="Mode" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%12" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%12" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Ausblendrate / Sättigung" Value="120" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%12" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Anzahl / Dichte" Value="64" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%12" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Wahrscheinlichkeit" Value="100" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%12" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Nur Weiß / Regenbogen" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%12" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Burst / variable Helligkeit" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%12" RefId="%AID%_UP-%TT%%CC%%PPP+14%" Text="Modus" Value="0" />
                             <!-- Breathing (ID 11) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%13" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%13" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="MinBrightness" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%13" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Curve" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%13" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="RainbowMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%13" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Waveform" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%13" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%13" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Min. Helligkeit / Pulsbreite" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%13" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Kurve / Gamma" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%13" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Regenbogen" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%13" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Wellenform" Value="0" />
                             <!-- Strobe (ID 12) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%14" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%14" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="OnRatio" Value="100" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%14" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="MinBrightness" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%14" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="RandomTiming" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%14" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="RainbowStrobe" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%14" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%14" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Einschaltanteil (%)" Value="100" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%14" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Min. Helligkeit" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%14" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Zufälliges Timing" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%14" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Regenbogen" Value="0" />
                             <!-- Comet (ID 13) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%15" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%15" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="FadeRate" Value="150" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%15" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="TailLength" Value="10" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%15" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="BounceMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%15" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="RainbowMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%15" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Mode" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%15" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%15" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Ausblendrate / Meteorgröße" Value="150" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%15" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Schweiflänge / Punktgröße / Häufigkeit" Value="10" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%15" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Sprungmodus / Zufallsfarben / Regenbogen" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%15" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Regenbogen / Multi-Meteor / Sprungmodus" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%15" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Modus" Value="0" />
                             <!-- Noise (ID 14) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%16" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="32" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%16" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Scale" Value="48" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%16" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Saturation" Value="255" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%16" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="HueOffset" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%16" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Palette" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%16" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="32" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%16" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Maßstab" Value="48" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%16" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Sättigung" Value="255" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%16" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbton-Versatz" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%16" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Farbmodus" Value="0" />
                             <!-- Palette (ID 15) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%17" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="32" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%17" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="32" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%17" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Palette" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%17" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Blend" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%17" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Spacing" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%17" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Überblendung" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%17" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Abstand" Value="0" />
                             <!-- Blitz (ID 16) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%18" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="32" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%18" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Width" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%18" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Decay" Value="40" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%18" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Hue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%18" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Intensity" Value="255" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%18" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Häufigkeit" Value="32" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%18" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Breite" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%18" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Abklingzeit" Value="40" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%18" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbton" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%18" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Intensität" Value="255" />
                             <!-- Gradient (ID 17) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%19" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="32" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%19" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="StartHue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%19" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="EndHue" Value="160" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%19" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Saturation" Value="255" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%19" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="32" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%19" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Start-Farbton" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%19" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="End-Farbton" Value="160" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%19" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Sättigung" Value="255" />
                             <!-- Kerze (ID 18) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%20" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="96" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Intensity" Value="224" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Zones" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%20" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Flackergeschwindigkeit" Value="96" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%20" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Flackerstärke" Value="224" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%20" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Zonen" Value="1" />
                             <!-- Laufschrift (ID 19) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="32" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Gap" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Loop" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%21" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="32" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%21" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Zeichenabstand" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%21" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Wiederholen" Value="1" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+18%_R-%TT%%CC%%PPP+18%21" RefId="%AID%_UP-%TT%%CC%%PPP+18%" Text="Text" Value="" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Font" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%21" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Schrift" Value="0" />
                             <!-- Uhr 2D (ID 20) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%22" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="ViewMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%22" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="ShowSeconds" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%22" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="BlinkColon" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%22" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="ColourHue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%22" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="DateMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%22" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="DateFormat" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%22" RefId="%AID%_UP-%TT%%CC%%PPP+14%" Text="DateHue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+15%_R-%TT%%CC%%PPP+15%22" RefId="%AID%_UP-%TT%%CC%%PPP+15%" Text="SwitchSec" Value="5" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+16%_R-%TT%%CC%%PPP+16%22" RefId="%AID%_UP-%TT%%CC%%PPP+16%" Text="ScrollSpeed" Value="60" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+17%_R-%TT%%CC%%PPP+17%22" RefId="%AID%_UP-%TT%%CC%%PPP+17%" Text="Font" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%22" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Anzeigemodus" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%22" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Sekunden anzeigen" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%22" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Doppelpunkt blinkt" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%22" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbton Uhrzeit" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%22" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Datumsanzeige" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%22" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Datumsformat" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+14%_R-%TT%%CC%%PPP+14%22" RefId="%AID%_UP-%TT%%CC%%PPP+14%" Text="Farbton Datum" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+15%_R-%TT%%CC%%PPP+15%22" RefId="%AID%_UP-%TT%%CC%%PPP+15%" Text="Wechselintervall (s)" Value="5" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+16%_R-%TT%%CC%%PPP+16%22" RefId="%AID%_UP-%TT%%CC%%PPP+16%" Text="Scrollgeschwindigkeit" Value="60" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+17%_R-%TT%%CC%%PPP+17%22" RefId="%AID%_UP-%TT%%CC%%PPP+17%" Text="Schrift" Value="0" />
                             <!-- Snake 2D (ID 21) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%23" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="64" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%23" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="HeadHue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%23" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="BodyMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%23" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="BodyHue" Value="85" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%23" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="64" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%23" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton Kopf" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%23" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Körpermodus" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%23" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbton Körper" Value="85" />
                             <!-- Matrix 2D (ID 22) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%24" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="80" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%24" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Density" Value="35" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%24" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="80" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%24" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Dichte (%)" Value="35" />
                             <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%24" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Palette" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%24" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Glitch" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%24" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Glitch-Blitze" Value="1" />
                             <!-- Tetris 2D (ID 23) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%25" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="128" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%25" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="BgBrightness" Value="8" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%25" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="GhostPiece" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%25" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="ColorMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%25" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="FlashLines" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%25" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="AutoPlay" Value="3" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%25" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Fallgeschwindigkeit" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%25" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Helligkeit Hintergrundgitter" Value="8" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%25" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Geist-Stein" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%25" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Farbmodus" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+12%_R-%TT%%CC%%PPP+12%25" RefId="%AID%_UP-%TT%%CC%%PPP+12%" Text="Volle Reihen blitzen" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+13%_R-%TT%%CC%%PPP+13%25" RefId="%AID%_UP-%TT%%CC%%PPP+13%" Text="Selbstspielende KI" Value="3" />
                             <!-- TRON (ID 24) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%26" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="90" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%26" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="150" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%26" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="GridSpacing" Value="4" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%26" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Glow" Value="170" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%26" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="90" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%26" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="150" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%26" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Gitterabstand" Value="4" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%26" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Leuchten" Value="170" />
                             <!-- Starfield Warp (ID 25) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%27" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="96" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%27" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Density" Value="70" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%27" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="ColorMode" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%27" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="WarpPulse" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%27" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="96" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%27" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Dichte (%)" Value="70" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%27" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Farbmodus" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%27" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Warp-Puls" Value="1" />
                             <!-- Plasma Nebula (ID 26) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%28" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="64" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%28" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Saturation" Value="220" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%28" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Contrast" Value="170" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%28" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="PaletteShift" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%28" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="64" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%28" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Sättigung" Value="220" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%28" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Kontrast" Value="170" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%28" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Palettenverschiebung" Value="0" />
                             <!-- UFO Swarm (ID 27) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%29" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="90" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%29" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Count" Value="4" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%29" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Hue" Value="150" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%29" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Beam" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%29" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="90" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%29" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Anzahl UFOs" Value="4" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%29" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Farbton" Value="150" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%29" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Traktorstrahl" Value="1" />
                             <!-- Game of Life 2D (ID 28) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%30" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="64" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%30" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="96" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%30" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="ColorMode" Value="1" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%30" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="SpawnDensity" Value="30" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%30" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="64" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%30" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="96" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%30" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Farbmodus" Value="1" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%30" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Startdichte (%)" Value="30" />
                             <!-- DNA 2D (ID 29) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%31" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="64" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%31" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%31" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Twist" Value="8" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%31" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="RungSpacing" Value="4" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%31" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Rotationsgeschwindigkeit" Value="64" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%31" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%31" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Windungen" Value="8" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%31" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Sprossenabstand" Value="4" />
                             <!-- Aurora 2D (ID 30) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%32" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="48" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%32" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="96" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%32" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Scale" Value="18" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%32" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Intensity" Value="220" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%32" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="48" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%32" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="96" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%32" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Detailtiefe" Value="18" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%32" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Helligkeit" Value="220" />
                             <!-- Lissajous 2D (ID 31) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%33" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="56" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%33" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="160" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%33" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="FreqA" Value="3" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%33" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="FreqB" Value="2" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%33" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="56" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%33" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="160" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%33" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Frequenz horizontal" Value="3" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%33" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Frequenz vertikal" Value="2" />
                             <!-- Metaballs 2D (ID 32) -->
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%34" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Speed" Value="50" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%34" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Hue" Value="0" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%34" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="BlobCount" Value="4" />
-                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%34" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Contrast" Value="128" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+8%_R-%TT%%CC%%PPP+8%34" RefId="%AID%_UP-%TT%%CC%%PPP+8%" Text="Geschwindigkeit" Value="50" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+9%_R-%TT%%CC%%PPP+9%34" RefId="%AID%_UP-%TT%%CC%%PPP+9%" Text="Farbton" Value="0" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+10%_R-%TT%%CC%%PPP+10%34" RefId="%AID%_UP-%TT%%CC%%PPP+10%" Text="Anzahl Blobs" Value="4" />
+                            <ParameterRef Id="%AID%_UP-%TT%%CC%%PPP+11%_R-%TT%%CC%%PPP+11%34" RefId="%AID%_UP-%TT%%CC%%PPP+11%" Text="Kontrast" Value="128" />
                             <!-- END AUTO-GENERATED: Scene Effect ParameterRefs -->
                         </ParameterRefs>
                         <ParameterCalculations>
