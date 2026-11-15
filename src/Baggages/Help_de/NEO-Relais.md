@@ -36,11 +36,11 @@ Bevor Sie ein Netzteil über ein Relais schalten, prüfen Sie, **woher dieses Op
 
 **Empfehlung:** Das Netzteil, das auch den Controller speist, nicht über ein Relais komplett abschalten – oder eine getrennte Versorgung bzw. KNX-Hilfsspannung für das OpenKNX-Gerät vorsehen.
 
-Für ein Relais, das dieses Gerät versorgt, **„Vor Upload/Neustart“ auf „unverändert“** lassen (Standard). Mit „Aus“ schaltet das Gerät zu Beginn eines ETS-Downloads und vor einem Neustart seine eigene Versorgung ab. Nach jedem Neustart ist das Relais mindestens bis zum Ende der Startverzögerung aus, mit Mindest-Auszeit kann ein EIN später kommen; diesen Zeitraum muss die Beschaltung überbrücken.
+Für ein Relais, das dieses Gerät versorgt, **„Vor Upload/Neustart“ auf „unverändert“** lassen (Standard). Mit „Aus“ schaltet das Gerät zu Beginn eines Downloads und vor einem Neustart seine eigene Versorgung ab. Nach jedem Neustart ist das Relais mindestens bis zum Ende der Startverzögerung aus, mit Mindest-Auszeit kann ein EIN später kommen; diesen Zeitraum muss die Beschaltung überbrücken.
 
 ---
 
-## Einstellungen in ETS
+## Einstellungen
 
 **Externe Relais**
 Legt fest, wie viele Relais aktiv sind. Auf **Deaktiviert** werden alle Relais und die zugehörigen Kommunikationsobjekte ausgeblendet.
@@ -52,7 +52,7 @@ Das Relais schaltet erst nach der eingestellten Zeit (Sekunden). Bei 0 wird sofo
 Verhindert, dass das Relais zu schnell wieder eingeschaltet wird – schützt z. B. Netzteile vor schnellen Ein-/Aus-Zyklen. Ein EIN-Telegramm innerhalb der Mindest-Auszeit wird nicht verworfen, sondern ausgeführt, sobald die Mindest-Auszeit abgelaufen ist (frühestens nach der Einschaltverzögerung). Ein AUS-Telegramm in dieser Wartezeit hebt das vorgemerkte EIN wieder auf; es gilt immer das zuletzt empfangene Telegramm.
 
 **Vor Upload/Neustart**
-**unverändert** (Standard) lässt das Relais bis zum Neustart im aktuellen Zustand; **Aus** schaltet es zu Beginn eines ETS-Downloads und vor einem Neustart über ETS, Konsole oder Netzwerkeinstellungen aus, ebenso vor dem Neustart nach einem Firmware-Update über KNX oder Netzwerk (nicht beim USB-Upload-Skript). Beide gelten unabhängig von „LEDs vor Upload/Neustart ausschalten“.
+**unverändert** (Standard) lässt das Relais bis zum Neustart im aktuellen Zustand; **Aus** schaltet es zu Beginn eines Downloads und vor einem Neustart (aus der Programmiersoftware, der Konsole oder den Netzwerkeinstellungen) aus, ebenso vor dem Neustart nach einem Firmware-Update über KNX oder Netzwerk (nicht beim USB-Upload-Skript). Beide gelten unabhängig von „LEDs vor Upload/Neustart ausschalten“.
 
 **Nach Neustart**
 Zustand nach dem Ende der Startverzögerung: **Aus**, **Ein** oder **Letzter Zustand** (Standard; der gespeicherte Zustand, ohne gültige Daten aus). Hat „Vor Upload/Neustart = Aus“ das Relais ausgeschaltet, wird der Zustand davor gespeichert, nicht dieses Ausschalten; ein per Objekt ausgeschaltetes Relais wird als AUS gespeichert. Nach jedem Neustart ist das Relais mindestens bis zum Ende der Startverzögerung aus; eine Mindest-Auszeit zählt ab dem Neustart, auch für ein EIN-Telegramm, und kann ein EIN später kommen lassen.
@@ -61,7 +61,7 @@ Zustand nach dem Ende der Startverzögerung: **Aus**, **Ein** oder **Letzter Zus
 
 ## Kommunikationsobjekte
 
-Die Relais schalten über ihr Kommunikationsobjekt. Das Gerät schaltet sie nicht selbstständig zusammen mit den LEDs; selbst schaltet es sie nur vor einem Neustart oder ETS-Download („Vor Upload/Neustart“) und nach dem Neustart („Nach Neustart“).
+Die Relais schalten über ihr Kommunikationsobjekt. Das Gerät schaltet sie nicht selbstständig zusammen mit den LEDs; selbst schaltet es sie nur vor einem Neustart oder Download („Vor Upload/Neustart“) und nach dem Neustart („Nach Neustart“).
 
 Pro aktiviertem Relais gibt es zwei KOs:
 
@@ -74,11 +74,11 @@ Pro aktiviertem Relais gibt es zwei KOs:
 
 Werden keine Relais benötigt, die Auswahl einfach auf **Deaktiviert** stellen. Es entstehen dann keinerlei Einschränkungen für die übrige LED-Steuerung.
 
-**Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX, nur bei einer TP-Firmware), den Save-Pin, seine Taster, seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C5 16–18 und 20–22, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“). ETS zeigt dazu auf der Relais-Seite die Meldung „GPIO reserviert“ (KNeoPiX ESP32-S3 mit TP- und IP-Firmware: ein Hinweis bei den KNX-Pins). Nutzt ein vorheriges Relais denselben GPIO schon, bleibt das spätere Relais ohne Ausgang (Log: „REFUSED“); Relais werden vor den Streifen belegt.
+**Reservierte Pins:** Ein manuell gewählter GPIO, den das Gerät für KNX (TX/RX, nur bei einer TP-Firmware), den Save-Pin, seine Taster, seine Status-LEDs, den Flash-Speicher des ESP32 (z. B. klassisch GPIO 6–11, S3 26–32 und bei Octal-Speicher 33–37, C3 12–17, C5 16–18 und 20–22, C6 24–26 und 28–30) oder bei Ethernet-Boards (QuinLED-Ethernet-Varianten, Gledopto GL-C-620WL) die Ethernet-Schnittstelle benutzt, wird abgelehnt: das Relais bleibt ohne Ausgang (Log: „REFUSED“). Auf der Relais-Seite erscheint dazu die Meldung „GPIO reserviert“ (KNeoPiX ESP32-S3 mit TP- und IP-Firmware: ein Hinweis bei den KNX-Pins). Nutzt ein vorheriges Relais denselben GPIO schon, bleibt das spätere Relais ohne Ausgang (Log: „REFUSED“); Relais werden vor den Streifen belegt.
 
 **Onboard-Relais (QuinLED Dig2Go IO12, Gledopto GL-C-017WL und GL-C-620WL IO18):** Relais 1 sitzt fest auf dem Relais der Platine; es hat keine Port-Auswahl, die Relais-Seite zeigt den Anschluss (z. B. „Anschluss: IO18 (Onboard Relais)“). Der Relais-Pin wird nicht als LED-Port angeboten. Weitere Relais (GL-C-017WL: Relais 2) wählen ihren Port wie gewohnt. Mehr Relais einzustellen, als die Hardware bietet, zeigt einen Fehler. Der Relais-Ausgang von QuinLED Uno, Quad, Octa und Next2 sowie IO12 (GL-C-309WL) und IO13 (GL-C-017WL) sind normale Ports: LED oder Relais.
 
-**Hardware-Auswahl:** Die Relais schalten nur, wenn auf der Seite OpenKNX → „Hardware“ die Hardware gewählt ist, für die die Firmware gebaut ist; sonst bleiben alle Relais ohne Ausgang. Belegen zwei Einstellungen denselben GPIO der gewählten Hardware (Port, „Manuell“, ein fest verdrahtetes Relais oder ein Streifen), zeigt ETS bei jeder eine Meldung „GPIO-Konflikt“.
+**Hardware-Auswahl:** Die Relais schalten nur, wenn auf der Seite OpenKNX → „Gerät“ die Hardware gewählt ist, für die die Firmware gebaut ist; sonst bleiben alle Relais ohne Ausgang. Belegen zwei Einstellungen denselben GPIO der gewählten Hardware (Port, „Manuell“, ein fest verdrahtetes Relais oder ein Streifen), erscheint bei jeder eine Meldung „GPIO-Konflikt“.
 
 **Hinweis:** Für komplexere Automatisierungen (z. B. zeitgesteuerte oder verknüpfte Schaltungen) empfiehlt sich ein separates KNX-Schaltaktor-Modul.
 

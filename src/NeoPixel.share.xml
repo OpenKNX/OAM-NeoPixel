@@ -2068,10 +2068,10 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %NEO_ProductVersion%" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Hardware Auswahl" UIHint="Headline" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Das verwendete Gerät wird auf der Seite OpenKNX → „Hardware“ gewählt oder dort vom Gerät abgefragt. Die korrekte Auswahl ist erforderlich, damit ausschließlich die für dieses Gerät passenden Parameter und Funktionen bereitgestellt werden." />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Das verwendete Gerät wird auf der Seite OpenKNX → „Gerät“ gewählt oder dort vom Gerät gelesen. Die korrekte Auswahl ist erforderlich, damit ausschließlich die für dieses Gerät passenden Parameter und Funktionen bereitgestellt werden." />
                 <choose ParamRefId="%NEOHW_SelectRef%">
                   <when test="0">
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Keine Hardware ausgewählt: Ports, Relais und hardwareabhängige Einstellungen sind ausgeblendet, das Gerät schaltet keine Ausgänge. Auf der Seite OpenKNX → „Hardware“ wählen oder mit „Hardware vom Gerät abfragen“ übernehmen." UIHint="Error" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Keine Hardware ausgewählt: Ports, Relais und hardwareabhängige Einstellungen sind ausgeblendet, das Gerät schaltet keine Ausgänge. Auf der Seite OpenKNX → „Gerät“ wählen oder mit „Vom Gerät lesen“ übernehmen." UIHint="Error" />
                   </when>
                 </choose>
                 <choose ParamRefId="%NEOHW_SelectRef%">
@@ -2130,7 +2130,7 @@
                 <choose ParamRefId="%NEOHW_SelectRef%">
                   <when test="=0">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Keine Hardware ausgewählt" UIHint="Headline" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Bitte wählen Sie zuerst auf der Seite OpenKNX → Hardware eine Hardware aus, bevor Sie die Relais-Steuerung konfigurieren können." UIHint="Error" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Bitte wählen Sie zuerst auf der Seite OpenKNX → „Gerät“ den Gerätetyp aus, bevor Sie die Relais-Steuerung konfigurieren können." UIHint="Error" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Die Relais-Konfiguration ist hardwareabhängig und kann erst nach erfolgreicher Hardware-Auswahl aktiviert werden." />
                   </when>
                   <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayNotSupported']/*" />

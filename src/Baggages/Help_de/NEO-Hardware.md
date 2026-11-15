@@ -1,37 +1,43 @@
-# Hardware
+# Gerät
 
-Hier wählen Sie die Hardware, auf der die NeoPixel-Firmware läuft. Danach zeigt die ETS nur die Einstellungen, die diese Hardware hat (Ports, Relais, Netzwerk).
+Hier wählen Sie das Gerät, auf dem die NeoPixel-Firmware läuft. Erst dann sind seine Anschlüsse und Einstellungen sichtbar (Ports, Relais, Netzwerk). Ohne Auswahl bleiben alle Anschlüsse des Geräts aus.
 
 ---
 
-## Hardware wählen
+## Gerät auswählen
 
-**Hardware**
-Liste der Geräte, die diese Applikation unterstützt. Gespeichert wird die Kennung der Hardware (HW-ID), nicht der Listenplatz: Kommen in einer neuen Applikationsversion Geräte dazu, bleibt die Auswahl erhalten.
+**Gerätetyp**
+Liste der Geräte, die diese Applikation unterstützt. Gespeichert wird die Kennung des Geräts (HW-ID), nicht der Listenplatz: Kommen in einer neuen Applikationsversion Geräte dazu, bleibt die Auswahl erhalten.
 
 **Nicht gewählt**
-Hardwareabhängige Einstellungen sind ausgeblendet. Nach einem Update von einer Applikation ohne diese Seite ist die Auswahl einmalig zurückgesetzt.
+Geräteabhängige Einstellungen sind ausgeblendet; im Baum steht „Gerät (nicht gewählt)“.
 
 ---
 
-## Abgleich mit dem Gerät
+## Oder automatisch erkennen
 
-Nur sichtbar, solange keine Hardware gewählt ist. Voraussetzung: Das Gerät ist programmiert (physikalische Adresse und Applikation).
+Nur sichtbar, solange kein Gerät gewählt ist.
 
-**Hardware vom Gerät abfragen**
-Die ETS liest die Hardware aus dem Gerät und setzt die Auswahl. Meldungen:
+**Vom Gerät lesen**
+Liest den Gerätetyp aus dem Gerät und setzt die Auswahl. Ist der Knopf grau, fehlt die Verbindung zum Gerät:
 
-- **„… erkannt“**: Die Auswahl ist gesetzt.
-- **„Abweichend gebaut: …“**: Die Firmware auf dem Gerät hat andere Merkmale als der Listeneintrag (z. B. WLAN auf einer Hardware, deren Firmware sonst keins hat). Es gilt das Gerät. Die Firmware-Varianten einer Hardware (KNeoPix S3: TP, IP, TP mit WLAN) gelten nicht als Abweichung.
-- **„… ist dieser Applikation unbekannt“**: Die Applikation ist älter als die Firmware. Applikation aktualisieren.
+1. Physikalische Adresse programmieren (wenn nötig: Programmiertaste drücken).
+2. Links eine andere Seite anklicken, dann zurück auf diese Seite.
+3. Knopf klicken.
 
-Um erneut abzufragen, die Auswahl auf **Nicht gewählt** stellen.
+Meldungen:
+
+- **„… (0x…) erkannt.“**: Die Auswahl ist gesetzt.
+- **„… erkannt. Abweichend gebaut: …“**: Die Firmware auf dem Gerät hat andere Merkmale als der Listeneintrag (z. B. WLAN auf einem Gerät, dessen Firmware sonst keins hat). Es gilt das Gerät. Die Firmware-Varianten eines Geräts (KNeoPix S3: TP, IP, TP mit WLAN) gelten nicht als Abweichung.
+- **„… ist dieser Applikation unbekannt. Applikation aktualisieren.“**: Die Applikation ist älter als die Firmware.
+
+Um erneut zu lesen, die Auswahl auf **Nicht gewählt** stellen.
 
 ---
 
 ## Gerätekarte
 
-Bei gewählter Hardware zeigt die Seite das OpenKNX-Logo bzw. bei Geräten anderer Hersteller das Kennzeichen „Drittanbieter Hardware“, den Gerätenamen und eine Beschreibung; hat die Hardware eine Webseite, steht rechts daneben ein QR-Code mit Link.
+Bei gewähltem Gerät zeigt die Seite das OpenKNX-Logo bzw. bei Geräten anderer Hersteller das Kennzeichen „Drittanbieter Hardware“, den Gerätenamen und eine Beschreibung; hat das Gerät eine Webseite, steht rechts daneben ein QR-Code mit Link.
 
 **Produkt eines Drittanbieters**
 Bei diesem Gerät handelt es sich um ein kommerzielles Produkt eines Drittanbieters. Zwischen OpenKNX und dem Hersteller besteht keine geschäftliche oder vertragliche Verbindung.
@@ -42,5 +48,5 @@ OpenKNX stellt ausschließlich eine kompatible Firmware zur Verfügung und über
 
 ## Wichtig
 
-- Die Firmware nutzt die Ports der Streifen und die Relais nur, wenn hier die Hardware gewählt ist, für die sie gebaut ist. Sonst bleiben alle Ausgänge aus.
-- Nach einem Wechsel der Hardware die Port-Auswahl der Streifen und Relais prüfen: Sie bezieht sich auf die Anschlüsse der neu gewählten Hardware.
+- Die Firmware nutzt die Ports der Streifen und die Relais nur, wenn hier das Gerät gewählt ist, für das sie gebaut ist. Sonst bleiben alle Ausgänge aus.
+- Nach einem Wechsel des Gerätetyps die Port-Auswahl der Streifen und Relais prüfen: Sie bezieht sich auf die Anschlüsse des neu gewählten Geräts.

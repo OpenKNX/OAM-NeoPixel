@@ -116,7 +116,7 @@
               <!-- Allgemein (Basic) -->
               <op:include href="../lib/OGM-Common/src/Common.share.xml" xpath="//ApplicationProgram/Dynamic/Channel/ParameterBlock[@Name='Basic']" prefix="BASE" />
               <!-- Hardware page of the generated hardware module (NEOHW, HardwareProfile.xml <Page>) directly after "Allgemein" -->
-              <ParameterBlock Id="%AID%_PB-nnn" Name="Hardware" Text="%NEOHW_PageText%" Icon="%NEOHW_PageIcon%" HelpContext="%NEOHW_PageHelp%">
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Hardware" Text="{{0:%NEOHW_PageText%}}" TextParameterRefId="%NEOHW_PageTextRef%" Icon="%NEOHW_PageIcon%" HelpContext="%NEOHW_PageHelp%">
                 <op:include href="NeoPixel.hw.module.gen.xml" xpath="//ApplicationProgram/Dynamic/Channel/ParameterBlock[@Name='Profile']/*" IsInner="true" prefix="NEOHW" />
                 <!-- developer view (module NEOHWDEV, development product only) -->
                 <op:include href="NeoPixel.hw.dev.gen.xml" xpath="//ApplicationProgram/Dynamic/Channel/ParameterBlock[@Name='DevView']/*" IsInner="true" prefix="NEOHWDEV" />

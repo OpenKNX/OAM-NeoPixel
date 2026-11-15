@@ -294,7 +294,7 @@ void NeoPixelBusModule::loop(bool configured)
             {
                 // no hardware selected on the ETS hardware page yet (OpenKNX channel, after "Allgemein")
                 const char* compiledHwName = hardwareNameForId(DEVICE_HW_ID);
-                logErrorP("*** No hardware selected! ETS page OpenKNX > Hardware: select %s (ID: 0x%04X) or use 'Hardware vom Geraet abfragen'",
+                logErrorP("*** No hardware selected! ETS page OpenKNX > Geraet: select %s (ID: 0x%04X) or use 'Vom Geraet lesen'",
                           compiledHwName ? compiledHwName : "Unknown", DEVICE_HW_ID);
             }
             else
@@ -3400,7 +3400,7 @@ int NeoPixelBusModule::bindConsoleSegment(int managerSegIdx)
 // FunctionProperty: device query of the hardware module (158/4) and the Studio readback (158/10)
 bool NeoPixelBusModule::processFunctionProperty(uint8_t objectIndex, uint8_t propertyId, uint8_t length, uint8_t* data, uint8_t* resultData, uint8_t& resultLength)
 {
-    // Button "Hardware vom Geraet abfragen" (generated NEOHW script): device query 158/4, answer generated into HardwareProfileData.h
+    // Button "Vom Geraet lesen" (generated NEOHW script): device query 158/4, answer generated into HardwareProfileData.h
     if (HardwareProfile::answerQuery(objectIndex, propertyId, resultData, resultLength))
         return true;
 
