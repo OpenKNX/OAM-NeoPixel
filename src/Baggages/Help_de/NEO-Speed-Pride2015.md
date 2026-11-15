@@ -1,4 +1,4 @@
-# Speed
+# Geschwindigkeit
 
 **Effekt:** Pride2015
 

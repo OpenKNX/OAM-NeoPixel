@@ -4,6 +4,11 @@
 
 Palette: Farbpalette auswählen (0-N)
 
-**Wertebereich:** 0 - 3
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Regenbogen
+* 1 = Hitze
+* 2 = Ozean
+* 3 = Wald
+
+**Standardwert:** 0 = Regenbogen

@@ -1,9 +1,13 @@
-# Mode
+# Modus
 
 **Effekt:** Sparkle
 
 Modus: 0=Sparkle, 1=Twinkle, 2=Confetti
 
-**Wertebereich:** 0 - 2
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Sparkle
+* 1 = Twinkle
+* 2 = Konfetti
+
+**Standardwert:** 0 = Sparkle

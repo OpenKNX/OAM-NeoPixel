@@ -9,7 +9,7 @@ Wurde der Effektmanager auf einem **ausgeschalteten** Segment gestartet, wird da
 ### Letzter Zustand (Standard)
 Das Segment kehrt zu dem Effekt bzw. der Farbe zurück, die **vor dem Start des Effektmanagers** zuletzt direkt eingestellt war (z. B. eine Solid-Farbe oder ein Einzel-Effekt). War vor dem EM nichts gesetzt, bleibt das Segment im letzten gültigen Direkt-Zustand.
 
-> **Live-Dimmen bleibt erhalten:** Eine während des Effektmanagers über das Helligkeits-KO eingestellte Helligkeit wird in diesem Modus beibehalten – nur Effekt und Farbe kehren zum Vorzustand zurück.
+**Live-Dimmen bleibt erhalten:** Eine während des Effektmanagers über das Helligkeits-KO eingestellte Helligkeit wird in diesem Modus beibehalten – nur Effekt und Farbe kehren zum Vorzustand zurück.
 
 **Anwendungsfall:**
 

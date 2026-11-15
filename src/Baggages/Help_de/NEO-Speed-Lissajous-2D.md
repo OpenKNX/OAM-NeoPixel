@@ -1,4 +1,4 @@
-# Speed
+# Geschwindigkeit
 
 **Effekt:** Lissajous 2D
 

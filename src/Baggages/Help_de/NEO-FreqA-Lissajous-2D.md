@@ -1,4 +1,4 @@
-# FreqA
+# Frequenz horizontal
 
 **Effekt:** Lissajous 2D
 

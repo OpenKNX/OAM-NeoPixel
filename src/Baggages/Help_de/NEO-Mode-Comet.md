@@ -1,9 +1,13 @@
-# Mode
+# Modus
 
 **Effekt:** Comet
 
 Modus: 0=Comet, 1=Meteor, 2=Sinelon
 
-**Wertebereich:** 0 - 2
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Komet
+* 1 = Meteor
+* 2 = Sinelon
+
+**Standardwert:** 0 = Komet

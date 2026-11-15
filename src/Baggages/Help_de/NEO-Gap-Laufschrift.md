@@ -1,4 +1,4 @@
-# Gap
+# Zeichenabstand
 
 **Effekt:** Laufschrift
 

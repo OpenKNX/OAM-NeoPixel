@@ -1,9 +1,9 @@
-# Loop
+# Wiederholen
 
 **Effekt:** Laufschrift
 
 Schleife: 0=Einmalig, 1=Endlosschleife
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 1
+**Standardwert:** 1 = Ein

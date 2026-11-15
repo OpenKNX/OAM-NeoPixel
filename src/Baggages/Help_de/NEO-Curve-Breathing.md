@@ -1,4 +1,4 @@
-# Curve
+# Kurve / Gamma
 
 **Effekt:** Breathing
 

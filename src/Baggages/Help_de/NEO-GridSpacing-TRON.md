@@ -1,4 +1,4 @@
-# GridSpacing
+# Gitterabstand
 
 **Effekt:** TRON
 

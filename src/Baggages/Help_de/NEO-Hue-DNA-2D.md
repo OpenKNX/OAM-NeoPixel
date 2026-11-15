@@ -1,4 +1,4 @@
-# Hue
+# Farbton
 
 **Effekt:** DNA 2D
 

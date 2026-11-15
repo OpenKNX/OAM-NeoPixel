@@ -1,9 +1,12 @@
-# Palette
+# Farbmodus
 
 **Effekt:** Noise
 
 Farbmodus: 0=HSV-Farbrad, 1=Primärfarbe (Helligkeit aus Rauschen)
 
-**Wertebereich:** 0 - 1
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = HSV-Farbrad
+* 1 = Primaerfarbe
+
+**Standardwert:** 0 = HSV-Farbrad

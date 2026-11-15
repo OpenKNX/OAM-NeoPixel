@@ -1,9 +1,9 @@
-# GhostPiece
+# Geist-Stein
 
 **Effekt:** Tetris 2D
 
 Geist-Stein: 0=aus, 1=an.
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 1
+**Standardwert:** 1 = Ein

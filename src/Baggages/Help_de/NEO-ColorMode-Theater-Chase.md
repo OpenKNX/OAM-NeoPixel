@@ -1,9 +1,12 @@
-# ColorMode
+# Farbmodus
 
 **Effekt:** Theater Chase
 
 Farbmodus: 0=Einfarbig, 1=Regenbogen
 
-**Wertebereich:** 0 - 1
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Einfarbig
+* 1 = Regenbogen
+
+**Standardwert:** 0 = Einfarbig

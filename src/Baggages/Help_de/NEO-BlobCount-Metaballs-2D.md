@@ -1,4 +1,4 @@
-# BlobCount
+# Anzahl Blobs
 
 **Effekt:** Metaballs 2D
 

@@ -1,4 +1,4 @@
-# Decay
+# Abklingzeit
 
 **Effekt:** Blitz
 

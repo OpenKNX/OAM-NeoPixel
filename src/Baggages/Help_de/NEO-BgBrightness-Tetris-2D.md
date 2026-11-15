@@ -1,4 +1,4 @@
-# BgBrightness
+# Helligkeit Hintergrundgitter
 
 **Effekt:** Tetris 2D
 

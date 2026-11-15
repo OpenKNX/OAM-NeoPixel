@@ -1,4 +1,4 @@
-# Count
+# Anzahl UFOs
 
 **Effekt:** UFO Swarm
 

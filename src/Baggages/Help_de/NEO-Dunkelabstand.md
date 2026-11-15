@@ -26,10 +26,7 @@ Fügt dunkle Lücken von M LEDs zwischen den Gruppen ein.
 
 ## Zusammenspiel mit Gruppierung
 
-**Gruppierung=3, Spacing=2:**
-```
-●●●○○●●●○○●●●○○...
-```
+**Gruppierung=3, Spacing=2:** ●●●○○●●●○○●●●○○...
 
 - ●●● = 3 LEDs mit gleicher Farbe (Gruppe)
 - ○○ = 2 dunkle LEDs (Spacing)

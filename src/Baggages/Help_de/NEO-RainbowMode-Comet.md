@@ -1,9 +1,9 @@
-# RainbowMode
+# Regenbogen / Multi-Meteor / Sprungmodus
 
 **Effekt:** Comet
 
 Regenbogen (Comet) / Multi-Meteor (Meteor) / Sprungmodus (Sinelon)
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 0
+**Standardwert:** 0 = Aus

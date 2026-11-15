@@ -1,9 +1,12 @@
-# Mode
+# Modus
 
 **Effekt:** Rainbow
 
 Modus: 0=Rainbow (Delta), 1=Cycle (Dichte)
 
-**Wertebereich:** 0 - 1
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Rainbow (Delta)
+* 1 = Cycle (Dichte)
+
+**Standardwert:** 0 = Rainbow (Delta)

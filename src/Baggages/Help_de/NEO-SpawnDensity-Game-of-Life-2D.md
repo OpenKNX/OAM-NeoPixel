@@ -1,4 +1,4 @@
-# SpawnDensity
+# Startdichte (%)
 
 **Effekt:** Game of Life 2D
 

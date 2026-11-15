@@ -1,9 +1,12 @@
-# Bounce
+# Hin und her
 
 **Effekt:** Theater Chase
 
 Bounce: 0=Umlauf, 1=Hin-und-her (Runway)
 
-**Wertebereich:** 0 - 1
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Umlauf
+* 1 = Hin und her
+
+**Standardwert:** 0 = Umlauf

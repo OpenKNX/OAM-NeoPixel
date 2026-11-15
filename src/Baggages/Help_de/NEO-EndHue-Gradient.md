@@ -1,4 +1,4 @@
-# EndHue
+# End-Farbton
 
 **Effekt:** Gradient
 

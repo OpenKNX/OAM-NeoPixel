@@ -1,4 +1,4 @@
-# FadeSpeed
+# Ausblendrate
 
 **Effekt:** Juggle
 

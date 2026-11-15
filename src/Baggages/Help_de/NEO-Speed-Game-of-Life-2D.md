@@ -1,4 +1,4 @@
-# Speed
+# Geschwindigkeit
 
 **Effekt:** Game of Life 2D
 

@@ -1,4 +1,4 @@
-# Zones
+# Zonen
 
 **Effekt:** Kerze
 

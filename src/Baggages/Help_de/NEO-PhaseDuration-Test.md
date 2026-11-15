@@ -1,4 +1,4 @@
-# PhaseDuration
+# Phasendauer (s)
 
 **Effekt:** Test
 

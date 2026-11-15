@@ -339,7 +339,7 @@ $help = 'src/Baggages/Help_de'
 $xmlAll = @('src/NeoPixel.Segment.templ.xml', 'src/NeoPixel.Cue.part.xml', 'src/NeoPixel.Scene.part.xml', 'src/NeoPixel.share.xml',
   'src/NeoPixel.EM.share.xml', 'src/NeoPixel.script.src.js', 'src/EffectParameterMapping.h', 'src/EffectTypeMapping.h',
   'src/WebUi/NeoPixelEffectCatalog.generated.h', 'web/assets/effects.json', 'src/NeoPixelEffectGroups.h', 'src/EffectIds.lock',
-  "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md')
+  "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-Typ-Szene.md", "$help/NEO-Cue-Effekt.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md')
 
 # 1 description
 Test-Allowed 'ParamDescription' {
@@ -416,7 +416,7 @@ Test-Allowed 'EffectAppend' { param($d) Add-Effect $d 'Blink' 'Blink' } `
   -Expect @('src/NeoPixel.Segment.templ.xml', 'src/NeoPixel.Cue.part.xml', 'src/NeoPixel.Scene.part.xml', 'src/NeoPixel.share.xml',
   'src/NeoPixel.EM.share.xml', 'src/NeoPixel.script.src.js', 'src/EffectParameterMapping.h', 'src/EffectTypeMapping.h',
   'web/assets/effects.json', 'src/WebUi/NeoPixelEffectCatalog.generated.h', 'src/NeoPixelEffectGroups.h', 'src/EffectIds.lock',
-  'src/EffectParameters.lock', "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md',
+  'src/EffectParameters.lock', "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-Typ-Szene.md", "$help/NEO-Cue-Effekt.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md',
   "+$help/NEO-BPM-Blink.md", "+$help/NEO-Hue-Blink.md") -Added $effectAdded `
   -Extra {
     param($d)
@@ -433,7 +433,7 @@ Test-Allowed 'Effect2DAppend' { param($d) Add-Effect $d 'Blink2D' 'Blink 2D' -Tw
   -Expect @('src/NeoPixel.Segment.templ.xml', 'src/NeoPixel.Cue.part.xml', 'src/NeoPixel.Scene.part.xml', 'src/NeoPixel.share.xml',
   'src/NeoPixel.EM.share.xml', 'src/NeoPixel.script.src.js', 'src/EffectParameterMapping.h', 'src/EffectTypeMapping.h',
   'web/assets/effects.json', 'src/WebUi/NeoPixelEffectCatalog.generated.h', 'src/NeoPixelEffectGroups.h', 'src/EffectIds.lock',
-  'src/EffectParameters.lock', "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md',
+  'src/EffectParameters.lock', "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-Typ-Szene.md", "$help/NEO-Cue-Effekt.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md',
   "+$help/NEO-BPM-Blink-2D.md", "+$help/NEO-Hue-Blink-2D.md") -Added $effectAdded `
   -Extra {
     param($d)
@@ -500,7 +500,7 @@ Test-Allowed 'ParamEnumAppend' {
   param($d)
   Edit-File (Fx $d 'EffectWipe.h') $wipeEnum ($wipeEnum + "            case 6: return `"Zufall`";`n")
   Edit-File (Fx $d 'EffectWipe.h') 'return (paramIndex == 1) ? 6 : 0;' 'return (paramIndex == 1) ? 7 : 0;'
-} -Expect @('src/NeoPixel.share.xml', 'web/assets/effects.json', 'src/WebUi/NeoPixelEffectCatalog.generated.h', 'src/EffectParameters.lock') `
+} -Expect @('src/NeoPixel.share.xml', 'web/assets/effects.json', 'src/WebUi/NeoPixelEffectCatalog.generated.h', 'src/EffectParameters.lock', "$help/NEO-Direction-Wipe.md") `
   -Extra { param($d) if ((Get-LockLine $d 1 1) -notmatch ';5=Aussen nach Mitte;6=Zufall$') { "lock line of Wipe index 1 lacks the appended value: $(Get-LockLine $d 1 1)" } }
 Test-Allowed 'ParamRangeWiden' {
   param($d)
@@ -524,18 +524,18 @@ Test-Allowed 'LockMissing' {
 }
 Test-Custom 'LockAfterStop' 'allowed' {
   param($d)
-  $page = Join-Path $d "$help/NEO-Effekt-Typ.md"
-  $marker = '<!-- BEGIN AUTO-GENERATED: Effect Table - DO NOT EDIT MANUALLY -->'
+  $page = Join-Path $d 'doc/Effect-Flags.md'
+  $marker = '<!-- BEGIN AUTO-GENERATED: Effect Flags - DO NOT EDIT MANUALLY -->'
   # 1. parameter appended, but the run stops at the missing block marker: the lock keeps the base state
   Set-WipeNames $d @('Speed', 'Direction', 'Loop', 'Fade')
-  Edit-File $page $marker '<!-- BEGIN GENERATED: Effect Table -->'
+  Edit-File $page $marker '<!-- BEGIN GENERATED: Effect Flags -->'
   $g = Invoke-Generator $d @('-SkipOpenKNXproducer')
   if ($g.Code -eq 0 -or $g.Out -notmatch 'not written by this run, kept') { "step 1: run did not stop at the missing marker (exit $($g.Code))" }
   foreach ($l in $script:LockFiles) {
     if ([System.IO.File]::ReadAllText((Join-Path $d $l)) -cne [System.IO.File]::ReadAllText((Join-Path $script:Base $l))) { "step 1: $l changed by the stopped run" }
   }
   # 2. both reverted: a full run back to the base state
-  Edit-File $page '<!-- BEGIN GENERATED: Effect Table -->' $marker
+  Edit-File $page '<!-- BEGIN GENERATED: Effect Flags -->' $marker
   Copy-Item -LiteralPath (Fx $script:Base 'EffectWipe.h') -Destination (Fx $d 'EffectWipe.h') -Force
   $g = Invoke-Generator $d @('-SkipOpenKNXproducer')
   if ($g.Code -ne 0) { "step 2: revert run exit $($g.Code)" }
@@ -559,11 +559,19 @@ Test-Custom 'WebCatalogNoLock' 'allowed' {
   }
 }
 
-# generated page without its block marker: kept, the run fails, -Check stays outdated
+# generated page without its block marker (doc/Effect-Flags.md): kept, the run fails, -Check stays outdated
 Test-Stop 'PageMarkerMissing' {
-  param($d) Edit-File (Join-Path $d "$help/NEO-Effekt-Typ.md") '<!-- BEGIN AUTO-GENERATED: Effect Table - DO NOT EDIT MANUALLY -->' '<!-- BEGIN GENERATED: Effect Table -->'
+  param($d) Edit-File (Join-Path $d 'doc/Effect-Flags.md') '<!-- BEGIN AUTO-GENERATED: Effect Flags - DO NOT EDIT MANUALLY -->' '<!-- BEGIN GENERATED: Effect Flags -->'
 } -Message "not written by this run, kept" -AllowWrites -Extra {
-  param($d) if (-not (Test-Path -LiteralPath (Join-Path $d "$help/NEO-Effekt-Typ.md"))) { 'NEO-Effekt-Typ.md was deleted' }
+  # the help pages written whole (no block marker) must exist and must not look like a per-parameter help file, which
+  # Remove-OrphanedEffectOutputs (Build-EffectParameters.ps1) deletes once a run no longer writes it
+  param($d)
+  foreach ($p in @('NEO-Effekt-Typ.md', 'NEO-Effekt-Typ-Szene.md', 'NEO-Cue-Effekt.md')) {
+    $f = Join-Path $d "$help/$p"
+    if (-not (Test-Path -LiteralPath $f)) { "$p was deleted"; continue }
+    $text = [System.IO.File]::ReadAllText($f).Replace("`r`n", "`n").TrimStart([char]0xFEFF)
+    if ($text -match '\A# [^\n]+\n\n\*\*Effekt:\*\* [^\n]+\n') { "$p matches the orphan pattern of a per-parameter help file" }
+  }
 }
 
 # ------------------------------------------------------------------------------------------------

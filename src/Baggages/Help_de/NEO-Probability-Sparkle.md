@@ -1,4 +1,4 @@
-# Probability
+# Wahrscheinlichkeit
 
 **Effekt:** Sparkle
 

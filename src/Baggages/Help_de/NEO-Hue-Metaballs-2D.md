@@ -1,4 +1,4 @@
-# Hue
+# Farbton
 
 **Effekt:** Metaballs 2D
 

@@ -1,4 +1,4 @@
-# Hue
+# Farbton
 
 **Effekt:** Game of Life 2D
 

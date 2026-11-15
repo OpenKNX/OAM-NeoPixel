@@ -1,4 +1,4 @@
-# Cooling
+# Abkühlung
 
 **Effekt:** Fire
 

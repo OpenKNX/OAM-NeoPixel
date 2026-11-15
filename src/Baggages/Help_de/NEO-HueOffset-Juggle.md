@@ -1,4 +1,4 @@
-# HueOffset
+# Farbton-Versatz
 
 **Effekt:** Juggle
 

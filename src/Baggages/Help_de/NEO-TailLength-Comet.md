@@ -1,4 +1,4 @@
-# TailLength
+# Schweiflänge / Punktgröße / Häufigkeit
 
 **Effekt:** Comet
 

@@ -1,4 +1,4 @@
-# Saturation
+# Sättigung
 
 **Effekt:** Rainbow
 

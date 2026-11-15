@@ -1,4 +1,4 @@
-# Twist
+# Windungen
 
 **Effekt:** DNA 2D
 

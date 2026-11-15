@@ -1,9 +1,12 @@
-# Direction
+# Richtung (nur 2D)
 
 **Effekt:** Cylon
 
 Richtung (nur 2D): 0=horizontal (Spalte wandert links-rechts), 1=vertikal (Zeile wandert oben-unten).
 
-**Wertebereich:** 0 - 1
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Horizontal
+* 1 = Vertikal
+
+**Standardwert:** 0 = Horizontal

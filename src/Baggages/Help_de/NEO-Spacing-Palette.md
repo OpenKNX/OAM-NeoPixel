@@ -1,4 +1,4 @@
-# Spacing
+# Abstand
 
 **Effekt:** Palette
 

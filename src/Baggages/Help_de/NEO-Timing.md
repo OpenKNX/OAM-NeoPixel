@@ -2,7 +2,7 @@
 
 Bestimmt, welche **Bitzeiten** zum LED-Streifen gesendet werden.
 
-> **Wichtig:** Das ist **Signal-Feintuning, keine Chip-Auswahl.** Den LED-Chip wählst du oben bei **„LED Typ"**. Dieses Feld verändert nur die Geschwindigkeit des Signals.
+**Wichtig:** Das ist **Signal-Feintuning, keine Chip-Auswahl.** Den LED-Chip wählst du oben bei **„LED Typ"**. Dieses Feld verändert nur die Geschwindigkeit des Signals.
 
 ## Standard: „800 kHz (Standard)" = Chip-Profil
 
@@ -16,13 +16,11 @@ Ein anderer Wert **streckt oder staucht das Chip-Profil** auf die gewählte Bitr
 
 Das hat einen Preis: bei niedrigen Werten wird auch die **1-Bit-Hochzeit** länger und verlässt irgendwann das Fenster des Chips. Beim SK6812 erlaubt das Datenblatt 580–1000 ns; die folgenden Werte zeigen, wie schnell der Spielraum kleiner wird:
 
-| Einstellung | tatsächlich | 1-Bit-Hochzeit |
-|---|---|---|
-| Chip-Profil | 806 kHz | 800 ns |
-| 790 kHz | 790 kHz | 816 ns |
-| 780 kHz | 780 kHz | 826 ns |
-| 750 kHz | 750 kHz | 859 ns |
-| 640 kHz | 640 kHz | 1006 ns |
+* **Chip-Profil:** tatsächlich 806 kHz, 1-Bit-Hochzeit 800 ns
+* **790 kHz:** tatsächlich 790 kHz, 1-Bit-Hochzeit 816 ns
+* **780 kHz:** tatsächlich 780 kHz, 1-Bit-Hochzeit 826 ns
+* **750 kHz:** tatsächlich 750 kHz, 1-Bit-Hochzeit 859 ns
+* **640 kHz:** tatsächlich 640 kHz, 1-Bit-Hochzeit 1006 ns
 
 In der Praxis vertragen die meisten Chips das, weil sie 0 und 1 über eine Schwelle unterscheiden — aber es ist außerhalb der Spezifikation, und du solltest wissen, dass du sie verlässt.
 
@@ -48,13 +46,7 @@ Mehrere Streifen dürfen unterschiedliche Werte haben.
 
 ## Was wirklich anliegt, kannst du nachsehen
 
-In der Konsole zeigt
-
-```
-neo phys timing <Nr> info
-```
-
-die **tatsächlich erzeugte** Wellenform: T0H, T0L, T1H, T1L, Bitperiode, Latch-Zeit, Polarität und den Taktteiler. Nicht den eingestellten Wunsch, sondern das, was auf der Leitung liegt.
+In der Konsole zeigt **neo phys timing 0 info** (0 = erster Streifen, die Konsole zählt ab 0) die **tatsächlich erzeugte** Wellenform: T0H, T0L, T1H, T1L, Bitperiode, Latch-Zeit, Polarität und den Taktteiler. Nicht den eingestellten Wunsch, sondern das, was auf der Leitung liegt.
 
 Das ist wichtig, weil die Beschriftung nur ein Zielwert ist. Die Hardware kann nicht jede Frequenz exakt treffen, und einige Nachbarwerte landen auf demselben Signal — **770 und 775 kHz** ergeben dasselbe, ebenso **780 und 785 kHz**. Wenn ein Schritt nichts ändert, steht dort die Erklärung.
 

@@ -1,4 +1,4 @@
-# RungSpacing
+# Sprossenabstand
 
 **Effekt:** DNA 2D
 

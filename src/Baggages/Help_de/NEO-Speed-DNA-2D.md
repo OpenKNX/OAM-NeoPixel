@@ -1,4 +1,4 @@
-# Speed
+# Rotationsgeschwindigkeit
 
 **Effekt:** DNA 2D
 

@@ -1,4 +1,4 @@
-# Scale
+# Maßstab
 
 **Effekt:** Noise
 

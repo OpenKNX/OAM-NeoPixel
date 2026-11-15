@@ -1,4 +1,4 @@
-# SwitchSec
+# Wechselintervall (s)
 
 **Effekt:** Uhr 2D
 

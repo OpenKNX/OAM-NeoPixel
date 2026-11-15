@@ -1,4 +1,4 @@
-# Density
+# Dichte (%)
 
 **Effekt:** Matrix 2D
 

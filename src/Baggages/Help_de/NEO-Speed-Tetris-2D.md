@@ -1,4 +1,4 @@
-# Speed
+# Fallgeschwindigkeit
 
 **Effekt:** Tetris 2D
 

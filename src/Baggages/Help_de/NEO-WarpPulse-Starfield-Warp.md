@@ -1,9 +1,9 @@
-# WarpPulse
+# Warp-Puls
 
 **Effekt:** Starfield Warp
 
 Warp-Puls: 0=Aus, 1=Periodischer Geschwindigkeitsschub
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 1
+**Standardwert:** 1 = Ein

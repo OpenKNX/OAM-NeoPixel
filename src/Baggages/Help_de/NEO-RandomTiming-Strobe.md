@@ -1,9 +1,9 @@
-# RandomTiming
+# Zufälliges Timing
 
 **Effekt:** Strobe
 
 Zufälliges Timing statt regelmäßig
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 0
+**Standardwert:** 0 = Aus

@@ -1,4 +1,4 @@
-# Intensity
+# Helligkeit
 
 **Effekt:** Aurora 2D
 

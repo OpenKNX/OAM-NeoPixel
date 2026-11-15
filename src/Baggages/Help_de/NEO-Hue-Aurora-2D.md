@@ -1,4 +1,4 @@
-# Hue
+# Farbton
 
 **Effekt:** Aurora 2D
 

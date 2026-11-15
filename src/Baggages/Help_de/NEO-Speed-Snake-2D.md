@@ -1,4 +1,4 @@
-# Speed
+# Geschwindigkeit
 
 **Effekt:** Snake 2D
 

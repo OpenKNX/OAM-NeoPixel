@@ -1,9 +1,9 @@
-# Loop
+# Wiederholen
 
 **Effekt:** Wipe
 
 Wiederholen: Nach einem vollständigen Wipe den Hintergrund wiederherstellen und erneut starten
 
-**Wertebereich:** 0 - 255
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 1
+**Standardwert:** 1 = Ein

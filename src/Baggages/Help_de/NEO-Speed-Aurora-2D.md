@@ -1,4 +1,4 @@
-# Speed
+# Geschwindigkeit
 
 **Effekt:** Aurora 2D
 

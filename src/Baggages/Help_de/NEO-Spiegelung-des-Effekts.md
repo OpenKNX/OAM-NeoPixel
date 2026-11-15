@@ -20,16 +20,15 @@ Rendert nur die erste Hälfte des Segments und spiegelt sie auf die zweite Hälf
 ## Beispiele
 
 **Segment mit 8 LEDs (gerade Anzahl):**
-```
-Berechnet: [A][B][C][D]
-Angezeigt: [A][B][C][D][D][C][B][A]
-```
+
+* Berechnet: A B C D
+* Angezeigt: A B C D D C B A
 
 **Segment mit 9 LEDs (ungerade Anzahl):**
-```
-Berechnet: [A][B][C][D][M]
-Angezeigt: [A][B][C][D][M][D][C][B][A]
-```
-(M = mittlere LED bleibt unverändert)
+
+* Berechnet: A B C D M
+* Angezeigt: A B C D M D C B A
+
+M = mittlere LED, bleibt unverändert.
 
 **Hinweis:** Die Spiegelung wird nach allen anderen Transformationen angewendet.

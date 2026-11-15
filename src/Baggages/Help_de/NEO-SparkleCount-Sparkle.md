@@ -1,4 +1,4 @@
-# SparkleCount
+# Anzahl / Dichte
 
 **Effekt:** Sparkle
 

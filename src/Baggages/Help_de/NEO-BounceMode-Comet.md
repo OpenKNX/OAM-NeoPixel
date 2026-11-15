@@ -1,9 +1,9 @@
-# BounceMode
+# Sprungmodus / Zufallsfarben / Regenbogen
 
 **Effekt:** Comet
 
 Sprungmodus (Comet) / Zufallsfarben (Meteor) / Regenbogen (Sinelon)
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 0
+**Standardwert:** 0 = Aus

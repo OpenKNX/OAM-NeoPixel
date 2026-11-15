@@ -1,4 +1,4 @@
-# Sparking
+# Funkenrate
 
 **Effekt:** Fire
 

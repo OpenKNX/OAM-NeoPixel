@@ -1,9 +1,13 @@
-# BodyMode
+# Körpermodus
 
 **Effekt:** Snake 2D
 
 Körpermodus: 0=fix, 1=rainbow, 2=fade.
 
-**Wertebereich:** 0 - 2
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Einfarbig
+* 1 = Regenbogen
+* 2 = Verlauf
+
+**Standardwert:** 0 = Einfarbig

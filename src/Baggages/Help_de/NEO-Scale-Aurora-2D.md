@@ -1,4 +1,4 @@
-# Scale
+# Detailtiefe
 
 **Effekt:** Aurora 2D
 

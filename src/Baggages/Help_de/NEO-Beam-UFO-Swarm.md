@@ -1,9 +1,9 @@
-# Beam
+# Traktorstrahl
 
 **Effekt:** UFO Swarm
 
 Strahl: 0=Aus, 1=Traktorstrahl anzeigen
 
-**Wertebereich:** 0 - 1
+**Auswahl:** 0 = Aus, 1 = Ein
 
-**Standardwert:** 1
+**Standardwert:** 1 = Ein

@@ -1,4 +1,4 @@
-# BPM
+# Schläge pro Minute
 
 **Effekt:** BPM
 

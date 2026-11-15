@@ -1,4 +1,4 @@
-# PaletteShift
+# Palettenverschiebung
 
 **Effekt:** Plasma Nebula
 

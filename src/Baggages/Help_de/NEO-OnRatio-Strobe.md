@@ -1,4 +1,4 @@
-# OnRatio
+# Einschaltanteil (%)
 
 **Effekt:** Strobe
 

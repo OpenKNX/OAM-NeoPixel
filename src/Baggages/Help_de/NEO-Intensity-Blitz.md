@@ -1,4 +1,4 @@
-# Intensity
+# Intensität
 
 **Effekt:** Blitz
 

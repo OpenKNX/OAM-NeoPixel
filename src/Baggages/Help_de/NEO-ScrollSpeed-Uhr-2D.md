@@ -1,4 +1,4 @@
-# ScrollSpeed
+# Scrollgeschwindigkeit
 
 **Effekt:** Uhr 2D
 

@@ -1,4 +1,4 @@
-# Speed
+# Flackergeschwindigkeit
 
 **Effekt:** Kerze
 

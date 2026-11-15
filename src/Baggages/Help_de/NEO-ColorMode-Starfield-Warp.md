@@ -1,9 +1,13 @@
-# ColorMode
+# Farbmodus
 
 **Effekt:** Starfield Warp
 
 Farbmodus: Weiß, Cyan oder Regenbogen
 
-**Wertebereich:** 0 - 2
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Weiss
+* 1 = Cyan
+* 2 = Regenbogen
+
+**Standardwert:** 0 = Weiss

@@ -1,4 +1,4 @@
-# Speed
+# Häufigkeit
 
 **Effekt:** Blitz
 

@@ -1,4 +1,4 @@
-# Intensity
+# Flackerstärke
 
 **Effekt:** Kerze
 

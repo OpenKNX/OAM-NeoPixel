@@ -1,4 +1,4 @@
-# ColorSpeed
+# Farbwechsel-Geschwindigkeit
 
 **Effekt:** Theater Chase
 

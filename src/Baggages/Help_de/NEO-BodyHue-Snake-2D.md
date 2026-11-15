@@ -1,4 +1,4 @@
-# BodyHue
+# Farbton Körper
 
 **Effekt:** Snake 2D
 

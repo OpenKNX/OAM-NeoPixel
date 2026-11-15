@@ -1,4 +1,4 @@
-# NumDots
+# Anzahl Punkte
 
 **Effekt:** Juggle
 

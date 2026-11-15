@@ -1,9 +1,14 @@
-# Waveform
+# Wellenform
 
 **Effekt:** Breathing
 
 Wellenform: 0=Weich, 1=Halt am Höhepunkt, 2=Puls, 3=Scharfer Puls
 
-**Wertebereich:** 0 - 3
+**Auswahl:**
 
-**Standardwert:** 0
+* 0 = Weich
+* 1 = Halt am Hoehepunkt
+* 2 = Puls
+* 3 = Scharfer Puls
+
+**Standardwert:** 0 = Weich

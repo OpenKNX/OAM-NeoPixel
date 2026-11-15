@@ -1,4 +1,4 @@
-# FadeAmount
+# Schweif-Abklingen
 
 **Effekt:** Cylon
 

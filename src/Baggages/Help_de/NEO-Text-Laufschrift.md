@@ -4,6 +4,6 @@
 
 Text: Anzuzeigender Text (ETS max. 14 Zeichen, über KO bis 240)
 
-**Wertebereich:** 0 - 14
+**Eingabe:** Text, bis 14 Zeichen
 
-**Standardwert:** 0
+**Standardwert:** leer, das Gerät zeigt dann „OpenKNX NeoPixel“

@@ -1,4 +1,4 @@
-# DotSize
+# Punktgröße
 
 **Effekt:** Theater Chase
 

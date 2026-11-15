@@ -1,4 +1,4 @@
-# Width
+# Breite
 
 **Effekt:** Blitz
 

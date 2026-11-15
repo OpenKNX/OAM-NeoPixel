@@ -1,4 +1,4 @@
-# FadeRate
+# Ausblendrate / Sättigung
 
 **Effekt:** Sparkle
 

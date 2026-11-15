@@ -1,4 +1,4 @@
-# Glow
+# Leuchten
 
 **Effekt:** TRON
 

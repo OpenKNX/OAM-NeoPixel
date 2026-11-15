@@ -18,16 +18,8 @@ Kehrt die Pixel-Reihenfolge des Segments um, sodass Effekte in die entgegengeset
 
 ## Beispiel
 
-**Normales Segment (Start=0, Ende=5):**
-```
-LED-Index:     0 → 1 → 2 → 3 → 4
-Effekt-Richtung: ────────────────→
-```
+**Normales Segment (Start=0, Ende=5):** Der Effekt läuft über die LEDs 0 → 1 → 2 → 3 → 4.
 
-**Umgekehrtes Segment:**
-```
-LED-Index:     4 → 3 → 2 → 1 → 0
-Effekt-Richtung: ────────────────→
-```
+**Umgekehrtes Segment:** Der Effekt läuft über die LEDs 4 → 3 → 2 → 1 → 0.
 
 **Hinweis:** Die Richtungsumkehr wird vor allen anderen Transformationen (Offset, Gruppierung) angewendet.

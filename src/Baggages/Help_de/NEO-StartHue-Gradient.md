@@ -1,4 +1,4 @@
-# StartHue
+# Start-Farbton
 
 **Effekt:** Gradient
 

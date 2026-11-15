@@ -1,4 +1,4 @@
-# MinBrightness
+# Min. Helligkeit / Pulsbreite
 
 **Effekt:** Breathing
 

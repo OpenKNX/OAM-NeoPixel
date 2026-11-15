@@ -1,4 +1,4 @@
-# FadeRate
+# Ausblendrate / Meteorgröße
 
 **Effekt:** Comet
 
