@@ -209,7 +209,7 @@ of the last run and stops when that header belongs to the other variant. `pwsh s
 - **Segments**: Define segment start/end positions for granular control
 - **Effects**: Assign effects to segments with speed and intensity parameters
 - **Scenes**: Configure up to 10 scenes per segment with colors, brightness, and effects
-- **WiFi** (WiFi variants): set "WiFi-Schnittstelle" to "Ja" in Netzwerk > Allgemein; the page "WiFi" sets the operating mode ("Mit vorhandenem WiFi verbinden" or "Eigenes WiFi (Access Point)") and the setup WiFi. Network name and password go to the device online with "Zugangsdaten übertragen" on that page, or are entered on `/wifi`; they are not part of the device parameters, and the ETS fields are cleared after a successful transfer
+- **WiFi** (WiFi variants): "WiFi-Schnittstelle" in Netzwerk > Allgemein is fixed to "Ja" once a device type with WiFi is selected (set it yourself while none is selected); the page "WiFi" sets the operating mode ("Mit vorhandenem WiFi verbinden" or "Eigenes WiFi (Access Point)") and the setup WiFi. Network name and password go to the device online with "Zugangsdaten übertragen" on that page, or are entered on `/wifi`; they are not part of the device parameters, and the ETS fields are cleared after a successful transfer
 
 ## Configuration Parameters
 

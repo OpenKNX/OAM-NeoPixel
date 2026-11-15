@@ -23,7 +23,7 @@ generic generator of OGM-HardwareConfig. Reference: `lib/OGM-HardwareConfig/gene
 | `src/NeoPixel.hw.share.gen.xml` | `NeoPixel.share.xml` (`op:include ... xpath="//Block[@name='...']/*"`) |
 | `src/NeoPixel.hw.strip.gen.xml` | `NeoPixel.Strip.templ.xml` |
 | `src/NeoPixel.hw.conf.xml` | application XML (`op:config`, feature flags such as `%NEOHW_SelectRef%`, `%NEOHW_CAP_No2D%`) |
-| `src/NeoPixel.hw.dev.gen.xml` | developer view module (`op:define prefix="NEOHWDEV"` ModuleType 46, only in `NeoPixel-Dev.xml`): checkbox „Entwickleransicht" (no memory, default off) and per board the sections Board, Module und Funktionen, Ports (table), Fest verdrahtete Relais, included at the end of the hardware page |
+| `src/NeoPixel.hw.dev.gen.xml` | developer view module (`op:define prefix="NEOHWDEV"` ModuleType 46, only in `NeoPixel-Dev.xml`): checkbox „Entwickleransicht" (no memory, default off) per board the sections Board, Module und Funktionen, Ports (table), Fest verdrahtete Relais; while no device type is selected: module, all boards and the bit order of the device query; included at the end of the hardware page |
 | `src/Baggages/Icons/memory.png` | page icon (MDI `memory`, Apache-2.0), copied from OGM-HardwareConfig `generator/assets/icons` (`<Page icon>`) |
 | `src/NeoPixel.script.js` | product XML `<Script>` |
 | `include/HardwareProfileData.h` | firmware: own HW-ID, capability bits, the HW-IDs of the ETS module (device query, `src/HardwareMappingLogic.h`) |
