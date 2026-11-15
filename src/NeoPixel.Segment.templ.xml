@@ -358,6 +358,7 @@
   <ParameterRef Id="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05801" RefId="%AID%_UP-%TT%%CC%058" />
               <!-- Read-only (greyed out) variant of the effect type for the segment overview table while an EM is assigned -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05702" RefId="%AID%_UP-%TT%%CC%057" Access="Read" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%058_R-%TT%%CC%05802" RefId="%AID%_UP-%TT%%CC%058" Access="Read" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" RefId="%AID%_UP-%TT%%CC%067" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%070_R-%TT%%CC%07001" RefId="%AID%_UP-%TT%%CC%070" />
