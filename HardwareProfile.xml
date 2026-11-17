@@ -40,9 +40,9 @@
     <Set board="DEVICE_QUINLED_DIG_UNO_V4_*" value="1" />
     <Set board="DEVICE_QUINLED_DIG_QUAD_V4_*" value="1" />
     <Set board="DEVICE_QUINLED_DIG_OCTA_32_8L_*" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_NEXT2" value="1" />
-    <Set board="DEVICE_GLEDOPTO_ESP32_WLED_DIGITAL_UP" value="1" />
-    <Set board="DEVICE_GLEDOPTO_GL_C_017WL" value="2" />
+    <Set board="DEVICE_QUINLED_DIG_NEXT_2" value="1" />
+    <Set board="DEVICE_GL_C_309WL" value="1" />
+    <Set board="DEVICE_GL_C_017WL" value="2" />
   </Value>
 
   <!-- level shifter of the LED data lines (board header HW_LEVELSHIFTER, names in HardwareConfig/OpenKNX/Xiao.h), developer view only -->
