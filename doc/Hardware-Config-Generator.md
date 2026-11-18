@@ -67,9 +67,13 @@ Gledopto 309WL (IO12) and 017WL (IO13) are normal ports: LED or relay, as in 2.0
 ## Network and WiFi modules
 
 The network module is switched by the OpenKNX module checkbox „Netzwerk" (`BASE_ModuleEnabled_NET`, page OpenKNX →
-„Module"). The calculation `NEO_SetNetworkModuleVisibility` sets it from the hardware selection: on for the boards with
-capability Network (`KNX_IP_LAN` or `KNX_IP_WIFI` in some env of the board) and while nothing is selected (state after
-"Aktualisieren", so a download keeps the network settings), off for the other boards. Off hides the Netzwerk channel.
+„Module"). `<Fix name="NetOff" capability="!Network" value="0" show="assign">` of `HardwareProfile.xml` switches it off on
+the boards without capability Network (`KNX_IP_LAN` or `KNX_IP_WIFI` in some env of the board) (block `Fix_NetOff` in the
+hardware page of both product XMLs). On the boards with Network and while nothing is selected (state after "Aktualisieren")
+no Assign is active and the checkbox has its own value (default on), so a download keeps the network settings. After leaving
+a board without Network the Assign no longer applies and the checkbox has its own value again (ETS6, measured with the demo
+module: it comes back); a value an earlier Dev version wrote by script (off) stays. Off hides the
+Netzwerk channel.
 
 Firmware (`src/main.cpp`): an IP build (`MASK_VERSION 0x57B0`) always adds the network module. A TP build with
 `KNX_IP_LAN`/`KNX_IP_WIFI` adds it when the device is unprogrammed or the checkbox is on, and logs "network module not

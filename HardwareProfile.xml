@@ -19,7 +19,7 @@
   <!-- capability ThirdParty (DEVICE_THIRD_PARTY) is built into the generator -->
 
   <!-- Network module: the firmware has it (src/main.cpp adds it with KNX_IP_LAN or KNX_IP_WIFI) in some env of the board;
-       on/off is the OpenKNX module checkbox "Netzwerk" (BASE_ModuleEnabled_NET, set from the selection by NEO_SetNetworkModuleVisibility,
+       on/off is the OpenKNX module checkbox "Netzwerk" (BASE_ModuleEnabled_NET, off by <Fix name="NetOff"> on boards without it,
        read by src/main.cpp in TP builds only). feature* = rows of the developer view (<Page features>); featureNote on boards
        whose every env runs KNX over IP (the network is their KNX link). No2D: env build flag of platformio.custom.ini -->
   <Capability name="Network" text="Netzwerk-Modul" expr="defined(KNX_IP_LAN) || defined(KNX_IP_WIFI)" feature="Netzwerk" featureNote="immer ein, KNX über IP" featureNoteWhen="KnxIp" />
@@ -232,6 +232,10 @@
     <Fix name="InfoLed1" ref="%AID%_UP-1000020_R-100002001" valueMacro="OPENKNX_INFOLED1_DEFAULT" show="assign" />
     <Fix name="InfoLed2" ref="%AID%_UP-1000021_R-100002101" valueMacro="OPENKNX_INFOLED2_DEFAULT" show="assign" />
     <Fix name="InfoLed3" ref="%AID%_UP-1000022_R-100002201" valueMacro="OPENKNX_INFOLED3_DEFAULT" show="assign" />
+    <!-- OpenKNX module checkbox "Netzwerk" (BASE_ModuleEnabled_NET, ModuleType 11): off on boards without the network module; on the
+         others and while not selected no Assign (own value, default on). Block Fix_NetOff in the
+         hardware page of the product XMLs -->
+    <Fix name="NetOff" capability="!Network" ref="%AID%_UP-0099811_R-009981101" value="0" show="assign" />
   </Fixes>
 
   <!-- page "Info LEDs" of OGM-Common per device (OGM-HardwareConfig <PartRows>): copy of InfoLed.part.xml in which row "Info <n>"

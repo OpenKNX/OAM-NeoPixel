@@ -1915,17 +1915,6 @@
 
           <!-- GPIO conflict check: one calculation, function and tables in the generated hardware script (NEOHW_conflictCheck) -->
           <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Calculation']/*" />
-
-
-            <ParameterCalculation Id="%AID%_PC-%TT%00039" Language="JavaScript" Name="NetworkModuleVisibility" LRTransformationFunc="NEO_SetNetworkModuleVisibility" RLTransformationFunc="NEO_Empty">
-              <LParameters>
-                <ParameterRefRef RefId="%NEOHW_SelectRef%" AliasName="HardwareSelect" />
-              </LParameters>
-              <RParameters>
-                <ParameterRefRef RefId="%AID%_UP-0099811_R-009981101" AliasName="ShowNetworkModule" />
-              </RParameters>
-            </ParameterCalculation>
-
             </ParameterCalculations>
             <ComObjectTable>
               <!-- Power -->

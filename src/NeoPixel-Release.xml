@@ -115,9 +115,10 @@
               <!-- Hardware page of the generated hardware module (NEOHW, HardwareProfile.xml <Page>) directly after "Allgemein" -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="Hardware" Text="{{0:%NEOHW_PageText%}}" TextParameterRefId="%NEOHW_PageTextRef%" Icon="%NEOHW_PageIcon%" HelpContext="%NEOHW_PageHelp%">
                 <op:include href="NeoPixel.hw.module.gen.xml" xpath="//ApplicationProgram/Dynamic/Channel/ParameterBlock[@Name='Profile']/*" IsInner="true" prefix="NEOHW" />
-                <!-- Info LED function per board (HardwareProfile.xml <Fix name="InfoLed<n>" show="assign">): set when the board is selected;
-                     an Assign must sit in a ParameterBlock (ETS schema), so the blocks go into the hardware page -->
-                <op:include href="NeoPixel.hw.fixes.gen.xml" xpath="//Block[@name='Fix_InfoLed1' or @name='Fix_InfoLed2' or @name='Fix_InfoLed3']/*" />
+                <!-- Info LED function and module checkbox "Netzwerk" per board (HardwareProfile.xml <Fix name="InfoLed<n>" / "NetOff"
+                     show="assign">): set when the board is selected; an Assign must sit in a ParameterBlock (ETS schema), so the blocks go
+                     into the hardware page -->
+                <op:include href="NeoPixel.hw.fixes.gen.xml" xpath="//Block[@name='Fix_InfoLed1' or @name='Fix_InfoLed2' or @name='Fix_InfoLed3' or @name='Fix_NetOff']/*" />
               </ParameterBlock>
               <!-- Erweitert (Extended): Common's own content first, then the module injections -->
               <ParameterBlock Id="%AID%_PB-nnn" Name="Extended" Text="Erweitert" Icon="format-list-text" HelpContext="BASE-OpenKNX">

@@ -376,25 +376,6 @@ function NEO_CheckSegmentStartEndRanges(input, output, context) {
        " hasError=" + hasError);
 }
 
-// Module checkbox "Netzwerk" (BASE_ModuleEnabled_NET) from the hardware selection; the firmware of a TP build starts the
-// network module only with it on (src/main.cpp). Not selected (state after the app update): on, so a download keeps
-// the network settings and the network of a TP+WiFi firmware
-function NEO_SetNetworkModuleVisibility(input, output, context) {
-    var hwSelect = toInt(input.HardwareSelect, 0);
-@@use @hw/JsBoardInline.js @{ Prefix = '    var networkHardware = ['; Suffix = '];'; Where = { $_.Cap.Network } }
-    var hasNetwork = (hwSelect === 0) ? 1 : 0;
-
-    for (var i = 0; i < networkHardware.length; i++) {
-        if (hwSelect === networkHardware[i]) {
-            hasNetwork = 1;
-            break;
-        }
-    }
-
-    output.ShowNetworkModule = hasNetwork;
-    info("Hardware " + hwSelect + " -> Network visible: " + hasNetwork);
-}
-
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
 
 var NEO_SceneEffectDefaults = {
