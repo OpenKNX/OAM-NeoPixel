@@ -34,14 +34,9 @@
        017WL (relay 1 fixed, relay 2 on a port, as many relays as before); relays="true": developer view row (fest verdrahtet / Port wählbar) -->
   <Value name="Relays" text="Relais" expr="HW_RELAY_COUNT" default="0" max="4" query="false" relays="true">
     <Set board="OKNXHW_OPENKNXIAO_KNEOPIX_*" value="4" />
+    <Set board="DEVICE_QUINLED_DIG_*" value="1" />
     <Set board="DEVICE_UP1_GW_UART" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_UNO_V3_*" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_QUAD_V3_*" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_UNO_V4_*" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_QUAD_V4_*" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_OCTA_32_8L_*" value="1" />
-    <Set board="DEVICE_QUINLED_DIG_NEXT2" value="1" />
-    <Set board="DEVICE_GLEDOPTO_ESP32_WLED_DIGITAL_UP" value="1" />
+    <Set board="DEVICE_GLEDOPTO_ESP32_*" value="1" />
     <Set board="DEVICE_GLEDOPTO_GL_C_017WL" value="2" />
   </Value>
 
