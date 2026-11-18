@@ -1,7 +1,7 @@
 # Konzept: Hardware-Abstraktion über Defines & Generator
 
 > **Eine Firmware – viele Boards.** Wie das OAM-NeoPixel aus einer einzigen
-> Codebasis dutzende OpenKNX-/Partner-Hardwarevarianten bedient, ohne pro Board
+> Codebasis dutzende Hardwarevarianten von OpenKNX und Drittanbietern bedient, ohne pro Board
 > eigenen Code zu pflegen.
 
 ---
@@ -27,8 +27,8 @@ Jede Variante hat eine eindeutige 16-Bit-ID:
    │└─── H  = Hauptgruppe (4 Bit)
    └──── Hex
 
- Hauptgruppen:  0x1 = OpenKNX        0x2 = OpenKNX-Ready (Partner)   0x3 = Community
- Beispiel:      0x2122 = OpenKNX-Ready (2) / QuinLED (21) / Dig-Quad-V3 WiFi+AE_Plus (22)
+ Hauptgruppen:  0x1 = OpenKNX        0x2 = Drittanbieter             0x3 = Community
+ Beispiel:      0x2122 = Drittanbieter (2) / QuinLED (21) / Dig-Quad-V3 WiFi+AE_Plus (22)
                 0x13xx = XIAO (KNeoPix/Mini, RP2040/RP2350/ESP32…)
 ```
 
