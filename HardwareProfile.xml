@@ -52,9 +52,9 @@
   <!-- the hardware page as a page of the OpenKNX channel (NeoPixel-Dev.xml / NeoPixel-Release.xml compose it after "Allgemein"):
        texts of the page (each <= 255 characters; absent = generator default: intro, queryTitle, query, infoDefault); no board
        selected: "Oder automatisch erkennen" with the query button, its help box and steps picture; board selected: device card (<InfoImage>),
-       switches, third-party notice. help = context help (src/Baggages/Help_de/NEO-Hardware.md). features = rows "Module und Funktionen" of the developer view; dev = developer view module,
+       switches, third-party notice; cardFeatures: the feature rows of the selected board under the card. help = context help (src/Baggages/Help_de/NEO-Hardware.md). features = rows "Module und Funktionen" of the developer view; dev = developer view module,
        defined only in NeoPixel-Dev.xml -->
-  <Page text="Gerät" icon="memory" help="NEO-Hardware" dev="src/NeoPixel.hw.dev.gen.xml" features="KnxIp Network Wifi No2D Relays"
+  <Page text="Gerät" icon="memory" help="NEO-Hardware" dev="src/NeoPixel.hw.dev.gen.xml" features="KnxIp Network Wifi No2D Relays" cardFeatures="true"
         intro="Diese Applikation gilt für mehrere Geräte. Wählen Sie das Gerät aus, das verbaut ist. Erst dann sind seine Anschlüsse und Einstellungen sichtbar. Ohne Auswahl bleiben alle Anschlüsse des Geräts aus." />
   <Notice when="ThirdParty" title="Produkt eines Drittanbieters: OpenKNX stellt nur eine kompatible Firmware bereit und steht in keiner geschäftlichen Verbindung zum Hersteller. Gewährleistung, Support und Produktsicherheit liegen beim Hersteller. Nutzung auf eigene Verantwortung." />
 
