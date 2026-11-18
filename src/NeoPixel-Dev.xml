@@ -8,11 +8,11 @@
        Common.share.xml sets its default -->
   <op:config name="%BASE_InfoLedPart%" value="../../../src/NeoPixel.hw.infoled.gen.xml" />
   <!-- Product version text (page "Allgemein"), per variant; keep it in sync with ApplicationVersion below. -->
-  <op:config name="%NEO_ProductVersion%" value="3.1" />
+  <op:config name="%NEO_ProductVersion%" value="3.2" />
   <op:ETS
     OpenKnxId="0xAD"
     ApplicationNumber="1"
-    ApplicationVersion="3.1"
+    ApplicationVersion="3.2"
     ReplacesVersionsDownTo="0.14"
     ApplicationRevision="0"
     ProductName="OpenKNX NeoPixel"
