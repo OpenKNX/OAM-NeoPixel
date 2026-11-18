@@ -6,7 +6,7 @@ Dokument, das sie trägt. Erledigtes wird gelöscht, nicht abgehakt — was hier
 Stand: **2026-11-17** (Dev 2.12 / Release 1.0) · **29 offene Punkte**. Nummeriert nach Priorität, Prio 1
 zuerst; kommt ein Punkt dazu oder fällt einer weg, wird neu nummeriert.
 
-Regeln: ETS-/Generator-Änderungen gehen in `scripts/Build-*.ps1` bzw. `HardwareProfile.xml` und `src/hw/` (Hardware-Generator in
+Regeln: ETS-/Generator-Änderungen gehen in `scripts/Build-*.ps1` bzw. `HardwareManifest.xml` und `src/hw/` (Hardware-Generator in
 OGM-HardwareConfig), nie in die generierten Dateien; Speicherlayout nur
 per Anhängen ändern; jede Inhaltsänderung an der App braucht einen Versions-Bump.
 
@@ -156,7 +156,7 @@ Danach:
 
 ### 5 — GPIO-Konfliktprüfung in der echten ETS testen
 
-Die Prüfung ist eine erzeugte ParameterCalculation (`PC-%TT%00900`, `NEOHW_conflictCheck`, `HardwareProfile.xml <Conflicts>`)
+Die Prüfung ist eine erzeugte ParameterCalculation (`PC-%TT%00900`, `NEOHW_conflictCheck`, `HardwareManifest.xml <Conflicts>`)
 mit 836 Eingängen (797 Port-Parameter je Board und Signal, 39 weitere) und 20 Flags ohne Gerätespeicher. Getestet nur im
 OpenKNX-Viewer und mit Node.js (ein Lauf rund 18 µs), nicht unter Windows-JScript. In ETS 6 nachstellen: Gerät einfügen,
 „Aktualisieren" auf 2.5 (ETS rechnet je übernommenem Wert neu), Konflikt erzeugen und auflösen (Streifen-

@@ -3,10 +3,10 @@
 #include <cstdint>
 
 // Own hardware profile, the HW-IDs of the ETS hardware module and the port value resolution
-// (OGM-HardwareConfig/generator, HardwareProfile.xml portManualValue / portNoneValue):
+// (OGM-HardwareConfig/generator, HardwareManifest.xml portManualValue / portNoneValue):
 // HardwareProfile::signalGpio / relaySignalGpio, PORT_MANUAL (10), PORT_NONE (15), GPIO_NONE (255).
 // PORT_MANUAL / PORT_NONE are tested before the port, so a port described on 10 or 15 is never used; ETS offers ports
-// 1..10 only (HardwareProfile.xml <Ports max="10">, the generator stops on a board with more).
+// 1..10 only (HardwareManifest.xml <Ports max="10">, the generator stops on a board with more).
 #include "HardwareProfileData.h"
 // GPIO of a port value, hard-wired relays (OGM-HardwareConfig)
 #include "HardwareConfig/Helpers/HardwarePorts.h"
@@ -14,7 +14,7 @@
 #ifndef DEVICE_HW_ID
     #error "The board header defines no DEVICE_HW_ID: the ETS hardware selection cannot be checked"
 #endif
-// Hardware selection of the generated hardware module NEOHW (HardwareProfile.xml <Output share>). Without it the
+// Hardware selection of the generated hardware module NEOHW (HardwareManifest.xml <Output share>). Without it the
 // check that keeps every port byte unused while no or another board is selected would not exist.
 #ifndef ParamNEOHW_HardwareSelect
     #error "include/knxprod.h lacks ParamNEOHW_HardwareSelect (hardware module NEOHW) - run the producer (scripts/Build-Release.ps1)"
@@ -23,7 +23,7 @@
 constexpr uint16_t HW_SELECT_NONE = HardwareProfile::NOT_SELECTED;
 static_assert(DEVICE_HW_ID != HW_SELECT_NONE, "DEVICE_HW_ID equals the 'not selected' value of the ETS hardware selection");
 // A board missing in the ETS hardware module could never be selected: every port would stay unused
-static_assert(HardwareProfile::isKnown(DEVICE_HW_ID), "DEVICE_HW_ID is not in the ETS hardware module - run scripts/Build-Release.ps1 (HardwareProfile.xml)");
+static_assert(HardwareProfile::isKnown(DEVICE_HW_ID), "DEVICE_HW_ID is not in the ETS hardware module - run scripts/Build-Release.ps1 (HardwareManifest.xml)");
 
 /// @brief DEVICE_HW_ID stored by the ETS hardware selection; HW_SELECT_NONE while none is selected
 inline uint16_t selectedHardwareId()

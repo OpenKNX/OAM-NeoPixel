@@ -107,7 +107,7 @@ Gruppen der Applikation stehen in `src/NeoPixel.EffectGroups.xml`:
 - Auf Hardware, die ueber `NEOPIXEL_DISABLE_2D` gebaut wird, zeigt ETS eine Auswahl ohne die
   2D-Effekte. Die uebrigen Effekte bleiben in der Auswahl.
 - ETS prueft den gewaehlten Effekt von Segment, Szene und Cue gegen die Firmware der gewaehlten
-  Hardware (`HardwareProfile.xml <BoardTable>` ueber `NEO_FXOFF_<n>` mit den Build-Flags jedes Envs):
+  Hardware (`HardwareManifest.xml <BoardTable>` ueber `NEO_FXOFF_<n>` mit den Build-Flags jedes Envs):
   „Effekt nicht verfügbar" (Fehler), wenn jede Firmware-Variante des Boards ihn weglaesst; ein Hinweis,
   wenn nur eine Variante ihn weglaesst; keine Meldung ohne oder mit unbekannter Hardware.
 - Solid laesst sich nicht abschalten, es ist der Rueckfall fuer eine unbekannte Auswahl.

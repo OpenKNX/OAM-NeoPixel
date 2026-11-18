@@ -12,7 +12,7 @@
         <op:param name="%CUE_NR%"  value="1"   increment="1"  asLetter="false"/>
         <!-- Typed effect parameters: ID 22%CC% + cue index * 1000 + effect number * 10 + parameter index (Build-EffectParameters.ps1) -->
         <op:param name="%CUE_TPP%" value="0" increment="1000" digits="4" />
-        <!-- Own lane for the cue effect list without the 2D effects (HardwareProfile.xml <Filter name="CueFx">): the CUE_PPP
+        <!-- Own lane for the cue effect list without the 2D effects (HardwareManifest.xml <Filter name="CueFx">): the CUE_PPP
              stride of 18 is fully used, 900..909 is free; one id per cue, so the filter has room for one list (slots="1") -->
         <op:param name="%CUE_NO2D%" value="900" increment="1" />
         <!-- CUE_LBL entfernt: Cue-Baum-Titel zeigt jetzt JS-frei direkt auf den rohen Cue-Namen (CUE_PPP+16) -->
@@ -51,7 +51,7 @@
                 <!-- AUTO-GENERATED via op:part (NeoPixel.Cue.part.xml, 10 instances) -->
                 <op:usePart name="Cue" xpath="//Parameters/*" />
               </Union>
-              <!-- effect lists of hardware without the 2D effects, no memory (HardwareProfile.xml <Filter name="CueFx">) -->
+              <!-- effect lists of hardware without the 2D effects, no memory (HardwareManifest.xml <Filter name="CueFx">) -->
               <op:usePart name="Cue" xpath="//FilterParameters/*" />
               <!-- EM-Beschreibung: NICHT-gespeichert (Access=None, ohne Offset) => bis 40 Zeichen, kostet keinen Flash.
                    Firmware nutzt den Namen nicht (Konsole entfernt); Baum-Titel & KO-Namen via Marker-DisplayName.

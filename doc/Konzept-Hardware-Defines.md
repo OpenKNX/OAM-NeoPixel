@@ -82,14 +82,14 @@ Warum man die ID *braucht*, obwohl die GPIO-Infos vorliegen:
                                    ▼
  ┌────────────────────────────────────────────────────────────────────────────┐
  │ 2) GENERATOR — lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1  │
- │    Manifest HardwareProfile.xml, Vorlagen src/hw/*.xml, script.src.js     │
+ │    Manifest HardwareManifest.xml, Vorlagen src/hw/*.xml, script.src.js     │
  │    schreibt ganze Dateien (nie in handgeschriebene):                       │
  │    • src/NeoPixel.hw.module.gen.* → Hardware-Modul NEOHW (Auswahl, Abfrage)│
  │    • src/NeoPixel.hw.*.gen.xml   → per op:include in share/Strip.templ   │
  │    • src/NeoPixel.hw.conf.xml    → Feature-Flags (%NEOHW_..._CAP_No2D …)   │
  │    • src/NeoPixel.script.js      → aus script.src.js + Board-Tabellen      │
  │    • include/HardwareProfileData.h → eigenes Profil, bekannte HW-IDs      │
- │    • HardwareProfile.slots       → Board-Nummer je HW-ID (wird committet)  │
+ │    • HardwareManifest.slots       → Board-Nummer je HW-ID (wird committet)  │
  └─────────────────────────────────┬──────────────────────────────────────────┘
                                    │  OpenKNXproducer
                                    ▼
@@ -149,7 +149,7 @@ Firmware keine Board-Nummer und keinen `switch` über alle Boards. Den Portwert 
 
 1. Header `Xiao.h`: `#define DEVICE_HW_ID 0x1310`, Ports über den gemeinsamen Block
    `HW_PORT_1_GPIO OKNXHW_OPENKNXIAO_D1` … `HW_PORT_8_GPIO OKNXHW_OPENKNXIAO_D10`.
-2. Der Generator liest das Env `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1`; `HardwareProfile.slots` gibt der
+2. Der Generator liest das Env `release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1`; `HardwareManifest.slots` gibt der
    HW-ID 0x1310 die Board-Nummer 4 (Parameter `…HW4`, nur ETS).
 3. ETS: Anwender wählt auf der Seite OpenKNX → „Gerät" „OpenKNXiao V1 KNeoPix RP2350" (oder fragt das Gerät ab) →
    `NEOHW_HardwareSelect = 4880`; Port „D3" im Parameter `…HW4` → Wert 2 (Portnummer − 1) im Byte des Streifens.
@@ -163,7 +163,7 @@ Firmware keine Board-Nummer und keinen `switch` über alle Boards. Den Portwert 
 |-------|-------|
 | HW-Beschreibung (Defines) | `lib/OGM-HardwareConfig/include/HardwareConfig/**/*.h` |
 | Generator + Bausteine | `lib/OGM-HardwareConfig/generator/` (README dort) |
-| Manifest, Board-Nummern | `HardwareProfile.xml`, `HardwareProfile.slots` |
+| Manifest, Board-Nummern | `HardwareManifest.xml`, `HardwareManifest.slots` |
 | NeoPixel-Vorlagen | `src/hw/*.xml`, `src/NeoPixel.script.src.js` |
 | Generierte Dateien | `src/NeoPixel.hw.*.gen.xml`, `src/NeoPixel.hw.module.gen.js`, `src/NeoPixel.hw.conf.xml`, `src/NeoPixel.script.js`, `include/HardwareProfileData.h` |
 | Producer-Makros | `include/knxprod.h` |
@@ -187,7 +187,7 @@ Die häufigste Entwicklerfrage — und die Kernbotschaft des Konzepts: **so weni
 Es wird **kein** C++ und **keine** XML von Hand geschrieben — man pflegt nur **Defines**.
 
 ### Einmaliger Aufwand (Framework — bereits erledigt)
-Generischer Generator in OGM-HardwareConfig, Manifest `HardwareProfile.xml`, Vorlagen in `src/hw/`, das
+Generischer Generator in OGM-HardwareConfig, Manifest `HardwareManifest.xml`, Vorlagen in `src/hw/`, das
 `0xHUVV`-ID-Schema, das Hardware-Modul, die Träger-Parameter und die Slot-Datei. → **Nichts davon muss man pro Board
 nochmal anfassen.**
 
@@ -198,7 +198,7 @@ nochmal anfassen.**
 2. **PlatformIO-Build-Target** `release_<Board>` in `platformio.custom.ini` ergänzen (Board, Board-Define); das
    Manifest nimmt jedes `release_*`-Env. Relais in ETS: `<Set>`-Zeile im Manifest.
 3. **Generator laufen lassen** (`lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1`, als VS-Code-Task „Build HardwareConfig", oder `Build-Release.ps1`): neue Board-Nummer am
-   Ende von `HardwareProfile.slots`, Eintrag im Hardware-Modul, Port-Listen, `HardwareProfileData.h`, `script.js`.
+   Ende von `HardwareManifest.slots`, Eintrag im Hardware-Modul, Port-Listen, `HardwareProfileData.h`, `script.js`.
 4. **Bauen/Prüfen:** `pwsh scripts/Build-Release.ps1` (Producer + Firmware), neue ApplicationVersion.
 
 > Faustregel: *Neues Board = neuer Header-Eintrag (Defines) + Build-Target + Generatorlauf.*
@@ -216,7 +216,7 @@ die auch die Firmware sieht.
 2. **Je Board:** `DEVICE_HW_ID`, `DEVICE_NAME`, Ports (`HW_PORT_*`), Fähigkeiten (`<Capability expr>`) und Werte
    (`<Value>`) des Manifests per Präprozessor.
 3. **Sortierung/Nummern:** aufsteigend nach HW-ID (`order="hwid"`); die Board-Nummer in Parameter-IDs kommt aus
-   `HardwareProfile.slots` (`ids="slot"`), nie aus der Listenposition.
+   `HardwareManifest.slots` (`ids="slot"`), nie aus der Listenposition.
 4. **Vorlagen:** `<Generate>` erzeugt aus `src/hw/*.xml` und den Bausteinen von OGM-HardwareConfig ganze Dateien;
    eine Datei wird nur geschrieben, wenn sich ihr Inhalt ändert.
 

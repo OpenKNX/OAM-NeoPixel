@@ -210,20 +210,20 @@ if ($isClean) {
         # Effect parameters: committed outputs, nothing to clean. The next build regenerates them when an input
         # changed and removes outputs it no longer writes; scripts/Build-EffectParameters.ps1 -Force rebuilds all.
 
-        # Outputs of the hardware generator (HardwareProfile.xml <Output>/<Generate>): not committed
-        # (.gitignore), the next Build-Release writes them again. HardwareProfile.slots is a source.
-        Write-Host "Removing hardware generator outputs (HardwareProfile.xml)..." -ForegroundColor Cyan
-        [xml]$hwManifest = [System.IO.File]::ReadAllText((Resolve-Path 'HardwareProfile.xml').Path, [System.Text.Encoding]::UTF8)
+        # Outputs of the hardware generator (HardwareManifest.xml <Output>/<Generate>): not committed
+        # (.gitignore), the next Build-Release writes them again. HardwareManifest.slots is a source.
+        Write-Host "Removing hardware generator outputs (HardwareManifest.xml)..." -ForegroundColor Cyan
+        [xml]$hwManifest = [System.IO.File]::ReadAllText((Resolve-Path 'HardwareManifest.xml').Path, [System.Text.Encoding]::UTF8)
         $hwOutputs = @()
-        foreach ($o in @($hwManifest.HardwareProfile.SelectNodes('Output'))) {
+        foreach ($o in @($hwManifest.HardwareManifest.SelectNodes('Output'))) {
             foreach ($a in @($o.Attributes)) { $hwOutputs += $a.Value }
         }
-        foreach ($g in @($hwManifest.HardwareProfile.SelectNodes('Generate'))) { $hwOutputs += $g.GetAttribute('output') }
+        foreach ($g in @($hwManifest.HardwareManifest.SelectNodes('Generate'))) { $hwOutputs += $g.GetAttribute('output') }
         # <Conflicts output> (GPIO conflict check), <Fixes output> (settings fixed per capability), <PartRows output> (rows of a part per board),
         # <Filters output> (dropdowns filtered per board), <ValueNotices output> (notices under a selection per board)
-        foreach ($n in @($hwManifest.HardwareProfile.SelectNodes('Conflicts|Fixes|PartRows|Filters|ValueNotices'))) { $hwOutputs += $n.GetAttribute('output') }
+        foreach ($n in @($hwManifest.HardwareManifest.SelectNodes('Conflicts|Fixes|PartRows|Filters|ValueNotices'))) { $hwOutputs += $n.GetAttribute('output') }
         # <Page dev> (developer view module) and the page icon the generator copies from its assets
-        $hwPage = $hwManifest.HardwareProfile.SelectSingleNode('Page')
+        $hwPage = $hwManifest.HardwareManifest.SelectSingleNode('Page')
         if ($hwPage) {
             if ($hwPage.GetAttribute('dev')) { $hwOutputs += $hwPage.GetAttribute('dev') }
             $hwIcon = $hwPage.GetAttribute('icon')
@@ -236,7 +236,7 @@ if ($isClean) {
             }
         }
         # info images (QR code) of the hardware page: Baggages/<prefix>Info next to the share
-        $hwInfoDir = "src/Baggages/$($hwManifest.HardwareProfile.GetAttribute('prefix'))Info"
+        $hwInfoDir = "src/Baggages/$($hwManifest.HardwareManifest.GetAttribute('prefix'))Info"
         if (Test-Path -LiteralPath $hwInfoDir -PathType Container) {
             Remove-Item -LiteralPath $hwInfoDir -Recurse -Force
             Write-Host "  Removed $hwInfoDir" -ForegroundColor DarkGray
@@ -310,7 +310,7 @@ if ($isClean) {
 # Mini Build Targets (the hardware physically on the desk)
 # Purpose: fast turnaround while developing - one RP2350 and one ESP32S3 board per
 # KNeoPiX revision (V1, V1.5), so both families stay covered. The ETS product still offers
-# all hardware (every release_* env, HardwareProfile.xml).
+# all hardware (every release_* env, HardwareManifest.xml).
 $miniTargets = @(
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_RP2350_V1"; Name = "OpenKNX-XIAO-KNeoPiX-RP2350_V1"; Ext = "rp2350-tp" }
     @{ Env = "release_OKNXHW_OPENKNXIAO_KNEOPIX_ESP32S3_V1"; Name = "OpenKNX-XIAO-KNeoPiX-ESP32S3_V1"; Ext = "esp32-tp" }
@@ -384,7 +384,7 @@ $fullTargets = @(
     )
 
 # Hardware identity list (ETS hardware module, device query, include/HardwareProfileData.h): every release_* env of
-# platformio.ini (HardwareProfile.xml <Boards platformio="release_*"/>), whatever target set is built; a release
+# platformio.ini (HardwareManifest.xml <Boards platformio="release_*"/>), whatever target set is built; a release
 # firmware knows only its own hardware (DEVICE_HW_ID, DEVICE_NAME).
 if ($isMini) {
     $allTargets = $miniTargets
@@ -470,10 +470,10 @@ if (-not $isSkipKnxprod) {
         exit 1
     }
 
-    # Hardware selection, ports and board tables: OGM-HardwareConfig generator, manifest HardwareProfile.xml
-    Write-Host "Generating hardware files (HardwareProfile.xml)..." -ForegroundColor Cyan
+    # Hardware selection, ports and board tables: OGM-HardwareConfig generator, manifest HardwareManifest.xml
+    Write-Host "Generating hardware files (HardwareManifest.xml)..." -ForegroundColor Cyan
     $global:LASTEXITCODE = 0
-    & lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1 -Manifest HardwareProfile.xml -Detailed:$Detailed
+    & lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1 -Manifest HardwareManifest.xml -Detailed:$Detailed
     if ($global:LASTEXITCODE -ne 0) {
         Write-Host "Hardware generation failed!" -ForegroundColor Red
         exit 1

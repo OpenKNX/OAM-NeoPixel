@@ -20,7 +20,7 @@
          and the carrier of that family (NEO<n>DataPort, NEO<n>ClockPort, NEOExternalRelay<r>Port)
          do not all sit on the same offset and bits. The firmware reads the byte through the carrier.
       3. a strip port selection type lacks "Manuell" (10) or "please select" (15), the values the
-         firmware decodes (HardwareProfile::PORT_MANUAL / PORT_NONE, HardwareProfile.xml portManualValue / portNoneValue).
+         firmware decodes (HardwareProfile::PORT_MANUAL / PORT_NONE, HardwareManifest.xml portManualValue / portNoneValue).
 
     Run it after scripts/Build-Release.ps1 has generated include/knxprod.h and the product XML.
 

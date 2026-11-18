@@ -217,7 +217,7 @@
               <Parameter Id="%AID%_UP-22%CC%%CUE_TPP+323%" Offset="%CUE_OFF+4%" BitOffset="0" Name="NEOEM%C%Cue%CUE_NR%Metaballs2DContrast" ParameterType="%AID%_PT-Metaballs2DContrast" Text="Kontrast" Value="0" op:nowarn="true"/>
               <!-- END AUTO-GENERATED: Cue Effect Typed Parameters -->
             </Parameters>
-            <!-- effect list of hardware without the 2D effects, no memory (HardwareProfile.xml <Filter name="CueFx">); the EM template
+            <!-- effect list of hardware without the 2D effects, no memory (HardwareManifest.xml <Filter name="CueFx">); the EM template
                  takes it outside its union (op:usePart xpath //FilterParameters/*) -->
             <FilterParameters>
               <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_CueFx_Parameters']/*" />
@@ -443,9 +443,9 @@
                     <!-- Cue name -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+16%_R-%TT%%CC%%CUE_PPP+16%01" IndentLevel="1" HelpContext="NEO-Cue-Name"/>
                     <!-- Effect dropdown -->
-                    <!-- effect list per hardware (HardwareProfile.xml <Filter name="CueFx">) -->
+                    <!-- effect list per hardware (HardwareManifest.xml <Filter name="CueFx">) -->
                     <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_CueFx']/*" />
-                    <!-- notice when the firmware of the selected board leaves the effect out (HardwareProfile.xml <ValueNotice name="CueFx">) -->
+                    <!-- notice when the firmware of the selected board leaves the effect out (HardwareManifest.xml <ValueNotice name="CueFx">) -->
                     <op:include href="NeoPixel.hw.notices.gen.xml" xpath="//Block[@name='ValueNotice_CueFx']/*" />
                     <!-- Colour / brightness / timing -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+11%_R-%TT%%CC%%CUE_PPP+11%01" IndentLevel="1" HelpContext="NEO-Cue-Farbe"/>

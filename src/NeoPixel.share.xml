@@ -459,7 +459,7 @@
                 </TypeRestriction>
               </ParameterType>
               
-              <!-- GPIO conflict flag (generated with the check, HardwareProfile.xml <Conflicts>) -->
+              <!-- GPIO conflict flag (generated with the check, HardwareManifest.xml <Conflicts>) -->
               <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//ApplicationProgram/Static/ParameterTypes/ParameterType" />
 
 
@@ -519,7 +519,7 @@
                 </TypeRestriction>
               </ParameterType>
               <!-- External Relays -->
-              <!-- relay count 0..4; the list per board comes from HardwareProfile.xml <Filter name="RelayCount"> -->
+              <!-- relay count 0..4; the list per board comes from HardwareManifest.xml <Filter name="RelayCount"> -->
               <ParameterType Id="%AID%_PT-ExternalRelayCount" Name="ExternalRelayCount">
                 <TypeRestriction Base="Value" SizeInBit="3" UIHint="DropDown">
                   <Enumeration Text="Deaktiviert" Value="0" Id="%ENID%" />
@@ -1538,10 +1538,10 @@
               <Parameter Id="%AID%_P-%TT%00183" Name="NEOExternalRelay2Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
               <Parameter Id="%AID%_P-%TT%00184" Name="NEOExternalRelay3Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
               <Parameter Id="%AID%_P-%TT%00185" Name="NEOExternalRelay4Name" ParameterType="%AID%_PT-RelayName" Text="Beschreibung" Value="" />
-              <!-- relay count list per board without memory (HardwareProfile.xml <Filter name="RelayCount">), copied into NEOExternalRelayCount -->
+              <!-- relay count list per board without memory (HardwareManifest.xml <Filter name="RelayCount">), copied into NEOExternalRelayCount -->
               <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_RelayCount_Parameters']/*" />
 
-              <!-- GPIO conflict flags without memory, written by the generated calculation (HardwareProfile.xml <Conflicts>) -->
+              <!-- GPIO conflict flags without memory, written by the generated calculation (HardwareManifest.xml <Conflicts>) -->
               <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='Parameters']/*" />
 
               <!-- External Relay Delay Configuration Union -->
@@ -1654,7 +1654,7 @@
               <op:include href="NeoPixel.hw.share.gen.xml" xpath="//Block[@name='RelayParameterRefs']/*" />
               <!-- GPIO conflict flags (generated) -->
               <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='ParameterRefs']/*" />
-              <!-- read-only rows of settings fixed per capability (generated, HardwareProfile.xml <Fixes>) -->
+              <!-- read-only rows of settings fixed per capability (generated, HardwareManifest.xml <Fixes>) -->
               <op:include href="NeoPixel.hw.fixes.gen.xml" xpath="//Block[@name='ParameterRefs']/*" />
               <!-- External Relay Delay Parameters -->
               <ParameterRef Id="%AID%_UP-%TT%00139_R-%TT%0013901" RefId="%AID%_UP-%TT%00139" />
@@ -2060,7 +2060,7 @@
                   <when default="true">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Externe Relais" UIHint="Headline" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Aktivieren Sie externe Relais und wählen Sie die passenden GPIO-Ports der Hardware. Pro Relais wird ein 1-Bit Schalt-KO eingeblendet." />
-                    <!-- relay count: list 0..n of the selected hardware (HardwareProfile.xml <Filter name="RelayCount">) -->
+                    <!-- relay count: list 0..n of the selected hardware (HardwareManifest.xml <Filter name="RelayCount">) -->
                     <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_RelayCount']/*" />
                     <choose ParamRefId="%AID%_UP-%TT%00130_R-%TT%0013001">
                       <when test=">=1">

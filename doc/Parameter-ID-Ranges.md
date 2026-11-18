@@ -35,7 +35,7 @@ does not allocate another `nnn`:
 - `rr = 02` is used for several alternate or read-only references.
 - Scene slot aliases use `rr = 03..34` for effects 1..32.
 
-The hardware selection is the generated module `NEOHW` (ModuleType 45, `4500001`, `HardwareProfile.xml`); its IDs
+The hardware selection is the generated module `NEOHW` (ModuleType 45, `4500001`, `HardwareManifest.xml`); its IDs
 come from the OGM-HardwareConfig generator.
 
 ## Global NeoPixel namespace: `4000nnn`
@@ -62,12 +62,12 @@ Source: [`src/NeoPixel.share.xml`](../src/NeoPixel.share.xml)
 | `171..181` | Virtual-strip extensions for strips 7 and 8 |
 | `182..186` | Relay names and reserved relay-name storage |
 | `194..196` | Pending LED-type reset state |
-| `200..249` | Relay 1 port per board (200 + board number of `HardwareProfile.slots`, numbers 0..49; used today 200..239) |
+| `200..249` | Relay 1 port per board (200 + board number of `HardwareManifest.slots`, numbers 0..49; used today 200..239) |
 | `250..299` | Relay 2 port per board (250 + board number; used today 250..289) |
 | `300..349` | Relay 3 port per board (300 + board number; used today 300..339) |
 | `350..399` | Relay 4 port per board (350 + board number; used today 350..389) |
 | `410..420` | Topology and chain UI pictures |
-| `900..903`, `911..918`, `921..928` | GPIO conflict flags without memory (generated, `HardwareProfile.xml <Conflicts>`); calculation `PC-900` |
+| `900..903`, `911..918`, `921..928` | GPIO conflict flags without memory (generated, `HardwareManifest.xml <Conflicts>`); calculation `PC-900` |
 
 Currently unused global suffixes:
 
@@ -80,7 +80,7 @@ Currently unused global suffixes:
 HCL strength in Release 0.1). Release still replaces versions down to 0.1, so ETS
 would carry those old values into a new parameter with the same ID: keep them free.
 `200..399` is computed in `src/hw/NeoPixel.hw.share.xml` as
-`200 + 50 x (relay - 1) + board number` for relays 1..4 (board number = slot of `HardwareProfile.slots`,
+`200 + 50 x (relay - 1) + board number` for relays 1..4 (board number = slot of `HardwareManifest.slots`,
 0..49); the unused gaps inside it are reserved for further hardware variants. Boards with hard-wired relays
 (`HW_RELAY_COUNT`: QuinLED, Gledopto) have no relay port parameters; their IDs stay reserved (slot of the board).
 
@@ -110,7 +110,7 @@ The per-board port parameters come from the OGM-HardwareConfig generator: templa
 [`src/hw/NeoPixel.hw.strip.xml`](../src/hw/NeoPixel.hw.strip.xml), output `src/NeoPixel.hw.strip.gen.xml`,
 included by the strip template (module NEOSTRIP, ModuleType 40, strips 1..8). They use `%TT%0%C%nnn` with
 `%C%` = strip, so for strips 1..8 they lie in the namespaces `4001nnn..4008nnn` of segments 1..8. The board
-slot is the number of the board in `HardwareProfile.slots` (fixed per HW-ID, a removed board keeps it); a
+slot is the number of the board in `HardwareManifest.slots` (fixed per HW-ID, a removed board keeps it); a
 slot above 49 would move the data port into the clock range. Segments 9..16 have no IDs there.
 
 ### Scene blocks

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 @@# Port ParameterTypes of NeoPixel.share.xml (block "GPIO Port Selection Types"); the hardware selection is the
-@@# generated module NEOHW (HardwareProfile.xml <Output share>).
+@@# generated module NEOHW (HardwareManifest.xml <Output share>).
 @@# The producer reads ParameterTypes of an included file only under ApplicationProgram/Static/ParameterTypes.
 @@# Port values 0..9 are ports (hardware port number - 1), 10 = manual, 15 = placeholder; the firmware maps
 @@# value k to HW_PORT_<k+1>_GPIO (hwPortGpio, OGM-HardwareConfig include/HardwareConfig/Helpers/HardwarePorts.h).

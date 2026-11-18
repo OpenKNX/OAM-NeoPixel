@@ -55,7 +55,7 @@
                             <Parameter Id="%AID%_UP-%TT%%CC%%PPP+18%" Offset="%MO+22%" BitOffset="0" Name="NEO%C%Scene%SN%EffectText" ParameterType="%AID%_PT-CueText" Text="Effekt-Text (Szene %SZ%)" Value=""/>
 
                         </Parameters>
-                        <!-- effect list of hardware without the 2D effects, no memory (HardwareProfile.xml <Filter name="SceneFx">); the
+                        <!-- effect list of hardware without the 2D effects, no memory (HardwareManifest.xml <Filter name="SceneFx">); the
                              template takes it outside its union (op:usePart xpath //FilterParameters/*) -->
                         <FilterParameters>
                             <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_SceneFx_Parameters']/*" />
@@ -470,9 +470,9 @@
                                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Szene %SZ%" UIHint="Headline" />
 
                                 <!-- Effect Type -->
-                                <!-- effect list per hardware (HardwareProfile.xml <Filter name="SceneFx">) -->
+                                <!-- effect list per hardware (HardwareManifest.xml <Filter name="SceneFx">) -->
                                 <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_SceneFx']/*" />
-                                <!-- notice when the firmware of the selected board leaves the effect out (HardwareProfile.xml <ValueNotice name="SceneFx">) -->
+                                <!-- notice when the firmware of the selected board leaves the effect out (HardwareManifest.xml <ValueNotice name="SceneFx">) -->
                                 <op:include href="NeoPixel.hw.notices.gen.xml" xpath="//Block[@name='ValueNotice_SceneFx']/*" />
 
                                 <!-- Notice when this scene starts an effect manager (values 200-215) -->

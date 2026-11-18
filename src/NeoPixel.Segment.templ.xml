@@ -19,7 +19,7 @@
             <Parameters>
               <!-- Segment Name -->
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="Description%C%" ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
-              <!-- effect lists of hardware without the 2D effects, no memory (HardwareProfile.xml <Filters>): segment and scenes -->
+              <!-- effect lists of hardware without the 2D effects, no memory (HardwareManifest.xml <Filters>): segment and scenes -->
               <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_SegmentFx_Parameters']/*" />
               <op:usePart name="Scene" xpath="//FilterParameters/*" />
               <!-- Segment Parameters (overlapping unions by design: effect params share same offsets, only one effect active at a time) -->
@@ -332,7 +332,7 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" RefId="%AID%_UP-%TT%%CC%057" />
               <!-- Read-only (greyed out) variant of the effect type for the segment overview table while an EM is assigned -->
               <ParameterRef Id="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05702" RefId="%AID%_UP-%TT%%CC%057" Access="Read" />
-              <!-- effect lists of hardware without the 2D effects (HardwareProfile.xml <Filters>): segment and scenes -->
+              <!-- effect lists of hardware without the 2D effects (HardwareManifest.xml <Filters>): segment and scenes -->
               <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_SegmentFx_ParameterRefs']/*" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%066_R-%TT%%CC%06601" RefId="%AID%_UP-%TT%%CC%066" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%067_R-%TT%%CC%06701" RefId="%AID%_UP-%TT%%CC%067" />
@@ -893,9 +893,9 @@
                     <!-- ========================================================================================================= -->
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt-Einstellungen" UIHint="Headline" />
                     <!-- Effect Type -->
-                    <!-- effect list per hardware (HardwareProfile.xml <Filter name="SegmentFx">: without the 2D effects on No2D hardware) -->
+                    <!-- effect list per hardware (HardwareManifest.xml <Filter name="SegmentFx">: without the 2D effects on No2D hardware) -->
                     <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_SegmentFx']/*" />
-                    <!-- notice when the firmware of the selected board leaves the effect out (HardwareProfile.xml <ValueNotice name="SegmentFx">) -->
+                    <!-- notice when the firmware of the selected board leaves the effect out (HardwareManifest.xml <ValueNotice name="SegmentFx">) -->
                     <op:include href="NeoPixel.hw.notices.gen.xml" xpath="//Block[@name='ValueNotice_SegmentFx']/*" />
                     <!-- BEGIN AUTO-GENERATED: Effect Dynamic UI -->
                     <!-- DO NOT REMOVE THIS MARKER - Used by Build-EffectParameters.ps1 -->

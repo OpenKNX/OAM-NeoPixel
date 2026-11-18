@@ -81,7 +81,7 @@
                 <Parameter Id="%AID%_UP-%TT%9%C%036" Offset="24" BitOffset="0" Name="NEO%C%SPICLK" ParameterType="%AID%_PT-NEOSPICLK" Text="SPI Clock" Value="0"/>
                 <Parameter Id="%AID%_UP-%TT%9%C%070" Offset="24" BitOffset="3" Name="NEO%C%SPICLKMode" ParameterType="%AID%_PT-SPIClockMode" Text="SPI Takt" Value="0"/>
                 
-                <!-- NOTE: the GPIO conflict flags (no memory) come from the generated check (HardwareProfile.xml <Conflicts>,
+                <!-- NOTE: the GPIO conflict flags (no memory) come from the generated check (HardwareManifest.xml <Conflicts>,
                      NeoPixel.hw.conflicts.gen.xml); the strip page shows ConflictChannel_StripData / StripClock (port assignment section below) -->
                 
               </Union>
@@ -271,7 +271,7 @@
                           <choose ParamRefId="%NEOHW_SelectRef%">
                             <op:include href="NeoPixel.hw.strip.gen.xml" xpath="//Block[@name='ClockManualGpio']/*" />
                           </choose>
-                          <!-- GPIO conflict of the clock signal (SPI LED types, the same list as HardwareProfile.xml <Conflicts>) -->
+                          <!-- GPIO conflict of the clock signal (SPI LED types, the same list as HardwareManifest.xml <Conflicts>) -->
                           <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//Block[@name='ConflictChannel_StripClock']/*" />
                         </when>
                       </choose>

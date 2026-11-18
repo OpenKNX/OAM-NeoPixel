@@ -112,7 +112,7 @@ function NEO_LedTypeToRGB_7(input, output, context) { NEO_LedTypeToRGB_Impl(inpu
 function NEO_LedTypeToRGB_8(input, output, context) { NEO_LedTypeToRGB_Impl(input, output, context, 8); }
 
 // Marks strip and LED type of the last LED type change: NEO_LedTypeToRGB_<n> resets the colour order of exactly that strip
-// (the GPIO conflict check is the generated NEOHW_conflictCheck, HardwareProfile.xml <Conflicts>)
+// (the GPIO conflict check is the generated NEOHW_conflictCheck, HardwareManifest.xml <Conflicts>)
 function NEO_MarkLedTypeChange_Impl(input, output, context, stripKey) {
   var ledType = toInt(input.LedType);
   output.PendingLedTypeResetStrip = stripKey;
@@ -661,7 +661,7 @@ function NEO_studioBindings(device, context, settings) {
         if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + prefix + entry.name + ". Applikation aktualisieren.");
         bindings.push({ parameter: parameter, name: entry.name, value: entry.value });
     }
-    // reduced effect lists (HardwareProfile.xml <Filters>, NEOEffectTypeF<slot>, no memory): the visible one copies its value
+    // reduced effect lists (HardwareManifest.xml <Filters>, NEOEffectTypeF<slot>, no memory): the visible one copies its value
     // into NEOEffectType, so it must hold the new effect too
     for (var f = 0; f < 10; f++) {
         var reducedEffect = device.getParameterByName(prefix + "NEOEffectTypeF" + f);
