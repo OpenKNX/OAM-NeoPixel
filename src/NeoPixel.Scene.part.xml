@@ -472,11 +472,8 @@
                                 <!-- Effect Type -->
                                 <!-- effect list per hardware (HardwareProfile.xml <Filter name="SceneFx">) -->
                                 <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_SceneFx']/*" />
-                                <!-- effect availability on the selected hardware (NEO_EffectAvailability) -->
-                                <choose ParamRefId="%AID%_P-%TT%%CC%%FXA%_R-%TT%%CC%%FXA%01">
-                                  <when test="1"><ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt nicht verfügbar: Die Firmware dieser Hardware enthält diesen Effekt nicht, es läuft „Solid“." UIHint="Error" /></when>
-                                  <when test="2"><ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Dieser Effekt fehlt in einer Firmware-Variante dieser Hardware." UIHint="Information" /></when>
-                                </choose>
+                                <!-- notice when the firmware of the selected board leaves the effect out (HardwareProfile.xml <ValueNotice name="SceneFx">) -->
+                                <op:include href="NeoPixel.hw.notices.gen.xml" xpath="//Block[@name='ValueNotice_SceneFx']/*" />
 
                                 <!-- Notice when this scene starts an effect manager (values 200-215) -->
                                 <choose ParamRefId="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01">

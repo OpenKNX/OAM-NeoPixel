@@ -64,8 +64,22 @@
   <InfoImage style="card" />
 
   <!-- effects per target: NEO_FXOFF_<n> of the generated src/NeoPixelEffectGroups.h with the flags of each env (1 = effect n left out);
-       NEOHW_table_EffectsOff in the ETS script, read by NEO_EffectAvailability (message under the effect selectors) -->
+       read by <ValueNotices> below (notice under the effect selectors) -->
   <BoardTable name="EffectsOff" header="src/NeoPixelEffectGroups.h" scan="^NEO_FXOFF_(\d+)$" />
+  <!-- notice under an effect selector whose effect the firmware of the selected board leaves out (value = effect number = index of
+       EffectsOff): all = every env of the board leaves it out (it runs "Solid"), any = only some envs. Blocks ValueNotice_<name> in
+       NeoPixel.Segment.templ.xml (segment), NeoPixel.Scene.part.xml (scenes) and NeoPixel.Cue.part.xml (cues); refs keep the tokens -->
+  <ValueNotices output="src/NeoPixel.hw.notices.gen.xml">
+    <ValueNotice name="SegmentFx" ref="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" table="EffectsOff"
+                 all="Effekt nicht verfügbar: Die Firmware dieser Hardware enthält diesen Effekt nicht, es läuft „Solid“."
+                 any="Hinweis: Dieser Effekt fehlt in einer Firmware-Variante dieser Hardware." />
+    <ValueNotice name="SceneFx" ref="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" table="EffectsOff"
+                 all="Effekt nicht verfügbar: Die Firmware dieser Hardware enthält diesen Effekt nicht, es läuft „Solid“."
+                 any="Hinweis: Dieser Effekt fehlt in einer Firmware-Variante dieser Hardware." />
+    <ValueNotice name="CueFx" ref="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01" table="EffectsOff"
+                 all="Effekt nicht verfügbar: Die Firmware dieser Hardware enthält diesen Effekt nicht, es läuft „Solid“."
+                 any="Hinweis: Dieser Effekt fehlt in einer Firmware-Variante dieser Hardware." />
+  </ValueNotices>
 
   <Boards platformio="release_*" />
 

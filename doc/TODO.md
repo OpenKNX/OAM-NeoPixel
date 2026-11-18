@@ -223,7 +223,7 @@ Reihenfolge:
    (Port-Tabellen, `NEOHW_table_EffectsOff`).
 3. **Eine Vorlage je Anwendungsfall A–H** aus `doc/Anwendungsfaelle-KNX.md`; das Dokument verlinkt darauf.
 4. **Prüfungen vor dem Export:** LED-Anzahl gegen Strom und Speicher, GPIO-Konflikte, Effekte, die auf der Hardware
-   fehlen. Die ETS-Berechnungen (Konfliktprüfung, Verfügbarkeit) simulieren die Beispiele heute nicht.
+   fehlen. Die ETS-Prüfungen (Konfliktprüfung, Effekt-Hinweise) simulieren die Beispiele heute nicht.
 5. **Export der Gruppenadressen** als ETS-Importdatei, druckbares Tastenlayout.
 6. **ETS-Export zurücklesen**, um ihn zu bearbeiten.
 7. **Automatische Prüfung:** die erzeugten Strings im Viewer (uct) importieren, damit kein Beispiel veraltet.
@@ -388,7 +388,7 @@ interne Werkzeuge kennzeichnen.
 ### 28 — Effekt-Generator: ID-Prüfung nur für literale IDs, Cue-Parameter über 10 Slots still weggelassen
 
 - `Assert-ChannelIdNumbers` (`scripts/Build-EffectParameters.ps1`) prüft nur literale dreistellige IDs im Segment- und
-  EM-Template; IDs aus Makros (`%CUE_PPP+k%`, `%FXA%`, …) und die Part-/Share-Dateien prüft es nicht.
+  EM-Template; IDs aus Makros (`%CUE_PPP+k%`, `%PPP+k%`, …) und die Part-/Share-Dateien prüft es nicht.
 - `Get-CueTypedParamPlan` lässt Zahl-/Enum-/Bool-Parameter ab Index 10 (mehr als die 10 Cue-Slots) ohne Meldung weg
   (`continue`); ein Effekt mit mehr als 10 solchen Parametern hat sie in der Cue nicht. Meldung oder Abbruch ergänzen.
 

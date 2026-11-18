@@ -121,10 +121,12 @@ The ETS script gets one row per HW-ID: `var NEOHW_table_EffectsOff = { <HW-ID>: 
 effect number; `any` = bitwise OR over the envs of the board (some firmware leaves the effect out), `all` = bitwise AND
 (every firmware leaves it out).
 
-`NEO_EffectAvailability` (`src/NeoPixel.script.src.js`) reads the row of the selected board: per effect selector of the
-segment, of each scene and of each effect-manager cue it sets a flag without device memory (1 = `all`, error "Effekt nicht
-verfügbar"; 2 = only `any`, hint; 0 = built in, no board selected or unknown board). It reads the effect selector only: on
-boards with the capability No2D the visible list without the 2D effects (`<Filters>`, below) copies its value into it. The header comes from `scripts/Build-EffectParameters.ps1` (groups in
+`<ValueNotices>` turns the table into XML (`src/NeoPixel.hw.notices.gen.xml`, no script): per effect selector a block
+`ValueNotice_SegmentFx` (segment template), `ValueNotice_SceneFx` (part Scene), `ValueNotice_CueFx` (part Cue) with a
+choose on the hardware selection, one when per group of boards with the same values, inside a choose on the effect value:
+error "Effekt nicht verfügbar" for the numbers in `all`, hint for the numbers only in `any`; no board selected or an effect
+the board has: no notice. It reads the effect selector only: on boards with the capability No2D the visible list without
+the 2D effects (`<Filters>`, below) copies its value into it. The header comes from `scripts/Build-EffectParameters.ps1` (groups in
 `src/NeoPixel.EffectGroups.xml`, see `doc/Effect-Flags.md`), so that script runs before the hardware generator
 (`Build-Release.ps1` keeps this order).
 

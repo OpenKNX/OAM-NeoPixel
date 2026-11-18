@@ -395,26 +395,6 @@ function NEO_SetNetworkModuleVisibility(input, output, context) {
     info("Hardware " + hwSelect + " -> Network visible: " + hasNetwork);
 }
 
-// Effect availability on the selected hardware (calculations NEO<n>EffectAvailability, NEOEM<n>EffectAvailability):
-// F<i> per selector E<i> (the reduced list of hardware without the 2D effects copies its value into E<i>, HardwareProfile.xml
-// <Filters>): 1 = every firmware variant (env) of the board leaves the effect out, 2 = only some do, 0 = built in, no or an
-// unknown board, no effect number.
-// NEOHW_table_EffectsOff: HardwareProfile.xml <BoardTable> over NEO_FXOFF_<n> of src/NeoPixelEffectGroups.h
-function NEO_EffectAvailability(input, output, context) {
-    var hw = toInt(input.Sel, 0);
-    var row = null;
-    if (hw !== 0 && typeof NEOHW_table_EffectsOff != "undefined" && NEOHW_table_EffectsOff[hw]) row = NEOHW_table_EffectsOff[hw];
-    var count = toInt(context.Count, 0);
-    for (var i = 0; i < count; i++) {
-        var state = 0;
-        if (row) {
-            var e = toInt(input["E" + i], 0);
-            if (e >= 0 && e < row.all.length) state = row.all[e] ? 1 : (row.any[e] ? 2 : 0);
-        }
-        output["F" + i] = state;
-    }
-}
-
 // BEGIN AUTO-GENERATED: Scene Effect Defaults
 
 var NEO_SceneEffectDefaults = {

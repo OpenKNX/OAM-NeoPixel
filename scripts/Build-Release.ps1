@@ -220,8 +220,8 @@ if ($isClean) {
         }
         foreach ($g in @($hwManifest.HardwareProfile.SelectNodes('Generate'))) { $hwOutputs += $g.GetAttribute('output') }
         # <Conflicts output> (GPIO conflict check), <Fixes output> (settings fixed per capability), <PartRows output> (rows of a part per board),
-        # <Filters output> (dropdowns filtered per board)
-        foreach ($n in @($hwManifest.HardwareProfile.SelectNodes('Conflicts|Fixes|PartRows|Filters'))) { $hwOutputs += $n.GetAttribute('output') }
+        # <Filters output> (dropdowns filtered per board), <ValueNotices output> (notices under a selection per board)
+        foreach ($n in @($hwManifest.HardwareProfile.SelectNodes('Conflicts|Fixes|PartRows|Filters|ValueNotices'))) { $hwOutputs += $n.GetAttribute('output') }
         # <Page dev> (developer view module) and the page icon the generator copies from its assets
         $hwPage = $hwManifest.HardwareProfile.SelectSingleNode('Page')
         if ($hwPage) {

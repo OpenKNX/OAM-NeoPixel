@@ -693,9 +693,8 @@ function Assert-EffectIdNamespace {
 }
 
 # @brief Aborts when two parameters of NeoPixel.Segment.templ.xml or NeoPixel.EM.templ.xml use one literal 3-digit ID
-#        number (UP- and P- count as one space: the ParameterRef suffixes would collide), e.g. the availability flags
-#        P-%TT%%CC%001..011 (segment) / 280..289 (EM); macro-based numbers (%CUE_PPP+k%, %FXA%, ...) and the part and
-#        share files are not checked here
+#        number (UP- and P- count as one space: the ParameterRef suffixes would collide); macro-based numbers
+#        (%CUE_PPP+k%, %PPP+k%, ...) and the part and share files are not checked here
 function Assert-ChannelIdNumbers {
   foreach ($rel in @($script:Config.SegmentTemplate, "src/NeoPixel.EM.templ.xml")) {
     $text = [System.IO.File]::ReadAllText((Resolve-RepoPath $rel))

@@ -462,10 +462,6 @@
               <!-- GPIO conflict flag (generated with the check, HardwareProfile.xml <Conflicts>) -->
               <op:include href="NeoPixel.hw.conflicts.gen.xml" xpath="//ApplicationProgram/Static/ParameterTypes/ParameterType" />
 
-              <!-- effect availability flag (memoryless, NEO_EffectAvailability): 0 built in or not checked, 1 missing in every firmware of the board, 2 in some -->
-              <ParameterType Id="%AID%_PT-NEOEffectAvail" Name="NEOEffectAvail">
-                <TypeNumber SizeInBit="2" Type="unsignedInt" minInclusive="0" maxInclusive="2" />
-              </ParameterType>
 
               <!-- External Relay ParameterTypes -->
               <ParameterType Id="%AID%_PT-RelayDelay" Name="RelayDelay">

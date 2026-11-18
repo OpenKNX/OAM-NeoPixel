@@ -445,11 +445,8 @@
                     <!-- Effect dropdown -->
                     <!-- effect list per hardware (HardwareProfile.xml <Filter name="CueFx">) -->
                     <op:include href="NeoPixel.hw.filters.gen.xml" xpath="//Block[@name='Filter_CueFx']/*" />
-                    <!-- effect availability on the selected hardware (NEO_EffectAvailability) -->
-                    <choose ParamRefId="%AID%_P-%TT%%CC%%CUE_FXA%_R-%TT%%CC%%CUE_FXA%01">
-                      <when test="1"><ParameterSeparator Id="%AID%_PS-nnn" Text="Effekt nicht verfügbar: Die Firmware dieser Hardware enthält diesen Effekt nicht, es läuft „Solid“." UIHint="Error" /></when>
-                      <when test="2"><ParameterSeparator Id="%AID%_PS-nnn" Text="Hinweis: Dieser Effekt fehlt in einer Firmware-Variante dieser Hardware." UIHint="Information" /></when>
-                    </choose>
+                    <!-- notice when the firmware of the selected board leaves the effect out (HardwareProfile.xml <ValueNotice name="CueFx">) -->
+                    <op:include href="NeoPixel.hw.notices.gen.xml" xpath="//Block[@name='ValueNotice_CueFx']/*" />
                     <!-- Colour / brightness / timing -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+11%_R-%TT%%CC%%CUE_PPP+11%01" IndentLevel="1" HelpContext="NEO-Cue-Farbe"/>
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%%CUE_PPP+12%_R-%TT%%CC%%CUE_PPP+12%01" IndentLevel="1" HelpContext="NEO-Cue-Weiss"/>
