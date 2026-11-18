@@ -37,12 +37,12 @@ Um erneut zu lesen, die Auswahl auf **Nicht gewählt** stellen.
 
 ## Gerätekarte
 
-Bei gewähltem Gerät zeigt die Seite das OpenKNX-Logo bzw. bei Geräten anderer Hersteller das Kennzeichen „Drittanbieter Hardware“, den Gerätenamen und eine Beschreibung; hat das Gerät eine Webseite, steht rechts daneben ein QR-Code mit Link.
+Bei gewähltem Gerät zeigt die Seite den Gerätenamen, links das Logo des Herstellers (bei OpenKNX-Geräten das OpenKNX-Logo), in der Mitte eine Beschreibung und, wenn das Gerät eine Webseite hat, rechts einen QR-Code mit „Geräteinfo“ darunter. Geräte anderer Hersteller tragen unter dem Logo den Stempel „Drittanbieter / Hardware“, unter der Karte steht ein Hinweis.
 
-**Produkt eines Drittanbieters**
-Bei diesem Gerät handelt es sich um ein kommerzielles Produkt eines Drittanbieters. Zwischen OpenKNX und dem Hersteller besteht keine geschäftliche oder vertragliche Verbindung.
+**Hardware eines Drittanbieters**
+Das Gerät stammt von einem anderen Hersteller. OpenKNX ist ein Open-Source-Projekt ohne geschäftliche oder vertragliche Verbindung zum Hersteller.
 
-OpenKNX stellt ausschließlich eine kompatible Firmware zur Verfügung und übernimmt für die Hardware keine Gewährleistung oder Haftung. Gewährleistung, Support und Produktsicherheit liegen beim Hersteller. Die Verwendung erfolgt auf eigene Verantwortung.
+OpenKNX liefert nur die Firmware und übernimmt für die Hardware keine Gewährleistung oder Haftung. Gewährleistung, Support und Produktsicherheit liegen beim Hersteller. Die Verwendung erfolgt auf eigene Verantwortung.
 
 ---
 

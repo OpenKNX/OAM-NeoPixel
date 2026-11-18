@@ -51,10 +51,10 @@
        defined only in NeoPixel-Dev.xml -->
   <Page text="Gerät" icon="memory" help="NEO-Hardware" dev="src/NeoPixel.hw.dev.gen.xml" features="KnxIp Network Wifi No2D Relays" cardFeatures="true"
         intro="Diese Applikation gilt für mehrere Geräte. Wählen Sie das Gerät aus, das verbaut ist. Erst dann sind seine Anschlüsse und Einstellungen sichtbar. Ohne Auswahl bleiben alle Anschlüsse des Geräts aus." />
-  <Notice when="ThirdParty" title="Produkt eines Drittanbieters: OpenKNX stellt nur eine kompatible Firmware bereit und steht in keiner geschäftlichen Verbindung zum Hersteller. Gewährleistung, Support und Produktsicherheit liegen beim Hersteller. Nutzung auf eigene Verantwortung." />
+  <Notice when="ThirdParty" title="Hardware eines Drittanbieters. OpenKNX ist ein Open-Source-Projekt ohne geschäftliche Verbindung zum Hersteller und liefert nur die Firmware. Gewährleistung, Support und Produktsicherheit liegen beim Hersteller. Nutzung auf eigene Verantwortung." />
 
-  <!-- device card on the hardware page: OpenKNX logo or third-party badge, DEVICE_NAME as headline, board text (HW_INFO_TEXT, else
-       the generator default); with HW_INFO_URL in the board header the QR code + link (one line) right of the board text.
+  <!-- device card on the hardware page: DEVICE_NAME as headline, left the logo (HW_INFO_LOGO, else OpenKNX) and on third-party boards
+       the badge below it, board text (HW_INFO_TEXT, else the generator default); with HW_INFO_URL the QR code + caption on the right.
        Pictures: src/Baggages/NEOHWInfo (generated) -->
   <InfoImage style="card" />
 
