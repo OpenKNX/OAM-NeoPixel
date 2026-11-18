@@ -30,6 +30,7 @@ Meldungen:
 - **„… (0x…) erkannt.“**: Die Auswahl ist gesetzt.
 - **„… erkannt. Abweichend gebaut: …“**: Die Firmware auf dem Gerät hat andere Merkmale als der Listeneintrag (z. B. WLAN auf einem Gerät, dessen Firmware sonst keins hat). Es gilt das Gerät. Die Firmware-Varianten eines Geräts (KNeoPix S3: TP, IP, TP mit WLAN) gelten nicht als Abweichung.
 - **„… ist dieser Applikation unbekannt. Applikation aktualisieren.“**: Die Applikation ist älter als die Firmware.
+- **„Keine Antwort auf die Geräteabfrage …“**: Die Firmware auf dem Gerät ist älter als die Applikation und kennt die Abfrage noch nicht, oder das Gerät ist nicht erreichbar. Firmware aktualisieren oder den Gerätetyp von Hand wählen.
 
 Um erneut zu lesen, die Auswahl auf **Nicht gewählt** stellen.
 
