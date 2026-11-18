@@ -234,5 +234,50 @@
        value into the carrier) -->
   <Filters output="src/NeoPixel.hw.filters.gen.xml">
     <Filter name="RelayCount" ref="%AID%_UP-%TT%00130_R-%TT%0013001" source="src/NeoPixel.share.xml" value="Relays" number="950" />
+    <!-- effect lists without the 2D effects on hardware built with NEOPIXEL_DISABLE_2D (src/NeoPixel.Effects2D.values, written by
+         scripts/Build-EffectParameters.ps1): segment selector (template, rows Ov<n> / Ov<n>Ro = segment overview, editable and
+         read-only while an effect manager is assigned), scene selector (part Scene) and cue selector (part Cue, row Table = cue table) -->
+    <Filter name="SegmentFx" ref="%AID%_UP-%TT%%CC%057_R-%TT%%CC%05701" source="src/NeoPixel.Segment.templ.xml src/NeoPixel.share.xml" number="058" help="NEO-Effekt-Typ">
+      <Allow capability="No2D" except="@src/NeoPixel.Effects2D.values" />
+      <Row name="Ov1" ref="%AID%_UP-%TT%01057_R-%TT%0105701" cell="2,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov1Ro" ref="%AID%_UP-%TT%01057_R-%TT%0105702" cell="2,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov2" ref="%AID%_UP-%TT%02057_R-%TT%0205701" cell="3,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov2Ro" ref="%AID%_UP-%TT%02057_R-%TT%0205702" cell="3,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov3" ref="%AID%_UP-%TT%03057_R-%TT%0305701" cell="4,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov3Ro" ref="%AID%_UP-%TT%03057_R-%TT%0305702" cell="4,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov4" ref="%AID%_UP-%TT%04057_R-%TT%0405701" cell="5,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov4Ro" ref="%AID%_UP-%TT%04057_R-%TT%0405702" cell="5,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov5" ref="%AID%_UP-%TT%05057_R-%TT%0505701" cell="6,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov5Ro" ref="%AID%_UP-%TT%05057_R-%TT%0505702" cell="6,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov6" ref="%AID%_UP-%TT%06057_R-%TT%0605701" cell="7,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov6Ro" ref="%AID%_UP-%TT%06057_R-%TT%0605702" cell="7,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov7" ref="%AID%_UP-%TT%07057_R-%TT%0705701" cell="8,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov7Ro" ref="%AID%_UP-%TT%07057_R-%TT%0705702" cell="8,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov8" ref="%AID%_UP-%TT%08057_R-%TT%0805701" cell="9,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov8Ro" ref="%AID%_UP-%TT%08057_R-%TT%0805702" cell="9,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov9" ref="%AID%_UP-%TT%09057_R-%TT%0905701" cell="10,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov9Ro" ref="%AID%_UP-%TT%09057_R-%TT%0905702" cell="10,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov10" ref="%AID%_UP-%TT%10057_R-%TT%1005701" cell="11,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov10Ro" ref="%AID%_UP-%TT%10057_R-%TT%1005702" cell="11,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov11" ref="%AID%_UP-%TT%11057_R-%TT%1105701" cell="12,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov11Ro" ref="%AID%_UP-%TT%11057_R-%TT%1105702" cell="12,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov12" ref="%AID%_UP-%TT%12057_R-%TT%1205701" cell="13,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov12Ro" ref="%AID%_UP-%TT%12057_R-%TT%1205702" cell="13,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov13" ref="%AID%_UP-%TT%13057_R-%TT%1305701" cell="14,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov13Ro" ref="%AID%_UP-%TT%13057_R-%TT%1305702" cell="14,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov14" ref="%AID%_UP-%TT%14057_R-%TT%1405701" cell="15,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov14Ro" ref="%AID%_UP-%TT%14057_R-%TT%1405702" cell="15,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov15" ref="%AID%_UP-%TT%15057_R-%TT%1505701" cell="16,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov15Ro" ref="%AID%_UP-%TT%15057_R-%TT%1505702" cell="16,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov16" ref="%AID%_UP-%TT%16057_R-%TT%1605701" cell="17,4" help="NEO-Effekt-Typ" />
+      <Row name="Ov16Ro" ref="%AID%_UP-%TT%16057_R-%TT%1605702" cell="17,4" help="NEO-Effekt-Typ" />
+    </Filter>
+    <Filter name="SceneFx" ref="%AID%_UP-%TT%%CC%%PPP+0%_R-%TT%%CC%%PPP+0%01" source="src/NeoPixel.Scene.part.xml src/NeoPixel.share.xml" number="%PPP+19%" indent="2" help="NEO-Effekt-Typ-Szene">
+      <Allow capability="No2D" except="@src/NeoPixel.Effects2D.values" />
+    </Filter>
+    <Filter name="CueFx" ref="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01" source="src/NeoPixel.Cue.part.xml src/NeoPixel.EM.share.xml" number="%CUE_NO2D%" help="NEO-Cue-Effekt">
+      <Allow capability="No2D" except="@src/NeoPixel.Effects2D.values" />
+      <Row name="Table" ref="%AID%_UP-%TT%%CC%%CUE_PPP+0%_R-%TT%%CC%%CUE_PPP+0%01" cell="%CUE_NR%,3" help="NEO-Cue-Effekt" />
+    </Filter>
   </Filters>
 </HardwareProfile>

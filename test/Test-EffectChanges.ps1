@@ -423,9 +423,8 @@ Test-Allowed 'EffectAppend' { param($d) Add-Effect $d 'Blink' 'Blink' } `
     $h = [System.IO.File]::ReadAllText((Join-Path $d 'src/NeoPixelEffectGroups.h'))
     if ($h -notmatch '#if defined\(NEOPIXEL_DISABLE_BLINK\)\s+#define NEO_FXOFF_33 1') { 'NEO_FXOFF_33 not guarded by NEOPIXEL_DISABLE_BLINK only' }
     if ([System.IO.File]::ReadAllText((Join-Path $d 'src/EffectIds.lock')) -notmatch "33`tBlinkEffect") { 'EffectIds.lock has no number 33' }
-    $s = [System.IO.File]::ReadAllText((Join-Path $d 'src/NeoPixel.share.xml'))
-    $no2d = [regex]::Match($s, '(?s)GENERATED_EFFECT_ENUMERATIONS_NO2D_START(.*?)GENERATED_EFFECT_ENUMERATIONS_NO2D_END').Groups[1].Value
-    if ($no2d -notmatch 'Value="33"') { 'Blink (1D) missing in the No2D list' }
+    $two = [System.IO.File]::ReadAllText((Join-Path $d 'src/NeoPixel.Effects2D.values'))
+    if ($two -match '(?m)^33$') { 'Blink (1D) listed in NeoPixel.Effects2D.values' }
   }
 
 # 10 new 2D effect
@@ -433,16 +432,16 @@ Test-Allowed 'Effect2DAppend' { param($d) Add-Effect $d 'Blink2D' 'Blink 2D' -Tw
   -Expect @('src/NeoPixel.Segment.templ.xml', 'src/NeoPixel.Cue.part.xml', 'src/NeoPixel.Scene.part.xml', 'src/NeoPixel.share.xml',
   'src/NeoPixel.EM.share.xml', 'src/NeoPixel.script.src.js', 'src/EffectParameterMapping.h', 'src/EffectTypeMapping.h',
   'web/assets/effects.json', 'src/WebUi/NeoPixelEffectCatalog.generated.h', 'src/NeoPixelEffectGroups.h', 'src/EffectIds.lock',
-  'src/EffectParameters.lock', "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-Typ-Szene.md", "$help/NEO-Cue-Effekt.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md',
+  'src/EffectParameters.lock', "$help/NEO-Effekt-Typ.md", "$help/NEO-Effekt-Typ-Szene.md", "$help/NEO-Cue-Effekt.md", "$help/NEO-Effekt-ID-Referenz.md", 'doc/Effect-Flags.md', 'src/NeoPixel.Effects2D.values',
   "+$help/NEO-BPM-Blink-2D.md", "+$help/NEO-Hue-Blink-2D.md") -Added $effectAdded `
   -Extra {
     param($d)
     $h = [System.IO.File]::ReadAllText((Join-Path $d 'src/NeoPixelEffectGroups.h'))
     if ($h -notmatch '#if defined\(NEOPIXEL_DISABLE_BLINK2D\) \|\| defined\(NEOPIXEL_DISABLE_2D\)\s+#define NEO_FXOFF_33 1') { 'NEO_FXOFF_33 not guarded by NEOPIXEL_DISABLE_2D' }
     $s = [System.IO.File]::ReadAllText((Join-Path $d 'src/NeoPixel.share.xml'))
-    $no2d = [regex]::Match($s, '(?s)GENERATED_EFFECT_ENUMERATIONS_NO2D_START(.*?)GENERATED_EFFECT_ENUMERATIONS_NO2D_END').Groups[1].Value
+    $two = [System.IO.File]::ReadAllText((Join-Path $d 'src/NeoPixel.Effects2D.values'))
     $all = [regex]::Match($s, '(?s)GENERATED_EFFECT_ENUMERATIONS_START(.*?)GENERATED_EFFECT_ENUMERATIONS_END').Groups[1].Value
-    if ($no2d -match 'Value="33"') { 'Blink 2D in the No2D list' }
+    if ($two -notmatch '(?m)^33$') { 'Blink 2D missing in NeoPixel.Effects2D.values' }
     if ($all -notmatch 'Value="33"') { 'Blink 2D missing in the full list' }
   }
 Test-Stop 'Effect2DNoEntry' { param($d) Add-Effect $d 'Blink2D' 'Blink 2D' -TwoD -NoTwoDEntry } -Message "member of NEOPIXEL_DISABLE_2D"

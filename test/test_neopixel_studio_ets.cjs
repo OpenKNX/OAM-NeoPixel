@@ -40,7 +40,7 @@ var settings = {version:1, segment:1, channels:5, effect:19, parameters:[
  {name:'LaufschriftLoop',value:1}, {name:'LaufschriftText',value:'Grüße €'}, {name:'LaufschriftFont',value:2}]};
 var parameters = {}, connected = false, lastSource=-1, pageCount=0, changingToken=false, savedSettings=null, savedReads=0;
 for(var pi=0;pi<settings.parameters.length;pi++) {var p=settings.parameters[pi];parameters['NEO_NEO1'+p.name] = {value:p.value};}
-parameters.NEO_NEO1NEOEffectTypeNo2D={value:19};
+parameters.NEO_NEO1NEOEffectTypeF0={value:19};
 parameters.NEO_NEO1SegmentStart={value:12};
 var device={getParameterByName:function(name) {return parameters[name] || null;}};
 var online={connect:function(){connected=true;},disconnect:function(){connected=false;}};

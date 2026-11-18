@@ -12,7 +12,8 @@
         <op:param name="%CUE_NR%"  value="1"   increment="1"  asLetter="false"/>
         <!-- Typed effect parameters: ID 22%CC% + cue index * 1000 + effect number * 10 + parameter index (Build-EffectParameters.ps1) -->
         <op:param name="%CUE_TPP%" value="0" increment="1000" digits="4" />
-        <!-- Own lane: the CUE_PPP stride of 18 is fully used, 900..909 is free. -->
+        <!-- Own lane for the cue effect list without the 2D effects (HardwareProfile.xml <Filter name="CueFx">): the CUE_PPP
+             stride of 18 is fully used, 900..909 is free; one id per cue, so the filter has room for one list (slots="1") -->
         <op:param name="%CUE_NO2D%" value="900" increment="1" />
         <!-- availability flag of the cue effect: P-%TT%%CC%280..289 -->
         <op:param name="%CUE_FXA%" value="280" increment="1" />
@@ -52,6 +53,8 @@
                 <!-- AUTO-GENERATED via op:part (NeoPixel.Cue.part.xml, 10 instances) -->
                 <op:usePart name="Cue" xpath="//Parameters/*" />
               </Union>
+              <!-- effect lists of hardware without the 2D effects, no memory (HardwareProfile.xml <Filter name="CueFx">) -->
+              <op:usePart name="Cue" xpath="//FilterParameters/*" />
               <!-- EM-Beschreibung: NICHT-gespeichert (Access=None, ohne Offset) => bis 40 Zeichen, kostet keinen Flash.
                    Firmware nutzt den Namen nicht (Konsole entfernt); Baum-Titel & KO-Namen via Marker-DisplayName.
                    Die fruehere gespeicherte 16-Byte-Stelle (Union Offset 0-15) bleibt frei/reserviert. -->
@@ -112,31 +115,21 @@
                   <ParameterRefRef RefId="%AID%_P-%TT%%CC%010_R-%TT%%CC%01001" AliasName="TextOutput" />
                 </RParameters>
               </ParameterCalculation>
-              <!-- effect availability of the cue effects (E0..E9, N = No2D list) -->
+              <!-- effect availability of the cue effects (E0..E9); a reduced list copies its value into these -->
               <ParameterCalculation Id="%AID%_PC-%TT%%CC%002" Language="JavaScript" Name="NEOEM%C%EffectAvailability"
                   LRTransformationFunc="NEO_EffectAvailability" RLTransformationFunc="NEO_Empty" LRTransformationParameters="{&quot;Count&quot;:10}">
                 <LParameters>
                   <ParameterRefRef RefId="%NEOHW_SelectRef%" AliasName="Sel" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" AliasName="E0" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%900_R-%TT%%CC%90001" AliasName="N0" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%118_R-%TT%%CC%11801" AliasName="E1" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%901_R-%TT%%CC%90101" AliasName="N1" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%136_R-%TT%%CC%13601" AliasName="E2" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%902_R-%TT%%CC%90201" AliasName="N2" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" AliasName="E3" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%903_R-%TT%%CC%90301" AliasName="N3" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%172_R-%TT%%CC%17201" AliasName="E4" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%904_R-%TT%%CC%90401" AliasName="N4" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%190_R-%TT%%CC%19001" AliasName="E5" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%905_R-%TT%%CC%90501" AliasName="N5" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%208_R-%TT%%CC%20801" AliasName="E6" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%906_R-%TT%%CC%90601" AliasName="N6" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%226_R-%TT%%CC%22601" AliasName="E7" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%907_R-%TT%%CC%90701" AliasName="N7" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%244_R-%TT%%CC%24401" AliasName="E8" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%908_R-%TT%%CC%90801" AliasName="N8" />
                   <ParameterRefRef RefId="%AID%_UP-%TT%%CC%262_R-%TT%%CC%26201" AliasName="E9" />
-                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%909_R-%TT%%CC%90901" AliasName="N9" />
                 </LParameters>
                 <RParameters>
                   <ParameterRefRef RefId="%AID%_P-%TT%%CC%280_R-%TT%%CC%28001" AliasName="F0" />

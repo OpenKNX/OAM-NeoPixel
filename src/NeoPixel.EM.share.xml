@@ -112,35 +112,6 @@
                 <!-- GENERATED_CUE_EFFECT_ENUMERATIONS_END -->
               </TypeRestriction>
             </ParameterType>
-            <!-- AUTO-GENERATED: Cue Effect Enumeration without the 2D effects - DO NOT EDIT MANUALLY -->
-            <!-- Shown instead of CueEffect on hardware built with NEOPIXEL_DISABLE_2D.
-                 Same values, so a stored cue keeps its effect across a hardware change. -->
-            <ParameterType Id="%AID%_PT-CueEffectNo2D" Name="CueEffectNo2D">
-              <TypeRestriction Base="Value" SizeInBit="8" UIHint="DropDown">
-                <!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_START -->
-                <Enumeration Text="Solid" Value="0" Id="%AID%_PT-CueEffectNo2D_EN-00"/>
-                <Enumeration Text="Wipe" Value="1" Id="%AID%_PT-CueEffectNo2D_EN-01"/>
-                <Enumeration Text="Rainbow" Value="2" Id="%AID%_PT-CueEffectNo2D_EN-02"/>
-                <Enumeration Text="Pride2015" Value="3" Id="%AID%_PT-CueEffectNo2D_EN-03"/>
-                <Enumeration Text="Juggle" Value="4" Id="%AID%_PT-CueEffectNo2D_EN-04"/>
-                <Enumeration Text="BPM" Value="5" Id="%AID%_PT-CueEffectNo2D_EN-05"/>
-                <Enumeration Text="Test" Value="7" Id="%AID%_PT-CueEffectNo2D_EN-07"/>
-                <Enumeration Text="Theater Chase" Value="9" Id="%AID%_PT-CueEffectNo2D_EN-09"/>
-                <Enumeration Text="Sparkle" Value="10" Id="%AID%_PT-CueEffectNo2D_EN-10"/>
-                <Enumeration Text="Breathing" Value="11" Id="%AID%_PT-CueEffectNo2D_EN-11"/>
-                <Enumeration Text="Strobe" Value="12" Id="%AID%_PT-CueEffectNo2D_EN-12"/>
-                <Enumeration Text="Comet" Value="13" Id="%AID%_PT-CueEffectNo2D_EN-13"/>
-                <Enumeration Text="Palette" Value="15" Id="%AID%_PT-CueEffectNo2D_EN-15"/>
-                <Enumeration Text="Blitz" Value="16" Id="%AID%_PT-CueEffectNo2D_EN-16"/>
-                <Enumeration Text="Gradient" Value="17" Id="%AID%_PT-CueEffectNo2D_EN-17"/>
-                <Enumeration Text="Kerze" Value="18" Id="%AID%_PT-CueEffectNo2D_EN-18"/>
-                <Enumeration Text="1D/2D · Cylon" Value="6" Id="%AID%_PT-CueEffectNo2D_EN-06"/>
-                <Enumeration Text="1D/2D · Fire" Value="8" Id="%AID%_PT-CueEffectNo2D_EN-08"/>
-                <Enumeration Text="1D/2D · Noise" Value="14" Id="%AID%_PT-CueEffectNo2D_EN-14"/>
-                <!-- GENERATED_CUE_EFFECT_ENUMERATIONS_NO2D_END -->
-              </TypeRestriction>
-            </ParameterType>
-
             <!-- Cue shared types — also used in NeoPixel.Cue.part.xml -->
             <ParameterType Id="%AID%_PT-CueParam" Name="CueParam">
               <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="255"/>

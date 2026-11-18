@@ -396,23 +396,19 @@ function NEO_SetNetworkModuleVisibility(input, output, context) {
 }
 
 // Effect availability on the selected hardware (calculations NEO<n>EffectAvailability, NEOEM<n>EffectAvailability):
-// F<i> per selector E<i> (N<i> = the reduced list of hardware without the 2D effects, visible there): 1 = every firmware
-// variant (env) of the board leaves the effect out, 2 = only some do, 0 = built in, no or an unknown board, no effect number.
+// F<i> per selector E<i> (the reduced list of hardware without the 2D effects copies its value into E<i>, HardwareProfile.xml
+// <Filters>): 1 = every firmware variant (env) of the board leaves the effect out, 2 = only some do, 0 = built in, no or an
+// unknown board, no effect number.
 // NEOHW_table_EffectsOff: HardwareProfile.xml <BoardTable> over NEO_FXOFF_<n> of src/NeoPixelEffectGroups.h
 function NEO_EffectAvailability(input, output, context) {
     var hw = toInt(input.Sel, 0);
-@@use @hw/JsBoardInline.js @{ Prefix = '    var no2dHardware = ['; Suffix = '];'; Where = { $_.Cap.No2D } }
-    var no2d = false;
-    for (var b = 0; b < no2dHardware.length; b++) {
-        if (hw === no2dHardware[b]) { no2d = true; break; }
-    }
     var row = null;
     if (hw !== 0 && typeof NEOHW_table_EffectsOff != "undefined" && NEOHW_table_EffectsOff[hw]) row = NEOHW_table_EffectsOff[hw];
     var count = toInt(context.Count, 0);
     for (var i = 0; i < count; i++) {
         var state = 0;
         if (row) {
-            var e = toInt(no2d ? input["N" + i] : input["E" + i], 0);
+            var e = toInt(input["E" + i], 0);
             if (e >= 0 && e < row.all.length) state = row.all[e] ? 1 : (row.any[e] ? 2 : 0);
         }
         output["F" + i] = state;
@@ -704,8 +700,12 @@ function NEO_studioBindings(device, context, settings) {
         if (!parameter) throw new Error("NeoPixel: ETS-Parameter fehlt: " + prefix + entry.name + ". Applikation aktualisieren.");
         bindings.push({ parameter: parameter, name: entry.name, value: entry.value });
     }
-    var reducedEffect = device.getParameterByName(prefix + "NEOEffectTypeNo2D");
-    if (reducedEffect) bindings.push({parameter:reducedEffect, name:"NEOEffectTypeNo2D", value:settings.effect, compare:false});
+    // reduced effect lists (HardwareProfile.xml <Filters>, NEOEffectTypeF<slot>, no memory): the visible one copies its value
+    // into NEOEffectType, so it must hold the new effect too
+    for (var f = 0; f < 10; f++) {
+        var reducedEffect = device.getParameterByName(prefix + "NEOEffectTypeF" + f);
+        if (reducedEffect) bindings.push({parameter:reducedEffect, name:"NEOEffectTypeF" + f, value:settings.effect, compare:false});
+    }
     return bindings.concat(NEO_studioSceneBindings(device, context, settings), NEO_studioCommissioningBindings(device, context, settings));
 }
 
@@ -901,7 +901,7 @@ function NEO_studioSceneBindings(device, context, settings) {
     for (var scene=0;scene<data[0];scene++) {
         var at=1+scene*36, name='Scene'+String.fromCharCode(65+scene), effect=data[at];
         if (!NEO_StudioEffectParameters[String(effect)] && !(effect>=200 && effect<=215)) throw new Error('NeoPixel: Unbekannter Szeneneffekt.');
-        add(name+'EffectType',effect); add(name+'EffectTypeNo2D',effect,true);
+        add(name+'EffectType',effect); for (var f=0;f<10;f++) add(name+'EffectTypeF'+f,effect,true);
         add(name+'PrimaryColor',rgb(at+1)); add(name+'PrimaryWW',data[at+4]); add(name+'PrimaryCW',data[at+5]);
         add(name+'SecondaryColor',rgb(at+6)); add(name+'SecondaryWW',data[at+9]); add(name+'SecondaryCW',data[at+10]);
         add(name+'Brightness',data[at+11]);

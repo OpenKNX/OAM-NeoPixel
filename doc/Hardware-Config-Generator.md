@@ -20,7 +20,7 @@ generic generator of OGM-HardwareConfig. Reference: `lib/OGM-HardwareConfig/gene
 |---|---|
 | `src/NeoPixel.hw.module.gen.xml`, `src/NeoPixel.hw.module.gen.js` | the hardware module (`op:define prefix="NEOHW"` in `NeoPixel-Dev.xml` / `NeoPixel-Release.xml`): the page block `Profile` (intro, selection, button "Vom Gerät lesen" with its help box and steps picture, hints while nothing is selected, board text `HW_INFO_TEXT`, third-party notice, info image; texts from `<Page>` / `<Notice>` of `HardwareProfile.xml`) that `NeoPixel-Dev.xml` / `NeoPixel-Release.xml` compose as page OpenKNX → "Gerät" (tree text from `%NEOHW_PageTextRef%`) directly after "Allgemein" |
 | `src/NeoPixel.hw.types.gen.xml` | `NeoPixel.share.xml` (ParameterTypes include) |
-| `src/NeoPixel.hw.filters.gen.xml` (`<Filters>`: relay count per board) | `NeoPixel.share.xml` (types, union, ParameterRefs, relay page) |
+| `src/NeoPixel.hw.filters.gen.xml` (`<Filters>`: relay count per board; effect lists without the 2D effects on No2D boards: `SegmentFx`, `SceneFx`, `CueFx`, values from `src/NeoPixel.Effects2D.values`) | types in `NeoPixel.share.xml`; parameters and refs in `NeoPixel.share.xml` (relays), `NeoPixel.Segment.templ.xml`, `NeoPixel.Scene.part.xml` and `NeoPixel.Cue.part.xml` (the parts hold them in `<FilterParameters>`, which the templates take outside their unions); rows on the relay page, segment page, segment overview (`Ov<n>`, `Ov<n>Ro`), scene page, cue page and cue table (`Table`) |
 | `src/NeoPixel.hw.share.gen.xml` | `NeoPixel.share.xml` (`op:include ... xpath="//Block[@name='...']/*"`) |
 | `src/NeoPixel.hw.strip.gen.xml` | `NeoPixel.Strip.templ.xml` |
 | `src/NeoPixel.hw.conf.xml` | application XML (`op:config`, feature flags such as `%NEOHW_SelectRef%`, `%NEOHW_CAP_No2D%`) |
@@ -123,8 +123,8 @@ effect number; `any` = bitwise OR over the envs of the board (some firmware leav
 
 `NEO_EffectAvailability` (`src/NeoPixel.script.src.js`) reads the row of the selected board: per effect selector of the
 segment, of each scene and of each effect-manager cue it sets a flag without device memory (1 = `all`, error "Effekt nicht
-verfügbar"; 2 = only `any`, hint; 0 = built in, no board selected or unknown board). On boards with the capability No2D
-it reads the reduced selector without the 2D effects. The header comes from `scripts/Build-EffectParameters.ps1` (groups in
+verfügbar"; 2 = only `any`, hint; 0 = built in, no board selected or unknown board). It reads the effect selector only: on
+boards with the capability No2D the visible list without the 2D effects (`<Filters>`, below) copies its value into it. The header comes from `scripts/Build-EffectParameters.ps1` (groups in
 `src/NeoPixel.EffectGroups.xml`, see `doc/Effect-Flags.md`), so that script runs before the hardware generator
 (`Build-Release.ps1` keeps this order).
 
