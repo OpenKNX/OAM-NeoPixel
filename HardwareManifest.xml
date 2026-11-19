@@ -36,8 +36,8 @@
     <Set board="OKNXHW_OPENKNXIAO_KNEOPIX_*" value="4" />
     <Set board="DEVICE_QUINLED_DIG_*" value="1" />
     <Set board="DEVICE_UP1_GW_UART" value="1" />
-    <Set board="DEVICE_GLEDOPTO_ESP32_*" value="1" />
-    <Set board="DEVICE_GLEDOPTO_GL_C_017WL" value="2" />
+    <Set board="DEVICE_GL_C_309WL" value="1" />
+    <Set board="DEVICE_GL_C_017WL" value="2" />
   </Value>
 
   <!-- level shifter of the LED data lines (board header HW_LEVELSHIFTER, names in HardwareConfig/OpenKNX/Xiao.h), developer view only -->
