@@ -108,7 +108,8 @@ Warum man die ID *braucht*, obwohl die GPIO-Infos vorliegen:
 ```
 
 Reihenfolge in `scripts/Build-Release.ps1`: `Build-EffectParameters.ps1` (füllt die Effekt-Blöcke in
-`src/NeoPixel.script.src.js`), dann der Hardware-Generator, dann `Normalize-LineEndings.ps1` und der Producer.
+`src/NeoPixel.script.src.js`), dann `Normalize-LineEndings.ps1`, dann der gemeinsame Preprocess aus OGM-Common mit
+Hardware-Generator und Producer.
 
 ---
 

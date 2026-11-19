@@ -33,8 +33,8 @@ An output is only written when its content changes.
 
 ## Running it
 
-- `scripts/Build-Release.ps1` runs `Build-EffectParameters.ps1`, then the generator, then `Normalize-LineEndings.ps1`
-  and the producer.
+- `scripts/Build-Release.ps1` runs `Build-EffectParameters.ps1`, then `Normalize-LineEndings.ps1`, then the shared
+  OGM-Common preprocess, which runs the generator and the producer.
 - Alone (VS Code task "Build HardwareConfig"): `pwsh lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1`
   in the repository root; it yields a current `src/NeoPixel.script.js` from `src/NeoPixel.script.src.js`.
 

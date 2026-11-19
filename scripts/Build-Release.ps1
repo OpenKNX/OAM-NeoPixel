@@ -462,20 +462,11 @@ if (-not $isSkipOknx) {
 # from the last run, so header and ETS data keep matching.
 if (-not $isSkipKnxprod) {
     # Effect parameters first: they fill the effect blocks of src/NeoPixel.script.src.js, which the
-    # hardware generator then assembles into src/NeoPixel.script.js
+    # hardware generator (run by the shared preprocess below) then assembles into src/NeoPixel.script.js
     Write-Host "Generating effect parameters..." -ForegroundColor Cyan
     scripts/Build-EffectParameters.ps1 -SkipOpenKNXproducer -Detailed:$Detailed
     if (!$?) {
         Write-Host "Effect parameter generation failed!" -ForegroundColor Red
-        exit 1
-    }
-
-    # Hardware selection, ports and board tables: OGM-HardwareConfig generator, manifest HardwareManifest.xml
-    Write-Host "Generating hardware files (HardwareManifest.xml)..." -ForegroundColor Cyan
-    $global:LASTEXITCODE = 0
-    & lib/OGM-HardwareConfig/generator/Build-HardwareProfile.ps1 -Manifest HardwareManifest.xml -Detailed:$Detailed
-    if ($global:LASTEXITCODE -ne 0) {
-        Write-Host "Hardware generation failed!" -ForegroundColor Red
         exit 1
     }
 
@@ -487,16 +478,20 @@ if (-not $isSkipKnxprod) {
     Write-Host "Skipping effect/hardware generators (SkipKnxprod) - their outputs stay from the last run" -ForegroundColor Yellow
 }
 
-# Execute generic pre-build steps. The shared preprocess passes its arguments on positionally, so the
-# skip travels in the environment; cleared first and in finally so it never leaks into a later build.
+# Execute generic pre-build steps; they run the hardware generator (HardwareManifest.xml) before the producer.
+# The shared preprocess passes its arguments on positionally, so the skip travels in the environment and
+# -Detailed in $global:OpenKNXHwProfilerArgs; both cleared first and in finally so they never leak into a later build.
 Remove-Item Env:OPENKNX_SKIP_KNXPROD -ErrorAction SilentlyContinue
+Remove-Variable -Name OpenKNXHwProfilerArgs -Scope Global -ErrorAction SilentlyContinue
 if ($isSkipKnxprod) { $env:OPENKNX_SKIP_KNXPROD = "1" }
+if ($Detailed) { $global:OpenKNXHwProfilerArgs = @{ Detailed = $true } }
 try {
     lib/OGM-Common/scripts/setup/reusable/Build-Release-Preprocess.ps1 $buildParam
     $preprocessOk = $?
 }
 finally {
     Remove-Item Env:OPENKNX_SKIP_KNXPROD -ErrorAction SilentlyContinue
+    Remove-Variable -Name OpenKNXHwProfilerArgs -Scope Global -ErrorAction SilentlyContinue
 }
 if (!$preprocessOk) { exit 1 }
 

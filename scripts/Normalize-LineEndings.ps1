@@ -11,7 +11,8 @@
     Build-Release.ps1 appear to dirty the same handful of files on every run.
 
     The repository pins `eol=lf` in .gitattributes, so this normalizes the generated
-    files to LF after the generators have written them. Windows PowerShell 5.1 writes
+    files to LF after Build-EffectParameters.ps1 has written them (the hardware generator runs
+    later in the shared preprocess and writes LF itself). Windows PowerShell 5.1 writes
     a UTF-8 BOM with Set-Content -Encoding UTF8 (pwsh 7 does not); it is removed too.
 #>
 
@@ -23,7 +24,8 @@ param(
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
-# Files and globs written or spliced by Build-EffectParameters.ps1 and the hardware generator
+# Files and globs written or spliced by Build-EffectParameters.ps1; src/NeoPixel.script.js is the
+# output of the previous hardware generator run
 # (Help_de/*.md also covers the hand-written help files in that folder)
 $patterns = @(
     "src/NeoPixel.share.xml"
